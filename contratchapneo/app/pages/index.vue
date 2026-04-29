@@ -6,6 +6,10 @@
         
         <HeroSection />
 
+        <companieSection />
+
+        <ordinarySection />
+
     </div>
     
 </template>
@@ -13,13 +17,17 @@
 <script lang="ts">
 import Navbar from '~/components/navigation/navbar.vue';
 import HeroSection from '~/components/sections/heroSection.vue';
+import companieSection from '~/components/sections/companieSection.vue';
+import ordinarySection from '~/components/sections/ordinarySection.vue';
 
 
 export default {
     name: 'HomePage',
     components:{
         Navbar,
-        HeroSection
+        HeroSection,
+        companieSection,
+        ordinarySection
     }
 }
 

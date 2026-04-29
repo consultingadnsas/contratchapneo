@@ -5,7 +5,7 @@
         <div class="hero-section">
             <h1>
                 Tout ce dont vous avez besoin
-                pour <span>un bon service juridique</span>
+                pour <span>un bon service juridique de qualité</span>
             </h1>
 
             <h4>
@@ -21,7 +21,7 @@
 
         <div class="pic-wrapper">
             <img src="../../assets/pictures/ContratChap/pexels-kampus-8475168.jpg" class="one" alt="">
-            <img src="../../assets/pictures/ContratChap/pexels-kampus-8475168.jpg" class="two" alt="">
+            <img src="../../assets/pictures/ContratChap/pexels-gustavo-fring-6720580.jpg" class="two" alt="">
             <img src="../../assets/pictures/ContratChap/pexels-kampus-8475168.jpg" class="three" alt="">
             <img src="../../assets/pictures/ContratChap/pexels-kampus-8475168.jpg" class="four" alt="">
         </div>
@@ -62,6 +62,7 @@ export default {
     width: 100%;
     text-align: start;
     font-weight: 500;
+    line-height: 1.2;
 }
 
 .hero-section h1 span{
@@ -90,29 +91,44 @@ export default {
     color: var(--primary-color);
 }
 
-.pic-wrapper{
+/* 1. On définit la structure globale */
+.pic-wrapper {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr 1fr; /* Deux colonnes de largeur égale */
+    grid-template-rows: repeat(10, 1fr); /* On divise la hauteur en 10 unités */
+    gap: 0.5rem;
+    height: 500px; /* IMPORTANT : il faut une hauteur pour que les ratios s'appliquent */
+    padding: 0.5rem;
 }
 
-.one{
-    grid-column: 1/4;
-    grid-row: 2/3;
+.pic-wrapper img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 8px; /* Optionnel : pour le style */
+}
+
+/* 2. Placement de la première colonne (Ratio 0.7 / 0.3) */
+.one {
+    grid-column: 1;    /* Colonne de gauche */
+    grid-row: 1 / 8;   /* De la ligne 1 à 8 (soit 7 unités) */
 }
 
 .two {
-  grid-column: 2 / 4;
-  grid-row: 1 / 3;
+    grid-column: 1;    /* Colonne de gauche */
+    grid-row: 8 / 11;  /* De la ligne 8 à 11 (soit 3 unités) */
 }
 
+/* 3. Placement de la deuxième colonne (Ratio 50 / 50) */
 .three {
-  grid-column: 3/4;
-  grid-row: 1 / 3;
+    grid-column: 2;    /* Colonne de droite */
+    grid-row: 1 / 6;   /* De la ligne 1 à 6 (soit 5 unités) */
 }
 
-.four{
-    grid-column: 4/4;
-    grid-row: 2/3;
+.four {
+    grid-column: 2;    /* Colonne de droite */
+    grid-row: 6 / 11;  /* De la ligne 6 à 11 (soit 5 unités) */
 }
+
 
 </style>
