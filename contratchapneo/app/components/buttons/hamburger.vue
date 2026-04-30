@@ -17,7 +17,7 @@
 .burger {
   position: relative;
   width: 40px;
-  height: 30px;
+  height: 20px;
   background: transparent;
   cursor: pointer;
   display: block;

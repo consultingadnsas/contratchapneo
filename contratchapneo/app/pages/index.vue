@@ -10,6 +10,12 @@
 
         <ordinarySection />
 
+        <bankContratSection />
+
+        <ProSection title-head="Les professionnels du droits"/>
+
+        
+
     </div>
     
 </template>
@@ -19,6 +25,8 @@ import Navbar from '~/components/navigation/navbar.vue';
 import HeroSection from '~/components/sections/heroSection.vue';
 import companieSection from '~/components/sections/companieSection.vue';
 import ordinarySection from '~/components/sections/ordinarySection.vue';
+import bankContratSection from '~/components/sections/bankContratSection.vue';
+import ProSection from '~/components/sections/proSection.vue';
 
 
 export default {
@@ -27,7 +35,9 @@ export default {
         Navbar,
         HeroSection,
         companieSection,
-        ordinarySection
+        ordinarySection,
+        bankContratSection,
+        ProSection
     }
 }
 
