@@ -90,4 +90,11 @@ export default{
     background: var(--primary-color);
 }
 
+@media(min-width: 768px){
+    .features-cards{
+        width: 320px;
+        height:320px;
+    }
+}
+
 </style>

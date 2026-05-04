@@ -20,7 +20,7 @@
             <p>Récevez de façon hebdomadaire des conseils juridiques et des ressources</p>
         </div>
         <div class="btn-actions">
-            <Base-input label="Email" aria-placeholder="Entrer votre addresse email"/>
+            <Base-input/>
             <mainButton label="S'abonner"/>
         </div>
     </div>

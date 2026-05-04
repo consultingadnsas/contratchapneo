@@ -2,7 +2,12 @@
   <div class="hamburger">
     <!-- From Uiverse.io by Cevorob --> 
     <label class="burger" for="burger">
-      <input type="checkbox" id="burger">
+      <input 
+        type="checkbox" 
+        id="burger" 
+        :checked="isOpen"
+        @change="$emit('toggle')"
+      >
       <span></span>
       <span></span>
       <span></span>
@@ -10,7 +15,19 @@
   </div>
 </template>
 
-<script setup lang="ts"></script>
+<script lang="ts">
+
+export default{
+  props:{
+    isOpen:{
+      type:Boolean,
+      default:false
+    },
+  },
+  emits:['toggle']
+}
+
+</script>
 
 <style scoped>
 /* From Uiverse.io by Cevorob */ 
