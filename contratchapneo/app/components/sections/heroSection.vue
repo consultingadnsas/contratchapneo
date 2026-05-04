@@ -1,6 +1,6 @@
 <template>
 
-    <section class="">
+    <section class="main-Section">
 
         <div class="hero-section">
             <h1>
@@ -47,13 +47,16 @@ export default {
 
 /* Mobile first */
 
+.main-Section{
+    padding: 6rem 1rem 1rem 1rem;
+}
+
 .hero-section{
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
     gap: 1rem;
-    padding: 4rem 1rem 1rem 1rem;
 }
 
 .hero-section h1{
@@ -61,7 +64,7 @@ export default {
     font-size: 3rem;
     width: 100%;
     text-align: start;
-    font-weight: 500;
+    font-weight: 700;
     line-height: 1.2;
 }
 
@@ -73,7 +76,7 @@ export default {
 
 .hero-section h4{
     font-size: 1.5rem;
-    font-weight: 500;
+    font-weight: 400;
     color: gray;
     text-align: start;
 }
@@ -130,5 +133,12 @@ export default {
     grid-row: 6 / 11;  /* De la ligne 6 à 11 (soit 5 unités) */
 }
 
+/* Tablet */
 
+@media (min-width: 768px){
+    .main-Section{
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+    }
+}
 </style>

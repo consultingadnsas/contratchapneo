@@ -14,19 +14,23 @@
 
         <ProSection title-head="Les professionnels du droits"/>
 
-        
+        <calcul-tool-section/>
+
+        <footer-section/>
 
     </div>
     
 </template>
 
 <script lang="ts">
-import Navbar from '~/components/navigation/navbar.vue';
-import HeroSection from '~/components/sections/heroSection.vue';
-import companieSection from '~/components/sections/companieSection.vue';
-import ordinarySection from '~/components/sections/ordinarySection.vue';
-import bankContratSection from '~/components/sections/bankContratSection.vue';
-import ProSection from '~/components/sections/proSection.vue';
+import Navbar from '../components/navigation/navbar.vue';
+import HeroSection from '../components/sections/heroSection.vue';
+import companieSection from '../components/sections/companieSection.vue';
+import ordinarySection from '../components/sections/ordinarySection.vue';
+import bankContratSection from '../components/sections/bankContratSection.vue';
+import ProSection from '../components/sections/proSection.vue';
+import calculToolSection from '../components/sections/calculToolSection.vue';
+import FooterSection from '../components/sections/footerSection.vue';
 
 
 export default {
@@ -37,7 +41,9 @@ export default {
         companieSection,
         ordinarySection,
         bankContratSection,
-        ProSection
+        ProSection,
+        calculToolSection,
+        FooterSection,
     }
 }
 

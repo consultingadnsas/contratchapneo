@@ -15,6 +15,9 @@
     --font-primary: 'Inter', sans-serif;
     --font-secondary: 'Instrument+Sans', sans-serif;
 
+    /* Font size */
+    --paragraph-font-size: 1rem
+
 }
 
 *{
