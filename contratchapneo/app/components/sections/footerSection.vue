@@ -14,7 +14,8 @@
         </ul>
       </div>
     </div>
-    <div class="newsletter-section">
+    <!--  
+      <div class="newsletter-section">
         <div class="newsletter-title">
             <h3>Souscrire à notre newsletter</h3>
             <p>Récevez de façon hebdomadaire des conseils juridiques et des ressources</p>
@@ -24,7 +25,7 @@
             <mainButton label="S'abonner"/>
         </div>
     </div>
-
+    -->
     <div class="logo">
         <h3><span>Contrat</span>ChapNeo</h3>
     </div>
@@ -85,7 +86,7 @@ export default {
   display: flex;
   flex-direction: column;
   gap: 1rem;
-  background: #f1f1f1;
+  background: var(--secondary-color);
   border-radius: 0.5rem;
 }
 

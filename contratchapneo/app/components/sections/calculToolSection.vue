@@ -36,10 +36,10 @@
 
         </div>
 
-        <div class="w-full flex justify-center items-center flex-col">
+        <div class="green-section w-full flex justify-center items-center flex-col">
             <h3>Quelques outils de calculs</h3>
 
-            <div class="grid grid-cols-2 gap-2">
+            <div class=" grid grid-cols-2 gap-2">
                 <featuresCards 
                     v-for="(card, index) in legalPro" 
                     :key="index"

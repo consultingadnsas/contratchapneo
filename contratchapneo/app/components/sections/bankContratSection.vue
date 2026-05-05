@@ -36,7 +36,7 @@
 
         </div>
 
-        <div class="w-full flex justify-center items-center flex-col">
+        <div class="green-section w-full flex justify-center items-center flex-col">
             <h3>Nos différents types de contrats</h3>
 
             <div class="grid grid-cols-2 gap-2">
@@ -222,5 +222,15 @@ export default {
 
 .nav-btn.prev { left: 5%; }
 .nav-btn.next { right: 5%; }
+
+.green-section{
+    background: var(--secondary-color);
+    margin: 0 1rem;
+    border-radius: 1rem;
+}
+
+.green-section h3{
+    color: var(--my-white);
+}
 
 </style>

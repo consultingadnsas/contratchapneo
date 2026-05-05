@@ -1,7 +1,7 @@
 <template>
     <div class="features-cards">
 
-        <h4>
+        <h4 class="features-title">
             {{ title }}
         </h4>
 
@@ -47,7 +47,7 @@ export default{
     align-items: center;
     height: 180px;
     width: 180px;
-    background: #f3f3f3;
+    background: var(--secondary-dark-color);
     border-radius: 1rem;
     border-bottom-right-radius: 0;
     padding: 0.5rem;
@@ -56,7 +56,7 @@ export default{
 .features-cards h4{
     font-size: 1.2rem;
     font-weight: 500;
-    color: var(--primary-color);
+    color: var(--my-white);
 }
 
 .btn-container{
@@ -67,12 +67,11 @@ export default{
     display: flex;
     align-items: center;
     justify-content: center;
-    background: #fff; 
-    border-top-left-radius: 1.5rem;
+    background: var(--secondary-color); 
+    border-top-left-radius: 1.1rem;
     width: 65px;
     height: 65px;
     padding: 0.5rem;
-    border-radius: 0.5rem;
 }
 
 .features-cards button{
@@ -86,8 +85,8 @@ export default{
     height: 60px;
     border-radius: 50%;
     font-size: 1rem;
-    color: #fff;
-    background: var(--primary-color);
+    color: var(--secondary-dark-color);
+    background: var(--my-white);
 }
 
 @media(min-width: 768px){

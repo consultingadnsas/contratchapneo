@@ -36,7 +36,7 @@
 
         </div>
 
-        <div class="w-full flex justify-center items-center flex-col">
+        <div class="green-section w-full flex justify-center items-center flex-col">
             <h3>Quelques professionnels du droits</h3>
 
             <div class="grid grid-cols-2 gap-2">
