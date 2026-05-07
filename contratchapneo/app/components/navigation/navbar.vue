@@ -9,7 +9,7 @@
             <!-- Bouton Hamburger avec état -->
             <Hamburger 
                 :isOpen="isMenuOpen"
-                @click="toggleMenu" 
+                @toggle="toggleMenu" 
                 :class="{'is-active': isMenuOpen}"
             />
         </nav>
@@ -123,5 +123,27 @@ export default{
   font-size: 1.1rem;
   padding: 1rem 0;
   border-bottom: 1px solid #f0f0f0;
+}
+
+/* --- DESIGN DESKTOP (Ordinateurs) --- */
+@media (min-width: 1024px) {
+    .main-header {
+        top: 20px; /* Décalage du haut */
+        left: 50%;
+        transform: translateX(-50%);
+        width: 95%; /* Ne prend pas toute la largeur */
+        max-width: 1200px;
+        border-radius: 50px; /* Bords très arrondis */
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        border: 1px solid var(--tertiary-color);
+    }
+
+    .nav-links-desktop {
+        display: flex; /* Affiche les liens sur desktop */
+    }
+
+    .mobile-only {
+        display: none !important; /* Cache le hamburger sur desktop */
+    }
 }
 </style>

@@ -68,7 +68,7 @@ export default{
     align-items: center;
     justify-content: center;
     background: var(--secondary-color); 
-    border-top-left-radius: 1.1rem;
+    border-top-left-radius: 2rem;
     width: 65px;
     height: 65px;
     padding: 0.5rem;
@@ -91,8 +91,17 @@ export default{
 
 @media(min-width: 768px){
     .features-cards{
-        width: 320px;
-        height:320px;
+        width: 300px;
+        height:300px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .features-cards h4{
+        font-size: 1.6rem;
+        font-weight: 500;
+        color: var(--my-white);
     }
 }
 

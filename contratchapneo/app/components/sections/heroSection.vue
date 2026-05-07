@@ -49,6 +49,7 @@ export default {
 
 .main-Section{
     padding: 6rem 1rem 1rem 1rem;
+    border-radius: 1rem;
 }
 
 .hero-section{

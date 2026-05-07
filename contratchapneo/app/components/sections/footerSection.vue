@@ -83,10 +83,11 @@ export default {
 .main-footer {
   padding: 1rem;
   width: 100%;
+  min-height: 100vh;
   display: flex;
   flex-direction: column;
   gap: 1rem;
-  background: var(--secondary-color);
+  background: #f3f3f3;
   border-radius: 0.5rem;
 }
 

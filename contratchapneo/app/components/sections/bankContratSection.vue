@@ -8,7 +8,11 @@
 
             <div class="carousel-wrapper">
                 <!-- Boutons de navigation (Optionnels mais pratiques) -->
-                <button @click="prev" class="nav-btn prev"> < </button>
+                <button @click="prev" class="nav-btn prev">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18" />
+                    </svg>
+                </button>
                 
                 <div class="carousel-container">
                     <div 
@@ -21,10 +25,14 @@
                     </div>
                 </div>
 
-                <button @click="next" class="nav-btn next"> > </button>
+                <button @click="next" class="nav-btn next"> 
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
+                    </svg>
+                </button>
             </div>
 
-            <div class=" flex flex-col items-center justify-center gap-2">
+            <div class="flex flex-col items-center justify-center gap-2">
                 <h3>
                     Une panoplie de contrats vous attend
                     <span>
@@ -39,9 +47,14 @@
         <div class="green-section w-full flex justify-center items-center flex-col">
             <h3>Nos différents types de contrats</h3>
 
-            <div class="grid grid-cols-2 gap-2">
-                <featuresCards 
-                    v-for="(card, index) in 4" :key="index"/>
+            <div class="green-body flex flex-col justify-center items-center gap-4">
+                <div class="card-container">
+                    <featuresCards 
+                        v-for="(card, index) in contratCards" :key="index"
+                        :title="card.title"
+                    />
+                </div>
+                <h3>Nos contrats s'adaptent à tout type de situations en accord avec les règles de l'OHADA</h3>
             </div>
         </div>
     </section>
@@ -110,9 +123,17 @@ export default {
             }
         };
 
+        const contratCards = [
+            {title:"Création et cession"},
+            {title: "Prestation de services"},
+            {title:"Contrat de freelance"},
+            {title: "Contrat de bénévolat"}
+        ]
+
         return {
             carouselImages,
             currentIndex,
+            contratCards,
             next,
             prev,
             getItemClass
@@ -210,14 +231,16 @@ export default {
     position: absolute;
     top: 50%;
     transform: translateY(-50%);
-    background: rgba(0,0,0,0.5);
+    background: var(--primary-color);
     color: white;
     border: none;
+    display: flex;
+    justify-content: center;
+    align-items: center;
     font-size: 2rem;
     padding: 0.5rem 1rem;
     cursor: pointer;
     z-index: 20; /* Toujours au-dessus */
-    border-radius: 50%;
 }
 
 .nav-btn.prev { left: 5%; }
@@ -231,6 +254,41 @@ export default {
 
 .green-section h3{
     color: var(--my-white);
+}
+
+.green-body{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 1rem;
+}
+
+.card-container{
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+@media(min-width:768px){
+    
+    .green-body{
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+    }
+
+    .card-container{
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+    }
+}
+
+@media(min-width: 1048px){
+    .card-container{
+
+    }
 }
 
 </style>

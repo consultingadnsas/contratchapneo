@@ -8,9 +8,9 @@
 
         <companieSection />
 
-        <ordinarySection />
-
         <bankContratSection />
+
+        <ordinarySection />
 
         <ProSection title-head="Les professionnels du droits"/>
 
