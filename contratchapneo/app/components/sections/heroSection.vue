@@ -22,7 +22,7 @@
         <div class="pic-wrapper">
             <img src="../../assets/pictures/ContratChap/pexels-kampus-8475168.jpg" class="one" alt="">
             <img src="../../assets/pictures/ContratChap/pexels-gustavo-fring-6720580.jpg" class="two" alt="">
-            <img src="../../assets/pictures/ContratChap/pexels-kampus-8475168.jpg" class="three" alt="">
+            <img src="../../assets/pictures/ContratChap/konkapo-home-office-10207248_1920.jpg" class="three" alt="">
             <img src="../../assets/pictures/ContratChap/pexels-kampus-8475168.jpg" class="four" alt="">
         </div>
 
@@ -50,6 +50,7 @@ export default {
 .main-Section{
     padding: 6rem 1rem 1rem 1rem;
     border-radius: 1rem;
+    background: #f3f3f3;
 }
 
 .hero-section{

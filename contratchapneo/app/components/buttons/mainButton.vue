@@ -28,7 +28,7 @@ export default {
 <style scoped>
 
 .main-button{
-    background-color: var(--secondary-color);
+    background-color: var(--primary-color);
     color: white;
     display: flex;
     gap: 1rem;
