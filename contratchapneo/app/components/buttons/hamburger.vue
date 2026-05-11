@@ -50,7 +50,7 @@ export default{
   position: absolute;
   height: 3px;
   width: 80%;
-  background: black;
+  background: var(--primary-color);
   border-radius: 9px;
   opacity: 1;
   left: 0;

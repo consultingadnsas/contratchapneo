@@ -76,7 +76,6 @@ export default {
   display: flex;
   flex-direction: column;
   width: 100%;
-  max-width: 500px; /* Optionnel : limite la largeur de la barre de recherche */
   gap: 1rem;
 }
 

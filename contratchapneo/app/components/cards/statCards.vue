@@ -38,8 +38,8 @@ export default{
     position: relative;
     display: flex;
     align-items: center;
-    height: 180px;
-    width: 180px;
+    width: 100%;
+    height: 200px;
     border-radius: 1.5rem;
     padding: 1.2rem;
     
@@ -88,8 +88,8 @@ export default{
     border-radius: 50%;
     border: none;
     cursor: pointer;
-    color: var(--secondary-dark-color, #1a1a1a);
-    background: #ffffff;
+    color: #ffffff;
+    background: var(--secondary-light-color);
     transition: transform 0.3s ease;
 }
 
@@ -104,9 +104,9 @@ export default{
 
 @media(min-width: 768px){
     .features-cards {
-        width: 280px;
-        height: 280px;
         padding: 2rem;
+        height: 300px;
+        max-width: 300px;
     }
 
     .features-cards h4 {
@@ -121,6 +121,13 @@ export default{
     .features-cards button {
         width: 60px;
         height: 60px;
+    }
+}
+
+@media (min-width: 1200px){
+    .features-cards {
+        padding: 2rem;
+        height: 250px;
     }
 }
 </style>

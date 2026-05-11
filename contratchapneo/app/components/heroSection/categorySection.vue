@@ -28,6 +28,21 @@
                 </template>
             </BaseResearchInput>
         </div>
+
+        <div class="right-side">
+            <h3>Nos catégories de contrats</h3>
+
+            <!-- Classe sémantique "cards-grid" au lieu de "grid" (évite le conflit avec Tailwind) -->
+            <div class="cards-grid">
+                <StatCards 
+                    v-for="(cards, index) in contratCards" 
+                    :key="index" 
+                    :title="cards.title"
+                />
+            </div>
+
+            <mainButton label="Toutes les catégories"/>
+        </div>
     </section>
 </template>
 
@@ -43,7 +58,7 @@ export default {
     setup() {
         const phrases = [
             'Profitez de nos contrats gratuits.',
-            'Sécurisez juridiquement vos affaires.',
+            'Sécurisez vos affaires juridiques.',
             'Accédez à des modèles conformes à l\'OHADA.',
         ];
 
@@ -103,12 +118,12 @@ export default {
     padding: 6rem 1rem 1rem 1rem;
     min-height: 100vh;
     width: 100%;
+
     background-image:
         linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)),
         url('../../assets/pictures/ContratChap/black-person-signing-job-contract.jpg');
     background-size: cover;
     background-position: center;
-    /* ⚠️ Retiré : background-attachment: fixed — cassé sur Safari iOS (parallaxe non supporté) */
 
     display: flex;
     flex-direction: column; /* ← colonne unique sur mobile */
@@ -120,14 +135,12 @@ export default {
 
 /* --- Left side --- */
 .left-side {
-    height: 100%;
     width: 100%;
-    max-width: 600px;
     text-align: center; /* centré sur mobile */
     display: flex;
     flex-direction: column;
     justify-content: center;
-    gap: 1.5rem;
+    gap: 1rem;
 }
 
 .left-side h3,
@@ -149,6 +162,33 @@ export default {
     text-align: center;
     width: 100%;
 }
+/* --- Right side --- */
+.right-side {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1.5rem;
+}
+
+.right-side h3 {
+    font-size: 1.2rem;
+    font-weight: 500;
+    opacity: 0.9;
+    text-align: center;
+}
+
+/* --- Cards grid ---
+   Classe sémantique propre, pas de conflit avec Tailwind ".grid"
+   1 colonne sur très petit mobile, 2 à partir de 480px
+*/
+.cards-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* ← 1 colonne sous 480px */
+    gap: 0.5rem;
+    width: 100%;
+}
 
 /* =============================================
    BREAKPOINT SM — à partir de 480px
@@ -166,6 +206,12 @@ export default {
    Layout 2 colonnes côte à côte
    ============================================= */
 @media (min-width: 768px) {
+    .hero-section {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+    }
 
     /* Réalignement gauche sur grand écran */
     .left-side,
@@ -195,6 +241,10 @@ export default {
         flex-direction: row;
         width: 100%;
         gap: 1rem;
+    }
+
+    .left-side, .right-side{
+        width: 50%;
     }
 
     .left-side h1 {
