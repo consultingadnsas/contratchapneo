@@ -105,7 +105,7 @@ export default {
     width: 100%;
     background-image:
         linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)),
-        url('../../assets/pictures/ContratChap/black-person-signing-job-contract.jpg');
+        url('../../assets/pictures/ContratChap/pexels-rdne-7841486.jpg');
     background-size: cover;
     background-position: center;
     /* ⚠️ Retiré : background-attachment: fixed — cassé sur Safari iOS (parallaxe non supporté) */

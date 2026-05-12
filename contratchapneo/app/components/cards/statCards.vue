@@ -39,58 +39,60 @@ export default{
     display: flex;
     align-items: center;
     width: 100%;
-    height: 200px;
+    /* hauteur min au lieu de fixe → la carte s'adapte au contenu */
+    min-height: 100px;
+    height: auto;
     border-radius: 1.5rem;
-    padding: 1.2rem;
-    
+    padding: 1rem 1.2rem;
+    box-sizing: border-box;
+
     /* EFFET GLASSMORPHISM */
-    background: rgba(255, 255, 255, 0.1); /* Fond blanc très transparent */
-    backdrop-filter: blur(15px); /* Flou de l'image de fond */
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(15px);
     -webkit-backdrop-filter: blur(15px);
-    border: 1px solid rgba(255, 255, 255, 0.2); /* Bordure façon verre */
+    border: 1px solid rgba(255, 255, 255, 0.2);
     box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
-    
-    /* On retire l'arrondi manquant pour garder un look moderne */
-    /* border-bottom-right-radius: 0; */ 
 }
 
 .features-cards h4 {
-    font-size: 1.1rem;
+    font-size: clamp(0.85rem, 2.5vw, 1.1rem); /* fluid, jamais trop petit ni trop grand */
     line-height: 1.3;
     font-weight: 600;
     color: #ffffff;
     text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    /* évite que le texte chevauche le bouton */
+    padding-right: 3rem;
+    margin: 0;
 }
 
 .btn-container {
     z-index: 2;
     position: absolute;
-    bottom: -5px; /* On le fait dépasser légèrement pour le style */
+    bottom: -5px;
     right: -5px;
     display: flex;
     align-items: center;
     justify-content: center;
-    
-    /* Rappel de la couleur secondaire mais avec un peu de transparence */
     background: none;
     border-top-left-radius: 2rem;
-    border-bottom-right-radius: 1.5rem; /* Aligné avec la carte */
-    width: 60px;
-    height: 60px;
+    border-bottom-right-radius: 1.5rem;
+    width: 55px;
+    height: 55px;
 }
 
 .features-cards button {
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 45px;
-    height: 45px;
+    width: 40px;
+    height: 40px;
     border-radius: 50%;
     border: none;
     cursor: pointer;
     color: #ffffff;
     background: var(--secondary-light-color);
     transition: transform 0.3s ease;
+    flex-shrink: 0;
 }
 
 .features-cards button:hover {
@@ -98,36 +100,47 @@ export default{
 }
 
 .size-6 {
-    width: 20px;
-    height: 20px;
+    width: 18px;
+    height: 18px;
 }
 
-@media(min-width: 768px){
+/* Tablette */
+@media (min-width: 768px) {
     .features-cards {
-        padding: 2rem;
-        height: 300px;
-        max-width: 300px;
+        padding: 1.5rem;
+        min-height: 140px;
+        /* suppression du max-width qui cassait le layout parent */
     }
 
     .features-cards h4 {
-        font-size: 1.8rem;
+        font-size: clamp(1.1rem, 2vw, 1.5rem);
     }
 
     .btn-container {
-        width: 80px;
-        height: 80px;
+        width: 70px;
+        height: 70px;
     }
 
     .features-cards button {
-        width: 60px;
-        height: 60px;
+        width: 52px;
+        height: 52px;
+    }
+
+    .size-6 {
+        width: 22px;
+        height: 22px;
     }
 }
 
-@media (min-width: 1200px){
+/* Desktop */
+@media (min-width: 1200px) {
     .features-cards {
         padding: 2rem;
-        height: 250px;
+        min-height: 160px;
+    }
+
+    .features-cards h4 {
+        font-size: clamp(1.2rem, 1.5vw, 1.8rem);
     }
 }
 </style>

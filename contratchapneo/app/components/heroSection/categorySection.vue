@@ -122,7 +122,7 @@ export default {
     background-image:
         linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)),
         url('../../assets/pictures/ContratChap/black-person-signing-job-contract.jpg');
-    background-size: cover;
+    background-size: cover; 
     background-position: center;
 
     display: flex;
