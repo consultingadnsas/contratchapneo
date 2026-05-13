@@ -25,7 +25,7 @@
 <script lang="ts">
 import Navbar from '../components/navigation/navbar.vue';
 import HeroSection from '../components/sections/heroSection.vue';
-import heroSectionTest from '~/components/heroSection/heroSectionTest.vue';
+import heroSectionTest from '../components/heroSection/heroSectionTest.vue';
 import companieSection from '../components/sections/companieSection.vue';
 import ordinarySection from '../components/sections/ordinarySection.vue';
 import bankContratSection from '../components/sections/bankContratSection.vue';
