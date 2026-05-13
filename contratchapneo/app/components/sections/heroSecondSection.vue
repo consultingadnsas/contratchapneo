@@ -1,11 +1,11 @@
 <template>
-    <section class="hero-section">
+    <section class="hero-section" data-aos="fade-up" data-aos-duration="2000">
         <div class="flex flex-col gap-4">
             <span>
                 {{ displayText }}<span class="cursor">|</span>
             </span>
             <h1>
-                Télécharger librement vos contrats
+                Téléchargez librement vos contrats
             </h1>
             <base-research-input/>
         </div>
@@ -97,7 +97,8 @@ export default defineComponent({
     width: 100%;
     /* empêche le débordement horizontal causé par les cartes absolues */
     overflow-x: hidden;
-
+    border-bottom-left-radius: 1rem;
+    border-bottom-right-radius: 1rem;
     display: flex;
     flex-direction: column;   /* empilé sur mobile */
     align-items: center;

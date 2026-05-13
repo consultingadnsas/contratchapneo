@@ -7,7 +7,7 @@
             <h1>
                 Téléchargez nos contrats 
                 <span>dès maintenant.</span>
-            </h1>
+            </h1> 
 
             <BaseResearchInput>
                 <template #prepend>

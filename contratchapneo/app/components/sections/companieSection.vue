@@ -1,7 +1,5 @@
 <template>
-    <section class="main-section">
-
-        
+    <section class="main-section" data-aos="fade-up" data-aos-duration="3000" >
 
         <h3>
             Ces entreprises nous <span>ont fait confiance</span>

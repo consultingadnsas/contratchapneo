@@ -39,6 +39,8 @@
 </template>
 
 <script>
+import {useId} from 'vue'
+
 export default {
   name: 'SearchInput',
   inheritAttrs: false,
@@ -53,14 +55,15 @@ export default {
     placeholder: { type: String, default: 'Trouver un contrat...' }
   },
   emits: ['update:modelValue', 'blur'],
-  computed: {
-    inputId() {
-      return this.id || `search-${Math.random().toString(36).substr(2, 9)}`;
+  setup(){
+    const generatedId = useId()
+    return{
+      generatedId
     }
   },
-  methods: {
-    handleInput(event) {
-      this.$emit('update:modelValue', event.target.value);
+  computed:{
+    inputId(){
+      return this.id || `search-${this.generatedId}`
     }
   }
 };

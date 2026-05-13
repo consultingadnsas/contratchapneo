@@ -36,15 +36,20 @@
 
         </div>
 
-        <div class="green-section w-full flex justify-center items-center flex-col">
-            <h3>Quelques outils de calculs</h3>
+        <div class="blue-section w-full flex justify-center items-center flex-col">
+            <div class="section-overlay"></div>
+            
+            <div class="content-wrapper">
+                <h3 class="section-title">Quelques outils de calculs</h3>
 
-            <div class=" grid grid-cols-2 gap-2">
-                <featuresCards 
-                    v-for="(card, index) in legalPro" 
-                    :key="index"
-                    :title="card.title"
-                />
+                <div class="cards-grid">
+                    <statCards 
+                        v-for="(card, index) in legalPro" 
+                        :key="index"
+                        :title="card.title"
+                        class="hover-effect"
+                    />
+                </div>
             </div>
         </div>
     </section>
@@ -53,9 +58,10 @@
 <script lang="ts">
 import { ref, computed } from 'vue';
 // Importation de l'image par défaut (tu pourras la changer pour une liste)
-import defaultImage from '../../assets/pictures/ContratChap/pexels-thirdman-5060819.jpg';
+import defaultImage from '../../assets/pictures/ContratChap/konkapo-home-office-10207248_1920.jpg';
 import mainButton from '../buttons/mainButton.vue';
 import featuresCards from '../cards/featuresCards.vue';
+import statCards from '../cards/statCards.vue';
 
 export default {
     name: 'OrdinarySection',
@@ -67,7 +73,8 @@ export default {
     },
     components:{
         mainButton,
-        featuresCards
+        featuresCards,
+        statCards
     },
     setup() {
         // 1. Les données : Une liste d'images.
@@ -234,4 +241,45 @@ export default {
 .nav-btn.prev { left: 5%; }
 .nav-btn.next { right: 5%; }
 
+.blue-section {
+    position: relative;
+    min-height: 500px;
+    background: var(--background-color);
+    padding: 4rem 1rem;
+    overflow: hidden;
+    border-radius: 1rem;
+}
+
+.content-wrapper {
+    position: relative;
+    z-index: 2;
+    width: 100%;
+    max-width: 1200px;
+}
+
+.section-title {
+    color: #ffffff;
+    font-size: 2rem;
+    font-weight: 700;
+    text-align: center;
+    margin-bottom: 1rem;
+    letter-spacing: 2px;
+    text-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+}
+
+/* Grille Responsive Dynamique */
+.cards-grid {
+    display: grid;
+    grid-template-columns: 1fr; /* Mobile-first */
+    gap: 1.5rem;
+    padding: 0 1rem;
+}
+
+@media(min-width:768px){
+    .cards-grid{
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+    }
+}
 </style>

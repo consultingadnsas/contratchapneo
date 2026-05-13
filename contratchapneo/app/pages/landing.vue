@@ -1,17 +1,23 @@
 <template>
     <div class="main-wrapper">
-        <navbarVue/>
-        <heroSecondSectionVue/>
+        <navbar/>
+        <heroSecondSection/>
+        <companieSection/>
     </div>
 </template>
 
 <script>
-import navbarVue from '../components/navigation/navbar.vue'
-import heroSecondSectionVue from '../components/sections/heroSecondSection.vue'
+import categorySection from '../components/heroSection/categorySection.vue'
+import navbar from '../components/navigation/navbar.vue'
+import companieSection from '../components/sections/companieSection.vue'
+import heroSecondSection from '../components/sections/heroSecondSection.vue'
 
 export default {
     components:{
-        heroSecondSectionVue, navbarVue
+        navbar,
+        heroSecondSection,
+        companieSection,
+        categorySection
     }
 }
 </script>

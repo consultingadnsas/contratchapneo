@@ -3,10 +3,8 @@
     <div class="main-wrapper">
         
         <Navbar />
-        
-        <!-- <HeroSection /> -->
 
-        <heroSectionTest />
+        <heroSecondSection />
 
         <companieSection />
 
@@ -34,7 +32,7 @@ import bankContratSection from '../components/sections/bankContratSection.vue';
 import ProSection from '../components/sections/proSection.vue';
 import calculToolSection from '../components/sections/calculToolSection.vue';
 import FooterSection from '../components/sections/footerSection.vue';
-
+import heroSecondSection from '../components/sections/heroSecondSection.vue';
 
 export default {
     name: 'HomePage',
@@ -47,6 +45,7 @@ export default {
         bankContratSection,
         ProSection,
         calculToolSection,
+        heroSecondSection,
         FooterSection,
     }
 }

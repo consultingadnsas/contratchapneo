@@ -1,5 +1,5 @@
 <template>
-    <section class="main-section">
+    <section class="main-section" data-aos="fade-up" data-aos-duration="2000">
         <div class="head">
             <h3>{{ titleHead }}</h3>
         </div>
@@ -14,7 +14,9 @@
                     </svg>
                 </button>
                 
-                <div class="carousel-container">
+                <div 
+                    class="carousel-container"
+                >
                     <div 
                         v-for="(image, index) in carouselImages" 
                         :key="index"
@@ -44,7 +46,10 @@
 
         </div>
 
-        <div class="green-section w-full flex justify-center items-center flex-col">
+        <div 
+            class="green-section w-full flex justify-center items-center flex-col"
+            data-aos="fade-up" data-aos-duration="2000"
+        >
             <h3>Nos différents types de contrats</h3>
 
             <div class="green-body flex flex-col justify-center items-center gap-4">
