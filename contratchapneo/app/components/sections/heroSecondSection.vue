@@ -95,6 +95,7 @@ export default defineComponent({
 .hero-section {
     background: var(--background-color);
     width: 100%;
+    min-height: 100vh;
     /* empêche le débordement horizontal causé par les cartes absolues */
     overflow-x: hidden;
     border-bottom-left-radius: 1rem;

@@ -6,9 +6,9 @@
 
         <heroSecondSection />
 
-        <companieSection />
-
         <bankContratSection />
+
+        <companieSection />
 
         <ordinarySection />
 

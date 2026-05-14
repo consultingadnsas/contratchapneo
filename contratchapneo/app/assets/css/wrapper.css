@@ -41,8 +41,16 @@
     padding: 1rem;
 }
 
-.green-section h3{
+.green-section, .blue-section h3, .green-dark-section h3{
     color: var(--my-white);
+}
+
+.green-dark-section{
+    background: #e4e4e4;
+    margin: 0 1rem;
+    border-bottom-left-radius: 1rem;
+    border-bottom-right-radius: 1rem;
+    padding: 1rem;
 }
 
 h1, h2, h3, h4{
