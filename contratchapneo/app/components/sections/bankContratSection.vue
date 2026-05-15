@@ -9,11 +9,19 @@
                 <mainButton label="consulter un pro" />
             </div>
 
-            <div class="green-dark-section w-full flex justify-center items-center flex-col">
+            <div class="green-dark-section w-full flex justify-center items-center flex-col gap-4">
                 <!-- Conteneur responsive : carrousel mobile, grille desktop -->
                 <div class="cards-container">
                     <contratCards 
                         v-for="(card, index) in legalPro" 
+                        :key="index"
+                        :title="card.title"
+                    />
+                </div>
+
+                <div class="cards-container">
+                    <packCards 
+                        v-for="(card, index) in contratPack" 
                         :key="index"
                         :title="card.title"
                     />
@@ -28,10 +36,16 @@ import { ref } from 'vue';
 import mainButton from '../buttons/mainButton.vue';
 import prodCards from '../cards/proCards.vue';
 import contratCards from '../cards/contratCards.vue';
+import packCards from '../cards/packCards.vue';
 
 export default {
     name: 'OrdinarySection',
-    components: { mainButton, prodCards, contratCards },
+    components: { 
+        mainButton, 
+        prodCards, 
+        contratCards,
+        packCards
+    },
     setup() {
         const legalPro = ref([
             { title: 'Contrat de travail' },
@@ -40,7 +54,13 @@ export default {
             { title: 'Juriste droit des affaires' }
         ]);
 
-        return { legalPro };
+        const contratPack = ref([
+            {title: 'Pack basic'},
+            {title: 'Pack business'},
+            {title: 'Pack business pro'}
+        ])
+
+        return { legalPro, contratPack };
     }
 }
 </script>
