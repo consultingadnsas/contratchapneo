@@ -114,6 +114,8 @@ export default defineComponent({
     display: flex;
     flex-direction: column;
     gap: 1rem;
+    position: relative;
+    top:3rem;
 }
 
 .hero-section h1 {
@@ -158,13 +160,14 @@ export default defineComponent({
 /* pic-container = référentiel de positionnement, taille = taille de l'image */
 .pic-container {
     position: relative;
+    max-width: 170px;
     display: inline-flex;   /* se réduit à la taille de l'image */
     justify-content: center;
     align-items: center;
 }
 
 .pic-container img {
-    width: 220px;
+    min-width: 300px;
     height: auto;
     border-radius: 130px;
     display: block;
@@ -274,8 +277,21 @@ export default defineComponent({
         gap: 3rem;
     }
 
+    .hero-section > div:first-child {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    position: relative;
+    top: -3rem;
+    }
+
     .pic-wrapper {
         padding: 100px 130px;
+    }
+
+    .pic-container {
+        max-width: 340px;
     }
 
     .pic-container img {

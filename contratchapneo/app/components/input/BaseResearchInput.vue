@@ -80,6 +80,8 @@ export default {
   flex-direction: column;
   width: 100%;
   gap: 1rem;
+  position: relative;
+  top: 2rem;
 }
 
 .input-wrapper {

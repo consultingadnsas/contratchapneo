@@ -26,8 +26,7 @@
 
 <script lang="ts">
 import { defineComponent } from 'vue';
-const defaultImg = new URL('../../assets/pictures/ContratChap/pexels-thirdman-5060819.jpg', import.meta.url).href;
-
+import defaultImg from '@/assets/pictures/ContratChap/pexels-thirdman-5060819.jpg';
 export default defineComponent({
     name: 'ProCards',
     props: {
