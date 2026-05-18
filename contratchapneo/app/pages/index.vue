@@ -8,13 +8,13 @@
 
         <bankContratSection />
 
-        <companieSection />
-
-        <ordinarySection />
+        <companySolutions/>
 
         <ProSection title-head="Les professionnels du droits"/>
 
         <calcul-tool-section/>
+
+        <companieSection />
 
         <footer-section/>
 
@@ -33,6 +33,7 @@ import ProSection from '../components/sections/proSection.vue';
 import calculToolSection from '../components/sections/calculToolSection.vue';
 import FooterSection from '../components/sections/footerSection.vue';
 import heroSecondSection from '../components/sections/heroSecondSection.vue';
+import companySolutions from '../components/sections/companySolutions.vue';
 
 export default {
     name: 'HomePage',
@@ -47,6 +48,7 @@ export default {
         calculToolSection,
         heroSecondSection,
         FooterSection,
+        companySolutions
     }
 }
 
