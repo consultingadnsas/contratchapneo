@@ -1,5 +1,5 @@
 <template>
-    <section class="hero-section" data-aos="fade-up" data-aos-duration="2000">
+    <section class="hero-section">
         <div class="flex flex-col gap-4">
             <span>
                 {{ displayText }}<span class="cursor">|</span>
