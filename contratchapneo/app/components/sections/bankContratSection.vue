@@ -13,9 +13,11 @@
                 <!-- Conteneur responsive : carrousel mobile, grille desktop -->
                 <div class="cards-container">
                     <contratCards 
-                        v-for="(card, index) in legalPro" 
+                        v-for="(card, index) in legalContrat" 
                         :key="index"
                         :title="card.title"
+                        :description="card.description"
+                        :subtitle="card.subtitle"
                     />
                 </div>
             </div>
@@ -40,14 +42,14 @@ export default {
         packCards
     },
     setup() {
-        const legalPro = ref([
-            { title: 'Contrat de travail' },
-            { title: 'Contrat de freelance' },
-            { title: 'Notaire' },
-            { title: 'Juriste droit des affaires' }
+        const legalContrat = ref([
+            { title: 'Contrat de travail' , subtitle: '100% Gratuit', description: 'Un contrat de travail est un accord entre un employeur et un employé qui définit les termes et conditions de l\'emploi.'},
+            { title: 'Contrat de freelance', subtitle: '15000 FCFA' },
+            { title: 'contrat de vente', subtitle: '100% Gratuit' },
+            { title: 'contrat de bail', subtitle: '5000 FCFA' },
         ]);
 
-        return { legalPro, };
+        return { legalContrat, };
     }
 }
 </script>

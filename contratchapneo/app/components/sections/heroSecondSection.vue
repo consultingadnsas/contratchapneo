@@ -244,7 +244,7 @@ export default defineComponent({
 /* ── Tablette ────────────────────────────────────────────────── */
 @media (min-width: 768px) {
     .hero-section {
-        flex-direction: row;
+        flex-direction: column;
         align-items: center;
         justify-content: space-between;
         padding: 3rem 2.5rem;
@@ -254,6 +254,8 @@ export default defineComponent({
     .hero-section > div:first-child {
         flex: 1;
         max-width: 50%;
+        position: relative;
+        top: 4rem ;
     }
 
     .pic-wrapper {
@@ -261,8 +263,13 @@ export default defineComponent({
         padding: 90px 110px;
     }
 
+    .pic-container {
+        max-width: 300px;
+    }
+
     .pic-container img {
-        width: 280px;
+        min-width: clamp(300px, 40vw, 380px);
+
     }
 
     .floating-card {
@@ -273,6 +280,7 @@ export default defineComponent({
 /* ── Desktop ─────────────────────────────────────────────────── */
 @media (min-width: 1200px) {
     .hero-section {
+        flex-direction: row;
         padding: 4rem 5rem;
         gap: 3rem;
     }

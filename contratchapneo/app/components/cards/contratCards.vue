@@ -9,13 +9,14 @@
 
         <div class="card-info">
             <h4 class="pro-name">{{ title }}</h4>
-            <p class="pro-specialty">{{ subtitle }}</p>
+            <p class="pro-info" :class="{'visible' : isHovered}" :style="{color: '#F7F7F8'}">{{ description }}</p>
+            <p class="pro-specialty" :style="{color: '#1d86d2'}">{{ subtitle }}</p>
         </div>
 
         <div class="btn-container">
             <button>
                 <span>
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6.5">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 10.5V6a3.75 3.75 0 1 0-7.5 0v4.5m11.356-1.993 1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 0 1-1.12-1.243l1.264-12A1.125 1.125 0 0 1 5.513 7.5h12.974c.576 0 1.059.435 1.119 1.007ZM8.625 10.5a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm7.5 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z" />
                     </svg>
                 </span>
@@ -27,6 +28,7 @@
 <script lang="ts">
 import { defineComponent } from 'vue';
 import defaultImg from '../../assets/pictures/ContratChap/pexels-thirdman-5060819.jpg';
+import { ref } from 'vue';
 
 export default defineComponent({
     name: 'ContratCards',
@@ -39,10 +41,22 @@ export default defineComponent({
             type: String,
             default: 'CEO @ Framify'
         },
+        description: {
+            type: String,
+            default: 'bienvenue au pays mon fils'
+        },
         image: {
             type: String,
             default: defaultImg
-        }
+        },
+        
+    },
+    setup(){
+        const isHovered = ref(false);
+        
+        return {
+            isHovered
+        };
     }
 });
 </script>
@@ -108,6 +122,21 @@ export default defineComponent({
 
 .pro-specialty {
     margin: 0.25rem 0 0 0;
+    font-size: 0.95rem;
+    font-weight: 400;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: opacity 0.3s ease 0.1s, transform 0.3s ease 0.1s; /* Délai d'apparition */
+    pointer-events: none;
+}
+
+.pro-card:hover .pro-info {
+    opacity: 0.95;
+    transform: translateY(0);
+}
+
+.pro-specialty {
+    margin: 0.5rem 0 0 0;
     font-size: 0.9rem;
     font-weight: 400;
     opacity: 0.85; /* Légèrement plus discret que le nom */
@@ -138,8 +167,8 @@ export default defineComponent({
     justify-content: center;
     background: var(--secondary-light-color);
     border-radius: 999px;
-    width: 55px;
-    height: 55px;
+    width: 40px;
+    height: 40px;
 }
 
 .pro-card button {
@@ -152,7 +181,7 @@ export default defineComponent({
     border: none;
     cursor: pointer;
     color: #ffffff;
-    background: var(--secondary-light-color);
+    background: var(--primary-color);
     transition: transform 0.3s ease;
     flex-shrink: 0;
 }
