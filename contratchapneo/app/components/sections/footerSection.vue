@@ -87,7 +87,7 @@ export default {
   display: flex;
   flex-direction: column;
   gap: 1rem;
-  background: #f3f3f3;
+  background: #181818;
   border-radius: 0.5rem;
 }
 
@@ -119,7 +119,7 @@ export default {
 
 .footer-section a {
   text-decoration: none;
-  color: #333;
+  color: #f3f3f3;
 }
 
 .newsletter-section{
