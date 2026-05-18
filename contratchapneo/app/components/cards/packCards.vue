@@ -76,6 +76,7 @@ export default defineComponent({
     border: 1px solid #e5e7eb;
     transition: all 0.3s ease;
     width: 100%;
+    min-width: 300px;
     min-height: 450px;
 }
 

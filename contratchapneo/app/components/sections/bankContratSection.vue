@@ -18,15 +18,8 @@
                         :title="card.title"
                     />
                 </div>
-
-                <div class="cards-container">
-                    <packCards 
-                        v-for="(card, index) in contratPack" 
-                        :key="index"
-                        :title="card.title"
-                    />
-                </div>
             </div>
+
         </div>
     </section>
 </template>
@@ -54,13 +47,7 @@ export default {
             { title: 'Juriste droit des affaires' }
         ]);
 
-        const contratPack = ref([
-            {title: 'Pack basic'},
-            {title: 'Pack business'},
-            {title: 'Pack business pro'}
-        ])
-
-        return { legalPro, contratPack };
+        return { legalPro, };
     }
 }
 </script>

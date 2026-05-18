@@ -11,21 +11,43 @@
                 <img v-for="(pic, index) in logos" :key="index" :src="pic" alt="Logo partenaire">
             </div>
         </div>
+
+        <h3>
+            Offres business: profitez de nos packs de contrats adaptés <span>pour chaque type de business</span>
+        </h3>
+        <div class="cards-container">
+            <packCards
+                v-for="(card, index) in contratPack" 
+                :key="index"
+                :title="card.title"
+            />
+        </div>
     </section>
 </template>
 
 <script lang="ts">
+import { ref } from 'vue';
 import companyPic from '../../assets/pictures/partners/PROPARCO_Logo_RVB-1.png'
-
+import packCards from '../cards/packCards.vue';
 export default {
     name: 'CompanySection',
+    components: {
+        packCards,
+    },
     setup() {
         const mypic = companyPic;
         // On garde 10 ou plus pour bien remplir l'écran
         const logos = Array(12).fill(mypic)
 
+         const contratPack = ref([
+            {title: 'Pack basic'},
+            {title: 'Pack business'},
+            {title: 'Pack business pro'}
+        ])
+
         return {
-            logos
+            logos,
+            contratPack
         }
     }
 }
@@ -53,6 +75,15 @@ export default {
     overflow: hidden; 
     position: relative;
     padding: 1rem 0;
+}
+.cards-container {
+    display: flex;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    gap: 1rem;
+    padding: 0.5rem 1rem;
+    width: 100%;
+    scrollbar-width: thin;
 }
 
 /* Dégradés sur les côtés */
