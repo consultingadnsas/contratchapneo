@@ -3,10 +3,9 @@
         <div class="wrapper-content">
             <div class="flex flex-col items-center justify-center gap-2">
                 <h3>
-                    Tous les domaines du droit sont couverts
+                    Besoin d'accompagnement personnel? Faites-vous suivre
                     <span>par nos professionnels</span>
                 </h3>
-                <mainButton label="consulter un pro" />
             </div>
 
             <div class="green-dark-section w-full flex justify-center items-center flex-col">
@@ -19,6 +18,8 @@
                     />
                 </div>
             </div>
+
+            <mainButton label="consulter un pro" />
         </div>
     </section>
 </template>
@@ -36,7 +37,7 @@ export default {
             { title: 'Avocat' },
             { title: 'Commissaire de justice' },
             { title: 'Notaire' },
-            { title: 'Juriste droit des affaires' }
+            { title: 'Juriste droit des affaires' },
         ]);
 
         return { legalPro };

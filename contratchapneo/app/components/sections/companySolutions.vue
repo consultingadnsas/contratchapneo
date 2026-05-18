@@ -71,7 +71,7 @@ export default {
 .main-section h3 {
     text-align: center;
     font-size: 1.6rem; 
-    padding: 2rem 1rem 1rem 1rem;
+    padding: 1rem;
     font-weight: 700;
     color: #111827;
 }
