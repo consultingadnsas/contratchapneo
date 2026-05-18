@@ -81,7 +81,7 @@ export default {
     },
     setup() {
         const legalContrat = ref([
-            { title: 'Contrat de travail' , subtitle: '100% Gratuit', description: 'Un contrat de travail est un accord entre un employeur et un employé qui définit les termes et conditions de l\'emploi.'},
+            { title: 'Contrat de travail' , subtitle: '100% Gratuit', description: 'Un contrat de travail est un accord entre un employeur et son employé.'},
             { title: 'Contrat de freelance', subtitle: '15000 FCFA' },
             { title: 'contrat de vente', subtitle: '100% Gratuit' },
             { title: 'contrat de bail', subtitle: '5000 FCFA' },

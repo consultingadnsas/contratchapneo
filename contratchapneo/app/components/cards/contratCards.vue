@@ -9,8 +9,8 @@
 
         <div class="card-info">
             <h4 class="pro-name">{{ title }}</h4>
-            <p class="pro-info" :class="{'visible' : isHovered}" :style="{color: '#F7F7F8'}">{{ description }}</p>
-            <p class="pro-specialty" :style="{color: '#1d86d2'}">{{ subtitle }}</p>
+            <p class="pro-info" :style="{color: '#F7F7F8'}">{{ description }}</p>
+            <p class="pro-specialty" :style="{color: '#ffffff'}">{{ subtitle }}</p>
         </div>
 
         <div class="btn-container">
@@ -28,7 +28,6 @@
 <script lang="ts">
 import { defineComponent } from 'vue';
 import defaultImg from '../../assets/pictures/ContratChap/pexels-thirdman-5060819.jpg';
-import { ref } from 'vue';
 
 export default defineComponent({
     name: 'ContratCards',
@@ -52,10 +51,8 @@ export default defineComponent({
         
     },
     setup(){
-        const isHovered = ref(false);
         
         return {
-            isHovered
         };
     }
 });
@@ -121,24 +118,13 @@ export default defineComponent({
 }
 
 .pro-specialty {
-    margin: 0.25rem 0 0 0;
-    font-size: 0.95rem;
-    font-weight: 400;
-    opacity: 0;
-    transform: translateY(10px);
-    transition: opacity 0.3s ease 0.1s, transform 0.3s ease 0.1s; /* Délai d'apparition */
-    pointer-events: none;
-}
-
-.pro-card:hover .pro-info {
-    opacity: 0.95;
-    transform: translateY(0);
-}
-
-.pro-specialty {
     margin: 0.5rem 0 0 0;
     font-size: 0.9rem;
-    font-weight: 400;
+    font-weight: 700;
+    background: var(--primary-color);
+    padding: 0.2rem 0.5rem;
+    border-radius: 6px;
+    margin-right: 140px;
     opacity: 0.85; /* Légèrement plus discret que le nom */
 }
 
