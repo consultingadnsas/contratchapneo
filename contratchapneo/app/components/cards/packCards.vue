@@ -47,10 +47,10 @@ export default defineComponent({
     components: { mainButton },
     props: {
         title: { type: String, default: 'Weekday Pass' },
-        price: { type: String, default: '$120' },
-        oldPrice: { type: String, default: '150' },
+        price: { type: String, default: '29000 FCFA' },
+        oldPrice: { type: String, default: '49000 FCFA' },
         discount: { type: String, default: '20' },
-        dateRange: { type: String, default: 'Aug 2024 to Jan 2025' },
+        dateRange: { type: String, default: 'Valable 1 an' },
         features: {
             type: Array as PropType<string[]>,
             default: () => [
@@ -67,40 +67,62 @@ export default defineComponent({
 
 <style scoped>
 .pro-card {
-    background: #ffffff;
-    border-radius: 12px;
-    padding: 2rem 1.5rem;
     display: flex;
     flex-direction: column;
     position: relative;
-    border: 1px solid #e5e7eb;
-    transition: all 0.3s ease;
     width: 100%;
     min-width: 300px;
     min-height: 450px;
+    padding: 2rem 1.5rem;
+    border-radius: 1.25rem;
+    box-sizing: border-box;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+    /* --- EFFET GLASSMORPHISM --- */
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.25);
 }
 
-/* Style spécifique pour la carte mise en avant (Everyday Pass dans ton image) */
+.pro-card:hover {
+    transform: translateY(-6px);
+    border-color: rgba(255, 255, 255, 0.3);
+    box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.35);
+}
+
+/* --- VARIANTE POPULAIRE MISE EN AVANT --- */
 .pro-card.is-popular {
-    border: 2px solid #10b981; /* Vert émeraude */
+    background: rgba(255, 255, 255, 0.12); /* Légèrement plus opaque pour se détacher */
+    border: 1.5px solid rgba(16, 185, 129, 0.6); /* Bordure vert émeraude translucide */
+    /* Halo lumineux vert très discret */
+    box-shadow: 0 8px 32px 0 rgba(16, 185, 129, 0.15), 0 4px 12px 0 rgba(0, 0, 0, 0.2);
+}
+
+.pro-card.is-popular:hover {
+    border-color: rgba(16, 185, 129, 0.9);
+    box-shadow: 0 12px 40px 0 rgba(16, 185, 129, 0.25);
 }
 
 .badge {
     position: absolute;
     top: 1.5rem;
     right: 1.5rem;
-    background: #10b981;
-    color: white;
+    background: var(--secondary-light-color);
+    color: #ffffff;
     padding: 4px 12px;
     border-radius: 999px;
     font-size: 0.75rem;
     font-weight: 600;
+    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
 }
 
+/* --- TYPOGRAPHIES (Adaptées pour le fond en transparence) --- */
 .pro-title {
-    font-size: 1.25rem;
+    font-size: 1.3rem;
     font-weight: 700;
-    color: #111827;
+    color: #ffffff; /* Blanc pur pour claquer sur le verre */
     margin: 0 0 1.5rem 0;
 }
 
@@ -111,39 +133,40 @@ export default defineComponent({
 .price-row {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
 }
 
 .current-price {
-    font-size: 2rem;
+    font-size: 1.6rem;
     font-weight: 800;
-    color: #111827;
+    color: #ffffff;
 }
 
 .old-price {
-    font-size: 0.875rem;
+    font-size: 0.9rem;
     text-decoration: line-through;
-    color: #9ca3af;
+    color: rgba(255, 255, 255, 0.4); /* Translucide pour l'ancien prix */
 }
 
 .discount-tag {
-    background: #fee2e2;
-    color: #ef4444;
+    background: rgba(239, 68, 68, 0.2); /* Rouge ultra-léger pour rester dans le thème glass */
+    color: #fca5a5;
+    border: 1px solid rgba(239, 68, 68, 0.25);
     font-size: 0.75rem;
     font-weight: 700;
     padding: 2px 6px;
-    border-radius: 4px;
+    border-radius: 6px;
 }
 
 .date-range {
     font-size: 0.85rem;
-    color: #6b7280;
-    margin-top: 4px;
+    color: rgba(255, 255, 255, 0.6);
+    margin-top: 6px;
 }
 
 .divider {
     height: 1px;
-    background: #f3f4f6;
+    background: rgba(255, 255, 255, 0.12); /* Ligne translucide */
     margin-bottom: 1.5rem;
 }
 
@@ -165,15 +188,15 @@ export default defineComponent({
     align-items: center;
     gap: 12px;
     font-size: 0.95rem;
-    color: #374151;
+    color: rgba(255, 255, 255, 0.85); /* Texte légèrement adouci pour le confort visuel */
     font-weight: 500;
 }
 
 .check-icon {
     width: 20px;
     height: 20px;
-    background: #10b981;
-    color: white;
+    background: var(--secondary-light-color);
+    color: #ffffff;
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -186,16 +209,25 @@ export default defineComponent({
     margin-top: 2rem;
 }
 
-/* Styles pour les boutons selon l'état de la carte */
+/* --- BOUTONS --- */
 :deep(.btn-light button) {
-    background: #f3f4f6 !important;
-    color: #111827 !important;
+    background: rgba(255, 255, 255, 0.15) !important; /* Bouton givré lui aussi */
+    backdrop-filter: blur(4px);
+    color: #ffffff !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
     width: 100%;
+    transition: background 0.2s ease;
+}
+
+:deep(.btn-light button:hover) {
+    background: rgba(255, 255, 255, 0.25) !important;
 }
 
 :deep(.btn-dark button) {
-    background: #030712 !important; /* Noir profond comme dans l'image */
-    color: #ffffff !important;
+    background: #ffffff !important; /* Le bouton principal devient blanc uni pour attirer l'œil instantanément */
+    color: #030712 !important;
+    font-weight: 600;
     width: 100%;
+    box-shadow: 0 4px 14px rgba(255, 255, 255, 0.2);
 }
 </style>

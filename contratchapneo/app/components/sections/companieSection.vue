@@ -1,5 +1,5 @@
 <template>
-    <section class="main-section" data-aos="fade-up" data-aos-duration="3000" >
+    <section class="main-section" >
 
         <h3>
             Ces entreprises nous <span>ont fait confiance</span>
@@ -10,17 +10,6 @@
             <div class="carousel-track">
                 <img v-for="(pic, index) in logos" :key="index" :src="pic" alt="Logo partenaire">
             </div>
-        </div>
-
-        <h3>
-            Offres business: profitez de nos packs de contrats adaptés <span>pour chaque type de business</span>
-        </h3>
-        <div class="cards-container">
-            <packCards
-                v-for="(card, index) in contratPack" 
-                :key="index"
-                :title="card.title"
-            />
         </div>
     </section>
 </template>
