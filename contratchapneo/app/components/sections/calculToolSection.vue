@@ -1,28 +1,6 @@
 <template>
     <section class="main-section">
-        <div class="head">
-            <h3>{{ titleHead }}</h3>
-        </div>
-
         <div class="">
-
-            <div class="carousel-wrapper">
-                <!-- Boutons de navigation (Optionnels mais pratiques) -->
-                <button @click="prev" class="nav-btn prev"> < </button>
-                
-                <div class="carousel-container">
-                    <div 
-                        v-for="(image, index) in carouselImages" 
-                        :key="index"
-                        class="carousel-item"
-                        :class="getItemClass(index)"
-                    >
-                        <img :src="image" alt="Slider image">
-                    </div>
-                </div>
-
-                <button @click="next" class="nav-btn next"> > </button>
-            </div>
 
             <div class=" flex flex-col items-center justify-center gap-2">
                 <h3>
@@ -31,7 +9,6 @@
                         facilitent la vie.
                     </span>
                 </h3>
-                <mainButton label="consulter un pro"/>
             </div>
 
         </div>
@@ -52,6 +29,7 @@
                 </div>
             </div>
         </div>
+        <mainButton label="Outils de calcul"/>
     </section>
 </template>
 

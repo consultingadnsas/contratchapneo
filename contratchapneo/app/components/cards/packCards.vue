@@ -11,7 +11,6 @@
         <div class="price-section">
             <div class="price-row">
                 <span class="current-price">{{ price }}</span>
-                <span v-if="discount" class="discount-tag">-{{ discount }}%</span>
                 <span v-if="oldPrice" class="old-price">${{ oldPrice }}</span>
             </div>
             <p class="date-range">{{ dateRange }}</p>
