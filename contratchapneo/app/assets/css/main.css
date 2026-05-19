@@ -3,6 +3,10 @@
 
 @import '../css/wrapper.css';
 @import '../css/button.css';
+@import '../css/form.css';
+
+
+
 @import "tailwindcss";
 
 :root{
