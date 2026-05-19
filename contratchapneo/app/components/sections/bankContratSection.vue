@@ -21,6 +21,7 @@
                         v-for="(card, index) in legalPro" 
                         :key="index"
                         :title="card.title"
+                        @buy="openModal(card)"
                     />
                 </div>
 
@@ -61,6 +62,14 @@
                 <mainButton label="voir toutes nos catégories" />
             </div>
         </div>
+
+        <Teleport to="body">
+            <cart-modale 
+                :isOpen="isOpen" 
+                @close="isOpen = false"
+            />
+        </Teleport>
+
     </section>
 </template>
 
@@ -69,13 +78,15 @@ import { ref } from 'vue';
 import mainButton from '../buttons/mainButton.vue';
 import contratCards from '../cards/contratCards.vue';
 import contratCategoryCards from '../cards/contratCategoryCards.vue';
+import cartModale from '../modale/cartModale.vue';
 
 export default {
     name: 'OrdinarySection',
     components: { 
         mainButton, 
         contratCards,
-        contratCategoryCards
+        contratCategoryCards,
+        cartModale
     },
     setup() {
         const legalPro = ref([
@@ -108,7 +119,24 @@ export default {
             }
         };
 
-        return { legalPro, carouselRef, scrollPrev, scrollNext };
+        // About contrat buying
+        const isOpen = ref<boolean>(false)
+        const openModal = () => {
+            isOpen.value = true;
+            console.log('évènement emis!!!')
+        }
+
+        return { 
+            legalPro, 
+            carouselRef, 
+            scrollPrev, 
+            scrollNext, 
+
+            // state
+            isOpen,
+            openModal
+
+        };
     }
 }
 </script>
