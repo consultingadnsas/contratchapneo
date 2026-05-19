@@ -27,6 +27,9 @@
                 v-for="(card, index) in contratPack" 
                 :key="index"
                 :title="card.title"
+                :price="card.price"
+                :oldPrice="card.oldPrice"
+                :features="card.features"
             />
         </div>
     </section>
@@ -49,9 +52,9 @@ export default {
         const logos = Array(12).fill(mypic)
 
          const contratPack = ref([
-            {title: 'Pack basic'},
-            {title: 'Pack business'},
-            {title: 'Pack business pro'}
+            {title: 'Pack basic', price: '29 000 FCFA', oldPrice: '400 000 FCFA', features: ['Accès à 10 documents juridiques payants', 'Très petites entreprises ou consultants individuels']},
+            {title: 'Pack business', price: '49 000 FCFA', oldPrice: '1 000 000 FCFA', features: ['Accès à 12 documents juridiques payants','Rédaction sur-mesure d\'un document juridique ' ,'PME et startups de moins de 10 employés avec un volume de tache juridique modéré']},
+            {title: 'Pack business pro', price: '99 000 FCFA', oldPrice: '1 500 000 FCFA', features: ['Accès à 25 documents juridiques payants','Rédaction sur-mesure de 3 documents juridiques ' ,'Suivi par une équipe de juriste(appui & conseils personnalisés)' ,'PME et startups de plus de 10 employés avec un volume de tache juridique important']},
         ])
 
         return {
