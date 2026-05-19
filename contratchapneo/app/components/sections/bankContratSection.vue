@@ -106,10 +106,7 @@ export default {
         }
 
         return { 
-            legalPro, 
-            carouselRef, 
-            scrollPrev, 
-            scrollNext, 
+            legalContrat, 
 
             // state
             isOpen,
