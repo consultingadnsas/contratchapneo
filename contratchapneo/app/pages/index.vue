@@ -24,31 +24,33 @@
 
 <script lang="ts">
 import Navbar from '../components/navigation/navbar.vue';
-import HeroSection from '../components/sections/heroSection.vue';
-import heroSectionTest from '../components/heroSection/heroSectionTest.vue';
-import companieSection from '../components/sections/companieSection.vue';
-import ordinarySection from '../components/sections/ordinarySection.vue';
+import heroSecondSection from '../components/sections/heroSecondSection.vue';
 import bankContratSection from '../components/sections/bankContratSection.vue';
+import companySolutions from '../components/sections/companySolutions.vue';
 import ProSection from '../components/sections/proSection.vue';
 import calculToolSection from '../components/sections/calculToolSection.vue';
+import companieSection from '../components/sections/companieSection.vue';
 import FooterSection from '../components/sections/footerSection.vue';
-import heroSecondSection from '../components/sections/heroSecondSection.vue';
-import companySolutions from '../components/sections/companySolutions.vue';
+
+import {ref} from 'vue'
 
 export default {
     name: 'HomePage',
     components:{
         Navbar,
-        HeroSection,
-        heroSectionTest,
         companieSection,
-        ordinarySection,
         bankContratSection,
         ProSection,
         calculToolSection,
         heroSecondSection,
         FooterSection,
-        companySolutions
+        companySolutions,
+    },
+    setup() {
+
+        // state
+
+        
     }
 }
 
