@@ -27,7 +27,7 @@
           <div class="cart-items">
             <div class="items-list">
               <div v-for="item in cartItems" :key="item.id" class="cart-item">
-                <img :src="item.image || '/pic/placeholder-product.jpg'" :alt="item.name" class="item-image">
+                <img src="../../assets/pictures/ContratChap/black-person-signing-job-contract.jpg" :alt="item.name" class="item-image">
                 <div class="item-details">
                   <h4 class="item-name">{{ item.name }}</h4>
                   <p class="item-price">{{ item.price }} FCFA</p>
@@ -63,6 +63,7 @@
 <script lang="ts">
 import { ref, watch, onUnmounted, computed } from 'vue';
 import checkoutButton from '../buttons/checkoutButton.vue';
+import placeholder from '@/assets/pictures/ContratChap/pexels-thirdman-5060819.jpg'
 
 export default {
   name: 'CartModal',
@@ -72,10 +73,11 @@ export default {
   },
   emits: ['close'],
   setup(props, { emit }) {
+    const picture= placeholder
     // Données statiques de tes contrats
     const cartItems = ref([
-      { id: 1, name: "Contrat de travail CDD", price: 5000, quantity: 1, image: '' },
-      { id: 2, name: "Contrat de prestation", price: 8000, quantity: 1, image: '' }
+      { id: 1, name: "Contrat de travail CDD", price: 5000, quantity: 1, image: '../../assets/pictures/ContratChap/pexels-thirdman-5060819.jpg'},
+      { id: 2, name: "Contrat de prestation", price: 8000, quantity: 1, image: '../../assets/pictures/ContratChap/pexels-thirdman-5060819.jpg' }
     ]);
 
     const isEmpty = computed(() => cartItems.value.length === 0);
@@ -98,7 +100,7 @@ export default {
 
     onUnmounted(() => document.body.classList.remove('overflow-hidden'));
 
-    return { isEmpty, cartItems, totalItems, formattedTotalPrice, closeModal, removeFromCart, proceedToCheckout };
+    return { isEmpty, cartItems, totalItems, formattedTotalPrice,picture, closeModal, removeFromCart, proceedToCheckout };
   }
 }
 </script>
