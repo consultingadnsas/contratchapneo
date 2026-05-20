@@ -1,6 +1,6 @@
 <template>
 
-    <button class="main-button">
+    <button class="main-button" @click="handleClick">
         {{ label }}
         
         <span>
@@ -17,10 +17,17 @@
 <script lang="ts">
 export default {
     name:'mainButton',
+    emits:['click','handleClicked'],
     props:{
         label:{
             type:String,
             default:'Payer mon contrat'
+        }
+    },
+    methods: {
+        handleClick(event: Event) {
+            this.$emit('click', event);
+            this.$emit('handleClicked', event);
         }
     }
 }
@@ -32,7 +39,11 @@ export default {
     background-color: var(--primary-color);
     color: white;
     display: flex;
+    justify-content: center;
+    align-items: center;
     gap: 1rem;
+    cursor: pointer;
+    padding: 0.9rem;
 }
 
 </style>

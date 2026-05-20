@@ -47,13 +47,13 @@
 
           <div class="order-summary">
             <div class="summary-line"><span>Sous-total</span><span>{{ formattedTotalPrice }} FCFA</span></div>
-            <div class="summary-line"><span>Livraison</span><span>Gratuite</span></div>
+            <div class="summary-line"><span>J'ai un code promo</span><span>Gratuite</span></div>
             <div class="summary-line total"><span>Total</span><span class="final-price">{{ formattedTotalPrice }} FCFA</span></div>
           </div>
         </template>
       </div>
 
-      <div class="cart-footer" v-if="!isEmpty">
+      <div class="cart-footer flex justify-center items-center" v-if="!isEmpty">
         <checkoutButton label="Commander" @handleClicked="proceedToCheckout" />
       </div>
     </div>
@@ -62,6 +62,7 @@
 
 <script lang="ts">
 import { ref, watch, onUnmounted, computed } from 'vue';
+import { useRouter } from '#app';
 import checkoutButton from '../buttons/checkoutButton.vue';
 import placeholder from '@/assets/pictures/ContratChap/pexels-thirdman-5060819.jpg'
 
@@ -73,6 +74,7 @@ export default {
   },
   emits: ['close'],
   setup(props, { emit }) {
+    const router = useRouter();
     const picture= placeholder
     // Données statiques de tes contrats
     const cartItems = ref([
@@ -90,7 +92,10 @@ export default {
     const removeFromCart = (id: number) => {
       cartItems.value = cartItems.value.filter(item => item.id !== id);
     };
-    const proceedToCheckout = () => console.log("Redirection vers paiement...");
+    const proceedToCheckout = () => {
+      closeModal();
+      router.push('/order/checkout');
+    };
 
     // Bloc de gestion du scroll
     watch(() => props.isOpen, (newValue) => {

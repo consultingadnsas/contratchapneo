@@ -18,9 +18,11 @@
                 <!-- Conteneur original avec sa classe "cards-container" -->
                 <div class="cards-container">
                     <contratCards 
-                        v-for="(card, index) in legalPro" 
+                        v-for="(card, index) in legalContrat" 
                         :key="index"
                         :title="card.title"
+                        :description="card.description"
+                        :subtitle="card.subtitle"
                         @buy="openModal(card)"
                     />
                 </div>
@@ -89,35 +91,12 @@ export default {
         cartModale
     },
     setup() {
-        const legalPro = ref([
-            { title: 'Contrat de travail' },
-            { title: 'Contrat de freelance' },
-            { title: 'Notaire' },
-            { title: 'Juriste droit des affaires' }
+        const legalContrat = ref([
+            { title: 'Contrat de travail' , subtitle: '100% Gratuit', description: 'Un contrat de travail est un accord entre un employeur et son employé.'},
+            { title: 'Contrat de freelance', subtitle: '15000 FCFA' },
+            { title: 'contrat de vente', subtitle: '100% Gratuit' },
+            { title: 'contrat de bail', subtitle: '5000 FCFA' },
         ]);
-
-        const carouselRef = ref<HTMLElement | null>(null);
-
-        const getScrollStep = () => {
-            if (!carouselRef.value) return 300;
-            const firstCard = carouselRef.value.querySelector('.category-carousel-track > *') as HTMLElement;
-            if (!firstCard) return 300;
-            const style = window.getComputedStyle(firstCard);
-            const gap = parseFloat(style.marginRight) || 0;
-            return firstCard.offsetWidth + gap;
-        };
-
-        const scrollPrev = () => {
-            if (carouselRef.value) {
-                carouselRef.value.scrollBy({ left: -getScrollStep(), behavior: 'smooth' });
-            }
-        };
-
-        const scrollNext = () => {
-            if (carouselRef.value) {
-                carouselRef.value.scrollBy({ left: getScrollStep(), behavior: 'smooth' });
-            }
-        };
 
         // About contrat buying
         const isOpen = ref<boolean>(false)
@@ -127,10 +106,7 @@ export default {
         }
 
         return { 
-            legalPro, 
-            carouselRef, 
-            scrollPrev, 
-            scrollNext, 
+            legalContrat, 
 
             // state
             isOpen,
