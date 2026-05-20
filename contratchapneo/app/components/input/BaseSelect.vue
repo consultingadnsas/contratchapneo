@@ -10,10 +10,9 @@
         <slot name="prepend"></slot>
       </span>
 
-      <input
+      <select
         :id="inputId"
-        ref="inputRef"
-        class="form-input"
+        class="form-select"
         :class="{ 
           'pl-icon': $slots.prepend, 
           'pr-icon': $slots.append 
@@ -23,10 +22,20 @@
         :aria-invalid="!!errorMessage"
         :aria-describedby="errorMessage ? `${inputId}-error` : hint ? `${inputId}-hint` : undefined"
         v-bind="$attrs"
-        @input="handleInput"
-        @blur="$emit('blur', $event)"
-        :placeholder="placeholder"
-      />
+        @change="handleChange"
+      >
+        <option value="" disabled selected v-if="placeholder">{{ placeholder }}</option>
+        
+        <slot>
+          <option
+            v-for="(opt, index) in options"
+            :key="opt.code ?? opt.value ?? index"
+            :value="opt.code ?? opt.value ?? opt.name"
+          >
+            {{ opt.name }}
+          </option>
+        </slot>
+      </select>
 
       <span v-if="$slots.append" class="input-icon input-icon-right">
         <slot name="append"></slot>
@@ -47,10 +56,8 @@
 </template>
 
 <script>
-import {useId, computed} from 'vue'
-
 export default {
-  name: 'BaseInput',
+  name: 'BaseSelect',
   inheritAttrs: false,
   props: {
     modelValue: {
@@ -60,6 +67,10 @@ export default {
     label: {
       type: String,
       default: ''
+    },
+    placeholder: {
+      type: String,
+      default: 'Sélectionnez une option'
     },
     errorMessage: {
       type: String,
@@ -81,35 +92,38 @@ export default {
       type: Boolean,
       default: false
     },
-    placeholder:{
-      type:String,
-      default:"Entrer votre nom"
+    options:{
+      type:Array,
+      default:()=>[
+        {name:"Abidjan"},
+        {name:"Daloa"}
+      ]
     }
   },
-  emits: ['update:modelValue', 'blur'],
-  setup(props, { emit }) {
-    const generatedId = useId();
-    
-    // On garde la logique de computed ici
-    const inputId = computed(() => props.id || `input-${generatedId}`);
+    emits: ['update:modelValue', 'blur', 'change'],
+    setup(props, { emit }) {
+        const generatedId = useId();
 
-    // On définit la méthode ici pour pouvoir l'utiliser dans le template
-    const handleInput = (event) => {
-      emit('update:modelValue', event.target.value);
-    };
+        // On garde la logique de computed ici
+        const inputId = computed(() => props.id || `input-${generatedId}`);
 
-    return {
-      inputId,
-      handleInput
-    };
-  }
+        // On définit la méthode ici pour pouvoir l'utiliser dans le template
+        const handleInput = (event) => {
+            emit('update:modelValue', event.target.value);
+        };
 
+        return {
+            inputId,
+            handleInput
+        };
+    }
 };
 </script>
 
 <style scoped>
-/* Variables CSS pour faciliter la personnalisation */
+/* Variables identiques à BaseInput */
 .input-group {
+  --primary-color: #3b82f6;
   --error-color: #ef4444;
   --text-color: #1f2937;
   --label-color: #374151;
@@ -124,10 +138,10 @@ export default {
 }
 
 .input-label {
-  font-size: 0.875rem;
+  font-size: 0.9rem;
   font-weight: 500;
   color: var(--label-color);
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.4rem;
   display: block;
 }
 
@@ -142,27 +156,30 @@ export default {
   align-items: center;
 }
 
-.form-input {
+.form-select {
   width: 100%;
   padding: 0.625rem 0.75rem;
-  font-size: 1rem;
+  font-size: 0.9rem;
   line-height: 1.5;
   color: var(--text-color);
   background-color: #fff;
-  background-clip: padding-box;
   border: 1px solid var(--border-color);
   border-radius: 1.5rem;
   transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+  appearance: none; /* Désactive le style par défaut du navigateur */
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 0.5rem center;
+  background-size: 1.5em 1.5em;
+  padding-right: 2.5rem;
 }
 
-/* Gestion du focus */
-.form-input:focus {
+.form-select:focus {
   outline: none;
   border-color: var(--primary-color);
   box-shadow: 0 0 0 3px var(--focus-ring);
 }
 
-/* Gestion des icônes */
 .input-icon {
   position: absolute;
   top: 0;
@@ -172,33 +189,30 @@ export default {
   justify-content: center;
   width: 2.5rem;
   color: #9ca3af;
-  pointer-events: none; /* L'icône ne bloque pas le clic */
+  pointer-events: none;
 }
 
 .input-icon-left { left: 0; }
 .input-icon-right { right: 0; }
 
+/* Padding dynamique si icône présente */
 .pl-icon { padding-left: 2.5rem; }
 .pr-icon { padding-right: 2.5rem; }
 
 /* État d'erreur */
-.has-error .form-input {
+.has-error .form-select {
   border-color: var(--error-color);
 }
 
-.has-error .form-input:focus {
+.has-error .form-select:focus {
   box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.25);
 }
 
-.has-error .input-label {
+.has-error .input-label, .has-error .input-icon {
   color: var(--error-color);
 }
 
-.has-error .input-icon {
-  color: var(--error-color);
-}
-
-/* Messages (Erreur et Hint) */
+/* Messages */
 .message {
   font-size: 0.8rem;
   margin-top: 0.375rem;
@@ -207,21 +221,12 @@ export default {
   gap: 4px;
 }
 
-.error-message {
-  color: var(--error-color);
-}
-
-.hint-message {
-  color: #6b7280;
-}
-
-.msg-icon {
-  width: 14px;
-  height: 14px;
-}
+.error-message { color: var(--error-color); }
+.hint-message { color: #6b7280; }
+.msg-icon { width: 14px; height: 14px; }
 
 /* État désactivé */
-.is-disabled .form-input {
+.is-disabled .form-select {
   background-color: var(--bg-disabled);
   cursor: not-allowed;
   opacity: 1;

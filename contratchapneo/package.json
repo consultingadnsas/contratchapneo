@@ -20,6 +20,7 @@
   "devDependencies": {
     "@nuxtjs/tailwindcss": "^6.14.0",
     "@tailwindcss/postcss": "^4.2.4",
+    "daisyui": "^5.5.20",
     "tailwindcss": "^4.2.4"
   }
 }
