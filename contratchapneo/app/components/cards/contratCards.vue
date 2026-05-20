@@ -134,7 +134,8 @@ export default defineComponent({
     background: var(--primary-color);
     padding: 0.2rem 0.5rem;
     border-radius: 6px;
-    margin-right: 110px;
+    width: fit-content;
+    max-width: 80%;
     color: #ffffff;
 }
 
