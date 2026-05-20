@@ -12,11 +12,18 @@
             <ul class="nav-links-desktop">
                 <li><a href="#">Accueil</a></li>
                 <li><a href="#">Contrats</a></li>
-                <li><a href="#">À propos</a></li>
+                <li><a href="#">Pack d'associé</a></li>
+                <li><a href="#">Nos professionnels</a></li>
+                <li><a href="#">Outils de calcul</a></li>
+                
             </ul>
 
             <!-- CTA desktop -->
-            <a href="#" class="cta-desktop">Parcourir les contrats</a>
+            <ul class="nav-links-desktop">
+                <a href="#" class="cta-desktop2">Connexion</a> 
+                <a href="#" class="cta-desktop">Inscription</a>
+            </ul>
+                
 
             <!-- Hamburger (caché sur desktop) -->
             <Hamburger
@@ -30,11 +37,14 @@
         <transition name="slide-down">
             <div v-if="isMenuOpen" class="nav-mobile-menu">
                 <ul class="nav-links-mobile">
-                    <li><a href="#" @click="toggleMenu">Accueil</a></li>
-                    <li><a href="#" @click="toggleMenu">Contrats</a></li>
-                    <li><a href="#" @click="toggleMenu">À propos</a></li>
+                    <li><a href="#">Accueil</a></li>
+                    <li><a href="#">Contrats</a></li>
+                    <li><a href="#">Pack d'associé</a></li>
+                    <li><a href="#">Nos professionnels</a></li>
+                    <li><a href="#">Outils de calculs</a></li>
                 </ul>
-                <a href="#" class="cta-mobile" @click="toggleMenu">Parcourir les contrats</a>
+                <a href="#" class="cta-mobile2" @click="toggleMenu">Connexion</a>
+                <a href="#" class="cta-mobile" @click="toggleMenu">Inscription</a>
             </div>
         </transition>
     </header>
@@ -81,11 +91,10 @@ export default {
 </script>
 
 <style scoped>
-
 /* =============================================
    BASE — Mobile first (Tout en haut)
    ============================================= */
-.main-header {
+   .main-header {
     position: fixed;
     top: 0;
     left: 0;
@@ -109,10 +118,10 @@ export default {
 
 /* État actif dès que l'on commence à scroller */
 .main-header.is-scrolled {
-    background: rgba(255, 255, 255, 0.40); 
+    background: rgba(255, 255, 255, 0.75); 
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px); 
-    border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.80);
     box-shadow: 0 4px 30px rgba(0, 0, 0, 0.03);
 }
 
@@ -164,10 +173,8 @@ export default {
     left: 0;
     width: 100%;
     /* On garde le menu mobile compact en mode glass lorsqu'il s'ouvre */
-    background: rgba(255, 255, 255, 0.85);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+    background: rgba(255, 255, 255);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
     display: flex;
     flex-direction: column;
     gap: 1.5rem;
@@ -200,11 +207,23 @@ export default {
     background: var(--primary-color);
     color: white;
     padding: 0.85rem 1.5rem;
-    border-radius: 8px;
+    border-radius: 50px;
     font-weight: 600;
     font-size: 0.95rem;
     text-decoration: none;
-    transition: opacity 0.2s;
+    transition: opacity 0.2s, background 0.2s, color 0.2s;
+}
+.cta-mobile2 {
+    display: block;
+    text-align: center;
+    background: transparent;
+    color: var(--primary-color);
+    padding: 0.85rem 1.5rem;
+    border-radius: 50px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    text-decoration: none;
+    transition: opacity 0.2s, background 0.2s, color 0.2s;
 }
 
 .cta-mobile:hover {
@@ -233,7 +252,7 @@ export default {
         top: 16px;
         left: 50%;
         transform: translateX(-50%);
-        width: 90%;
+        width: 100%;
         max-width: 1200px;
         border-radius: 50px;
         
@@ -248,7 +267,7 @@ export default {
     /* La pilule magique de verre se matérialise ici au défilement */
     .main-header.is-scrolled {
         top: 16px; 
-        background: rgba(255, 255, 255, 0.35);
+        background: rgba(255, 255, 255, 0.65);
         backdrop-filter: blur(14px);
         -webkit-backdrop-filter: blur(14px);
         border: 1px solid rgba(255, 255, 255, 0.45);
@@ -257,7 +276,11 @@ export default {
 
     .nav-container {
         padding: 0 2rem;
-        gap: 2rem;
+        width: 100%;
+        gap: 1rem;
+        flex: 1;
+        justify-content: space-between;
+        align-items: center;
     }
 
     .nav-links-desktop {
@@ -265,18 +288,21 @@ export default {
         list-style: none;
         padding: 0;
         margin: 0;
-        gap: 0.25rem;
+        gap: 0.5rem;
         flex: 1; 
         justify-content: center;
     }
 
     .nav-links-desktop li a {
-        display: block;
+        display: flex;
+        align-items: center;
+        white-space: nowrap;  
         font-size: 0.9rem;
+        gap:0.2rem;
         font-weight: 500;
         padding: 0.5rem 1rem;
         border-radius: 50px;
-        color: var(--primary-color);
+        color: var(--tertiary-color);
         text-decoration: none;
         transition: background 0.2s, opacity 0.2s;
     }
@@ -293,15 +319,33 @@ export default {
         color: white;
         padding: 0.6rem 1.25rem;
         border-radius: 50px;
-        font-weight: 600;
+        font-weight: 800;
         font-size: 0.88rem;
         text-decoration: none;
         transition: opacity 0.2s, transform 0.2s;
     }
 
+    .cta-desktop2 {
+        display: block;
+        white-space: nowrap;
+        background: transparent;
+        color: var(--primary-color);
+        padding: 0.6rem 1.25rem;
+        border-radius: 50px;
+        font-weight: 800;
+        font-size: 0.88rem;
+        text-decoration: none;
+        transition: opacity 0.2s, background 0.2s, color 0.2s;
+    }
+
     .cta-desktop:hover {
         opacity: 0.85;
         transform: scale(1.02);
+    }
+    .cta-desktop2:hover {
+        opacity: 0.85;
+        background: var(--primary-color);
+        color: white;
     }
 
     .mobile-only {
@@ -311,5 +355,10 @@ export default {
     .nav-mobile-menu {
         display: none !important;
     }
+}
+
+.main-header.is-scrolled .nav-links-desktop li a {
+    /* L'écriture devient ton bleu primaire au scroll ! */
+    color: var(--primary-color);
 }
 </style>

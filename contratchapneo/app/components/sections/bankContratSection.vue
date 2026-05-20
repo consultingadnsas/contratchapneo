@@ -93,9 +93,9 @@ export default {
     setup() {
         const legalContrat = ref([
             { title: 'Contrat de travail' , subtitle: '100% Gratuit', description: 'Un contrat de travail est un accord entre un employeur et son employé.'},
-            { title: 'Contrat de freelance', subtitle: '15000 FCFA' },
-            { title: 'contrat de vente', subtitle: '100% Gratuit' },
-            { title: 'contrat de bail', subtitle: '5000 FCFA' },
+            { title: 'Contrat de freelance', subtitle: '15 000 FCFA', description: 'Un contrat de freelance est un accord entre un travailleur indépendant et un client.'},
+            { title: 'contrat de vente', subtitle: '40 000 FCFA', description: 'Un contrat de vente est un accord entre un vendeur et un acheteur.'},
+            { title: 'contrat de bail', subtitle: '5 000 FCFA', description: 'Un contrat de bail est un accord entre un propriétaire et un locataire.'},
         ]);
 
         // About contrat buying
