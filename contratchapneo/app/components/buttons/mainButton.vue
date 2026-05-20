@@ -32,6 +32,7 @@ export default {
     color: white;
     display: flex;
     gap: 1rem;
+    cursor: pointer;
 }
 
 </style>

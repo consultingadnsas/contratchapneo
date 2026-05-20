@@ -32,7 +32,11 @@ export default {
     background-color: var(--primary-color);
     color: white;
     display: flex;
+    justify-content: center;
+    align-items: center;
     gap: 1rem;
+    cursor: pointer;
+    padding: 0.9rem;
 }
 
 </style>
