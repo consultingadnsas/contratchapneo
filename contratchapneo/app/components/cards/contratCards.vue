@@ -162,10 +162,10 @@ export default defineComponent({
     display: flex;
     align-items: center;
     justify-content: center;
-    background: var(--secondary-light-color);
+    background: var(--primary-color);
     border-radius: 999px;
-    width: 40px;
-    height: 40px;
+    width: 45px;
+    height: 45px;
 }
 
 .pro-card button {
