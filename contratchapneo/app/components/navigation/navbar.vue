@@ -201,10 +201,16 @@ export default {
     opacity: 0.6;
 }
 
+.nav-mobile-menu .cta-mobile{
+    align-self: center;
+}
+
 .cta-mobile {
     display: block;
     text-align: center;
     background: var(--primary-color);
+    width: 70%;
+    align-items: center;
     color: white;
     padding: 0.85rem 1.5rem;
     border-radius: 50px;

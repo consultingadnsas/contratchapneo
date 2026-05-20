@@ -54,9 +54,9 @@
                 <div class="category-carousel-container" ref="carouselRef">
                     <div class="category-carousel-track">
                         <contratCategoryCards 
-                            v-for="i in 8" 
-                            :key="i"
-                            :title="'Exemple ' + i"
+                            v-for="(card,index) in categoryContrat"
+                            :key="index"
+                            :title = "card.title"
                         />
                     </div>
                 </div>
@@ -98,6 +98,13 @@ export default {
             { title: 'contrat de bail', subtitle: '5 000 FCFA', description: 'Un contrat de bail est un accord entre un propriétaire et un locataire.'},
         ]);
 
+        const categoryContrat = ref([
+            { title: 'Création & Cession' },
+            { title: 'Recrutement & Ressources humaines' },
+            { title: 'Aménagement foncier & Immobilier ' },
+            { title: 'Partenariat & Investissement' },
+        ]);
+
         // About contrat buying
         const isOpen = ref<boolean>(false)
         const openModal = () => {
@@ -106,7 +113,8 @@ export default {
         }
 
         return { 
-            legalContrat, 
+            legalContrat,
+            categoryContrat,
 
             // state
             isOpen,
