@@ -10,7 +10,7 @@
 
             <!-- Liens desktop (cachés sur mobile) -->
             <ul class="nav-links-desktop">
-                <li><a href="#">Accueil</a></li>
+                <li><a href="/">Accueil</a></li>
                 <li><a href="#">Contrats</a></li>
                 <li><a href="#">Pack d'associé</a></li>
                 <li><a href="#">Nos professionnels</a></li>

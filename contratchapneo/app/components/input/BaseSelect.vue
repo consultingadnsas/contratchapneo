@@ -95,8 +95,9 @@ export default {
     options:{
       type:Array,
       default:()=>[
-        {name:"Abidjan"},
-        {name:"Daloa"}
+        {name:"Wave"},
+        {name:"Orange Money"},
+        {name:"Moov Money"}
       ]
     }
   },
