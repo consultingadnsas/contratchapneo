@@ -29,17 +29,26 @@
 <script lang="ts">
 import { ref, watch, onUnmounted, computed } from 'vue';
 export default {
-    name: 'Itemslist',
-    setup(){
-        const cartItems = ref([
-            { id: 1, name: "Contrat de travail CDD", price: 5000, quantity: 1, image: '../../assets/pictures/ContratChap/pexels-thirdman-5060819.jpg'},
-            { id: 2, name: "Contrat de prestation", price: 8000, quantity: 1, image: '../../assets/pictures/ContratChap/pexels-thirdman-5060819.jpg' }
-        ]);
+  name: 'Itemslist',
+  setup(){
+    const cartItems = ref([
+      { id: 1, name: "Contrat de travail CDD", price: 5000, quantity: 1, image: '../../assets/pictures/ContratChap/pexels-thirdman-5060819.jpg'},
+      { id: 2, name: "Contrat de prestation", price: 8000, quantity: 1, image: '../../assets/pictures/ContratChap/pexels-thirdman-5060819.jpg' }
+    ]);
 
-        return {
-            cartItems
-        }
+    const isEmpty = computed(() => cartItems.value.length === 0);
+    const totalItems = computed(() => cartItems.value.reduce((acc, item) => acc + item.quantity, 0));
+    const formattedTotalPrice = computed(() => 
+      cartItems.value.reduce((acc, item) => acc + (item.price * item.quantity), 0).toLocaleString()
+    );
+
+    return {
+      cartItems,
+      isEmpty,
+      totalItems,
+      formattedTotalPrice
     }
+  }
 }
 </script>
 
