@@ -1,16 +1,21 @@
 <template>
     <section class="checkout-section">
         <h2>Finalisez votre commande</h2>
-        <checkoutFormVue/>
+        <div class="">
+            <itemsListVue/>
+            <checkoutFormVue/>
+        </div>
     </section>
 </template>
 
 <script>
 import checkoutFormVue from '../../forms/checkoutForm.vue'
+import itemsListVue from '../../lists/itemsList.vue'
 export default {
     name:'CheckoutSection',
     components:{
-        checkoutFormVue
+        checkoutFormVue,
+        itemsListVue
     }
 }
 </script>
@@ -18,6 +23,7 @@ export default {
 <style scoped>
 .checkout-section{
     min-height: 100vh;
+    width: 100%;
     display: flex;
     flex-direction: column;
     justify-content: center;
