@@ -37,7 +37,7 @@
         <transition name="slide-down">
             <div v-if="isMenuOpen" class="nav-mobile-menu">
                 <ul class="nav-links-mobile">
-                    <li><a href="#">Accueil</a></li>
+                    <li><a href="/">Accueil</a></li>
                     <li><a href="#">Contrats</a></li>
                     <li><a href="#">Pack d'associé</a></li>
                     <li><a href="#">Nos professionnels</a></li>
