@@ -23,52 +23,24 @@
                         :title="card.title"
                         :description="card.description"
                         :subtitle="card.subtitle"
-                        @buy="openModal(card)"
+                        @buy="openModal" 
+                        @view="openViewModal"
                     />
                 </div>
 
                 <mainButton label="voir tous nos contrats" />
             </div>
-
-            <!-- SECTION CATÉGORIES (CARROUSEL AJOUTÉ) -->
-            <div class="green-dark-section w-full flex justify-center items-center flex-col gap-4">
-                <div class="subtitle-wrapper carousel-header">
-                    <h4 class="subtitle">Nos catégories les plus vues</h4>
-                    <div class="divider"></div>
-                    <!-- Boutons de navigation du carrousel (uniquement pour catégories) -->
-                    <div class="carousel-controls">
-                        <button class="carousel-btn prev" @click="scrollPrev" aria-label="Précédent">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
-                            </svg>
-                        </button>
-                        <button class="carousel-btn next" @click="scrollNext" aria-label="Suivant">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
-                            </svg>
-                        </button>
-                    </div>
-                </div>
-                
-                <!-- NOUVEAU carrousel pour les catégories (classes spécifiques) -->
-                <div class="category-carousel-container" ref="carouselRef">
-                    <div class="category-carousel-track">
-                        <contratCategoryCards 
-                            v-for="(card,index) in categoryContrat"
-                            :key="index"
-                            :title = "card.title"
-                        />
-                    </div>
-                </div>
-
-                <mainButton label="voir toutes nos catégories" />
-            </div>
+            
         </div>
 
         <Teleport to="body">
             <cart-modale 
                 :isOpen="isOpen" 
                 @close="isOpen = false"
+            />
+            <view-modale 
+                v-if="isViewOpen" 
+                @close="isViewOpen = false"
             />
         </Teleport>
 
@@ -81,6 +53,7 @@ import mainButton from '../buttons/mainButton.vue';
 import contratCards from '../cards/contratCards.vue';
 import contratCategoryCards from '../cards/contratCategoryCards.vue';
 import cartModale from '../modale/cartModale.vue';
+import viewModale from '../modale/viewModale.vue';
 
 export default {
     name: 'OrdinarySection',
@@ -88,7 +61,8 @@ export default {
         mainButton, 
         contratCards,
         contratCategoryCards,
-        cartModale
+        cartModale,
+        viewModale
     },
     setup() {
         const legalContrat = ref([
@@ -111,6 +85,12 @@ export default {
             isOpen.value = true;
             console.log('évènement emis!!!')
         }
+        // --- Logique pour la Visualisation (Nouveau) ---
+        const isViewOpen = ref<boolean>(false) // Votre deuxième booléen
+        const openViewModal = () => {
+            isViewOpen.value = true; // On ouvre la deuxième modale
+                console.log('évènement visualisation émis!!!')
+        }
 
         return { 
             legalContrat,
@@ -118,7 +98,9 @@ export default {
 
             // state
             isOpen,
-            openModal
+            openModal,
+            isViewOpen,
+            openViewModal
 
         };
     }

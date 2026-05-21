@@ -11,17 +11,16 @@
             <!-- Liens desktop (cachés sur mobile) -->
             <ul class="nav-links-desktop">
                 <li><a href="/">Accueil</a></li>
-                <li><a href="#">Contrats</a></li>
-                <li><a href="#">Pack d'associé</a></li>
+                <li><a href="#">Banque de contrats</a></li>
+                <li><a href="#">conseils juridiques</a></li>
                 <li><a href="#">Nos professionnels</a></li>
-                <li><a href="#">Outils de calcul</a></li>
+                <li><a href="#">Outil de calcul</a></li>
                 
             </ul>
 
             <!-- CTA desktop -->
             <ul class="nav-links-desktop">
-                <a href="#" class="cta-desktop2">Connexion</a> 
-                <a href="#" class="cta-desktop">Inscription</a>
+                <a href="#" class="cta-desktop">Connexion</a>
             </ul>
                 
 
@@ -38,13 +37,12 @@
             <div v-if="isMenuOpen" class="nav-mobile-menu">
                 <ul class="nav-links-mobile">
                     <li><a href="/">Accueil</a></li>
-                    <li><a href="#">Contrats</a></li>
-                    <li><a href="#">Pack d'associé</a></li>
+                    <li><a href="#">Banque de contrats</a></li>
+                    <li><a href="#">conseils juridiques</a></li>
                     <li><a href="#">Nos professionnels</a></li>
-                    <li><a href="#">Outils de calculs</a></li>
+                    <li><a href="#">Outil de calcul</a></li>
                 </ul>
-                <a href="#" class="cta-mobile2" @click="toggleMenu">Connexion</a>
-                <a href="#" class="cta-mobile" @click="toggleMenu">Inscription</a>
+                <a href="#" class="cta-mobile" @click="toggleMenu">Connexion</a>
             </div>
         </transition>
     </header>

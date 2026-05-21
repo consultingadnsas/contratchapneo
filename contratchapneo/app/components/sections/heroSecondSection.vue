@@ -10,17 +10,19 @@
             <base-research-input/>
         </div>
         <div class="pic-wrapper">
-            <!-- Les cartes sont positionnées par rapport à l'image -->
             <div class="pic-container">
                 <img src="../../assets/pictures/ContratChap/pexels-picha-stock-2210122-3894377.jpg" alt="Contrats OHADA">
 
-                <!-- Haut-gauche : chevauche le coin supérieur gauche de l'image -->
-                <stat-cards class="floating-card card-top-left"     title="Modèles OHADA" />
-                <!-- Haut-droit : chevauche le coin supérieur droit -->
-                <stat-cards class="floating-card card-top-right"    title="Conformes OHADA" />
-                <!-- Bas-gauche : chevauche le coin inférieur gauche -->
+                <!-- HAUT -->
+                <stat-cards class="floating-card card-top-left"    title="Modèles OHADA" />
+                <stat-cards class="floating-card card-top-right"   title="Conformes OHADA" />
+                
+                <!-- MILIEU (Nouvelles cartes) -->
+                <stat-cards class="floating-card card-mid-left"    title="Mise à jour 2026" />
+                <stat-cards class="floating-card card-mid-right"   title="Assistance 24/7" />
+                
+                <!-- BAS -->
                 <stat-cards class="floating-card card-bottom-left"  title="100% Gratuit" />
-                <!-- Bas-droit : chevauche le coin inférieur droit -->
                 <stat-cards class="floating-card card-bottom-right" title="Sécurisez vos affaires" />
             </div>
         </div>
@@ -167,14 +169,24 @@ export default defineComponent({
 }
 
 .pic-container img {
+    /* Étape 1 : On force l'image à faire la même largeur sur mobile */
+    width: 300px; 
     min-width: 300px;
-    height: auto;
-    border-radius: 130px;
+    
+    /* Étape 2 : On force un ratio 1:1 (un carré parfait) */
+    aspect-ratio: 1 / 1; 
+    height: auto; /* Laisse le navigateur gérer la hauteur selon le ratio */
+    
+    /* Étape 3 : Empêche l'image de se déformer/s'écraser dans son carré */
+    object-fit: cover; 
+    
+    /* Étape 4 : Un rayon de 50% sur un carré parfait donne un cercle parfait */
+    border-radius: 50%; 
+    
     display: block;
     position: relative;
     z-index: 1;
 }
-
 /* ── Cartes flottantes ───────────────────────────────────────── */
 /*
   Principe : top/left/right/bottom = 0 correspond aux bords de l'image.
@@ -189,56 +201,54 @@ export default defineComponent({
     animation: float 4s ease-in-out infinite;
 }
 
-/* Haut-gauche : ancré au coin supérieur-gauche, décalé vers l'extérieur */
-.card-top-left {
-    top: 15%;
-    left: 0;
-    transform: translateX(-60%);
-    animation-delay: 0s;
-}
+/* --- Positionnement Vertical --- */
 
-/* Haut-droit : ancré au coin supérieur-droit */
-.card-top-right {
-    top: 15%;
-    right: 0;
-    transform: translateX(60%);
-    animation-delay: 1s;
+/* Haut (Ajusté à 5% pour laisser de la place) */
+.card-top-left, .card-top-right {
+    top: 1%;
 }
+.card-top-left { left: 0; animation-delay: 0s; }
+.card-top-right { right: 0; animation-delay: 0.7s; }
 
-/* Bas-gauche */
-.card-bottom-left {
-    bottom: 15%;
-    left: 0;
-    transform: translateX(-60%);
-    animation-delay: 2s;
+/* Milieu (Nouveaux positionnements) */
+.card-mid-left, .card-mid-right {
+    top: 50%;
+    /* On ajuste le translateY initial à -50% pour parfaitement centrer la carte verticalement */
+    --ty-base: -50%; 
 }
+.card-mid-left { left: 0; animation-delay: 1.4s; }
+.card-mid-right { right: 0; animation-delay: 2.1s; }
 
-/* Bas-droit */
-.card-bottom-right {
-    bottom: 15%;
-    right: 0;
-    transform: translateX(60%);
-    animation-delay: 3s;
+/* Bas (Ajusté à 5% du bas) */
+.card-bottom-left, .card-bottom-right {
+    bottom: 1%;
 }
+.card-bottom-left { left: 0; animation-delay: 2.8s; }
+.card-bottom-right { right: 0; animation-delay: 3.5s; }
 
-@keyframes float {
-    0%, 100% { transform: translateX(var(--tx, 0)) translateY(0); }
-    50%       { transform: translateX(var(--tx, 0)) translateY(-12px); }
-}
 
-/* On surcharge l'animation pour préserver le translateX propre à chaque côté */
+/* --- Gestion des décalages sur l'axe X (Gauche / Droite) --- */
 .card-top-left,
+.card-mid-left,
 .card-bottom-left {
     --tx: -60%;
 }
+
 .card-top-right,
+.card-mid-right,
 .card-bottom-right {
     --tx: 60%;
 }
 
 @keyframes float {
-    0%, 100% { transform: translateX(var(--tx)) translateY(0); }
-    50%       { transform: translateX(var(--tx)) translateY(-12px); }
+    0%, 100% { 
+        /* var(--ty-base, 0) permet de garder le -50% pour les cartes du milieu, et 0 pour les autres */
+        transform: translateX(var(--tx)) translateY(var(--ty-base, 0)); 
+    }
+    50% { 
+        /* On applique l'effet de flottaison de -12px par rapport à la position de base */
+        transform: translateX(var(--tx)) translateY(calc(var(--ty-base, 0px) - 12px)); 
+    }
 }
 
 /* ── Tablette ────────────────────────────────────────────────── */
