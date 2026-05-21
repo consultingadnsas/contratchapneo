@@ -45,7 +45,7 @@ export const useAuthStore = defineStore('auth', () => {
 
     try {
       // Ajuste l'URL '/auth/login' selon la structure de ton backend
-      const response = await $api('/auth/login', {
+      const response = await $api('/account/login', {
         method: 'POST',
         body: credentials,
       })
