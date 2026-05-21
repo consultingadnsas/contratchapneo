@@ -29,6 +29,12 @@ class Contrat(models.Model):
     description = models.TextField()
     prix = models.DecimalField(max_digits=10, decimal_places=2)
     fichier_modele = models.FileField(upload_to='modeles/')
+    picture = models.ImageField(upload_to='contrat_images/', blank=True, null=True)
+
+    # Statistics
+    views = models.PositiveIntegerField(default=0)
+    downloads = models.PositiveIntegerField(default=0)
+    
     # Timestamps
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
