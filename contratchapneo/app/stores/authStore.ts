@@ -29,39 +29,40 @@ export const useAuthStore = defineStore('auth', () => {
   const isLoading = ref(false)
   const error = ref<string | null>(null)
 
-  // $api accessible dans Pinia via useNuxtApp()
   const { $api } = useNuxtApp()
 
   // Actions
   const register = async (payload: Omit<User, 'id'>) => {
+    // ... ton code existant pour register ...
+  }
+
+  // Nouvelle action pour le Login
+  const login = async (credentials: Pick<User, 'email' | 'password'>) => {
     isLoading.value = true
     error.value = null
 
-    console.log('[AuthStore] register() → payload envoyé :', payload)
+    console.log('[AuthStore] login() → credentials envoyés :', credentials)
 
     try {
-      const response = await $api('/auth/register', {
+      // Ajuste l'URL '/auth/login' selon la structure de ton backend
+      const response = await $api('/auth/login', {
         method: 'POST',
-        body: payload,
+        body: credentials,
       })
 
-      console.log('[AuthStore] register() → réponse reçue :', response)
+      console.log('[AuthStore] login() → réponse reçue :', response)
 
-      user.value = response.user // adapte selon ta structure de réponse
+      // Met à jour l'utilisateur (ou gère le stockage du token ici si nécessaire)
+      user.value = response.user 
       
       return response
 
     } catch (err: any) {
-      console.error('[AuthStore] register() → erreur :', err)
-      console.error('[AuthStore] status :', err?.response?.status)
-      console.error('[AuthStore] message :', err?.data?.message ?? err.message)
-
-      error.value = err?.data?.message ?? 'Erreur inconnue'
+      console.error('[AuthStore] login() → erreur :', err)
+      error.value = err?.data?.message ?? err.message ?? 'Erreur de connexion'
       throw err
-
     } finally {
       isLoading.value = false
-      console.log('[AuthStore] register() → terminé, isLoading =', isLoading.value)
     }
   }
 
@@ -70,5 +71,6 @@ export const useAuthStore = defineStore('auth', () => {
     isLoading,
     error,
     register,
+    login, // <-- Ne pas oublier d'exporter la fonction
   }
 })

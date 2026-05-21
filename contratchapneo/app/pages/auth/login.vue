@@ -1,7 +1,9 @@
 <template>
   <div class="main-wrapper">
     <div class="login-section">
-      <loginFormVue />
+      <div class=" w-full flex justify-center items-center">
+        <loginFormVue />
+      </div>
       <div class="pic-section">
         <div class="image-container">
           <img src="../../assets/pictures/ContratChap/pexels-kampus-8475168.jpg" alt="">
@@ -29,7 +31,9 @@ export default {
 <style scoped>
 .login-section {
   width: 100%;
+  height: 100vh;
   display: flex;
+  overflow: hidden;
 }
 
 .pic-section {
@@ -56,6 +60,8 @@ export default {
   .image-container img {
     width: 100%;
     height: 100%;
+    max-width: 600px;
+    max-height: 950px;
     object-fit: cover;
     display: block;
   }
