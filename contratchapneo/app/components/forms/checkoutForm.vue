@@ -76,6 +76,12 @@ export default {
         
         const error = ref(null)
 
+        const optionpayment =[
+            { options: "Wave" },
+            { options: "Orange Money" },
+            { options: "Moov Money" }
+        ]
+
         const submitForm = async () => {
             loading.value = true
             error.value = null

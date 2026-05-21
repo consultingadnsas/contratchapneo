@@ -1,5 +1,6 @@
 <template>
-    <header class="main-header">
+    <!-- Ajout de la classe dynamique au scroll -->
+    <header :class="['main-header', { 'is-scrolled': isScrolled }]">
         <nav class="nav-container">
 
             <!-- Logo -->
@@ -9,13 +10,19 @@
 
             <!-- Liens desktop (cachés sur mobile) -->
             <ul class="nav-links-desktop">
-                <li><a href="#">Accueil</a></li>
-                <li><a href="#">Contrats</a></li>
-                <li><a href="#">À propos</a></li>
+                <li><a href="/">Accueil</a></li>
+                <li><a href="#">Banque de contrats</a></li>
+                <li><a href="#">conseils juridiques</a></li>
+                <li><a href="#">Nos professionnels</a></li>
+                <li><a href="#">Outil de calcul</a></li>
+                
             </ul>
 
             <!-- CTA desktop -->
-            <a href="#" class="cta-desktop">Parcourir les contrats</a>
+            <ul class="nav-links-desktop">
+                <a href="#" class="cta-desktop">Connexion</a>
+            </ul>
+                
 
             <!-- Hamburger (caché sur desktop) -->
             <Hamburger
@@ -29,18 +36,20 @@
         <transition name="slide-down">
             <div v-if="isMenuOpen" class="nav-mobile-menu">
                 <ul class="nav-links-mobile">
-                    <li><a href="#" @click="toggleMenu">Accueil</a></li>
-                    <li><a href="#" @click="toggleMenu">Contrats</a></li>
-                    <li><a href="#" @click="toggleMenu">À propos</a></li>
+                    <li><a href="/">Accueil</a></li>
+                    <li><a href="#">Banque de contrats</a></li>
+                    <li><a href="#">conseils juridiques</a></li>
+                    <li><a href="#">Nos professionnels</a></li>
+                    <li><a href="#">Outil de calcul</a></li>
                 </ul>
-                <a href="#" class="cta-mobile" @click="toggleMenu">Parcourir les contrats</a>
+                <a href="#" class="cta-mobile" @click="toggleMenu">Connexion</a>
             </div>
         </transition>
     </header>
 </template>
 
 <script lang="ts">
-import { ref } from 'vue';
+import { ref, onMounted, onUnmounted } from 'vue';
 import Hamburger from '../buttons/hamburger.vue';
 
 export default {
@@ -49,31 +58,69 @@ export default {
 
     setup() {
         const isMenuOpen = ref<boolean>(false);
+        const isScrolled = ref<boolean>(false);
 
         const toggleMenu = () => {
             isMenuOpen.value = !isMenuOpen.value;
         };
 
-        return { isMenuOpen, toggleMenu };
+        // Gestion propre du scroll avec l'API Composition de Vue 3
+        const handleScroll = () => {
+            if (window.scrollY > 20) {
+                isScrolled.value = true;
+            } else {
+                isScrolled.value = false;
+            }
+        };
+
+        onMounted(() => {
+            window.addEventListener('scroll', handleScroll);
+            // Appel initial pour vérifier la position au chargement de la page
+            handleScroll();
+        });
+
+        onUnmounted(() => {
+            window.removeEventListener('scroll', handleScroll);
+        });
+
+        return { isMenuOpen, isScrolled, toggleMenu };
     },
 };
 </script>
 
 <style scoped>
-
 /* =============================================
-   BASE — Mobile first
+   BASE — Mobile first (Tout en haut)
    ============================================= */
-.main-header {
+   .main-header {
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     z-index: 100;
-    background: rgba(255, 255, 255, 0.92);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px); /* Safari */
-    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+    
+    /* Écritures flottantes : fond, flou et ombres invisibles */
+    background: rgba(255, 255, 255, 0); 
+    backdrop-filter: blur(0px);
+    -webkit-backdrop-filter: blur(0px); 
+    border-bottom: 1px solid rgba(255, 255, 255, 0);
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0);
+
+    /* Animation fluide lors de l'apparition du verre */
+    transition: background 0.3s ease, 
+                backdrop-filter 0.3s ease, 
+                border 0.3s ease, 
+                box-shadow 0.3s ease,
+                top 0.3s ease;
+}
+
+/* État actif dès que l'on commence à scroller */
+.main-header.is-scrolled {
+    background: rgba(255, 255, 255, 0.75); 
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px); 
+    border-bottom: 1px solid rgba(255, 255, 255, 0.80);
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.03);
 }
 
 .nav-container {
@@ -112,32 +159,25 @@ export default {
 
 /* --- Hamburger : visible sur mobile --- */
 .mobile-only {
-    display: flex; /* ou block selon ton composant Hamburger */
+    display: flex; 
 }
 
 /* =============================================
    MENU MOBILE
    ============================================= */
 .nav-mobile-menu {
-    position: absolute; /* relatif à .main-header qui est fixed */
+    position: absolute;
     top: 70px;
     left: 0;
     width: 100%;
-    background: white;
-    padding: 1.5rem 1.5rem 2rem;
-    box-shadow: 0 10px 20px -5px rgba(0, 0, 0, 0.1);
+    /* On garde le menu mobile compact en mode glass lorsqu'il s'ouvre */
+    background: rgba(255, 255, 255);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
     display: flex;
     flex-direction: column;
     gap: 1.5rem;
-    border-top: 1px solid #f0f0f0;
-}
-
-.nav-links-mobile {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    display: flex;
-    flex-direction: column;
+    padding: 1.5rem 1.5rem 2rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.4);
 }
 
 .nav-links-mobile li a {
@@ -145,7 +185,7 @@ export default {
     font-size: 1.1rem;
     font-weight: 500;
     padding: 1rem 0;
-    border-bottom: 1px solid #f0f0f0;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.04);
     color: var(--primary-color);
     text-decoration: none;
     transition: opacity 0.2s;
@@ -159,17 +199,35 @@ export default {
     opacity: 0.6;
 }
 
+.nav-mobile-menu .cta-mobile{
+    align-self: center;
+}
+
 .cta-mobile {
     display: block;
     text-align: center;
     background: var(--primary-color);
+    width: 70%;
+    align-items: center;
     color: white;
     padding: 0.85rem 1.5rem;
-    border-radius: 8px;
+    border-radius: 50px;
     font-weight: 600;
     font-size: 0.95rem;
     text-decoration: none;
-    transition: opacity 0.2s;
+    transition: opacity 0.2s, background 0.2s, color 0.2s;
+}
+.cta-mobile2 {
+    display: block;
+    text-align: center;
+    background: transparent;
+    color: var(--primary-color);
+    padding: 0.85rem 1.5rem;
+    border-radius: 50px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    text-decoration: none;
+    transition: opacity 0.2s, background 0.2s, color 0.2s;
 }
 
 .cta-mobile:hover {
@@ -192,54 +250,72 @@ export default {
 
 /* =============================================
    BREAKPOINT DESKTOP — ≥ 1024px
-   Navbar floating pill + liens inline
    ============================================= */
 @media (min-width: 1024px) {
     .main-header {
         top: 16px;
         left: 50%;
         transform: translateX(-50%);
-        width: 90%;
+        width: 100%;
         max-width: 1200px;
         border-radius: 50px;
-        border: 1px solid var(--tertiary-color, rgba(0,0,0,0.08));
-        box-shadow: 0 4px 24px rgba(0, 0, 0, 0.07);
-        /* Pas de border-bottom sur desktop, la pill a sa propre bordure */
-        border-bottom: 1px solid var(--tertiary-color, rgba(0,0,0,0.08));
+        
+        /* État initial Desktop (tout en haut) : Pas de fond ni de bordure pour la pilule */
+        background: rgba(255, 255, 255, 0);
+        backdrop-filter: blur(0px);
+        -webkit-backdrop-filter: blur(0px);
+        border: 1px solid rgba(255, 255, 255, 0);
+        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0);
+    }
+
+    /* La pilule magique de verre se matérialise ici au défilement */
+    .main-header.is-scrolled {
+        top: 16px; 
+        background: rgba(255, 255, 255, 0.65);
+        backdrop-filter: blur(14px);
+        -webkit-backdrop-filter: blur(14px);
+        border: 1px solid rgba(255, 255, 255, 0.45);
+        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.06);
     }
 
     .nav-container {
         padding: 0 2rem;
-        gap: 2rem;
+        width: 100%;
+        gap: 1rem;
+        flex: 1;
+        justify-content: space-between;
+        align-items: center;
     }
 
-    /* Affiche les liens desktop */
     .nav-links-desktop {
         display: flex;
         list-style: none;
         padding: 0;
         margin: 0;
-        gap: 0.25rem;
-        flex: 1; /* prend l'espace disponible entre le logo et le CTA */
+        gap: 0.5rem;
+        flex: 1; 
         justify-content: center;
     }
 
     .nav-links-desktop li a {
-        display: block;
+        display: flex;
+        align-items: center;
+        white-space: nowrap;  
         font-size: 0.9rem;
+        gap:0.2rem;
         font-weight: 500;
         padding: 0.5rem 1rem;
         border-radius: 50px;
-        color: var(--primary-color);
+        color: var(--tertiary-color);
         text-decoration: none;
         transition: background 0.2s, opacity 0.2s;
     }
 
     .nav-links-desktop li a:hover {
-        background: rgba(0, 0, 0, 0.05);
+        background: rgba(255, 255, 255, 0.4);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
     }
 
-    /* Affiche le CTA desktop */
     .cta-desktop {
         display: block;
         white-space: nowrap;
@@ -247,25 +323,46 @@ export default {
         color: white;
         padding: 0.6rem 1.25rem;
         border-radius: 50px;
-        font-weight: 600;
+        font-weight: 800;
         font-size: 0.88rem;
         text-decoration: none;
         transition: opacity 0.2s, transform 0.2s;
+    }
+
+    .cta-desktop2 {
+        display: block;
+        white-space: nowrap;
+        background: transparent;
+        color: var(--primary-color);
+        padding: 0.6rem 1.25rem;
+        border-radius: 50px;
+        font-weight: 800;
+        font-size: 0.88rem;
+        text-decoration: none;
+        transition: opacity 0.2s, background 0.2s, color 0.2s;
     }
 
     .cta-desktop:hover {
         opacity: 0.85;
         transform: scale(1.02);
     }
+    .cta-desktop2:hover {
+        opacity: 0.85;
+        background: var(--primary-color);
+        color: white;
+    }
 
-    /* Cache le hamburger sur desktop */
     .mobile-only {
         display: none !important;
     }
 
-    /* Le menu mobile ne doit JAMAIS s'afficher sur desktop */
     .nav-mobile-menu {
         display: none !important;
     }
+}
+
+.main-header.is-scrolled .nav-links-desktop li a {
+    /* L'écriture devient ton bleu primaire au scroll ! */
+    color: var(--primary-color);
 }
 </style>
