@@ -3,11 +3,11 @@
         <h3>Connexion</h3>
         
         <BaseInputVue 
-            v-model="credentials.email" 
-            label="Email" 
-            name="email" 
-            type="email" 
-            placeholder="Entrez votre email" 
+            v-model="credentials.username" 
+            label="Email ou Nom d'utilisateur" 
+            name="username" 
+            type="text" 
+            placeholder="Entrez votre email ou pseudo" 
             required
         />
         
@@ -46,27 +46,24 @@ export default {
     },
     setup() {
         const authStore = useAuthStore()
-        const router = useRouter() // Utile pour rediriger après connexion
+        const router = useRouter()
 
-        // État réactif local pour le formulaire
+        // Utilisation d'une clé générique 'username' pour stocker l'identifiant saisi
         const credentials = ref({
-            email: '',
+            username: '',
             password: ''
         })
 
-        // Méthode de soumission
         const handleLogin = async () => {
             try {
                 await authStore.login({
-                    email: credentials.value.email,
-                    password: credentials.value.password
+                    username: credentials.value.username,
+                    password: credentials.value.password,
+                    email: credentials.value.password
                 })
-                
-                // Redirection après succès (ajuste la route selon tes besoins)
-                router.push('/dashboard') 
+                router.push('/profile/profile') 
             } catch (error) {
-                // L'erreur est déjà gérée dans le store et affichée via authStore.error
-                console.error("Échec de la connexion", error)
+                print('[Login] Erreur capturée', error)
             }
         }
 

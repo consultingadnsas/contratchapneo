@@ -37,7 +37,7 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   // Nouvelle action pour le Login
-  const login = async (credentials: Pick<User, 'email' | 'password'>) => {
+  const login = async (credentials: Pick<User, 'email' | 'username' | 'password'>) => {
     isLoading.value = true
     error.value = null
 
@@ -45,7 +45,7 @@ export const useAuthStore = defineStore('auth', () => {
 
     try {
       // Ajuste l'URL '/auth/login' selon la structure de ton backend
-      const response = await $api('/account/login', {
+      const response = await $api('/account/login/', {
         method: 'POST',
         body: credentials,
       })
