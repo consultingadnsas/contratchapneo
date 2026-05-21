@@ -121,6 +121,7 @@ export default {
   flex-direction: column;
   margin-bottom: 0.5rem;
   font-family: sans-serif;
+  width: 100%;
 }
 
 .input-label {
