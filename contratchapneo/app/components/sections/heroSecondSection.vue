@@ -93,19 +93,18 @@ export default defineComponent({
 </script>
 
 <style scoped>
-/* ── Mobile first ────────────────────────────────────────────── */
+/* ── 📱 Mobile First (Valeurs par défaut pour Téléphones) ─────── */
 .hero-section {
     background: var(--background-color);
     width: 100%;
     min-height: 100vh;
-    /* empêche le débordement horizontal causé par les cartes absolues */
-    overflow-x: hidden;
+    overflow-x: hidden; /* empêche le débordement horizontal causé par les cartes absolues */
     border-bottom-left-radius: 1rem;
     border-bottom-right-radius: 1rem;
     display: flex;
     flex-direction: column;   /* empilé sur mobile */
     align-items: center;
-    gap: 2.5rem;
+    gap: 2rem;
     padding: 2rem 1.25rem;
     box-sizing: border-box;
 }
@@ -117,11 +116,11 @@ export default defineComponent({
     flex-direction: column;
     gap: 1rem;
     position: relative;
-    top:3rem;
+    top: 1rem;
 }
 
 .hero-section h1 {
-    font-size: clamp(1.8rem, 6vw, 3rem); /* fluide, pas de rupture brutale */
+    font-size: clamp(1.8rem, 6vw, 3rem); 
     font-weight: 600;
     color: var(--my-white);
     line-height: 1.2;
@@ -146,189 +145,158 @@ export default defineComponent({
     50% { opacity: 0; }
 }
 
-/* ── Conteneur image + cartes ────────────────────────────────── */
+/* ── Conteneur image + cartes (Mobile) ────────────────────────── */
 
-/* Wrapper externe : centre le bloc et absorbe le débordement des cartes */
 .pic-wrapper {
     display: flex;
     justify-content: center;
     align-items: center;
-    /* padding = espace laissé pour les cartes qui débordent de l'image */
-    padding: 80px 100px;
+    padding: 140px 40px; /* Moins de padding sur les côtés pour maximiser l'espace écran */
     box-sizing: border-box;
     width: 100%;
 }
 
-/* pic-container = référentiel de positionnement, taille = taille de l'image */
 .pic-container {
     position: relative;
-    max-width: 300px;
-    display: inline-flex;   /* se réduit à la taille de l'image */
+    width: 180px; /* Image plus petite sur téléphone pour laisser la place aux cartes */
+    display: inline-flex; 
     justify-content: center;
     align-items: center;
 }
 
 .pic-container img {
-    /* Étape 1 : On force l'image à faire la même largeur sur mobile */
-     width: 300px;
-    min-width: 300px;
-    
-    /* Étape 2 : On force un ratio 1:1 (un carré parfait) */
+    width: 180px;
+    min-width: 180px;
     aspect-ratio: 1 / 1; 
-    height: auto; /* Laisse le navigateur gérer la hauteur selon le ratio */
-    
-    /* Étape 3 : Empêche l'image de se déformer/s'écraser dans son carré */
+    height: auto; 
     object-fit: cover; 
-    
-    /* Étape 4 : Un rayon de 50% sur un carré parfait donne un cercle parfait */
     border-radius: 50%; 
-    
     display: block;
     position: relative;
     z-index: 1;
 }
-/* ── Cartes flottantes ───────────────────────────────────────── */
-/*
-  Principe : top/left/right/bottom = 0 correspond aux bords de l'image.
-  On utilise translate() pour faire déborder la carte à moitié hors de l'image.
-  Chaque carte est à 50% à l'intérieur, 50% à l'extérieur → effet "autour".
-*/
+
+/* ── Cartes flottantes (Mobile) ──────────────────────────────── */
 .floating-card {
     position: absolute;
     z-index: 10;
-    width: 155px !important;
+    width: 105px !important; /* Cartes compactes sur mobile */
     height: auto !important;
-    animation: float 4s ease-in-out infinite;
+    top: 50%;
     transform: translateX(var(--tx)) translateY(var(--ty-base));
     animation: float 4s ease-in-out infinite;
 }
 
-.floating-card:hover {
-    animation-play-state: paused;
-    cursor: pointer;
-    /* Conserve la position actuelle, mais applique une transition fluide de zoom (scale) */
-    transform: translateX(var(--tx)) translateY(var(--ty-base)) scale(1.05);
-    transition: transform 0.2s ease-in-out;
-    z-index: 20; /* Passe au-dessus des autres cartes si elles se croisent */
-}
 
 
+/* Décalages Verticaux Adaptés au format 180px de l'image */
+.card-top-left, .card-top-right       { --ty-base: -160px; }
+.card-mid-left, .card-mid-right       { --ty-base: -50%; }
+.card-bottom-left, .card-bottom-right { --ty-base: 60px; }
 
-/* Haut (Ajusté à 5% pour laisser de la place) */
-.card-top-left, .card-top-right {
-    --ty-base: -160px;
-}
-.card-top-left { left: 0; animation-delay: 0s; }
-.card-top-right { right: 0; animation-delay: 0.7s; }
+/* Décalages Horizontaux Resserres pour écrans étroits */
+.card-top-left, .card-mid-left, .card-bottom-left   { left: 0; --tx: -55%; }
+.card-top-right, .card-mid-right, .card-bottom-right { right: 0; --tx: 55%; }
 
-/* Milieu (Nouveaux positionnements) */
-.card-mid-left, .card-mid-right {
-    top: 50%;
-    /* On ajuste le translateY initial à -50% pour parfaitement centrer la carte verticalement */
-    --ty-base: -50%; 
-}
-.card-mid-left { left: 0; animation-delay: 1.4s; }
-.card-mid-right { right: 0; animation-delay: 2.1s; }
-
-/* Bas (Ajusté à 5% du bas) */
-.card-bottom-left, .card-bottom-right {
-    --ty-base: 160px;
-}
-.card-bottom-left { left: 0; animation-delay: 2.8s; }
-.card-bottom-right { right: 0; animation-delay: 3.5s; }
-
-
-/* --- Gestion des décalages sur l'axe X (Gauche / Droite) --- */
-.card-top-left,
-.card-mid-left,
-.card-bottom-left {
-    --tx: -70%;
-}
-
-.card-top-right,
-.card-mid-right,
-.card-bottom-right {
-    --tx: 70%;
-}
-
-@keyframes float {
-    0%, 100% { 
-        /* var(--ty-base, 0) permet de garder le -50% pour les cartes du milieu, et 0 pour les autres */
-        transform: translateX(var(--tx)) translateY(var(--ty-base)); 
+/* ── 📐 Phablettes (Écrans larges ou téléphones en paysage) ──── */
+@media (min-width: 480px) {
+    .pic-container, .pic-container img {
+        width: 230px;
+        min-width: 230px;
     }
-    50% { 
-        /* On applique l'effet de flottaison de -12px par rapport à la position de base */
-        transform: translateX(var(--tx)) translateY(calc(var(--ty-base, 0px) - 6px)); 
+    .floating-card {
+        width: 130px !important;
     }
+    .card-top-left, .card-top-right       { --ty-base: -170px; }
+    .card-bottom-left, .card-bottom-right { --ty-base: 80px; }
+    .card-top-left, .card-mid-left, .card-bottom-left   { --tx: -60%; }
+    .card-top-right, .card-mid-right, .card-bottom-right { --tx: 60%; }
 }
 
-/* ── Tablette ────────────────────────────────────────────────── */
+/* ── 平板 Tablettes (A partir de 768px) ───────────────────────── */
 @media (min-width: 768px) {
     .hero-section {
-        flex-direction: column;
-        align-items: center;
-        justify-content: space-between;
         padding: 3rem 2.5rem;
-        gap: 2rem;
-    }
-
-    .hero-section > div:first-child {
-        flex: 1;
-        max-width: 50%;
-        position: relative;
-        top: 4rem ;
-    }
-
-    .pic-wrapper {
-        flex: 1;
-        padding: 90px 110px;
-    }
-
-    .pic-container {
-        max-width: 300px;
-    }
-
-    .pic-container img {
-        min-width: clamp(300px, 40vw, 380px);
-
-    }
-
-    .floating-card {
-        width: 175px !important;
-    }
-}
-
-/* ── Desktop ─────────────────────────────────────────────────── */
-@media (min-width: 1200px) {
-    .hero-section {
-        flex-direction: row;
-        padding: 4rem 5rem;
         gap: 3rem;
     }
 
     .hero-section > div:first-child {
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-    position: relative;
-    top: -3rem;
+        top: 2rem;
     }
 
     .pic-wrapper {
-        padding: 100px 130px;
+        padding: 160px 80px;
     }
 
-    .pic-container {
-        max-width: 340px;
+    /* L'image passe à sa taille moyenne */
+    .pic-container, .pic-container img {
+        width: 280px;
+        min-width: 280px;
     }
 
-    .pic-container img {
-        width: 340px;
+    /* Les cartes s'agrandissent */
+    .floating-card {
+        width: 160px !important;
+    }
+
+    /* On recalcule les espacements verticaux et horizontaux */
+    .card-top-left, .card-top-right       { --ty-base: -220px; }
+    .card-bottom-left, .card-bottom-right { --ty-base: 80px; }
+    .card-top-left, .card-mid-left, .card-bottom-left   { --tx: -65%; }
+    .card-top-right, .card-mid-right, .card-bottom-right { --tx: 65%; }
+}
+
+/* ── 💻 Desktop (A partir de 1200px) ─────────────────────────── */
+@media (min-width: 1200px) {
+    .hero-section {
+        flex-direction: row; /* Alignement horizontal */
+        padding: 4rem 5rem;
+        gap: 4rem;
+        justify-content: space-between;
+    }
+
+    .hero-section > div:first-child {
+        width: 50%;
+        top: 0; /* Plus besoin de pousser vers le bas */
+    }
+
+    .pic-wrapper {
+        width: 50%;
+        padding: 180px 120px;
+    }
+
+    /* Taille maximale pour le grand écran */
+    .pic-container, .pic-container img {
+        width: 300px;
+        min-width: 300px;
     }
 
     .floating-card {
-        width: 200px !important;
+        width: 190px !important;
+    }
+
+    .floating-card:hover {
+        animation-play-state: paused;
+        cursor: pointer;
+        transform: translateX(var(--tx)) translateY(var(--ty-base)) scale(1.05);
+        transition: transform 0.2s ease-in-out;
+        z-index: 20; 
+    }
+
+    /* Espacements amples pour le grand écran */
+    .card-top-left, .card-top-right       { --ty-base: -250px; }
+    .card-bottom-left, .card-bottom-right { --ty-base: 100px; }
+    .card-top-left, .card-mid-left, .card-bottom-left   { --tx: -65%; }
+    .card-top-right, .card-mid-right, .card-bottom-right { --tx: 70%; }
+}
+
+/* ── Animation de flottaison globale ─────────────────────────── */
+@keyframes float {
+    0%, 100% { 
+        transform: translateX(var(--tx)) translateY(var(--ty-base)); 
+    }
+    50% { 
+        transform: translateX(var(--tx)) translateY(calc(var(--ty-base) - 6px)); 
     }
 }
 </style>
