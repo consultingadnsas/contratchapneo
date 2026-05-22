@@ -2,10 +2,10 @@ button{
     border: none;
     padding: 0.8rem;
     border: none;
-    border-radius: 2rem;
+    border-radius: 999px;
     font-size: 1.1rem;
     width: 100%;
-    max-width: 500px;
+    max-width: 400px;
     display: flex;
     justify-content: center;
     align-items: center;
