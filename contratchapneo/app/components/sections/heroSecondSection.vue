@@ -203,6 +203,15 @@ export default defineComponent({
     animation: float 4s ease-in-out infinite;
 }
 
+.floating-card:hover {
+    animation-play-state: paused;
+    cursor: pointer;
+    /* Conserve la position actuelle, mais applique une transition fluide de zoom (scale) */
+    transform: translateX(var(--tx)) translateY(var(--ty-base)) scale(1.05);
+    transition: transform 0.2s ease-in-out;
+    z-index: 20; /* Passe au-dessus des autres cartes si elles se croisent */
+}
+
 
 
 /* Haut (Ajusté à 5% pour laisser de la place) */
