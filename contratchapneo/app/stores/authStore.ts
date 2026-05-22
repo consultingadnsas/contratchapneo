@@ -50,16 +50,22 @@ export const useAuthStore = defineStore('auth', () => {
         body: credentials,
       })
 
-      console.log('[AuthStore] login() → réponse reçue :', response)
+      if (response){
+        console.log('[AuthStore] login() → réponse reçue :', response)
 
-      // Met à jour l'utilisateur (ou gère le stockage du token ici si nécessaire)
-      user.value = response.user 
-      
-      return response
+        // Met à jour l'utilisateur (ou gère le stockage du token ici si nécessaire)
+        user.value = (response as any).data?.user || {}
+
+        return response
+      } else {
+        console.log('[AuthStore] login() → erreur :', response)
+        error.value = "Identifiants incorrects"
+        throw new Error("Identifiants incorrects")
+      }
 
     } catch (err: any) {
       console.error('[AuthStore] login() → erreur :', err)
-      error.value = err?.data?.message ?? err.message ?? 'Erreur de connexion'
+      error.value = err.message
       throw err
     } finally {
       isLoading.value = false

@@ -145,7 +145,7 @@ export default {
 
 .form-input {
   width: 100%;
-  padding: 0.625rem 0.75rem;
+  padding: 0.8rem 0.75rem;
   font-size: 1rem;
   line-height: 1.5;
   color: var(--text-color);

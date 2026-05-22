@@ -1,12 +1,14 @@
 <template>
-  <div class="main-wrapper">
+  <div class="main-wrapper h-screen w-screen overflow-hidden">
     <div class="login-section">
-      <div class=" w-full flex justify-center items-center">
-        <loginFormVue />
-      </div>
+      
+      <div class="form-container">
+        <loginFormVue class="w-full max-w-md p-4" /> 
+        </div>
+      
       <div class="pic-section">
         <div class="image-container">
-          <img src="../../assets/pictures/ContratChap/pexels-kampus-8475168.jpg" alt="">
+          <img src="../../assets/pictures/ContratChap/pexels-kampus-8475168.jpg" alt="Bienvenue">
           <div class="overlay"></div>
           <div class="image-text">
             <h2>Bienvenue sur notre plateforme</h2>
@@ -14,6 +16,7 @@
           </div>
         </div>
       </div>
+
     </div>
   </div>
 </template>
@@ -29,41 +32,69 @@ export default {
 </script>
 
 <style scoped>
+/* --- CONFIGURATION GLOBALE --- */
+.main-wrapper {
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+}
+
 .login-section {
   width: 100%;
-  height: 100vh;
+  height: 100%;
   display: flex;
   overflow: hidden;
+}
+
+/* Par défaut (Mobile / Tablette) : le formulaire prend tout l'écran, l'image est cachée */
+.form-container {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .pic-section {
   display: none;
 }
 
+/* --- GRANDS ÉCRANS (PC) --- */
 @media (min-width: 1024px) {
   .login-section {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr 1fr; /* 50% formulaire, 50% image */
+    height: 100vh;
+  }
+
+  .form-container {
+    width: 100%;
+    height: 100vh; /* Re-déclare la hauteur stricte pour la grille */
   }
 
   .pic-section {
     display: block;
-  }
-
-  .image-container {
-    position: relative;
     width: 100%;
-    height: 100%;
+    height: 100vh;
+    position: relative;
     overflow: hidden;
   }
 
-  .image-container img {
+  .image-container {
     width: 100%;
     height: 100%;
-    max-width: 600px;
-    max-height: 950px;
-    object-fit: cover;
-    display: block;
+    position: relative;
+  }
+
+  /* Remplissage absolu pour empêcher l'image de pousser les murs de la grille */
+  .image-container img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover; 
+    object-position: center;
   }
 
   .overlay {
@@ -72,7 +103,7 @@ export default {
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0, 0, 0, 0.5); /* Ajuste l'opacité pour plus ou moins sombre */
+    background: rgba(0, 0, 0, 0.5);
     z-index: 1;
   }
 
