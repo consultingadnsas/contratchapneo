@@ -121,6 +121,7 @@ export default {
   flex-direction: column;
   margin-bottom: 0.5rem;
   font-family: sans-serif;
+  width: 100%;
 }
 
 .input-label {
@@ -144,7 +145,7 @@ export default {
 
 .form-input {
   width: 100%;
-  padding: 0.625rem 0.75rem;
+  padding: 0.8rem 0.75rem;
   font-size: 1rem;
   line-height: 1.5;
   color: var(--text-color);

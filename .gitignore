@@ -219,3 +219,10 @@ __marimo__/
 
 # API file
 *.http
+
+# Static files
+*.pdf
+*.word
+*.doc
+*.xlsx
+*.pptx
