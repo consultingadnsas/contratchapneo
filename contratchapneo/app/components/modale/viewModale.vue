@@ -24,12 +24,11 @@
                        Le "#toolbar=0&navpanes=0" cache le menu natif (imprimer, zoom) du navigateur pour un rendu plus propre.
                     -->
                     <iframe 
-                        src="/mon-contrat.pdf#toolbar=0&navpanes=0" 
+                        src="/lettre de motivation Angui.pdf#toolbar=0&navpanes=0" 
                         class="pdf-preview" 
                         title="Aperçu du contrat CDD"
                         type="application/pdf">
                         <!-- Message de secours si le navigateur du mobile ne supporte pas l'affichage PDF -->
-                        <p>Votre navigateur ne peut pas afficher ce PDF. <a href="/mon-contrat.pdf" target="_blank">Téléchargez-le ici</a>.</p>
                     </iframe>
                 </div>
 
