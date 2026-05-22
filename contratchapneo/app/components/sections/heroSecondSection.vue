@@ -162,7 +162,7 @@ export default defineComponent({
 /* pic-container = référentiel de positionnement, taille = taille de l'image */
 .pic-container {
     position: relative;
-    max-width: 170px;
+    max-width: 300px;
     display: inline-flex;   /* se réduit à la taille de l'image */
     justify-content: center;
     align-items: center;
@@ -170,7 +170,7 @@ export default defineComponent({
 
 .pic-container img {
     /* Étape 1 : On force l'image à faire la même largeur sur mobile */
-    width: 300px; 
+     width: 300px;
     min-width: 300px;
     
     /* Étape 2 : On force un ratio 1:1 (un carré parfait) */
@@ -199,13 +199,15 @@ export default defineComponent({
     width: 155px !important;
     height: auto !important;
     animation: float 4s ease-in-out infinite;
+    transform: translateX(var(--tx)) translateY(var(--ty-base));
+    animation: float 4s ease-in-out infinite;
 }
 
-/* --- Positionnement Vertical --- */
+
 
 /* Haut (Ajusté à 5% pour laisser de la place) */
 .card-top-left, .card-top-right {
-    top: 1%;
+    --ty-base: -160px;
 }
 .card-top-left { left: 0; animation-delay: 0s; }
 .card-top-right { right: 0; animation-delay: 0.7s; }
@@ -221,7 +223,7 @@ export default defineComponent({
 
 /* Bas (Ajusté à 5% du bas) */
 .card-bottom-left, .card-bottom-right {
-    bottom: 1%;
+    --ty-base: 160px;
 }
 .card-bottom-left { left: 0; animation-delay: 2.8s; }
 .card-bottom-right { right: 0; animation-delay: 3.5s; }
@@ -231,23 +233,23 @@ export default defineComponent({
 .card-top-left,
 .card-mid-left,
 .card-bottom-left {
-    --tx: -60%;
+    --tx: -70%;
 }
 
 .card-top-right,
 .card-mid-right,
 .card-bottom-right {
-    --tx: 60%;
+    --tx: 70%;
 }
 
 @keyframes float {
     0%, 100% { 
         /* var(--ty-base, 0) permet de garder le -50% pour les cartes du milieu, et 0 pour les autres */
-        transform: translateX(var(--tx)) translateY(var(--ty-base, 0)); 
+        transform: translateX(var(--tx)) translateY(var(--ty-base)); 
     }
     50% { 
         /* On applique l'effet de flottaison de -12px par rapport à la position de base */
-        transform: translateX(var(--tx)) translateY(calc(var(--ty-base, 0px) - 12px)); 
+        transform: translateX(var(--tx)) translateY(calc(var(--ty-base, 0px) - 6px)); 
     }
 }
 
