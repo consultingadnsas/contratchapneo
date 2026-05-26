@@ -11,7 +11,7 @@
             <!-- Liens desktop (cachés sur mobile) -->
             <ul class="nav-links-desktop">
                 <li><a href="/">Accueil</a></li>
-                <li><a href="#">Banque de contrats</a></li>
+                <li><a href="contractbank">Banque de contrats</a></li>
                 <li><a href="#">conseils juridiques</a></li>
                 <li><a href="#">Nos professionnels</a></li>
                 <li><a href="#">Outil de calcul</a></li>
