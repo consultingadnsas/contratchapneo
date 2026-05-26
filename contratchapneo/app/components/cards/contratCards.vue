@@ -79,14 +79,14 @@ export default defineComponent({
 <style scoped>
 .pro-card {
     position: relative;
-    width: 100%;
-    /* On garde un ratio vertical élégant */
-    aspect-ratio: 1 / 1.25; 
+    width: 320px;        /* 1. Fixe une largeur de base (ex: 280px) */
+    height: 350px;       /* 2. Fixe la hauteur que tu souhaites (ex: 350px) */
     border-radius: 4px;
     overflow: hidden;
     cursor: pointer;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
     background-color: #1a1a1a;
+    flex-shrink: 0;      /* Évite que la carte s'écrase si elle est dans un Flexbox */
 }
 
 /* Image de fond avec effet de zoom au survol */
