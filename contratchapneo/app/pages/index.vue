@@ -10,6 +10,8 @@
 
         <companySolutions/>
 
+        <numberGreen />
+
         <ProSection title-head="Les professionnels du droits"/>
 
         <calcul-tool-section/>
@@ -30,6 +32,7 @@ import companySolutions from '../components/sections/companySolutions.vue';
 import ProSection from '../components/sections/proSection.vue';
 import calculToolSection from '../components/sections/calculToolSection.vue';
 import companieSection from '../components/sections/companieSection.vue';
+import numberGreen from '../components/sections/numberGreen.vue';
 import FooterSection from '../components/sections/footerSection.vue';
 
 import {ref} from 'vue'
@@ -45,6 +48,7 @@ export default {
         heroSecondSection,
         FooterSection,
         companySolutions,
+        numberGreen
     },
     setup() {
 
