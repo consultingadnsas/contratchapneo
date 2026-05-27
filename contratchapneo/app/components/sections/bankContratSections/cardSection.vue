@@ -1,32 +1,43 @@
 <template>
-  <div class="contrat-card-section">
-    <h2>Trouve le contrat qui te correspond</h2>
+    <div class="contrat-card-section">
+        
+        <header>
+            <h2>
+                Découvrez tous nos contrats
+            </h2>
+            <p>Nos contrats sont conformes aux lois en vigeur dans l'espace OHADA.</p>
+        </header>
+        
+        <div class="toolbar">
+            <Basefilter class="toolbar__filter"/>
+            <BaseSearchInput class="toolbar__search" placeholder="Rechercher un article ou un produit..."/>
+        </div>
 
-    <Basefilter/>
+        <div class="cards-container">
+            <contratCards 
+                v-for="(contrat, index) in legalContrat" 
+                :key="index"
+                :contrat="contrat"
+            />
+        </div>
 
-    <div class="cards-container">
-        <contratCards 
-          v-for="(contrat, index) in legalContrat" 
-          :key="index"
-          :contrat="contrat"
-        />
+        <Paginator/>
     </div>
-
-    <Paginator/>
-  </div>
 </template>
 
 <script lang="ts">
 import contratCards from '../../cards/contratCards.vue'
 import Basefilter from '../../tools/Basefilter.vue'
 import Paginator from '../../tools/Paginator.vue'
+import BaseSearchInput from '../../input/BaseSearchInput.vue'
 import { ref } from 'vue'
 
 export default {
     components: {
         contratCards,
         Basefilter,
-        Paginator
+        Paginator,
+        BaseSearchInput
     },
     setup() {
         const legalContrat = ref([
@@ -54,48 +65,99 @@ export default {
     min-height: 100vh;
     display: flex;
     flex-direction: column;
-    justify-content: center;
     align-items: center;
+    justify-items: center;
     gap: 2rem;
     padding: 6rem 1rem 1rem 1rem;
+    background: #FDFCFC;
 }
 
 .contrat-card-section h2 {
     font-size: 2rem;
     font-weight: 500;
     line-height: 1.5;
+    color: var(--primary-color);
 }
 
-.contrat-card-section p {
+header{
+    margin-top: 2rem;
+    margin-bottom: 1rem;
+}
+
+header p{
     font-size: 1.2rem;
-    font-weight: 400;
 }
 
-/* 📱 MOBILE (Par défaut) : 1 colonne verticale */
+/* ==========================================
+   TOOLBAR : filtre + recherche côte à côte
+========================================== */
+.toolbar {
+    width: 100%;
+    max-width: 1200px;
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    gap: 0.75rem;
+    padding: 0.5rem;
+}
+
+/* Sur mobile : le select prend sa place naturelle (auto),
+   la loupe est un bouton rond fixe → rien ne disparaît */
+.toolbar__filter {
+    min-width: 0;     /* évite le débordement flex */
+    margin: 0;        /* retire le margin: 1rem 0 du composant */
+}
+
+.toolbar__search {
+    flex: 0 0 auto;   /* taille naturelle (bouton rond) par défaut */
+}
+
+/* Quand la recherche s'étend sur mobile, elle ne chasse pas le filtre :
+   on lui donne une largeur fixe max plutôt que 100% */
+:deep(.search-container.is-mobile.is-expanded) {
+    width: auto;
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+/* ==========================================
+   TABLETTE (>= 768px) : recherche toujours visible
+========================================== */
+@media (min-width: 768px) {
+    .toolbar__filter {
+        
+    }
+
+    .toolbar__search {
+        max-width: 360px;
+        margin-left: auto; /* pousse la recherche à droite */
+    }
+}
+
+/* ==========================================
+   GRILLE DE CARTES
+========================================== */
 .cards-container {
     width: 100%;
     max-width: 1400px;
     display: grid;
     grid-template-columns: 1fr;
     place-items: center;
-    gap: 1rem; /* Un peu d'espace entre les cartes */
+    gap: 1rem;
 }
 
-/* TABLETTE / IPAD (Écrans >= 768px) : 2 colonnes */
 @media (min-width: 768px) {
     .cards-container {
         grid-template-columns: repeat(2, 1fr);
     }
 }
 
-/* LAPTOP (Écrans >= 1024px) : 3 colonnes */
 @media (min-width: 1024px) {
     .cards-container {
         grid-template-columns: repeat(3, 1fr);
     }
 }
 
-/* DESKTOP (Écrans >= 1280px) : 4 colonnes */
 @media (min-width: 1300px) {
     .cards-container {
         grid-template-columns: repeat(4, 1fr);

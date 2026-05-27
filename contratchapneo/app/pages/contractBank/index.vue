@@ -5,9 +5,9 @@
         <navbar/>
 
         <cardSection/>
-
-        <mostContratViewed/>
-
+        
+        <!-- <mostContratViewed/> -->
+        
         <footerSection/>
 
     </div>

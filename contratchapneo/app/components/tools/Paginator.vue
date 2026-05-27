@@ -5,7 +5,9 @@
       :disabled="currentPage === 1"
       @click="changePage(currentPage - 1)"
     >
-      &laquo; Précédent
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 15.75 3 12m0 0 3.75-3.75M3 12h18" />
+      </svg>
     </button>
 
     <div class="pages-list">
@@ -25,7 +27,9 @@
       :disabled="currentPage === totalPages"
       @click="changePage(currentPage + 1)"
     >
-      Suivant &raquo;
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M17.25 8.25 21 12m0 0-3.75 3.75M21 12H3" />
+      </svg>
     </button>
   </div>
 </template>
@@ -69,20 +73,23 @@ export default {
 }
 
 .pagination-btn {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 50px;
+  height: 50px;
+  font-size: 1.2rem;
   padding: 0.5rem 1rem;
-  font-size: 0.95rem;
   font-weight: 500;
-  border: 1px solid #e2e8f0;
-  border-radius: 8px;
-  background-color: #ffffff;
-  color: #4a5568;
+  border-radius: 50%;
+  background-color: var(--primary-color);
+  color: #ffffff;
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
 .pagination-btn:hover:not(:disabled) {
   background-color: #f7fafc;
-  border-color: #cbd5e0;
 }
 
 .pagination-btn:disabled {
@@ -113,14 +120,15 @@ export default {
 }
 
 .page-number:hover {
-  background-color: #f7fafc;
-  border-color: #cbd5e0;
+  background-color: var(--primary-color-dark);
+  border-color: var(--primary-color-dark);
+  color: #ffffff;
 }
 
 /* Style de la page active (s'accorde avec le style de ton filtre) */
 .page-number.active {
-  background-color: #1a1a1a;
+  background-color: var(--primary-color-dark);
   color: #ffffff;
-  border-color: #1a1a1a;
+  border-color: var(--primary-color-dark);
 }
 </style>
