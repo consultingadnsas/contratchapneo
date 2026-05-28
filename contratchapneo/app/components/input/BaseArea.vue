@@ -6,40 +6,20 @@
     </label>
 
     <div class="input-wrapper">
-      <span v-if="$slots.prepend" class="input-icon input-icon-left">
-        <slot name="prepend"></slot>
-      </span>
-
-      <select
+      <textarea
         :id="inputId"
-        class="form-select"
-        :class="{ 
-          'pl-icon': $slots.prepend, 
-          'pr-icon': $slots.append 
-        }"
+        ref="textareaRef"
+        class="form-textarea"
         :value="modelValue"
         :disabled="disabled"
+        :placeholder="placeholder"
+        :rows="rows"
         :aria-invalid="!!errorMessage"
         :aria-describedby="errorMessage ? `${inputId}-error` : hint ? `${inputId}-hint` : undefined"
         v-bind="$attrs"
-        @change="handleChange"
-      >
-        <option value="" disabled selected v-if="placeholder">{{ placeholder }}</option>
-        
-        <slot>
-          <option
-            v-for="(opt, index) in options"
-            :key="opt.code ?? opt.value ?? index"
-            :value="opt.code ?? opt.value ?? opt.name"
-          >
-            {{ opt.name }}
-          </option>
-        </slot>
-      </select>
-
-      <span v-if="$slots.append" class="input-icon input-icon-right">
-        <slot name="append"></slot>
-      </span>
+        @input="handleInput"
+        @blur="$emit('blur', $event)"
+      ></textarea>
     </div>
 
     <p v-if="errorMessage" :id="`${inputId}-error`" class="message error-message">
@@ -57,7 +37,7 @@
 
 <script>
 export default {
-  name: 'BaseSelect',
+  name: 'BaseTextArea',
   inheritAttrs: false,
   props: {
     modelValue: {
@@ -70,7 +50,11 @@ export default {
     },
     placeholder: {
       type: String,
-      default: 'Sélectionnez une option'
+      default: ''
+    },
+    rows: {
+      type: [String, Number],
+      default: 4
     },
     errorMessage: {
       type: String,
@@ -91,38 +75,24 @@ export default {
     required: {
       type: Boolean,
       default: false
-    },
-    options:{
-      type:Array,
-      default:()=>[
-        {name:"Wave"},
-        {name:"Orange Money"},
-        {name:"Moov Money"}
-      ]
     }
   },
-    emits: ['update:modelValue', 'blur', 'change'],
-    setup(props, { emit }) {
-        const generatedId = useId();
-
-        // On garde la logique de computed ici
-        const inputId = computed(() => props.id || `input-${generatedId}`);
-
-        // On définit la méthode ici pour pouvoir l'utiliser dans le template
-        const handleInput = (event) => {
-            emit('update:modelValue', event.target.value);
-        };
-
-        return {
-            inputId,
-            handleInput
-        };
+  emits: ['update:modelValue', 'blur'],
+  computed: {
+    inputId() {
+      return this.id || `textarea-${Math.random().toString(36).substr(2, 9)}`;
     }
+  },
+  methods: {
+    handleInput(event) {
+      this.$emit('update:modelValue', event.target.value);
+    }
+  }
 };
 </script>
 
 <style scoped>
-/* Variables identiques à BaseInput */
+/* Variables identiques à BaseInput et BaseSelect */
 .input-group {
   --primary-color: #3b82f6;
   --error-color: #ef4444;
@@ -135,15 +105,15 @@ export default {
   display: flex;
   flex-direction: column;
   margin-bottom: 0.5rem;
-  font-family: sans-serif; 
+  font-family: sans-serif;
   width: 100%;
 }
 
 .input-label {
-  font-size: 0.9rem;
+  font-size: 0.875rem;
   font-weight: 500;
   color: var(--label-color);
-  margin-bottom: 0.4rem;
+  margin-bottom: 0.5rem;
   display: block;
 }
 
@@ -158,59 +128,36 @@ export default {
   align-items: center;
 }
 
-.form-select {
+.form-textarea {
   width: 100%;
   padding: 0.625rem 0.75rem;
-  font-size: 0.9rem;
+  font-size: 1rem;
   line-height: 1.5;
   color: var(--text-color);
   background-color: #fff;
   border: 1px solid var(--border-color);
-  border-radius: 1.5rem;
+  border-radius: 0.375rem;
   transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
-  appearance: none; /* Désactive le style par défaut du navigateur */
-  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
-  background-repeat: no-repeat;
-  background-position: right 0.5rem center;
-  background-size: 1.5em 1.5em;
-  padding-right: 2.5rem;
+  resize: vertical; /* Permet le redimensionnement vertical uniquement */
+  min-height: 80px;
 }
 
-.form-select:focus {
+.form-textarea:focus {
   outline: none;
   border-color: var(--primary-color);
   box-shadow: 0 0 0 3px var(--focus-ring);
 }
 
-.input-icon {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 2.5rem;
-  color: #9ca3af;
-  pointer-events: none;
-}
-
-.input-icon-left { left: 0; }
-.input-icon-right { right: 0; }
-
-/* Padding dynamique si icône présente */
-.pl-icon { padding-left: 2.5rem; }
-.pr-icon { padding-right: 2.5rem; }
-
 /* État d'erreur */
-.has-error .form-select {
+.has-error .form-textarea {
   border-color: var(--error-color);
 }
 
-.has-error .form-select:focus {
+.has-error .form-textarea:focus {
   box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.25);
 }
 
-.has-error .input-label, .has-error .input-icon {
+.has-error .input-label {
   color: var(--error-color);
 }
 
@@ -228,7 +175,7 @@ export default {
 .msg-icon { width: 14px; height: 14px; }
 
 /* État désactivé */
-.is-disabled .form-select {
+.is-disabled .form-textarea {
   background-color: var(--bg-disabled);
   cursor: not-allowed;
   opacity: 1;
