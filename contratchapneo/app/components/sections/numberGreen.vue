@@ -60,7 +60,9 @@ export default {
     text-align: center;
     gap: 1.5rem;
 }
-
+.banner-action a {
+    width: 390px;
+}
 /* ── Icône ───────────────────────────────────────────────────── */
 .banner-icon {
     background-color: rgba(255, 255, 255, 0.1);
@@ -196,6 +198,11 @@ export default {
         align-items: flex-end; /* Aligne le bouton à droite */
         flex-shrink: 0;
         margin-top: 0;
+    }
+}
+@media (min-width: 1200px) {
+    .support-banner {
+        width: 95%;
     }
 }
 </style>

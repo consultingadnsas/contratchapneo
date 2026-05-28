@@ -1,5 +1,5 @@
 <template>
-    <header :class="['main-header', { 'is-scrolled': isScrolled }]">
+    <header :class="['main-header', `theme-${theme}`, { 'is-scrolled': isScrolled }]">
         <nav class="nav-container">
 
             <!-- Logo -->
@@ -119,8 +119,14 @@ import Hamburger from '../buttons/hamburger.vue';
 export default {
     name: 'MainHeader',
     components: { Hamburger },
+    props: {
+        theme: {
+            type: String,
+            default: 'dark'
+        }
+    },
 
-    setup() {
+    setup(props) {
         const isMenuOpen = ref<boolean>(false);
         const isScrolled = ref<boolean>(false);
         const isDropdownOpen = ref<boolean>(false);
@@ -535,4 +541,26 @@ export default {
 .main-header.is-scrolled .nav-links-desktop li .dropdown-trigger {
     color: var(--primary-color);
 }
+
+/* ── THÈME SOMBRE (Fond bleu/noir -> Texte blanc) ── */
+    .theme-dark .logo { color: white; }
+    .theme-dark .nav-links-desktop li a { color: white; }
+    .theme-dark .nav-links-desktop li .dropdown-trigger { color: white; }
+
+    /* ── THÈME CLAIR (Fond blanc -> Texte bleu) ── */
+    .theme-light .logo { color: var(--primary-color); }
+    .theme-light .nav-links-desktop li a { color: var(--primary-color); }
+    .theme-light .nav-links-desktop li .dropdown-trigger { color: var(--primary-color); }
+    .theme-light .nav-links-desktop li a:hover,
+    .nav-links-desktop li .dropdown-trigger:hover {
+        background: rgba(97, 96, 96, 0.4);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+    }
+
+    /* ── AU SCROLL (Le fond devient blanc opaque -> On force le texte en bleu) ── */
+    .main-header.is-scrolled .logo,
+    .main-header.is-scrolled .nav-links-desktop li a,
+    .main-header.is-scrolled .nav-links-desktop li .dropdown-trigger {
+        color: var(--primary-color) !important;
+    }
 </style>

@@ -33,6 +33,7 @@ export default {
     display: flex;
     gap: 1rem;
     cursor: pointer;
+    width: 280px;
 }
 
 </style>

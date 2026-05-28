@@ -79,7 +79,7 @@ export default defineComponent({
 <style scoped>
 .pro-card {
     position: relative;
-    width: 320px;        /* 1. Fixe une largeur de base (ex: 280px) */
+    width: 100%;        /* 1. Fixe une largeur de base (ex: 280px) */
     height: 350px;       /* 2. Fixe la hauteur que tu souhaites (ex: 350px) */
     border-radius: 4px;
     overflow: hidden;
