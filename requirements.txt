@@ -13,8 +13,10 @@ psycopg2-binary  # OK pour le développement, pour la production préférez psyc
 djangorestframework
 django-cors-headers  # Important pour les API frontend
 djangorestframework-simplejwt # Pour l'authentification
+
 # Media
 Pillow  # Essentiel pour le traitement d'images
+pypdf # Pour la gestion des pdf
 
 # Production
 gunicorn  # Serveur WSGI recommandé

@@ -41,3 +41,27 @@ class Contrat(models.Model):
 
     def __str__(self):
         return f'Contrat {self.title} de la catégorie {self.category}'
+    
+class Pack(models.Model):
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    title = models.CharField(max_length=255)
+    description = models.TextField()
+    prix = models.DecimalField(max_digits=10, decimal_places=2)
+    contrats = models.ManyToManyField(
+        Contrat,
+        related_name='packs',
+        blank=True
+    )
+    picture = models.ImageField(upload_to='pack_images/', blank=True, null=True)
+
+    # Statistics
+    views = models.PositiveIntegerField(default=0)
+    downloads = models.PositiveIntegerField(default=0)
+
+    # Timestamps
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f'Pack {self.title} ({self.contrats.count()} contrats)'

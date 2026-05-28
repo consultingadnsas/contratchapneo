@@ -1,11 +1,13 @@
+import io
+import base64
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status, permissions
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from django.db import transaction
+from pypdf import PdfReader, PdfWriter
 from django.shortcuts import get_object_or_404
-from django.db.models import Q
-from django.http import HttpResponse
+from django.db.models import Q, F
 from .models import Category, Contrat
 from .serializers import (
     CategorySerializer, 
@@ -80,3 +82,55 @@ class CategoryOperationsView(APIView):
                 },
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
+        
+""" About our contrat """
+
+class ContractsView(APIView):
+    
+    permission_classes = [AllowAny]
+
+    def get(self, request, contrat_id):
+        # 1. Récupération du contrat
+        contrat = get_object_or_404(
+            Contrat.objects.all(),
+            id=contrat_id
+        )
+
+        # 2. Incrémentation du compteur de vues
+        contrat.views = F('views') + 1
+        contrat.save(update_fields=['views'])
+
+        # 3. Sérialisation des données de base (JSON)
+        serializer = ContratSerializer(contrat)
+        data = serializer.data  # On extrait le dictionnaire des données
+
+        # 4. Extraction sécurisée de la première page du PDF
+        try:
+            if contrat.fichier_modele and hasattr(contrat.fichier_modele, 'path'):
+                reader = PdfReader(contrat.fichier_modele.path)
+                
+                if len(reader.pages) > 0:
+                    writer = PdfWriter()
+                    writer.add_page(reader.pages[0])  # Uniquement la page 1
+                    
+                    # Écriture dans un flux mémoire
+                    buffer = io.BytesIO()
+                    writer.write(buffer)
+                    buffer.seek(0)
+                    
+                    # Transformation en chaîne Base64
+                    encoded_pdf = base64.b64encode(buffer.getvalue()).decode('utf-8')
+                    
+                    # On ajoute le PDF au format Data URI dans le JSON
+                    data['pdf_preview'] = f"data:application/pdf;base64,{encoded_pdf}"
+                else:
+                    data['pdf_preview'] = None
+            else:
+                data['pdf_preview'] = None
+        except Exception as e:
+            # En cas de pépin avec le fichier, on ne bloque pas l'API, on met juste la preview à None
+            data['pdf_preview'] = None
+            data['pdf_preview_error'] = str(e)
+
+        # 5. Envoi de la réponse combinée
+        return Response(data, status=status.HTTP_200_OK)
