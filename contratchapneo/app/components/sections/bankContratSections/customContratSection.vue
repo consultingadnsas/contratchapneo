@@ -1,43 +1,26 @@
 <template>
     <div class="contrat-card-section">
+
+        <div class="form-container">
+            <customContratForm/>
+        </div>
         
-        <header>
-            <h2>
-                Découvrez tous nos contrats
-            </h2>
-            <p>Nos contrats sont conformes aux lois en vigeur dans l'espace OHADA.</p>
-        </header>
-        
-        <div class="toolbar">
-            <Basefilter class="toolbar__filter"/>
-            <BaseSearchInput class="toolbar__search" placeholder="Rechercher un article ou un produit..."/>
+        <div class="image-container">
+            <img src="../../../assets/pictures/ContratChap/pexels-gustavo-fring-6699310.jpg" alt="Illustration contrat">
         </div>
 
-        <div class="cards-container">
-            <contratCards 
-                v-for="(contrat, index) in legalContrat" 
-                :key="index"
-                :contrat="contrat"
-            />
-        </div>
-
-        <Paginator/>
     </div>
 </template>
 
 <script lang="ts">
 import contratCards from '../../cards/contratCards.vue'
-import Basefilter from '../../tools/Basefilter.vue'
-import Paginator from '../../tools/Paginator.vue'
-import BaseSearchInput from '../../input/BaseSearchInput.vue'
+import customContratForm from '../../forms/customContratForm.vue'
 import { ref } from 'vue'
 
 export default {
     components: {
         contratCards,
-        Basefilter,
-        Paginator,
-        BaseSearchInput,
+        customContratForm
     },
     setup() {
         const legalContrat = ref([
@@ -59,6 +42,9 @@ export default {
 </script>
 
 <style scoped>
+/* ==========================================
+    CONTENEUR PRINCIPAL
+========================================== */
 .contrat-card-section {
     width: 100%;
     max-width: 1400px;
@@ -66,7 +52,6 @@ export default {
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-items: center;
     gap: 2rem;
     padding: 6rem 1rem 1rem 1rem;
     background: #FDFCFC;
@@ -79,17 +64,40 @@ export default {
     color: var(--primary-color);
 }
 
-header{
+header {
     margin-top: 2rem;
     margin-bottom: 1rem;
 }
 
-header p{
+header p {
     font-size: 1.2rem;
 }
 
 /* ==========================================
-   TOOLBAR : filtre + recherche côte à côte
+    GESTION FORMULAIRE & IMAGE
+========================================== */
+.form-container {
+    width: 100%;
+}
+
+.image-container {
+    display: none; /* Masqué par défaut sur mobile et tablette */
+    width: 100%;
+    justify-content: center;
+    align-items: center;
+    padding: 0.5rem;
+}
+
+.image-container img {
+    width: 100%;
+    height: auto;
+    /*max-height: 600px;*/
+    object-fit: cover;
+    border-radius: 8px; /* Optionnel: adoucit les angles de l'image */
+}
+
+/* ==========================================
+    TOOLBAR : filtre + recherche
 ========================================== */
 .toolbar {
     width: 100%;
@@ -101,19 +109,15 @@ header p{
     padding: 0.5rem;
 }
 
-/* Sur mobile : le select prend sa place naturelle (auto),
-   la loupe est un bouton rond fixe → rien ne disparaît */
 .toolbar__filter {
-    min-width: 0;     /* évite le débordement flex */
-    margin: 0;        /* retire le margin: 1rem 0 du composant */
+    min-width: 0;
+    margin: 0;
 }
 
 .toolbar__search {
-    flex: 0 0 auto;   /* taille naturelle (bouton rond) par défaut */
+    flex: 0 0 auto;
 }
 
-/* Quand la recherche s'étend sur mobile, elle ne chasse pas le filtre :
-   on lui donne une largeur fixe max plutôt que 100% */
 :deep(.search-container.is-mobile.is-expanded) {
     width: auto;
     flex: 1 1 auto;
@@ -121,43 +125,38 @@ header p{
 }
 
 /* ==========================================
-   TABLETTE (>= 768px) : recherche toujours visible
+    TABLETTE (>= 768px)
 ========================================== */
 @media (min-width: 768px) {
-    .toolbar__filter {
-        
-    }
-
     .toolbar__search {
         max-width: 360px;
-        margin-left: auto; /* pousse la recherche à droite */
+        margin-left: auto;
     }
 }
 
 /* ==========================================
-   GRILLE DE CARTES
+    LAPTOP / DESKTOP (>= 1024px)
 ========================================== */
-.cards-container {
-    width: 100%;
-    max-width: 1400px;
-    display: grid;
-    grid-template-columns: 1fr;
-    place-items: center;
-    gap: 1rem;
-}
-
-@media (min-width: 768px) {
-    .cards-container {
-        grid-template-columns: repeat(2, 1fr);
-    }
-}
-
 @media (min-width: 1024px) {
+    .contrat-card-section {
+        display: grid;
+        grid-template-columns: 1fr 1fr; /* Formulaire à gauche, image à droite */
+        align-items: start; /* Aligne le haut des deux blocs */
+        gap: 2rem;
+    }
+
+    .image-container {
+        display: flex; /* L'image s'affiche enfin sur laptop */
+    }
+
     .cards-container {
         grid-template-columns: repeat(3, 1fr);
     }
 }
 
+/* ==========================================
+    GRAND ÉCRAN (>= 1300px)
+========================================== */
 @media (min-width: 1300px) {
     .cards-container {
         grid-template-columns: repeat(4, 1fr);
