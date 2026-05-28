@@ -1,5 +1,4 @@
 <template>
-    <!-- Ajout de la classe dynamique au scroll -->
     <header :class="['main-header', { 'is-scrolled': isScrolled }]">
         <nav class="nav-container">
 
@@ -11,20 +10,64 @@
             <!-- Liens desktop (cachés sur mobile) -->
             <ul class="nav-links-desktop">
                 <li><a href="/">Accueil</a></li>
-                <li><a href="contractbank">Banque de contrats</a></li>
-                <li><a href="#">conseils juridiques</a></li>
+
+                <!-- Dropdown Banque de contrats -->
+                <li 
+                    class="dropdown-item"
+                    @mouseenter="isDropdownOpen = true"
+                    @mouseleave="isDropdownOpen = false"
+                >
+                    <a href="contractbank" class="dropdown-trigger">
+                        Banque de contrats
+                        <svg :class="['chevron', { 'is-open': isDropdownOpen }]" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="6 9 12 15 18 9"/>
+                        </svg>
+                    </a>
+
+                    <transition name="dropdown-fade">
+                        <ul v-if="isDropdownOpen" class="dropdown-menu">
+                            <li>
+                                <a href="contractbank">
+                                    <span class="dropdown-icon">📄</span>
+                                    <span>
+                                        <strong>Banque de contrats</strong>
+                                        <small>Parcourez nos modèles</small>
+                                    </span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="#">
+                                    <span class="dropdown-icon">✍️</span>
+                                    <span>
+                                        <strong>Contrat sur mesure</strong>
+                                        <small>Créez votre contrat unique</small>
+                                    </span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="#">
+                                    <span class="dropdown-icon">📦</span>
+                                    <span>
+                                        <strong>Pack de contrats</strong>
+                                        <small>Offres groupées avantageuses</small>
+                                    </span>
+                                </a>
+                            </li>
+                        </ul>
+                    </transition>
+                </li>
+
+                <li><a href="#">Conseils juridiques</a></li>
                 <li><a href="#">Nos professionnels</a></li>
                 <li><a href="#">Outil de calcul</a></li>
-                
             </ul>
 
             <!-- CTA desktop -->
             <ul class="nav-links-desktop">
                 <a href="#" class="cta-desktop">Connexion</a>
             </ul>
-                
 
-            <!-- Hamburger (caché sur desktop) -->
+            <!-- Hamburger -->
             <Hamburger
                 :class="['mobile-only', { 'is-active': isMenuOpen }]"
                 :isOpen="isMenuOpen"
@@ -32,15 +75,36 @@
             />
         </nav>
 
-        <!-- Menu mobile avec transition -->
+        <!-- Menu mobile -->
         <transition name="slide-down">
             <div v-if="isMenuOpen" class="nav-mobile-menu">
                 <ul class="nav-links-mobile">
-                    <li><a href="/">Accueil</a></li>
-                    <li><a href="#">Banque de contrats</a></li>
-                    <li><a href="#">conseils juridiques</a></li>
-                    <li><a href="#">Nos professionnels</a></li>
-                    <li><a href="#">Outil de calcul</a></li>
+                    <li><a href="/" @click="toggleMenu">Accueil</a></li>
+
+                    <!-- Accordion Banque de contrats sur mobile -->
+                    <li class="mobile-accordion">
+                        <button 
+                            class="mobile-accordion__trigger"
+                            @click="isMobileDropdownOpen = !isMobileDropdownOpen"
+                        >
+                            Banque de contrats
+                            <svg :class="['chevron', { 'is-open': isMobileDropdownOpen }]" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"/>
+                            </svg>
+                        </button>
+
+                        <transition name="accordion">
+                            <ul v-if="isMobileDropdownOpen" class="mobile-accordion__list">
+                                <li><a href="contractbank" @click="toggleMenu">📄 Banque de contrats</a></li>
+                                <li><a href="#" @click="toggleMenu">✍️ Contrat sur mesure</a></li>
+                                <li><a href="#" @click="toggleMenu">📦 Pack de contrats</a></li>
+                            </ul>
+                        </transition>
+                    </li>
+
+                    <li><a href="#" @click="toggleMenu">Conseils juridiques</a></li>
+                    <li><a href="#" @click="toggleMenu">Nos professionnels</a></li>
+                    <li><a href="#" @click="toggleMenu">Outil de calcul</a></li>
                 </ul>
                 <a href="#" class="cta-mobile" @click="toggleMenu">Connexion</a>
             </div>
@@ -59,23 +123,20 @@ export default {
     setup() {
         const isMenuOpen = ref<boolean>(false);
         const isScrolled = ref<boolean>(false);
+        const isDropdownOpen = ref<boolean>(false);
+        const isMobileDropdownOpen = ref<boolean>(false);
 
         const toggleMenu = () => {
             isMenuOpen.value = !isMenuOpen.value;
+            if (!isMenuOpen.value) isMobileDropdownOpen.value = false;
         };
 
-        // Gestion propre du scroll avec l'API Composition de Vue 3
         const handleScroll = () => {
-            if (window.scrollY > 20) {
-                isScrolled.value = true;
-            } else {
-                isScrolled.value = false;
-            }
+            isScrolled.value = window.scrollY > 20;
         };
 
         onMounted(() => {
             window.addEventListener('scroll', handleScroll);
-            // Appel initial pour vérifier la position au chargement de la page
             handleScroll();
         });
 
@@ -83,42 +144,34 @@ export default {
             window.removeEventListener('scroll', handleScroll);
         });
 
-        return { isMenuOpen, isScrolled, toggleMenu };
+        return { isMenuOpen, isScrolled, isDropdownOpen, isMobileDropdownOpen, toggleMenu };
     },
 };
 </script>
 
 <style scoped>
 /* =============================================
-   BASE — Mobile first (Tout en haut)
+   BASE — Mobile first
    ============================================= */
-   .main-header {
+.main-header {
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     z-index: 100;
-    
-    /* Écritures flottantes : fond, flou et ombres invisibles */
-    background: rgba(255, 255, 255, 0); 
+    background: rgba(255, 255, 255, 0);
     backdrop-filter: blur(0px);
-    -webkit-backdrop-filter: blur(0px); 
+    -webkit-backdrop-filter: blur(0px);
     border-bottom: 1px solid rgba(255, 255, 255, 0);
     box-shadow: 0 4px 30px rgba(0, 0, 0, 0);
-
-    /* Animation fluide lors de l'apparition du verre */
-    transition: background 0.3s ease, 
-                backdrop-filter 0.3s ease, 
-                border 0.3s ease, 
-                box-shadow 0.3s ease,
-                top 0.3s ease;
+    transition: background 0.3s ease, backdrop-filter 0.3s ease,
+                border 0.3s ease, box-shadow 0.3s ease, top 0.3s ease;
 }
 
-/* État actif dès que l'on commence à scroller */
 .main-header.is-scrolled {
-    background: rgba(255, 255, 255, 0.75); 
+    background: rgba(255, 255, 255, 0.75);
     backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px); 
+    -webkit-backdrop-filter: blur(12px);
     border-bottom: 1px solid rgba(255, 255, 255, 0.80);
     box-shadow: 0 4px 30px rgba(0, 0, 0, 0.03);
 }
@@ -131,7 +184,6 @@ export default {
     padding: 0 1.5rem;
 }
 
-/* --- Logo --- */
 .logo {
     font-family: 'Instrument Sans', sans-serif;
     font-size: 1.25rem;
@@ -148,7 +200,6 @@ export default {
     margin-right: 2px;
 }
 
-/* --- Liens desktop : cachés par défaut (mobile first) --- */
 .nav-links-desktop {
     display: none;
 }
@@ -157,9 +208,8 @@ export default {
     display: none;
 }
 
-/* --- Hamburger : visible sur mobile --- */
 .mobile-only {
-    display: flex; 
+    display: flex;
 }
 
 /* =============================================
@@ -170,14 +220,13 @@ export default {
     top: 70px;
     left: 0;
     width: 100%;
-    /* On garde le menu mobile compact en mode glass lorsqu'il s'ouvre */
     background: rgba(255, 255, 255);
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
     display: flex;
     flex-direction: column;
     gap: 1.5rem;
     padding: 1.5rem 1.5rem 2rem;
-    border-top: 1px solid rgba(255, 255, 255, 0.4);
+    border-top: 1px solid rgba(0, 0, 0, 0.06);
 }
 
 .nav-links-mobile li a {
@@ -199,7 +248,75 @@ export default {
     opacity: 0.6;
 }
 
-.nav-mobile-menu .cta-mobile{
+/* Accordion mobile */
+.mobile-accordion {
+    border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+}
+
+.mobile-accordion__trigger {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 1.1rem;
+    font-weight: 500;
+    padding: 1rem 0;
+    color: var(--primary-color);
+    background: none;
+    border: none;
+    cursor: pointer;
+}
+
+.mobile-accordion__list {
+    list-style: none;
+    padding: 0 0 0.5rem 1rem;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.mobile-accordion__list li a {
+    font-size: 0.95rem !important;
+    font-weight: 400 !important;
+    padding: 0.6rem 0 !important;
+    border-bottom: none !important;
+    opacity: 0.8;
+    color: var(--primary-color);
+    text-decoration: none;
+    display: block;
+    transition: opacity 0.2s;
+}
+
+.mobile-accordion__list li a:hover {
+    opacity: 1;
+}
+
+/* Chevron animé */
+.chevron {
+    transition: transform 0.25s ease;
+    flex-shrink: 0;
+}
+
+.chevron.is-open {
+    transform: rotate(180deg);
+}
+
+/* Animation accordion mobile */
+.accordion-enter-active,
+.accordion-leave-active {
+    transition: all 0.25s ease;
+    overflow: hidden;
+    max-height: 200px;
+}
+
+.accordion-enter-from,
+.accordion-leave-to {
+    max-height: 0;
+    opacity: 0;
+}
+
+.nav-mobile-menu .cta-mobile {
     align-self: center;
 }
 
@@ -208,35 +325,20 @@ export default {
     text-align: center;
     background: var(--primary-color);
     width: 70%;
-    align-items: center;
     color: white;
     padding: 0.85rem 1.5rem;
     border-radius: 50px;
     font-weight: 600;
     font-size: 0.95rem;
     text-decoration: none;
-    transition: opacity 0.2s, background 0.2s, color 0.2s;
-}
-.cta-mobile2 {
-    display: block;
-    text-align: center;
-    background: transparent;
-    color: var(--primary-color);
-    padding: 0.85rem 1.5rem;
-    border-radius: 50px;
-    font-weight: 600;
-    font-size: 0.95rem;
-    text-decoration: none;
-    transition: opacity 0.2s, background 0.2s, color 0.2s;
+    transition: opacity 0.2s;
 }
 
 .cta-mobile:hover {
     opacity: 0.85;
 }
 
-/* =============================================
-   ANIMATIONS MENU MOBILE
-   ============================================= */
+/* Animation menu mobile */
 .slide-down-enter-active,
 .slide-down-leave-active {
     transition: all 0.28s ease-out;
@@ -249,7 +351,7 @@ export default {
 }
 
 /* =============================================
-   BREAKPOINT DESKTOP — ≥ 1024px
+   DESKTOP — ≥ 1024px
    ============================================= */
 @media (min-width: 1024px) {
     .main-header {
@@ -259,8 +361,6 @@ export default {
         width: 100%;
         max-width: 1200px;
         border-radius: 50px;
-        
-        /* État initial Desktop (tout en haut) : Pas de fond ni de bordure pour la pilule */
         background: rgba(255, 255, 255, 0);
         backdrop-filter: blur(0px);
         -webkit-backdrop-filter: blur(0px);
@@ -268,9 +368,8 @@ export default {
         box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0);
     }
 
-    /* La pilule magique de verre se matérialise ici au défilement */
     .main-header.is-scrolled {
-        top: 16px; 
+        top: 16px;
         background: rgba(255, 255, 255, 0.65);
         backdrop-filter: blur(14px);
         -webkit-backdrop-filter: blur(14px);
@@ -293,27 +392,116 @@ export default {
         padding: 0;
         margin: 0;
         gap: 0.5rem;
-        flex: 1; 
+        flex: 1;
         justify-content: center;
     }
 
-    .nav-links-desktop li a {
+    .nav-links-desktop li a,
+    .nav-links-desktop li .dropdown-trigger {
         display: flex;
         align-items: center;
-        white-space: nowrap;  
+        white-space: nowrap;
         font-size: 0.9rem;
-        gap:0.2rem;
+        gap: 0.3rem;
         font-weight: 500;
         padding: 0.5rem 1rem;
         border-radius: 50px;
         color: var(--tertiary-color);
         text-decoration: none;
         transition: background 0.2s, opacity 0.2s;
+        cursor: pointer;
     }
 
-    .nav-links-desktop li a:hover {
+    .nav-links-desktop li a:hover,
+    .nav-links-desktop li .dropdown-trigger:hover {
         background: rgba(255, 255, 255, 0.4);
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+    }
+
+    /* Dropdown desktop */
+    .dropdown-item {
+        position: relative;
+    }
+
+    .dropdown-menu {
+        position: absolute;
+        top: calc(100% + 12px);
+        left: 50%;
+        transform: translateX(-50%);
+        width: 260px;
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border: 1px solid rgba(255, 255, 255, 0.6);
+        border-radius: 16px;
+        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.1);
+        padding: 0.5rem;
+        list-style: none;
+        margin: 0;
+        z-index: 200;
+    }
+
+    /* Petit pont invisible pour ne pas perdre le hover entre trigger et menu */
+    .dropdown-menu::before {
+        content: '';
+        position: absolute;
+        top: -12px;
+        left: 0;
+        width: 100%;
+        height: 12px;
+    }
+
+    .dropdown-menu li a {
+        display: flex !important;
+        align-items: center !important;
+        gap: 0.75rem !important;
+        padding: 0.75rem 1rem !important;
+        border-radius: 10px !important;
+        font-size: 0.875rem !important;
+        color: var(--primary-color) !important;
+        text-decoration: none;
+        transition: background 0.15s !important;
+        white-space: normal !important;
+    }
+
+    .dropdown-menu li a:hover {
+        background: rgba(0, 0, 0, 0.04) !important;
+        box-shadow: none !important;
+    }
+
+    .dropdown-icon {
+        font-size: 1.2rem;
+        flex-shrink: 0;
+    }
+
+    .dropdown-menu li a span:last-child {
+        display: flex;
+        flex-direction: column;
+        gap: 0.1rem;
+    }
+
+    .dropdown-menu li a strong {
+        font-weight: 600;
+        font-size: 0.875rem;
+        line-height: 1.2;
+    }
+
+    .dropdown-menu li a small {
+        font-size: 0.75rem;
+        opacity: 0.55;
+        font-weight: 400;
+    }
+
+    /* Animation dropdown desktop */
+    .dropdown-fade-enter-active,
+    .dropdown-fade-leave-active {
+        transition: all 0.2s ease;
+    }
+
+    .dropdown-fade-enter-from,
+    .dropdown-fade-leave-to {
+        opacity: 0;
+        transform: translateX(-50%) translateY(-6px);
     }
 
     .cta-desktop {
@@ -329,27 +517,9 @@ export default {
         transition: opacity 0.2s, transform 0.2s;
     }
 
-    .cta-desktop2 {
-        display: block;
-        white-space: nowrap;
-        background: transparent;
-        color: var(--primary-color);
-        padding: 0.6rem 1.25rem;
-        border-radius: 50px;
-        font-weight: 800;
-        font-size: 0.88rem;
-        text-decoration: none;
-        transition: opacity 0.2s, background 0.2s, color 0.2s;
-    }
-
     .cta-desktop:hover {
         opacity: 0.85;
         transform: scale(1.02);
-    }
-    .cta-desktop2:hover {
-        opacity: 0.85;
-        background: var(--primary-color);
-        color: white;
     }
 
     .mobile-only {
@@ -361,8 +531,8 @@ export default {
     }
 }
 
-.main-header.is-scrolled .nav-links-desktop li a {
-    /* L'écriture devient ton bleu primaire au scroll ! */
+.main-header.is-scrolled .nav-links-desktop li a,
+.main-header.is-scrolled .nav-links-desktop li .dropdown-trigger {
     color: var(--primary-color);
 }
 </style>
