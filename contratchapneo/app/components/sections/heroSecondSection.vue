@@ -95,7 +95,7 @@ export default defineComponent({
 <style scoped>
 /* ── 📱 Mobile First (Valeurs par défaut pour Téléphones) ─────── */
 .hero-section {
-    background: var(--background-color);
+    background: #272147;
     width: 110%;
     margin-left: 0;
     min-height: 100vh;

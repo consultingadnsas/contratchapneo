@@ -19,6 +19,17 @@
                 </div>
             </div>
 
+            <div class="green-dark-section w-full flex justify-center items-center flex-col">
+                <!-- Conteneur responsive : carrousel mobile, grille desktop -->
+                <div class="cards-container">
+                    <proCardSecond 
+                        v-for="(card, index) in legalPro" 
+                        :key="index"
+                        :title="card.title"
+                    />
+                </div>
+            </div>
+
             <mainButton label="consulter un pro" />
         </div>
     </section>
@@ -28,10 +39,11 @@
 import { ref } from 'vue';
 import mainButton from '../buttons/mainButton.vue';
 import prodCards from '../cards/proCards.vue';
+import proCardSecond from '../cards/proCardSecond.vue'
 
 export default {
     name: 'OrdinarySection',
-    components: { mainButton, prodCards },
+    components: { mainButton, prodCards, proCardSecond },
     setup() {
         const legalPro = ref([
             { title: 'Avocat' },
