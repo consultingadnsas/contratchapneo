@@ -1,6 +1,6 @@
 <template>
     <div class="main-wrapper">
-        <Navbar/>
+        <Navbar theme="light"/>
         <checkoutSectionVue/>
         <footerSection/>
     </div>

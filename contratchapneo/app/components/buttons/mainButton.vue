@@ -33,7 +33,20 @@ export default {
     display: flex;
     gap: 1rem;
     cursor: pointer;
-    width: 280px;
+    width: 100%;
+}
+
+@media (max-width: 768px) {
+    .main-button {
+        width: 100%;
+        justify-content: center;
+    }
+}
+@media (max-width: 1280px) {
+    .main-button {
+        width: 280px;
+        justify-content: center;
+    }
 }
 
 </style>

@@ -208,6 +208,10 @@ export default defineComponent({
     margin-top: 2rem;
 }
 
+.card-footer button {
+    width: 100%;
+}
+
 /* --- BOUTONS --- */
 :deep(.btn-light button) {
     background: rgba(255, 255, 255, 0.15) !important; /* Bouton givré lui aussi */

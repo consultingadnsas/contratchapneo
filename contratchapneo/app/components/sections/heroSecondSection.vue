@@ -14,16 +14,12 @@
                 <img src="../../assets/pictures/ContratChap/pexels-picha-stock-2210122-3894377.jpg" alt="Contrats OHADA">
 
                 <!-- HAUT -->
-                <stat-cards class="floating-card card-top-left"    title="Modèles OHADA" />
-                <stat-cards class="floating-card card-top-right"   title="Conformes OHADA" />
-                
-                <!-- MILIEU (Nouvelles cartes) -->
-                <stat-cards class="floating-card card-mid-left"    title="Mise à jour 2026" />
-                <stat-cards class="floating-card card-mid-right"   title="Assistance 24/7" />
+                <stat-cards class="floating-card card-top-left"    title="Banque de contrats" @click="router.push('/contractBank')" />
+                <stat-cards class="floating-card card-top-right"   title="Outil de Calcul" />
                 
                 <!-- BAS -->
-                <stat-cards class="floating-card card-bottom-left"  title="100% Gratuit" />
-                <stat-cards class="floating-card card-bottom-right" title="Sécurisez vos affaires" />
+                <stat-cards class="floating-card card-bottom-left"  title="Conseil juridique" />
+                <stat-cards class="floating-card card-bottom-right" title="Nos professionnels" />
             </div>
         </div>
     </section>
@@ -34,6 +30,7 @@ import { onMounted, ref, defineComponent } from 'vue'
 import mainButton from '../buttons/mainButton.vue'
 import BaseResearchInput from '../input/BaseResearchInput.vue'
 import statCards from '../cards/statCards.vue'
+import {useRouter} from 'vue-router'
 
 export default defineComponent({
     name: 'HeroSecondSection',
@@ -44,6 +41,8 @@ export default defineComponent({
     },
 
     setup() {
+        const router = useRouter();
+
         const phrases = [
             'Profitez de nos contrats gratuits.',
             'Sécurisez juridiquement vos affaires.',
@@ -86,7 +85,8 @@ export default defineComponent({
         })
 
         return {
-            displayText
+            displayText,
+            router
         }
     }
 })
@@ -96,7 +96,8 @@ export default defineComponent({
 /* ── 📱 Mobile First (Valeurs par défaut pour Téléphones) ─────── */
 .hero-section {
     background: var(--background-color);
-    width: 100%;
+    width: 110%;
+    margin-left: 0;
     min-height: 100vh;
     overflow-x: hidden; /* empêche le débordement horizontal causé par les cartes absolues */
     border-bottom-left-radius: 1rem;
@@ -105,8 +106,9 @@ export default defineComponent({
     flex-direction: column;   /* empilé sur mobile */
     align-items: center;
     gap: 2rem;
-    padding: 2rem 1.25rem;
+    padding: 2rem 2.25rem;
     box-sizing: border-box;
+    position: relative;
 }
 
 /* Bloc texte */
@@ -165,8 +167,8 @@ export default defineComponent({
 }
 
 .pic-container img {
-    width: 180px;
-    min-width: 180px;
+    width: 200px;
+    min-width: 200px;
     aspect-ratio: 1 / 1; 
     height: auto; 
     object-fit: cover; 
@@ -185,18 +187,29 @@ export default defineComponent({
     top: 50%;
     transform: translateX(var(--tx)) translateY(var(--ty-base));
     animation: float 4s ease-in-out infinite;
+
+    box-sizing: border-box;
+    padding: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
 }
 
 
 
 /* Décalages Verticaux Adaptés au format 180px de l'image */
-.card-top-left, .card-top-right       { --ty-base: -160px; }
-.card-mid-left, .card-mid-right       { --ty-base: -50%; }
-.card-bottom-left, .card-bottom-right { --ty-base: 60px; }
+.card-top-left, .card-top-right       { --ty-base: -140px; }
+.card-bottom-left, .card-bottom-right { --ty-base: 40px; }
 
 /* Décalages Horizontaux Resserres pour écrans étroits */
-.card-top-left, .card-mid-left, .card-bottom-left   { left: 0; --tx: -55%; }
-.card-top-right, .card-mid-right, .card-bottom-right { right: 0; --tx: 55%; }
+.card-top-left, .card-bottom-left   { left: 0; --tx: -55%; }
+.card-top-right, .card-bottom-right { right: 0; --tx: 55%; }
+
+.card-top-left { animation-delay: 0s; }
+.card-top-right { animation-delay: 0.8s; }
+.card-bottom-left { animation-delay: 1.6s; }
+.card-bottom-right { animation-delay: 2.4s; }
 
 /* ── 📐 Phablettes (Écrans larges ou téléphones en paysage) ──── */
 @media (min-width: 480px) {
@@ -218,6 +231,7 @@ export default defineComponent({
     .hero-section {
         padding: 3rem 2.5rem;
         gap: 3rem;
+        margin-left: 2%;
     }
 
     .hero-section > div:first-child {
@@ -249,10 +263,15 @@ export default defineComponent({
 /* ── 💻 Desktop (A partir de 1200px) ─────────────────────────── */
 @media (min-width: 1200px) {
     .hero-section {
-        flex-direction: row; /* Alignement horizontal */
-        padding: 4rem 5rem;
-        gap: 4rem;
+        flex-direction: row; /* Le texte à gauche, l'image à droite */
         justify-content: space-between;
+        align-items: center; /* Centre les éléments verticalement */
+        padding: 1rem 5rem !important; /* Un peu plus de padding latéral sur grand écran */
+        gap: 5rem;
+        width: 100%;
+        margin-left: 0; /* On s'assure qu'il n'y a plus de marge gauche */
+        height: 100vh !important;
+        min-height: 600px !important;
     }
 
     .hero-section > div:first-child {
@@ -262,17 +281,24 @@ export default defineComponent({
 
     .pic-wrapper {
         width: 50%;
-        padding: 180px 120px;
+        padding: 60px 40px;
     }
 
     /* Taille maximale pour le grand écran */
     .pic-container, .pic-container img {
         width: 300px;
-        min-width: 300px;
+        min-width: 340px;
     }
 
     .floating-card {
-        width: 190px !important;
+        width: 160px !important;
+        min-height: 140px;
+        box-sizing: border-box;
+        padding: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
     }
 
     .floating-card:hover {
@@ -284,19 +310,15 @@ export default defineComponent({
     }
 
     /* Espacements amples pour le grand écran */
-    .card-top-left, .card-top-right       { --ty-base: -250px; }
-    .card-bottom-left, .card-bottom-right { --ty-base: 100px; }
-    .card-top-left, .card-mid-left, .card-bottom-left   { --tx: -65%; }
-    .card-top-right, .card-mid-right, .card-bottom-right { --tx: 70%; }
+    .card-top-left, .card-top-right       { --ty-base: -190px; }
+    .card-bottom-left, .card-bottom-right { --ty-base: 50px; }
+    .card-top-left, .card-bottom-left   { --tx: -60%; }
+    .card-top-right, .card-bottom-right { --tx: 60%; }
 }
 
 /* ── Animation de flottaison globale ─────────────────────────── */
 @keyframes float {
-    0%, 100% { 
-        transform: translateX(var(--tx)) translateY(var(--ty-base)); 
-    }
-    50% { 
-        transform: translateX(var(--tx)) translateY(calc(var(--ty-base) - 6px)); 
-    }
+    0%, 100% { transform: translateX(var(--tx)) translateY(var(--ty-base)); }
+    50%      { transform: translateX(var(--tx)) translateY(calc(var(--ty-base) - 8px)); }
 }
 </style>

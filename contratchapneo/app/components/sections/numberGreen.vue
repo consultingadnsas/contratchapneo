@@ -59,9 +59,10 @@ export default {
     align-items: center;
     text-align: center;
     gap: 1.5rem;
+    padding: 0 1rem;
 }
 .banner-action a {
-    width: 390px;
+    width: 380px;
 }
 /* ── Icône ───────────────────────────────────────────────────── */
 .banner-icon {
@@ -114,6 +115,7 @@ export default {
     text-decoration: none;
     box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.2);
     transition: transform 0.3s ease, box-shadow 0.3s ease;
+    margin: 0 0.5rem
 }
 
 .toll-free-btn:hover {
@@ -130,7 +132,7 @@ export default {
 
 .btn-number {
     color: var(--color-primary);
-    font-size: 1.25rem;
+    font-size: 1.2rem;
     font-weight: 800;
     letter-spacing: 0.05em;
 }
