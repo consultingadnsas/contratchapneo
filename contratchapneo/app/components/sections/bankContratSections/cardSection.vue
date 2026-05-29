@@ -154,7 +154,7 @@ header p{
 
 @media (min-width: 1024px) {
     .cards-container {
-        grid-template-columns: repeat(3, 1fr);
+        grid-template-columns: repeat(4, 1fr);
     }
 }
 
