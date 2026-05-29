@@ -251,6 +251,7 @@ export default {
 /* --- Autres styles partagés (inchangés) --- */
 .subtitle-wrapper {
     display: flex;
+    justify-content: center;
     align-items: center;
     width: 100%;
     gap: 1rem;
