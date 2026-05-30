@@ -32,6 +32,8 @@ import Paginator from '../../tools/Paginator.vue'
 import BaseSearchInput from '../../input/BaseSearchInput.vue'
 import { ref } from 'vue'
 
+import {useContratStore} from '../../../stores/contratStore'
+
 export default {
     components: {
         contratCards,
@@ -40,6 +42,9 @@ export default {
         BaseSearchInput,
     },
     setup() {
+
+        const contratStore = useContratStore();
+
         const legalContrat = ref([
             { title: 'Contrat de travail' , subtitle: '100% Gratuit', description: 'Un contrat de travail est un accord entre un employeur et son employé.'},
             { title: 'Contrat de freelance', subtitle: '15 000 FCFA', description: 'Un contrat de freelance est un accord entre un travailleur indépendant et un client.'},

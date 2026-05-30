@@ -28,6 +28,8 @@ class Contrat(models.Model):
     title = models.CharField(max_length=255)
     description = models.TextField()
     prix = models.DecimalField(max_digits=10, decimal_places=2)
+    
+    # Media About the contrat
     fichier_modele = models.FileField(upload_to='modeles/')
     picture = models.ImageField(upload_to='contrat_images/', blank=True, null=True)
 

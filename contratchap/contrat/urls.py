@@ -3,7 +3,9 @@ from .views import (
     CategoryDetailWithContractsView, 
     CategoryListView, 
     CategoryOperationsView,
-    ContractsView
+    ContractListView,
+    ContractsView,
+    ContratOperationsView
 )
 
 urlpatterns = [
@@ -12,5 +14,7 @@ urlpatterns = [
     path('categories/<uuid:category_id>/', CategoryDetailWithContractsView.as_view(), name='category-detail-with-contracts'),
     
     # Specific contract
+    path('', ContractListView.as_view(), name='contract-list'),
+    path('operations/', ContratOperationsView.as_view(), name='contrat-operations'),
     path('<uuid:contrat_id>/',ContractsView.as_view(), name="contrats")
 ]

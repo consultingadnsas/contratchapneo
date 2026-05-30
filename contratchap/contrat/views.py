@@ -19,6 +19,7 @@ from .serializers import (
 class CategoryListView(APIView):
 
     permission_classes = [AllowAny]
+    authentication_classes = []
 
     def get(self, request):
         categories = Category.objects.all()
@@ -85,6 +86,31 @@ class CategoryOperationsView(APIView):
         
 """ About our contrat """
 
+class ContractListView(APIView):
+    """
+    Vue pour lister tous les contrats, avec possibilité de filtrer par catégorie
+    via le paramètre de requête ?category=<uuid>
+    """
+    permission_classes = [AllowAny]
+    authentication_classes = []
+
+    def get(self, request):
+        # On récupère le paramètre 'category' depuis l'URL (ex: /contrat/?category=UUID)
+        category_id = request.query_params.get('category', None)
+
+        # Base de la requête : on sélectionne tous les contrats
+        # select_related('category') permet d'optimiser la requête SQL en joignant la table catégorie
+        queryset = Contrat.objects.all().select_related('category')
+
+        # Si le paramètre category est fourni, on filtre les résultats
+        if category_id:
+            queryset = queryset.filter(category_id=category_id)
+
+        # Sérialisation de la liste des contrats
+        serializer = ContratSerializer(queryset, many=True)
+        
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
 class ContractsView(APIView):
     
     permission_classes = [AllowAny]
@@ -134,3 +160,36 @@ class ContractsView(APIView):
 
         # 5. Envoi de la réponse combinée
         return Response(data, status=status.HTTP_200_OK)
+    
+class ContratOperationsView(APIView):
+
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+
+        serializer = ContratSerializer(data = request.data)
+
+        try:
+            if serializer.is_valid(raise_exception=True):
+                serializer.save()
+                return Response(
+                    {
+                        'data': serializer.data,
+                        'message': 'Contrat créée avec succès'
+                    }, status=status.HTTP_201_CREATED
+                )
+            return Response(
+                {
+                    'errors': serializer.errors,
+                    'message': 'Erreur lors de la création du contrat'
+                }, status=status.HTTP_400_BAD_REQUEST
+            )
+        except Exception as e:
+            return Response(
+                {
+                    'success': False,
+                    'message': 'Erreur lors de l\'ajout du contrat',
+                    'error': str(e)
+                },
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )

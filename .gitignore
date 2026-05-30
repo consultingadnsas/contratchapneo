@@ -226,3 +226,8 @@ __marimo__/
 *.doc
 *.xlsx
 *.pptx
+*.json
+
+# Png file
+*.png
+*.webp
