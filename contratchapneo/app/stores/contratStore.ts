@@ -32,26 +32,8 @@ export const useContratStore = defineStore('contrat', ()=> {
     const error = ref<string | null>(null);
 
     // State
-    const contrat = ref<Contrat>({
-        id: '',
-        category: '',
-        title: '',
-        description: '',
-        prix: 0,
-        fichier_modele: '',
-        picture: '',
-        views: 0,
-        downloads: 0,
-        created_at: '',
-        updated_at: ''
-    })
-    const category = ref<Category>({
-        id: '',
-        title: '',
-        description: '',
-        created_at: '',
-        updated_at: ''
-    })
+    const contrat = ref<Contrat | null>(null)
+    const category = ref<Category | null>(null)
     const contracts =  ref<Contrat[]>([]);
     const categories = ref<Category[]>([]);
 
@@ -64,21 +46,25 @@ export const useContratStore = defineStore('contrat', ()=> {
 
         try{
 
-            const response = await $api('/contrat/', {
+            const response = await $api<Contrat[]>('/contrat/', {
                 method: 'GET',
             })
 
             if (response){
-                console.log("Response reçue", response)
-
+                isLoading.value = false;
+                contracts.value = response;
+                console.log("Response reçue", contracts.value)
                 return response;
             } else {
+                isLoading.value = false;
                 console.log('Problème lors de la reccupérations des contrats', response);
             }
         } catch(err:any){
+            isLoading.value = false;
             console.error('Erreu', err)
             throw err
         } finally{
+            isLoading.value = false;
             console.log("Opération de reccupérations terminée")
         }
     }

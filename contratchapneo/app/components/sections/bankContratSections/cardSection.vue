@@ -13,13 +13,17 @@
             <BaseSearchInput class="toolbar__search" placeholder="Rechercher un article ou un produit..."/>
         </div>
 
-        <div class="cards-container">
+        <div class="cards-container" v-if="!contratStore.isLoading">
             <contratCards 
-                v-for="(contrat, index) in legalContrat" 
+                v-for="(contrat, index) in contratStore.contracts" 
                 :key="index"
-                :contrat="contrat"
+                :title="contrat.title"
+                :description="contrat.description"
+                :image="contrat.picture ? contrat.picture : undefined"
             />
         </div>
+
+        <contractCardSkeleton v-if="contratStore.isLoading"/>
 
         <Paginator/>
     </div>
@@ -27,10 +31,11 @@
 
 <script lang="ts">
 import contratCards from '../../cards/contratCards.vue'
+import contractCardSkeleton from '../../cards/contractCardSkeleton.vue'
 import Basefilter from '../../tools/Basefilter.vue'
 import Paginator from '../../tools/Paginator.vue'
 import BaseSearchInput from '../../input/BaseSearchInput.vue'
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 
 import {useContratStore} from '../../../stores/contratStore'
 
@@ -40,6 +45,7 @@ export default {
         Basefilter,
         Paginator,
         BaseSearchInput,
+        contractCardSkeleton
     },
     setup() {
 
@@ -56,7 +62,12 @@ export default {
             { title: 'contrat de bail', subtitle: '5 000 FCFA', description: 'Un contrat de bail est un accord entre un propriétaire et un locataire.'},
         ]);
 
+        onMounted(()=>{
+            contratStore.getContracts();
+        })
+
         return {
+            contratStore,
             legalContrat
         }
     }

@@ -107,7 +107,7 @@ class ContractListView(APIView):
             queryset = queryset.filter(category_id=category_id)
 
         # Sérialisation de la liste des contrats
-        serializer = ContratSerializer(queryset, many=True)
+        serializer = ContratSerializer(queryset, many=True, context={'request': request})
         
         return Response(serializer.data, status=status.HTTP_200_OK)
 
