@@ -9,7 +9,9 @@
         </header>
         
         <div class="toolbar">
-            <Basefilter class="toolbar__filter"/>
+            <Basefilter 
+                class="toolbar__filter"
+            />
             <BaseSearchInput class="toolbar__search" placeholder="Rechercher un article ou un produit..."/>
         </div>
 
@@ -19,11 +21,14 @@
                 :key="index"
                 :title="contrat.title"
                 :description="contrat.description"
+                :price="contrat.prix"
                 :image="contrat.picture ? contrat.picture : undefined"
             />
         </div>
 
         <contractCardSkeleton v-if="contratStore.isLoading"/>
+
+        <emptyState v-if="contratStore.isLoading == false && contratStore.contracts.length < 1" />
 
         <Paginator/>
     </div>
@@ -32,6 +37,7 @@
 <script lang="ts">
 import contratCards from '../../cards/contratCards.vue'
 import contractCardSkeleton from '../../cards/contractCardSkeleton.vue'
+import emptyState from '../../tools/emptyState.vue'
 import Basefilter from '../../tools/Basefilter.vue'
 import Paginator from '../../tools/Paginator.vue'
 import BaseSearchInput from '../../input/BaseSearchInput.vue'
@@ -45,7 +51,8 @@ export default {
         Basefilter,
         Paginator,
         BaseSearchInput,
-        contractCardSkeleton
+        contractCardSkeleton,
+        emptyState
     },
     setup() {
 

@@ -1,58 +1,79 @@
 <template>
   <div class="filter-wrapper">
     <div class="mobile-filter">
-      <select v-model="selectedCategory" @change="emitFilter">
+      <select v-model="selectedCategoryId" @change="handleMobileFilter">
         <option value="">Toutes les catégories</option>
-        <option v-for="cat in categories" :key="cat" :value="cat">
-          {{ cat }}
+        <option v-for="cat in categoryStore.categories" :key="cat.id" :value="cat.id">
+          {{ cat.title }}
         </option>
       </select>
     </div>
 
     <div class="desktop-filter">
       <button 
-        :class="{ active: selectedCategory === '' }" 
+        :class="{ active: selectedCategoryId === '' }" 
         @click="selectCategory('')"
       >
         Tout
       </button>
       <button 
-        v-for="cat in categories" 
-        :key="cat"
-        :class="{ active: selectedCategory === cat }"
-        @click="selectCategory(cat)"
+        v-for="cat in categoryStore.categories" 
+        :key="cat.id"
+        :class="{ active: selectedCategoryId === cat.id }"
+        @click="selectCategory(cat.id)"
       >
-        {{ cat }}
+        {{ cat.title }}
       </button>
     </div>
   </div>
 </template>
 
 <script lang="ts">
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
+import { useContratStore } from '../../stores/contratStore';
 
 export default {
   name: 'CategoryFilter',
   emits: ['filter-change'],
   setup(props, { emit }) {
-    // Catégories mises à jour pour s'adapter à une gestion d'événements
-    const categories = ref(['Concert', 'Festival', 'Théâtre', 'Exposition', 'Conférence', 'Sport']);
-    const selectedCategory = ref('');
+    const categoryStore = useContratStore();
+    
+    // On stocke uniquement l'ID de la catégorie sous forme de string
+    const selectedCategoryId = ref<string>('');
 
-    const selectCategory = (cat: string) => {
-      selectedCategory.value = cat;
-      emitFilter();
+    // Déclenchée par les boutons Desktop
+    const selectCategory = async (categoryId: string) => {
+      selectedCategoryId.value = categoryId;
+      await executeFilter(categoryId);
     };
 
-    const emitFilter = () => {
-      emit('filter-change', selectedCategory.value);
+    // Déclenchée par le select Mobile
+    const handleMobileFilter = async () => {
+      await executeFilter(selectedCategoryId.value);
     };
+
+    // Logique centrale de filtrage
+    const executeFilter = async (categoryId: string) => {
+      emit('filter-change', categoryId); // Optionnel, si un parent a besoin d'écouter
+
+      if (!categoryId) {
+        // Si vide ("Tout"), on récupère tous les contrats
+        await categoryStore.getContracts();
+      } else {
+        // Sinon, on récupère les contrats de cette catégorie spécifique
+        await categoryStore.getContractsByCategory(categoryId);
+      }
+    };
+
+    onMounted(() => {
+      categoryStore.getCategories();
+    });
 
     return {
-      categories,
-      selectedCategory,
+      categoryStore,
+      selectedCategoryId,
       selectCategory,
-      emitFilter
+      handleMobileFilter
     };
   }
 };
@@ -135,8 +156,8 @@ export default {
     color: #4a5568;
     cursor: pointer;
     transition: all 0.2s ease;
-    width: 100%;
-    max-width: 100px;
+    width: auto;
+
   }
 
   .desktop-filter button:hover {

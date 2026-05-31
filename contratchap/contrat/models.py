@@ -42,7 +42,7 @@ class Contrat(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return f'Contrat {self.title} de la catégorie {self.category}'
+        return f'Contrat {self.title}'
     
 class Pack(models.Model):
 

@@ -37,6 +37,7 @@ class CategoryListView(APIView):
     
 class CategoryDetailWithContractsView(APIView):
     permission_classes = [AllowAny]
+    authentication_classes = []
 
     def get(self, request, category_id):
         # On récupère la catégorie ou on renvoie une erreur 404 si elle n'existe pas

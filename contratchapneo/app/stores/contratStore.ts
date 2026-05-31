@@ -38,6 +38,65 @@ export const useContratStore = defineStore('contrat', ()=> {
     const categories = ref<Category[]>([]);
 
     // Actions
+
+    const getCategories = async()=> {
+
+        isLoading.value = true;
+        error.value = "";
+
+        try{
+            const response = await $api<Category[]>('/contrat/categories/',{
+                method: 'GET',
+            })
+
+            if (response){
+                isLoading.value = false;
+                categories.value = response;
+                console.log("Response reçue", categories.value)
+                return response;
+            } else {
+                isLoading.value = false;
+                console.log('Problème lors de la reccupérations des contrats', response);
+            }
+        } catch(err:any){
+            isLoading.value = false;
+            console.error('Erreu', err)
+            throw err
+        } finally{
+            isLoading.value = false;
+            console.log("Opération de reccupérations terminée")
+        }
+    }
+
+    const getCategoriesWithContrats = async(id:string)=> {
+
+        isLoading.value = true;
+        error.value = "";
+
+        try{
+            const response = await $api<Category[]>(`/contrat/categories/${id}`,{
+                method: 'GET',
+            })
+
+            if (response){
+                isLoading.value = false;
+                categories.value = response;
+                console.log("Response reçue", categories.value)
+                return response;
+            } else {
+                isLoading.value = false;
+                console.log('Problème lors de la reccupérations des contrats', response);
+            }
+        } catch(err:any){
+            isLoading.value = false;
+            console.error('Erreu', err)
+            throw err
+        } finally{
+            isLoading.value = false;
+            console.log("Catégorie et contrat terminées")
+        }
+    }
+
     const getContracts = async()=>{
         isLoading.value = true;
         error.value = "";
@@ -78,6 +137,8 @@ export const useContratStore = defineStore('contrat', ()=> {
         categories,
 
         // Actions
+        getCategories,
+        getCategoriesWithContrats,
         getContracts
     }
 })

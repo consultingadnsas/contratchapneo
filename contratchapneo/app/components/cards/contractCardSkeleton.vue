@@ -7,8 +7,6 @@
     >
       <div class="skeleton-bg"></div>
 
-      <div class="skeleton-overlay"></div>
-
       <div class="skeleton-info">
         <div class="skeleton-line title-line"></div>
         <div class="skeleton-line desc-line-1"></div>
@@ -29,15 +27,9 @@ import { ref, onMounted, onUnmounted } from 'vue'
 
 const cardsCount = ref(1)
 
-// Gestion adaptative du nombre de skeletons à afficher (1 sur mobile, 4 sur laptop)
 const updateCardsCount = () => {
   if (typeof window !== 'undefined') {
-    // Si l'écran est supérieur ou égal à 1024px (breakpoint laptop standard)
-    if (window.innerWidth >= 1024) {
-      cardsCount.value = 4
-    } else {
-      cardsCount.value = 1
-    }
+    cardsCount.value = window.innerWidth >= 1024 ? 4 : 1
   }
 }
 
@@ -52,7 +44,6 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-/* Grille de skeletons calquée sur votre .cards-container */
 .skeleton-grid {
   width: 100%;
   display: grid;
@@ -67,54 +58,28 @@ onUnmounted(() => {
   }
 }
 
-/* Structure de la carte Skeleton (Dimensions identiques à vos cartes réelles) */
 .pro-card-skeleton {
   position: relative;
   width: 100%;
   max-width: 320px;
   height: 270px;
   border-radius: 20px;
-  background-color: #e5e7eb; /* Base grise */
+  background-color: #e5e7eb;
   overflow: hidden;
   box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.05);
 }
 
-.skeleton-bg {
-  width: 100%;
-  height: 100%;
-  background-color: #e5e7eb;
-}
-
-.skeleton-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(to top, rgba(0, 0, 0, 0.6) 0%, rgba(0, 0, 0, 0) 100%);
-  z-index: 1;
-}
-
-/* Zone d'information */
-.skeleton-info {
-  position: absolute;
-  bottom: 12px;
-  left: 14px;
-  right: 14px;
-  z-index: 2;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  width: calc(100% - 120px); /* Laisse de la place pour les boutons à droite */
-}
-
-/* Animation d'onde Shimmer (Effet de balayage brillant) */
-.skeleton-line, .skeleton-circle, .skeleton-bg {
+/* Shimmer (animation de balayage) */
+.skeleton-bg,
+.skeleton-line,
+.skeleton-circle {
   position: relative;
   overflow: hidden;
 }
 
-.skeleton-line::after, .skeleton-circle::after, .skeleton-bg::after {
+.skeleton-bg::after,
+.skeleton-line::after,
+.skeleton-circle::after {
   content: "";
   position: absolute;
   top: 0;
@@ -127,9 +92,9 @@ onUnmounted(() => {
     rgba(255, 255, 255, 0) 0%,
     rgba(255, 255, 255, 0.4) 20%,
     rgba(255, 255, 255, 0.6) 60%,
-    rgba(255, 255, 255, 0) 100-percent
+    rgba(255, 255, 255, 0) 100%
   );
-  animation: shimmer 2s infinite;
+  animation: shimmer 1.8s infinite;
 }
 
 @keyframes shimmer {
@@ -138,7 +103,26 @@ onUnmounted(() => {
   }
 }
 
-/* Lignes de texte fictives */
+/* Fond du squelette */
+.skeleton-bg {
+  width: 100%;
+  height: 100%;
+  background-color: #e5e7eb;
+}
+
+/* Zone texte */
+.skeleton-info {
+  position: absolute;
+  bottom: 12px;
+  left: 14px;
+  right: 14px;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: calc(100% - 120px);
+}
+
 .skeleton-line {
   height: 12px;
   background-color: #d1d5db;
@@ -148,7 +132,7 @@ onUnmounted(() => {
 .title-line {
   height: 16px;
   width: 90%;
-  background-color: #9ca3af; /* Plus foncé pour le titre */
+  background-color: #9ca3af;
 }
 
 .desc-line-1 {
@@ -162,11 +146,11 @@ onUnmounted(() => {
 .sub-line {
   height: 10px;
   width: 50%;
-  background-color: rgba(52, 211, 153, 0.4); /* Teinte verte pour mimer votre badge */
+  background-color: rgba(52, 211, 153, 0.4);
   margin-top: 4px;
 }
 
-/* Boutons fictifs (En bas à droite) */
+/* Boutons */
 .skeleton-buttons {
   position: absolute;
   bottom: 9px;
@@ -185,12 +169,12 @@ onUnmounted(() => {
 .btn-small {
   width: 35px;
   height: 35px;
-  background-color: rgba(255, 255, 255, 0.2); /* Mime le bouton d'aperçu transparent */
+  background-color: rgba(255, 255, 255, 0.2);
 }
 
 .btn-large {
   width: 45px;
   height: 45px;
-  background-color: #bdc3c7; /* Mime le bouton d'achat principal */
+  background-color: #bdc3c7;
 }
 </style>
