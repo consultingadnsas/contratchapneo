@@ -11,7 +11,7 @@
         </div>
         <div class="pic-wrapper">
             <div class="pic-container">
-                <img src="../../assets/pictures/ContratChap/pexels-picha-stock-2210122-3894377.jpg" alt="Contrats OHADA">
+                <img src="../../assets/pictures/ContratChap/image_d_accueil.png" alt="Contrats OHADA">
 
                 <!-- HAUT -->
                 <stat-cards class="floating-card card-top-left"    title="Banque de contrats" @click="router.push('/contractBank')" />

@@ -4,10 +4,7 @@
 
             <div class=" flex flex-col items-center justify-center gap-2">
                 <h3>
-                    Découvrez tous nos outils de calculs de droit qui vous
-                    <span>
-                        facilitent la vie.
-                    </span>
+                    Et si on calculait vos droits en quelques clics ?
                 </h3>
             </div>
 
@@ -17,19 +14,14 @@
             <div class="section-overlay"></div>
             
             <div class="content-wrapper">
-                <h3 class="section-title">Quelques outils de calculs</h3>
+                <h3 class="section-title">Notre outil calcul vos droits pour que vous puissiez les faires valoir en toute sérénité</h3>
 
                 <div class="cards-grid">
-                    <statCards 
-                        v-for="(card, index) in legalPro" 
-                        :key="index"
-                        :title="card.title"
-                        class="hover-effect"
-                    />
+                   
                 </div>
             </div>
         </div>
-        <mainButton label="Outils de calcul"/>
+        <mainButton label="Outil de calcul"/>
     </section>
 </template>
 
@@ -46,7 +38,7 @@ export default {
     props: {
         titleHead: {
             type: String,
-            default: 'Outils de calculs'
+            default: 'Outil de calcul'
         }
     },
     components:{

@@ -4,7 +4,7 @@
             {{ title }}
         </h4>
 
-        <div class="btn-container">
+        <div :class="['btn-container', btnPosition]">
             <button>
                 <span>
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="size-4">
@@ -25,6 +25,10 @@ export default{
         title:{
             type:String,
             default:"Création et cession"
+        },
+        btnPosition:{
+            type:String,
+            default:'bottom-right'
         }
     }
 
@@ -63,8 +67,8 @@ export default{
     text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
     /* évite que le texte chevauche le bouton */
     padding-right: 3rem;
-    margin-left: 2.5rem;
-    margin-bottom: 0.2rem;
+    margin-left: 3rem;
+    margin-bottom: 0.5rem;
 }
 
 .btn-container {
@@ -105,6 +109,41 @@ export default{
     width: 16px;
     height: 16px;
 }
+.pos-center-bottom {
+    bottom: -5px;
+    left: 50%;
+    transform: translateX(-50%);
+    /* On arrondit les coins du haut pour que ça s'encastre bien */
+    border-top-left-radius: 1.5rem;
+    border-top-right-radius: 1.5rem;
+}
+.pos-bottom-right {
+    bottom: -5px;
+    right: -5px;
+    border-top-left-radius: 2rem;
+    border-bottom-right-radius: 1.5rem;
+}
+
+.pos-top-right {
+    top: -5px;
+    right: -5px;
+    border-bottom-left-radius: 2rem;
+    border-top-right-radius: 1.5rem;
+}
+
+.pos-bottom-left {
+    bottom: -5px;
+    left: -5px;
+    border-top-right-radius: 2rem;
+    border-bottom-left-radius: 1.5rem;
+}
+
+.pos-top-left {
+    top: -5px;
+    left: -5px;
+    border-bottom-right-radius: 2rem;
+    border-top-left-radius: 1.5rem;
+}
 
 /* Tablette */
 @media (min-width: 768px) {
@@ -143,8 +182,8 @@ export default{
 
     .features-cards h4 {
         font-size: 1rem;
-        margin-left: 1rem;
-        margin-bottom: 0;
+        margin-left: 2.5rem;
+        margin-bottom: 0.5rem;
     }
 
     .btn-container {
