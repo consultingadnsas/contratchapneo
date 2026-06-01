@@ -2,7 +2,7 @@
 
     <div class="main-wrapper">
         
-        <Navbar />
+        <Navbar/>
 
         <heroSecondSection />
 
