@@ -34,6 +34,12 @@ export default {
     gap: 1rem;
     cursor: pointer;
     width: 100%;
+    transition: all ease 0.2s;
+}
+
+.main-button:hover{
+    background: #135b8f;
+    transition: all 0.3s;
 }
 
 @media (max-width: 768px) {

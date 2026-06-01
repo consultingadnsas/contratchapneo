@@ -1,14 +1,18 @@
 <template>
-    <section class="main-section" data-aos="fade-up" data-aos-duration="3000" >
+    <section class="main-section" data-aos="fade-up" data-aos-duration="3000">
+        <!-- Flaque décorative étendue en bas -->
+        <div class="puddle-bg"></div>
 
         <div class="cards-container">
             <packCards
-                v-for="(card, index) in contratPack" 
+                v-for="(card, index) in contratPack"
                 :key="index"
                 :title="card.title"
                 :price="card.price"
                 :oldPrice="card.oldPrice"
                 :features="card.features"
+                :planType="card.plan"
+                :description="card.description"
             />
         </div>
     </section>
@@ -26,29 +30,78 @@ export default {
         mainButton
     },
     setup() {
-         const contratPack = ref([
-            {title: 'Pack basic', price: '29 000 FCFA', oldPrice: '400 000 FCFA', features: ['Accès à 10 documents juridiques payants', 'Très petites entreprises ou consultants individuels']},
-            {title: 'Pack business', price: '49 000 FCFA', oldPrice: '1 000 000 FCFA', features: ['Accès à 12 documents juridiques payants','Rédaction sur-mesure d\'un document juridique ' ,'PME et startups de moins de 10 employés avec un volume de tache juridique modéré']},
-            {title: 'Pack business pro', price: '99 000 FCFA', oldPrice: '1 500 000 FCFA', features: ['Accès à 25 documents juridiques payants','Rédaction sur-mesure de 3 documents juridiques ' ,'Suivi par une équipe de juriste(appui & conseils personnalisés)' ,'PME et startups de plus de 10 employés avec un volume de tache juridique important']},
-        ])
+        const contratPack = ref([
+            {
+                title: 'Pack basic',
+                price: '29 000 FCFA',
+                oldPrice: '400 000 FCFA',
+                features: [
+                    'Accès à 10 documents juridiques payants',
+                    'Très petites entreprises ou consultants individuels'
+                ],
+                plan: 'basique',
+                description: 'Packs idéal pour les petites entreprises'
+            },
+            {
+                title: 'Pack business',
+                price: '49 000 FCFA',
+                oldPrice: '1 000 000 FCFA',
+                features: [
+                    'Accès à 12 documents juridiques payants',
+                    'Rédaction sur-mesure d\'un document juridique',
+                    'PME et startups de moins de 10 employés avec un volume de tache juridique modéré'
+                ],
+                plan: 'business',
+                description: 'Accédez à une fourniture de contrat bien plus épurée et d\'autres avantages intéressant'
+            },
+            {
+                title: 'Pack business pro',
+                price: '99 000 FCFA',
+                oldPrice: '1 500 000 FCFA',
+                features: [
+                    'Accès à 25 documents juridiques payants',
+                    'Rédaction sur-mesure de 3 documents juridiques',
+                    'Suivi par une équipe de juriste(appui & conseils personnalisés)',
+                    'PME et startups de plus de 10 employés avec un volume de tache juridique important'
+                ],
+                plan: 'business-pro',
+                description: 'Profitez de la pleine puissance de Contratchap. Accédez à une panoplie de contrats, de service, de conseil, et de nos outils de calcules'
+            }
+        ]);
 
         return {
             contratPack
-        }
-    
+        };
     }
-}
+};
 </script>
 
 <style lang="css" scoped>
 .main-section {
     width: 100%;
     overflow: hidden;
+    position: relative;
+}
+
+/* Flaque décorative qui borde tout le bas de la section */
+.puddle-bg {
+    position: absolute;
+    bottom: -20px;
+    left: -5%;
+    width: 110%;
+    height: 250px;
+    background: #32f459;
+    /* Forme de vague qui s'étale horizontalement */
+    border-radius: 50% 50% 0 0 / 60% 60% 0 0;
+    filter: blur(30px);
+    opacity: 0.15;
+    z-index: 0;
+    pointer-events: none;
 }
 
 .main-section h3 {
     text-align: center;
-    font-size: 1.6rem; 
+    font-size: 1.6rem;
     padding: 1rem;
     font-weight: 700;
     color: #111827;
@@ -83,7 +136,7 @@ export default {
 .pic-container {
     position: relative;
     width: 100%;
-    height: 240px; /* Hauteur maîtrisée sur mobile */
+    height: 240px;
     border-radius: 1.25rem;
     overflow: hidden;
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
@@ -92,10 +145,9 @@ export default {
 .pic-container img {
     width: 100%;
     height: 100%;
-    object-fit: cover; /* L'image remplit l'espace sans se déformer */
+    object-fit: cover;
 }
 
-/* Le dégradé qui vient se poser au-dessus de l'image */
 .pic-container::after {
     content: "";
     position: absolute;
@@ -103,11 +155,9 @@ export default {
     left: 0;
     width: 100%;
     height: 100%;
-    /* Dégradé sombre de bas en haut pour donner du contraste */
     background: linear-gradient(to top, rgba(0, 0, 0, 0.4) 0%, transparent 70%);
-    pointer-events: none; /* Laisse passer les clics et le scroll tactile */
+    pointer-events: none;
 }
-
 
 /* --- CONTENEUR DES CARTES (Mobile) --- */
 .cards-container {
@@ -117,23 +167,21 @@ export default {
     gap: 1rem;
     padding: 1.5rem 1rem;
     width: 100%;
-    scrollbar-width: none; /* Cache la barre de défilement sur Firefox */
+    scrollbar-width: none;
     border-radius: 1rem;
-    background: var(--background-color);
 }
+
 .cards-container::-webkit-scrollbar {
-    display: none; /* Cache la barre de défilement sur Chrome/Safari */
+    display: none;
 }
 
-
-/* --- RESPONSIVE : TABLETTE & DESKTOP (A partir de 768px) --- */
+/* --- RESPONSIVE --- */
 @media (min-width: 768px) {
-    .main-section h3 { 
-        font-size: 2.2rem; 
+    .main-section h3 {
+        font-size: 2.2rem;
         padding: 3rem 1rem 2rem 1rem;
     }
 
-    /* On passe d'un affichage vertical à un affichage côte à côte */
     .business-pic-wrapper {
         flex-direction: row;
         align-items: center;
@@ -155,17 +203,16 @@ export default {
 
     .pic-container {
         flex: 1;
-        height: 360px; /* L'image prend de l'envergure sur grand écran */
+        height: 360px;
     }
-    
-    /* Changement de direction du dégradé pour le desktop si nécessaire */
+
     .pic-container::after {
         background: linear-gradient(to top, rgba(0, 0, 0, 0.3), transparent);
     }
 
     .cards-container {
         padding: 2rem 3rem;
-        justify-content: center; /* Centre les 3 packs sur grand écran */
+        justify-content: center;
         overflow-x: visible;
     }
 }
@@ -173,8 +220,9 @@ export default {
 @media (min-width: 1024px) {
     .business-pic-wrapper {
         max-width: 1200px;
-        margin: 0 auto; /* Centre le bloc de contenu sur les très grands écrans */
+        margin: 0 auto;
     }
+
     .description h4 {
         font-size: 2.2rem;
     }
