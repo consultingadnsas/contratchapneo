@@ -56,6 +56,15 @@ export default{
     -webkit-backdrop-filter: blur(15px);
     border: 1px solid rgba(255, 255, 255, 0.2);
     box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+    transition: all ease-in-out 0.4s;
+}
+
+.features-cards:hover{
+    background: rgba(203, 203, 203, 0.4);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(15px);
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+    transition: all ease-in-out 0.2s;
 }
 
 .features-cards h4 {
