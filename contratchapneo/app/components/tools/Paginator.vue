@@ -39,6 +39,20 @@ import { ref } from 'vue'
 
 export default {
   name: 'StaticPagination',
+  props: {
+    currentPage: {
+      type: Number,
+      required: true
+    },
+    totalCount: {
+      type: Number,
+      required: true
+    },
+    pageSize: {
+      type: Number,
+      default: 10
+    }
+  },
   emits: ['page-change'],
   setup(props, { emit }) {
     // Configuration statique

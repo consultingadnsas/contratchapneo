@@ -54,14 +54,15 @@ export default {
 
     // Logique centrale de filtrage
     const executeFilter = async (categoryId: string) => {
-      emit('filter-change', categoryId); // Optionnel, si un parent a besoin d'écouter
+      emit('filter-change', categoryId);
 
       if (!categoryId) {
-        // Si vide ("Tout"), on récupère tous les contrats
-        await categoryStore.getContracts();
+          await categoryStore.getContracts(1); // ← reset à page 1
       } else {
-        // Sinon, on récupère les contrats de cette catégorie spécifique
-        await categoryStore.getContractsByCategory(categoryId);
+          await categoryStore.getCategoriesWithContrats(categoryId);
+          // Note : getCategoriesWithContrats ne passe pas par la pagination DRF
+          // Si tu veux la pagination aussi sur le filtre catégorie,
+          // utilise getContracts(1, categoryId) à la place
       }
     };
 

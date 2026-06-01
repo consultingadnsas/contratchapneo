@@ -2,35 +2,39 @@
     <div class="contrat-card-section">
         
         <header>
-            <h2>
-                Découvrez tous nos contrats
-            </h2>
-            <p>Nos contrats sont conformes aux lois en vigeur dans l'espace OHADA.</p>
+            <h2>Découvrez tous nos contrats</h2>
+            <p>Nos contrats sont conformes aux lois en vigueur dans l'espace OHADA.</p>
         </header>
         
         <div class="toolbar">
-            <Basefilter 
-                class="toolbar__filter"
-            />
+            <Basefilter class="toolbar__filter" />
             <BaseSearchInput class="toolbar__search" placeholder="Rechercher un article ou un produit..."/>
         </div>
 
-        <div class="cards-container" v-if="!contratStore.isLoading">
-            <contratCards 
-                v-for="(contrat, index) in contratStore.contracts" 
-                :key="index"
-                :title="contrat.title"
-                :description="contrat.description"
-                :price="contrat.prix"
-                :image="contrat.picture ? contrat.picture : undefined"
+        <contractCardSkeleton v-if="contratStore.isLoading" />
+
+        <emptyState v-else-if="contratStore.contracts.length === 0" />
+
+        <template v-else>
+            <div class="cards-container">
+                <contratCards 
+                    v-for="(contrat, index) in contratStore.contracts" 
+                    :key="contrat.id || index"
+                    :title="contrat.title"
+                    :description="contrat.description"
+                    :price="contrat.prix"
+                    :image="contrat.picture || undefined"
+                />
+            </div>
+            
+            <Paginator 
+                :current-page="contratStore.currentPage"
+                :total-count="contratStore.totalCount"
+                :page-size="contratStore.pageSize"
+                @page-change="handlePageChange"
             />
-        </div>
+        </template>
 
-        <contractCardSkeleton v-if="contratStore.isLoading"/>
-
-        <emptyState v-if="contratStore.isLoading == false && contratStore.contracts.length < 1" />
-
-        <Paginator/>
     </div>
 </template>
 
@@ -69,11 +73,19 @@ export default {
             { title: 'contrat de bail', subtitle: '5 000 FCFA', description: 'Un contrat de bail est un accord entre un propriétaire et un locataire.'},
         ]);
 
+        const activeCategoryId = ref('');
+
+        const handlePageChange = (page: number) => {
+            contratStore.getContracts(page, activeCategoryId.value);
+        };
+
         onMounted(()=>{
-            contratStore.getContracts();
+            contratStore.getContracts(1);
         })
 
         return {
+            activeCategoryId,
+            handlePageChange,
             contratStore,
             legalContrat
         }

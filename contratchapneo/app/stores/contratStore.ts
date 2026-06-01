@@ -23,6 +23,13 @@ export interface Contrat{
     updated_at: string
 }
 
+export interface PaginatedResponse<T> {
+    count: number;
+    next: string | null;
+    previous: string | null;
+    results: T[];
+}
+
 export const useContratStore = defineStore('contrat', ()=> {
 
     const {$api} = useNuxtApp();
@@ -36,6 +43,12 @@ export const useContratStore = defineStore('contrat', ()=> {
     const category = ref<Category | null>(null)
     const contracts =  ref<Contrat[]>([]);
     const categories = ref<Category[]>([]);
+    // Ajouter dans le state :
+    const currentPage = ref(1);
+    const totalCount = ref(0);
+    const nextPage = ref<string | null>(null);
+    const previousPage = ref<string | null>(null);
+    const pageSize = ref(10);
 
     // Actions
 
@@ -68,65 +81,55 @@ export const useContratStore = defineStore('contrat', ()=> {
         }
     }
 
-    const getCategoriesWithContrats = async(id:string)=> {
-
+    const getCategoriesWithContrats = async (id: string) => {
         isLoading.value = true;
         error.value = "";
-
-        try{
-            const response = await $api<Category[]>(`/contrat/categories/${id}`,{
-                method: 'GET',
-            })
-
-            if (response){
-                isLoading.value = false;
-                categories.value = response;
-                console.log("Response reçue", categories.value)
-                return response;
+        try {
+            // Typage correct : la réponse contient une propriété 'contrats'
+            const response = await $api<{ id: string; title: string; contrats: Contrat[] }>(
+            `/contrat/categories/${id}/`,
+            { method: 'GET' }
+            );
+            if (response && response.contrats) {
+            contracts.value = response.contrats; // ✅ on assigne bien un tableau
             } else {
-                isLoading.value = false;
-                console.log('Problème lors de la reccupérations des contrats', response);
+            contracts.value = [];
             }
-        } catch(err:any){
+        } catch (err: any) {
+            console.error('Erreur', err);
+            throw err;
+        } finally {
             isLoading.value = false;
-            console.error('Erreu', err)
-            throw err
-        } finally{
-            isLoading.value = false;
-            console.log("Catégorie et contrat terminées")
         }
-    }
+    };
 
-    const getContracts = async()=>{
-        isLoading.value = true;
-        error.value = "";
+    const getContracts = async (page: number = 1, categoryId: string = '') => {
+    isLoading.value = true;
+    error.value = "";
 
-        console.log('Récupération des contrats en cours → Patientez :');
+    try {
+        const params: Record<string, any> = { page };
+        if (categoryId) params.category = categoryId;
 
-        try{
+        const response = await $api<PaginatedResponse<Contrat>>('/contrat/', {
+            method: 'GET',
+            params
+        });
 
-            const response = await $api<Contrat[]>('/contrat/', {
-                method: 'GET',
-            })
-
-            if (response){
-                isLoading.value = false;
-                contracts.value = response;
-                console.log("Response reçue", contracts.value)
-                return response;
-            } else {
-                isLoading.value = false;
-                console.log('Problème lors de la reccupérations des contrats', response);
-            }
-        } catch(err:any){
-            isLoading.value = false;
-            console.error('Erreu', err)
-            throw err
-        } finally{
-            isLoading.value = false;
-            console.log("Opération de reccupérations terminée")
+        if (response) {
+            contracts.value = response.results;
+            totalCount.value = response.count;
+            nextPage.value = response.next;
+            previousPage.value = response.previous;
+            currentPage.value = page;
         }
-    }
+        } catch (err: any) {
+            error.value = err.message;
+            throw err;
+        } finally {
+            isLoading.value = false;
+        }
+    };
 
     return{
         isLoading,
@@ -135,6 +138,11 @@ export const useContratStore = defineStore('contrat', ()=> {
         category,
         contracts,
         categories,
+        currentPage,
+        totalCount,
+        nextPage,
+        previousPage,
+        pageSize,
 
         // Actions
         getCategories,

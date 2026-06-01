@@ -14,6 +14,13 @@ from .serializers import (
     ContratSerializer, 
     CategoryWithContractsSerializer
 )
+from rest_framework.pagination import PageNumberPagination
+
+class ContratPagination(PageNumberPagination):
+    page_size = 10  # 10 éléments par page
+    page_size_query_param = 'page_size'
+    max_page_size = 100
+
 # Create your views here.
 
 class CategoryListView(APIView):
@@ -48,7 +55,7 @@ class CategoryDetailWithContractsView(APIView):
         )
         
         # On passe l'instance au serializer
-        serializer = CategoryWithContractsSerializer(category)
+        serializer = CategoryWithContractsSerializer(category, context={'request': request})
         
         return Response(serializer.data, status=status.HTTP_200_OK)
 
@@ -87,30 +94,32 @@ class CategoryOperationsView(APIView):
         
 """ About our contrat """
 
-class ContractListView(APIView):
+from rest_framework.generics import ListAPIView
+
+class ContractListView(ListAPIView):
     """
     Vue pour lister tous les contrats, avec possibilité de filtrer par catégorie
     via le paramètre de requête ?category=<uuid>
     """
     permission_classes = [AllowAny]
     authentication_classes = []
+    
+    # DRF s'occupe de lier le bon serializer et la pagination automatiquement
+    serializer_class = ContratSerializer
+    pagination_class = ContratPagination
 
-    def get(self, request):
-        # On récupère le paramètre 'category' depuis l'URL (ex: /contrat/?category=UUID)
-        category_id = request.query_params.get('category', None)
-
-        # Base de la requête : on sélectionne tous les contrats
-        # select_related('category') permet d'optimiser la requête SQL en joignant la table catégorie
-        queryset = Contrat.objects.all().select_related('category')
-
-        # Si le paramètre category est fourni, on filtre les résultats
+    def get_queryset(self):
+        # Toujours penser au order_by !
+        queryset = Contrat.objects.select_related('category').order_by('-created_at')
+        
+        # self.request est automatiquement disponible dans les vues génériques
+        category_id = self.request.query_params.get('category', None)
+        
         if category_id:
             queryset = queryset.filter(category_id=category_id)
+            
+        return queryset
 
-        # Sérialisation de la liste des contrats
-        serializer = ContratSerializer(queryset, many=True, context={'request': request})
-        
-        return Response(serializer.data, status=status.HTTP_200_OK)
 
 class ContractsView(APIView):
     
@@ -128,7 +137,7 @@ class ContractsView(APIView):
         contrat.save(update_fields=['views'])
 
         # 3. Sérialisation des données de base (JSON)
-        serializer = ContratSerializer(contrat)
+        serializer = ContratSerializer(contrat, context={'request': request})
         data = serializer.data  # On extrait le dictionnaire des données
 
         # 4. Extraction sécurisée de la première page du PDF
