@@ -8,6 +8,8 @@
 
         <bankContratSection />
 
+        <companySolutions />
+
         <numberGreen />
 
         <ProSection title-head="Les professionnels du droits"/>

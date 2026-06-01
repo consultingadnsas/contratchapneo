@@ -1,27 +1,6 @@
 <template>
     <section class="main-section" data-aos="fade-up" data-aos-duration="3000" >
 
-        <h3>
-            Nos solutions pour les entreprises
-        </h3>
-
-        <div class="business-pic-wrapper">
-            <div class="description flex flex-col gap-4">
-                <h4>
-                    Nous avons aussi pensé aux entreprises 
-                </h4>
-                <p>
-                    Nos packs business adaptés aux différents types d'entreprises.
-                    Achetez nos packs et bénéficier d'un avantage sur tout le reste
-                </p>
-                <mainButton label="Ouvrir un compte"/>
-            </div>
-            
-            <div class="pic-container">
-                <img src="../../assets/pictures/ContratChap/black-people.jpg" alt="Solutions Business">
-            </div>
-        </div>
-
         <div class="cards-container">
             <packCards
                 v-for="(card, index) in contratPack" 
@@ -37,7 +16,6 @@
 
 <script lang="ts">
 import { ref } from 'vue';
-import companyPic from '../../assets/pictures/partners/PROPARCO_Logo_RVB-1.png'
 import packCards from '../cards/packCards.vue';
 import mainButton from '../buttons/mainButton.vue';
 
@@ -48,9 +26,6 @@ export default {
         mainButton
     },
     setup() {
-        const mypic = companyPic;
-        const logos = Array(12).fill(mypic)
-
          const contratPack = ref([
             {title: 'Pack basic', price: '29 000 FCFA', oldPrice: '400 000 FCFA', features: ['Accès à 10 documents juridiques payants', 'Très petites entreprises ou consultants individuels']},
             {title: 'Pack business', price: '49 000 FCFA', oldPrice: '1 000 000 FCFA', features: ['Accès à 12 documents juridiques payants','Rédaction sur-mesure d\'un document juridique ' ,'PME et startups de moins de 10 employés avec un volume de tache juridique modéré']},
@@ -58,9 +33,9 @@ export default {
         ])
 
         return {
-            logos,
             contratPack
         }
+    
     }
 }
 </script>
