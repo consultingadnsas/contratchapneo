@@ -23,6 +23,7 @@
                         :title="card.title"
                         :description="card.description"
                         :subtitle="card.subtitle"
+                        :image="card.visuel"
                         @buy="openModal" 
                         @view="openViewModal"
                     />
@@ -66,10 +67,10 @@ export default {
     },
     setup() {
         const legalContrat = ref([
-            { title: 'Contrat de travail' , subtitle: '100% Gratuit', description: 'Un contrat de travail est un accord entre un employeur et son employé.'},
-            { title: 'Contrat de freelance', subtitle: '15 000 FCFA', description: 'Un contrat de freelance est un accord entre un travailleur indépendant et un client.'},
-            { title: 'contrat de vente', subtitle: '40 000 FCFA', description: 'Un contrat de vente est un accord entre un vendeur et un acheteur.'},
-            { title: 'contrat de bail', subtitle: '5 000 FCFA', description: 'Un contrat de bail est un accord entre un propriétaire et un locataire.'},
+            { title: 'Contrat de travail' , subtitle: '100% Gratuit', description: 'Un contrat de travail est un accord entre un employeur et son employé.', visuel:'/travail.png'},
+            { title: 'Contrat de Graphiste', subtitle: '15 000 FCFA', description: 'Un contrat de graphiste est un accord entre un graphiste indépendant et un client.', visuel:'/graphiste.png'},
+            { title: 'contrat de vidéaste', subtitle: '40 000 FCFA', description: 'Un contrat de vidéaste est un accord entre un vidéaste et un acheteur.', visuel:'/videaste.png'},
+            { title: 'contrat de restauration', subtitle: '5 000 FCFA', description: 'Un contrat de de restauration certifie une fourniture d\'aliment entre une entreprise et un restaurant.', visuel:'/resto.png'},
         ]);
 
         const categoryContrat = ref([
