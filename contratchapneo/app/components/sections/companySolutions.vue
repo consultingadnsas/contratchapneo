@@ -79,6 +79,8 @@ export default {
 <style lang="css" scoped>
 .main-section {
     width: 100%;
+    position: relative;
+    top: -130px;
     overflow: hidden;
     position: relative;
 }

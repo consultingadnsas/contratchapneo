@@ -51,7 +51,10 @@ export default {
     background-color: var(--color-dark);
     color: #ffffff;
     padding: 3rem 1.5rem;
-    width: 100%;
+    width: 110%;
+    margin-left: 30px;
+    position: relative;
+    top: -100px;
 }
 
 /* ── Conteneur principal ─────────────────────────────────────── */
@@ -224,7 +227,9 @@ export default {
 
 @media (min-width: 1200px) {
     .support-banner {
-        width: 95%;
+        width: 92%;
+        margin-left: 0;
     }
+
 }
 </style>

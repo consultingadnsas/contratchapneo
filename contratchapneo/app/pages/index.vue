@@ -12,11 +12,11 @@
 
         <numberGreen />
 
+        <companieSection />
+
         <ProSection title-head="Les professionnels du droits"/>
 
         <calcul-tool-section/>
-
-        <companieSection />
 
         <footer-section/>
 

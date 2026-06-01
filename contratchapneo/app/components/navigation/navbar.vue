@@ -73,6 +73,7 @@
                 <li><a href="#">Conseils juridiques</a></li>
                 <li><a href="#">Nos professionnels</a></li>
                 <li><a href="#">Outil de calcul</a></li>
+                <li><a href="#">A propos</a></li>
             </ul>
 
             <!-- CTA desktop -->
@@ -151,6 +152,7 @@
                     <li><a href="#" @click="toggleMenu">Conseils juridiques</a></li>
                     <li><a href="#" @click="toggleMenu">Nos professionnels</a></li>
                     <li><a href="#" @click="toggleMenu">Outil de calcul</a></li>
+                    <li><a href="#" @click="toggleMenu">A propos</a></li>
                 </ul>
                 <a href="#" class="cta-mobile" @click="toggleMenu">Connexion</a>
             </div>
