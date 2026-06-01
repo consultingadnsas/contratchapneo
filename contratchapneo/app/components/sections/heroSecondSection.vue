@@ -11,7 +11,7 @@
         </div>
         <div class="pic-wrapper">
             <div class="pic-container">
-                <img src="../../assets/pictures/ContratChap/image_d_accueil.png" alt="Contrats OHADA">
+                <img src="../../assets/pictures/ContratChap/Accueil 2.png" alt="Contrats OHADA">
 
                 <!-- HAUT -->
                 <stat-cards class="floating-card card-top-left"    title="Banque de contrats" @click="router.push('/contractBank')" />
@@ -95,7 +95,6 @@ export default defineComponent({
 <style scoped>
 /* ── 📱 Mobile First (Valeurs par défaut pour Téléphones) ─────── */
 .hero-section {
-    background: #272147;
     width: 110%;
     margin-left: 30px;;
     min-height: 100vh;
@@ -106,9 +105,10 @@ export default defineComponent({
     flex-direction: column;   /* empilé sur mobile */
     align-items: center;
     gap: 2rem;
-    padding: 2rem 2.25rem;
+    padding: 4rem 1rem 1rem 1rem;
     box-sizing: border-box;
     position: relative;
+    background: radial-gradient(circle, #202b4a 30%, #0f0f0f 100%);
 }
 
 /* Bloc texte */
@@ -165,10 +165,30 @@ export default defineComponent({
     justify-content: center;
     align-items: center;
 }
+.pic-container::before {
+    content: '';
+    position: absolute;
+    
+    /* 1. Le déplacement en haut à gauche */
+    /* Des valeurs négatives le font sortir de sa boîte vers le haut et la gauche */
+    top: 25%; 
+    left: -12%; 
+    
+    /* 2. Une forme concrète et stricte */
+    width: 120%; /* Le cercle fait la même taille que le conteneur du téléphone */
+    aspect-ratio: 1 / 1;
+    border-radius: 50%; /* Ça force la forme en cercle parfait */
+    
+    /* 3. Ton dégradé exact */
+    background: radial-gradient(circle, #32f459 30%, #4db562 100%);
+    
+    /* Assure que le cercle reste bien derrière le téléphone */
+    z-index: 0; 
+}
 
 .pic-container img {
     width: 200px;
-    min-width: 200px;
+    min-width: 300px;
     aspect-ratio: 1 / 1; 
     height: auto; 
     object-fit: cover; 
@@ -241,7 +261,6 @@ export default defineComponent({
     .pic-wrapper {
         padding: 160px 80px;
     }
-
     /* L'image passe à sa taille moyenne */
     .pic-container, .pic-container img {
         width: 280px;
@@ -272,6 +291,7 @@ export default defineComponent({
         margin-left: 0; /* On s'assure qu'il n'y a plus de marge gauche */
         height: 100vh !important;
         min-height: 600px !important;
+        top: 0; /* Plus besoin de pousser vers le bas */
     }
 
     .hero-section > div:first-child {
@@ -287,8 +307,30 @@ export default defineComponent({
     /* Taille maximale pour le grand écran */
     .pic-container, .pic-container img {
         width: 300px;
-        min-width: 340px;
+        min-width: 350px;
     }
+
+    .pic-container::before {
+    content: '';
+    position: absolute;
+    
+    /* 1. Le déplacement en haut à gauche */
+    /* Des valeurs négatives le font sortir de sa boîte vers le haut et la gauche */
+    top: 20%; 
+    left: 10%; 
+    
+    /* 2. Une forme concrète et stricte */
+    width: 80%; /* Le cercle fait la même taille que le conteneur du téléphone */
+    aspect-ratio: 1 / 1;
+    border-radius: 50%; /* Ça force la forme en cercle parfait */
+    
+    /* 3. Ton dégradé exact */
+    background: radial-gradient(circle, #32f459 30%, #4db562 100%);
+    
+    /* Assure que le cercle reste bien derrière le téléphone */
+    z-index: 0; 
+}
+    
 
     .floating-card {
         width: 160px !important;

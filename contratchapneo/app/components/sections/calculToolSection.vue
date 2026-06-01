@@ -77,6 +77,7 @@ export default {
     flex-direction: column;
     align-items: center;
     gap: 3rem;
+    color:aquamarine;
 }
 
 /* --- En-tête (Textes du haut) --- */
@@ -103,7 +104,7 @@ export default {
 /* --- Zone Bleue (Le Simulateur) --- */
 .calculator-section {
     position: relative;
-    background: var(--background-color, #1e1b4b); /* Un bleu très sombre fait sérieux/juridique */
+    background: #272147; /* Un bleu très sombre fait sérieux/juridique */
     padding: 4rem 1rem;
     border-radius: 1.5rem; /* Coins plus arrondis pour moderniser */
     overflow: hidden;
