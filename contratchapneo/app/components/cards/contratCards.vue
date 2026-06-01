@@ -22,6 +22,7 @@
                 </span>
             </button>
         </div>
+
         <div class="btn_container2">
             <button @click.stop="()=>{$emit('view')}">
                 <span>
@@ -31,6 +32,8 @@
                     </svg>
                 </span>
             </button>
+            <!-- Tooltip "Aperçu" -->
+            <span class="tooltip">Aperçu</span>
         </div>
     </article>
 </template>
@@ -59,16 +62,15 @@ export default defineComponent({
             default: defaultImg
         }
     },
-    emits:['buy', 'view'],
-    setup(props, {emit}){
-
-        function buyContrat(){
+    emits: ['buy', 'view'],
+    setup(props, { emit }) {
+        function buyContrat() {
             console.log('vous avez cliqué')
         }
-        function viewContrat(){
+        function viewContrat() {
             console.log('vous avez cliqué pour voir')
         }
-        return{
+        return {
             buyContrat,
             viewContrat
         }
@@ -79,14 +81,14 @@ export default defineComponent({
 <style scoped>
 .pro-card {
     position: relative;
-    width: 100%;        /* 1. Fixe une largeur de base (ex: 280px) */
-    height: 350px;       /* 2. Fixe la hauteur que tu souhaites (ex: 350px) */
+    width: 100%;
+    height: 350px;
     border-radius: 4px;
     overflow: hidden;
     cursor: pointer;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
     background-color: #1a1a1a;
-    flex-shrink: 0;      /* Évite que la carte s'écrase si elle est dans un Flexbox */
+    flex-shrink: 0;
 }
 
 /* Image de fond avec effet de zoom au survol */
@@ -103,7 +105,7 @@ export default defineComponent({
     transform: scale(1.1);
 }
 
-/* Overlay : sombre en bas (pour le texte) et transparent en haut */
+/* Overlay : sombre en bas et transparent en haut */
 .overlay {
     position: absolute;
     inset: 0;
@@ -138,7 +140,7 @@ export default defineComponent({
 .pro-info {
     font-size: 0.80rem;
     font-weight: 500;
-    color: #d1d1d1; /* Un gris clair pour le texte descriptif */
+    color: #d1d1d1;
 }
 
 .pro-specialty {
@@ -153,13 +155,13 @@ export default defineComponent({
     color: #ffffff;
 }
 
-/* Optionnel : petite barre d'accentuation au survol */
+/* Barre d'accentuation au survol */
 .pro-name::after {
     content: '';
     display: block;
     width: 0;
     height: 2px;
-    background: #34d399; /* Ton vert d'accentuation */
+    background: #34d399;
     margin-top: 4px;
     transition: width 0.3s ease;
 }
@@ -168,6 +170,7 @@ export default defineComponent({
     width: 40px;
 }
 
+/* Bouton d'achat */
 .btn-container {
     z-index: 4;
     position: absolute;
@@ -181,9 +184,11 @@ export default defineComponent({
     width: 45px;
     height: 45px;
 }
+
+/* Bouton de vue */
 .btn_container2 {
     z-index: 3;
-    position:absolute;
+    position: absolute;
     bottom: 9px;
     right: 60px;
     display: flex;
@@ -193,6 +198,51 @@ export default defineComponent({
     border-radius: 999px;
     width: 45px;
     height: 45px;
+    transition: all ease-in-out 0.4s;
+}
+
+.btn_container2:hover {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+}
+
+/* Style du tooltip */
+.tooltip {
+    position: absolute;
+    bottom: 50px; /* au-dessus du bouton */
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: rgba(0, 0, 0, 0.8);
+    color: #fff;
+    font-size: 0.75rem;
+    font-weight: 500;
+    padding: 0.3rem 0.6rem;
+    border-radius: 4px;
+    white-space: nowrap;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s ease, visibility 0.2s ease;
+    pointer-events: none; /* pour ne pas bloquer le clic */
+}
+
+/* Petite flèche sous le tooltip */
+.tooltip::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 5px solid transparent;
+    border-top-color: rgba(0, 0, 0, 0.8);
+}
+
+/* Affichage du tooltip au survol du conteneur */
+.btn_container2:hover .tooltip {
+    opacity: 1;
+    visibility: visible;
 }
 
 .pro-card button {
@@ -215,7 +265,7 @@ export default defineComponent({
 }
 
 .pro-card button svg {
-    width: 20px;  /* Taille explicite de l'icône */
+    width: 20px;
     height: 20px;
 }
 

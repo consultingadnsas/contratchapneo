@@ -33,7 +33,26 @@ export default {
     display: flex;
     gap: 1rem;
     cursor: pointer;
-    width: 280px;
+    width: 100%;
+    transition: all ease 0.2s;
+}
+
+.main-button:hover{
+    background: #135b8f;
+    transition: all 0.3s;
+}
+
+@media (max-width: 768px) {
+    .main-button {
+        width: 100%;
+        justify-content: center;
+    }
+}
+@media (max-width: 1280px) {
+    .main-button {
+        width: 280px;
+        justify-content: center;
+    }
 }
 
 </style>

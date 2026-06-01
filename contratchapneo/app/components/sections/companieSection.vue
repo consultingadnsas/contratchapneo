@@ -45,6 +45,8 @@ export default {
 <style lang="css" scoped>
 .main-section {
     width: 100%;
+    position: relative;
+    top: -150px;
     overflow: hidden; /* Sécurité supplémentaire */
 }
 
