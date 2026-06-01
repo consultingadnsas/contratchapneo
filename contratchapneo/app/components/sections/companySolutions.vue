@@ -1,6 +1,9 @@
 <template>
     <section class="main-section" data-aos="fade-up" data-aos-duration="3000" >
-
+        <h3>
+            Découvrez nos Différents packs de solutions juridiques adaptés à 
+            <span>vos besoins spécifiques.</span>
+        </h3>
         <div class="cards-container">
             <packCards
                 v-for="(card, index) in contratPack" 
@@ -43,6 +46,8 @@ export default {
 <style lang="css" scoped>
 .main-section {
     width: 100%;
+    position: relative;
+    top: -130px;
     overflow: hidden;
 }
 

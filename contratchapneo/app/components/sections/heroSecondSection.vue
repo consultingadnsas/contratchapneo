@@ -97,7 +97,7 @@ export default defineComponent({
 .hero-section {
     background: #272147;
     width: 110%;
-    margin-left: 0;
+    margin-left: 30px;;
     min-height: 100vh;
     overflow-x: hidden; /* empêche le débordement horizontal causé par les cartes absolues */
     border-bottom-left-radius: 1rem;

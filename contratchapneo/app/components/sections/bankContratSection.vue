@@ -111,14 +111,17 @@ export default {
 .main-section {
     padding: 2rem 0;
     background: none;
+    position: relative;
+    top: -40px;
 }
 
 .wrapper-content {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 2rem;
-    width: 100%;
+    gap: 0rem;
+    width: 110%;
+    margin-left: 10px;;
 }
 
 /* --- STYLES ORIGINAUX DES CONTRATS (carrousel mobile / grille desktop) --- */
@@ -246,6 +249,7 @@ export default {
     .category-carousel-track > * {
         width: 220px;
     }
+
 }
 
 /* --- Autres styles partagés (inchangés) --- */
@@ -278,6 +282,10 @@ export default {
     }
     .subtitle {
         font-size: 1.3rem;
+    }
+    .wrapper-content {
+        width: 100%;
+       margin-left: 0;
     }
 }
 </style>
