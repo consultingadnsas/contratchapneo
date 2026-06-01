@@ -11,7 +11,6 @@
             <ul class="nav-links-desktop">
                 <li><a href="/">Accueil</a></li>
 
-                <!-- Dropdown Banque de contrats -->
                 <li 
                     class="dropdown-item"
                     @mouseenter="isDropdownOpen = true"
@@ -24,62 +23,48 @@
                         </svg>
 
                     </a>
-
                     <transition name="dropdown-fade">
                         <ul v-if="isDropdownOpen" class="dropdown-menu">
-                            <li>
-                                <a href="contractbank">
-                                    <span class="dropdown-icon">
-                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
-                                            <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
-                                        </svg>
-                                    </span>
-                                    <span>
-                                        <strong>Banque de contrats</strong>
-                                        <small>Parcourez nos modèles</small>
-                                    </span>
-                                </a>
-                            </li>
-                            <li>
-                                <a href="#">
-                                    <span class="dropdown-icon">
-                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
-                                            <path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L6.832 19.82a4.5 4.5 0 0 1-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 0 1 1.13-1.897L16.863 4.487Zm0 0L19.5 7.125" />
-                                        </svg>
-                                    </span>
-                                    <span>
-                                        <strong>Contrat sur mesure</strong>
-                                        <small>Créez votre contrat unique</small>
-                                    </span>
-                                </a>
-                            </li>
-                            <li>
-                                <a href="#">
-                                    <span class="dropdown-icon">
-                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
-                                            <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 9.776c.112-.017.227-.026.344-.026h15.812c.117 0 .232.009.344.026m-16.5 0a2.25 2.25 0 0 0-1.883 2.542l.857 6a2.25 2.25 0 0 0 2.227 1.932H19.05a2.25 2.25 0 0 0 2.227-1.932l.857-6a2.25 2.25 0 0 0-1.883-2.542m-16.5 0V6A2.25 2.25 0 0 1 6 3.75h3.879a1.5 1.5 0 0 1 1.06.44l2.122 2.12a1.5 1.5 0 0 0 1.06.44H18A2.25 2.25 0 0 1 20.25 9v.776" />
-                                        </svg>
-                                    </span>
-                                    <span>
-                                        <strong>Pack de contrats</strong>
-                                        <small>Offres groupées avantageuses</small>
-                                    </span>
-                                </a>
-                            </li>
+                            <li><a href="#">Création & Cession</a></li>
+                            <li><a href="#">Partenariat & Investissement</a></li>
+                            <li><a href="#">Prestation de service & vente</a></li>
+                            <li><a href="#">Technologie & Digital</a></li>
                         </ul>
                     </transition>
                 </li>
 
                 <li><a href="#">Conseils juridiques</a></li>
-                <li><a href="#">Nos professionnels</a></li>
+                <!-- Dropdown Nos professionnels -->
+                <li 
+                    class="dropdown-item"
+                    @mouseenter="isProDropdownOpen = true"
+                    @mouseleave="isProDropdownOpen = false"
+                >
+                    <a href="#" class="dropdown-trigger">
+                        Nos professionnels
+                        <svg :class="['chevron', { 'is-open': isProDropdownOpen }]" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="6 9 12 15 18 9"/>
+                        </svg>
+                    </a>
+
+                    <transition name="dropdown-fade">
+                        <!-- J'ai ajouté la classe 'simple-menu' pour ajuster la largeur en CSS plus bas -->
+                        <ul v-if="isProDropdownOpen" class="dropdown-menu simple-menu">
+                            <li><a href="#">Commissaire de justice</a></li>
+                            <li><a href="#">Avocat</a></li>
+                            <li><a href="#">Notaire</a></li>
+                            <li><a href="#">Comptable</a></li>
+                        </ul>
+                    </transition>
+                </li>
                 <li><a href="#">Outil de calcul</a></li>
                 <li><a href="#">A propos</a></li>
             </ul>
 
             <!-- CTA desktop -->
-            <ul class="nav-links-desktop">
+           <div class="cta-container desktop-only">
                 <a href="#" class="cta-desktop">Connexion</a>
-            </ul>
+            </div>
 
             <!-- Hamburger -->
             <Hamburger
@@ -109,48 +94,37 @@
 
                         <transition name="accordion">
                             <ul v-if="isMobileDropdownOpen" class="mobile-accordion__list">
-                                <li>
-                                    <a href="contractbank" @click="toggleMenu">
-                                        <span class="dropdown-icon">
-                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
-                                                <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
-                                            </svg>
-                                        </span>
-                                        <span>
-                                            Banque de contrats
-                                        </span>
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="#" @click="toggleMenu">
-                                    <span class="dropdown-icon">
-                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
-                                            <path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L6.832 19.82a4.5 4.5 0 0 1-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 0 1 1.13-1.897L16.863 4.487Zm0 0L19.5 7.125" />
-                                        </svg>
-                                    </span>
-                                    <span>
-                                        contrat sur mesure
-                                    </span>
-                                </a>
-                                </li>
-                                <li>
-                                    <a href="#" @click="toggleMenu">
-                                    <span class="dropdown-icon">
-                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
-                                            <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 9.776c.112-.017.227-.026.344-.026h15.812c.117 0 .232.009.344.026m-16.5 0a2.25 2.25 0 0 0-1.883 2.542l.857 6a2.25 2.25 0 0 0 2.227 1.932H19.05a2.25 2.25 0 0 0 2.227-1.932l.857-6a2.25 2.25 0 0 0-1.883-2.542m-16.5 0V6A2.25 2.25 0 0 1 6 3.75h3.879a1.5 1.5 0 0 1 1.06.44l2.122 2.12a1.5 1.5 0 0 0 1.06.44H18A2.25 2.25 0 0 1 20.25 9v.776" />
-                                        </svg>
-                                    </span>
-                                    <span>
-                                        Pack de contrats
-                                    </span>
-                                    </a>
-                                </li>
+                                <li><a href="#" @click="toggleMenu">Création & Cession</a></li>
+                                <li><a href="#" @click="toggleMenu">Partenariat & Investissement</a></li>
+                                <li><a href="#" @click="toggleMenu">Prestation de service & vente</a></li>
+                                <li><a href="#" @click="toggleMenu">Technologie & Digital</a></li>
+                                <li><a href="#" @click="toggleMenu">Evènementiel, Restauration & Logistique</a></li>
                             </ul>
                         </transition>
                     </li>
 
                     <li><a href="#" @click="toggleMenu">Conseils juridiques</a></li>
-                    <li><a href="#" @click="toggleMenu">Nos professionnels</a></li>
+                    <!-- Accordion Nos professionnels sur mobile -->
+                    <li class="mobile-accordion">
+                        <button 
+                            class="mobile-accordion__trigger"
+                            @click="isMobileProDropdownOpen = !isMobileProDropdownOpen"
+                        >
+                            Nos professionnels
+                            <svg :class="['chevron', { 'is-open': isMobileProDropdownOpen }]" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"/>
+                            </svg>
+                        </button>
+
+                        <transition name="accordion">
+                            <ul v-if="isMobileProDropdownOpen" class="mobile-accordion__list">
+                                <li><a href="#" @click="toggleMenu">Commissaire de justice</a></li>
+                                <li><a href="#" @click="toggleMenu">Avocat</a></li>
+                                <li><a href="#" @click="toggleMenu">Notaire</a></li>
+                                <li><a href="#" @click="toggleMenu">Comptable</a></li>
+                            </ul>
+                        </transition>
+                    </li>
                     <li><a href="#" @click="toggleMenu">Outil de calcul</a></li>
                     <li><a href="#" @click="toggleMenu">A propos</a></li>
                 </ul>
@@ -179,10 +153,16 @@ export default {
         const isScrolled = ref<boolean>(false);
         const isDropdownOpen = ref<boolean>(false);
         const isMobileDropdownOpen = ref<boolean>(false);
+        const isProDropdownOpen = ref<boolean>(false);
+        const isMobileProDropdownOpen = ref<boolean>(false);
 
         const toggleMenu = () => {
             isMenuOpen.value = !isMenuOpen.value;
-            if (!isMenuOpen.value) isMobileDropdownOpen.value = false;
+            if (!isMenuOpen.value) {
+                isMobileDropdownOpen.value = false;
+                isProDropdownOpen.value = false;
+                isMobileProDropdownOpen.value = false;
+            }
         };
 
         const handleScroll = () => {
@@ -198,7 +178,7 @@ export default {
             window.removeEventListener('scroll', handleScroll);
         });
 
-        return { isMenuOpen, isScrolled, isDropdownOpen, isMobileDropdownOpen, toggleMenu };
+        return { isMenuOpen, isScrolled, isDropdownOpen, isMobileDropdownOpen, isProDropdownOpen, isMobileProDropdownOpen, toggleMenu };
     },
 };
 </script>
@@ -445,7 +425,7 @@ export default {
         list-style: none;
         padding: 0;
         margin: 0;
-        gap: 0.5rem;
+        gap: 0.2rem;
         flex: 1;
         justify-content: center;
     }
@@ -455,10 +435,10 @@ export default {
         display: flex;
         align-items: center;
         white-space: nowrap;
-        font-size: 0.9rem;
+        font-size: clamp(0.8rem, 0.9vw, 0.9rem);
         gap: 0.3rem;
         font-weight: 500;
-        padding: 0.5rem 1rem;
+        padding: 0.5rem 0.6rem;
         border-radius: 50px;
         color: var(--tertiary-color);
         text-decoration: none;
@@ -470,6 +450,11 @@ export default {
     .nav-links-desktop li .dropdown-trigger:hover {
         background: rgba(255, 255, 255, 0.4);
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+    }
+    .cta-container.desktop-only {
+        display: block;
+        /* Empêche le bouton d'être écrasé par les liens s'il manque de place */
+        flex-shrink: 0; 
     }
 
     /* Dropdown desktop */
@@ -563,7 +548,7 @@ export default {
         white-space: nowrap;
         background: var(--primary-color);
         color: white;
-        padding: 0.6rem 1.25rem;
+        padding: 0.55rem 1.15rem;
         border-radius: 50px;
         font-weight: 800;
         font-size: 0.88rem;
@@ -582,6 +567,15 @@ export default {
 
     .nav-mobile-menu {
         display: none !important;
+    }
+    .dropdown-menu.simple-menu {
+        width: 200px; /* Plus fin que l'autre menu */
+    }
+
+    .dropdown-menu.simple-menu li a {
+        font-weight: 500 !important;
+        font-size: 0.9rem !important;
+        padding: 0.6rem 1rem !important; /* Un peu moins haut que les gros boutons de l'autre menu */
     }
 }
 

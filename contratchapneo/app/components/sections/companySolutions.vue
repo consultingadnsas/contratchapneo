@@ -2,7 +2,10 @@
     <section class="main-section" data-aos="fade-up" data-aos-duration="3000">
         <!-- Flaque décorative étendue en bas -->
         <div class="puddle-bg"></div>
-
+        <h3>
+            Découvrez nos packs adaptés à
+            <span>vos besoins</span>
+        </h3>
         <div class="cards-container">
             <packCards
                 v-for="(card, index) in contratPack"
