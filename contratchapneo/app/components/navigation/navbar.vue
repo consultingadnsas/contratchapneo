@@ -58,7 +58,7 @@
                     </transition>
                 </li>
                 <li><a href="#">Outil de calcul</a></li>
-                <li><a href="#">A propos</a></li>
+                <li><a href="/about">A propos</a></li>
             </ul>
 
             <!-- CTA desktop -->
@@ -126,7 +126,7 @@
                         </transition>
                     </li>
                     <li><a href="#" @click="toggleMenu">Outil de calcul</a></li>
-                    <li><a href="#" @click="toggleMenu">A propos</a></li>
+                    <li><a href="/about" @click="toggleMenu">A propos</a></li>
                 </ul>
                 <a href="#" class="cta-mobile" @click="toggleMenu">Connexion</a>
             </div>

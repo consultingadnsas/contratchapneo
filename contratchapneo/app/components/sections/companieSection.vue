@@ -17,6 +17,14 @@
 <script lang="ts">
 import { ref } from 'vue';
 import companyPic from '../../assets/pictures/partners/PROPARCO_Logo_RVB-1.png';
+import companyPic2 from '../../assets/pictures/partners/6324bc47b4b22-millenium-fdfp-cote-ivoire.png';
+import companyPic3 from '../../assets/pictures/partners/millennium-challenge-corporation-logo-png_seeklogo-245301.png';
+import companyPic4 from '../../assets/pictures/partners/OIP.webp';
+import companyPic5 from '../../assets/pictures/partners/OIP (4).webp';
+import companyPic6 from '../../assets/pictures/partners/OIP (2).webp';
+import companyPic7 from '../../assets/pictures/partners/OIP (1).webp';
+import companyPic8 from '../../assets/pictures/partners/giz-logo-01.jpg';
+import companyPic9 from '../../assets/pictures/partners/LOGO ROND.png';
 import packCards from '../cards/packCards.vue';
 export default {
     name: 'CompanySection',
@@ -25,8 +33,20 @@ export default {
     },
     setup() {
         const mypic = companyPic;
+        const mypic2 = companyPic2;
+        const mypic3 = companyPic3;
+        const mypic4 = companyPic4;
+        const mypic5 = companyPic5;
+        const mypic6 = companyPic6;
+        const mypic7 = companyPic7;
+        const mypic8 = companyPic8;
+        const mypic9 = companyPic9;
         // On garde 10 ou plus pour bien remplir l'écran
-        const logos = Array(12).fill(mypic)
+        const logos = ref([
+            mypic, mypic2, mypic3, mypic4, mypic5, mypic6, mypic7, mypic8, mypic9,
+            mypic2, mypic3, mypic4, mypic5, mypic6, mypic7, mypic8, mypic9,
+            // Ajoutez-en plus si nécessaire
+        ])
 
          const contratPack = ref([
             {title: 'Pack basic'},
