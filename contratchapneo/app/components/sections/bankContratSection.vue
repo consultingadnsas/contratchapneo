@@ -1,5 +1,6 @@
 <template>
     <section class="main-section">
+        
         <div class="wrapper-content">
             <div class="flex flex-col items-center justify-center gap-2">
                 <h3>
@@ -142,8 +143,8 @@ export default {
     display: flex;
     overflow-x: auto;
     scroll-snap-type: x mandatory;
-    gap: 2rem;
-    padding: 0.5rem 1rem;
+    gap: 1rem;
+    padding: 0.5rem;
     width: 100%;
     scrollbar-width: thin;
 }

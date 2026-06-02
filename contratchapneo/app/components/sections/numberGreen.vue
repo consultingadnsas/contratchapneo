@@ -1,5 +1,7 @@
 <template>
+    
     <section class="support-banner">
+        
         <div class="banner-container">
             <div class="banner-text">
                 <h2>Besoin d'aide ?</h2>
@@ -47,8 +49,6 @@ export default {
     background-color: #272147;
     color: #ffffff;
     padding: 3rem 1.5rem;
-    width: 110%;
-    margin-left: 30px;
     position: relative;
     top: -100px;
 }

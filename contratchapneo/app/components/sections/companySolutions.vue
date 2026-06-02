@@ -170,7 +170,7 @@ export default {
     overflow-x: auto;
     scroll-snap-type: x mandatory;
     gap: 1rem;
-    padding: 1.5rem 1rem;
+    padding: 0.5rem;
     width: 100%;
     scrollbar-width: none;
     border-radius: 1rem;

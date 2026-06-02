@@ -96,58 +96,19 @@ export default defineComponent({
 <style scoped>
 /* ── 📱 Mobile First (Valeurs par défaut pour Téléphones) ─────── */
 .hero-section {
-    background: radial-gradient(circle at center, #111827 0%, #0d369e 100%);
+    position: relative;
     width: 100%;
-    margin-left: 0;
-    width: 110%;
-    margin-left: 30px;;
     min-height: 100vh;
     overflow-x: hidden;
     border-bottom-left-radius: 1rem;
     border-bottom-right-radius: 1rem;
     display: flex;
+    justify-content: center;
     flex-direction: column; 
     align-items: center;
     gap: 2rem;
     padding: 4rem 1rem 1rem 1rem;
-    box-sizing: border-box;
-    position: relative;
     background: radial-gradient(circle, #202b4a 30%, #0f0f0f 100%);
-}
-
-/* --- Nouvelles classes pour les formes de fond --- */
-.bg-shape {
-    position: absolute;
-    z-index: 1; /* Derrière le contenu (z-index: 2) mais devant le fond radial */
-    opacity: 0.7;
-    pointer-events: none; /* Crucial: empêche la div de bloquer les clics de la souris */
-}
-
-/* Forme 1 (plus foncée, en bas à droite) */
-.shape-bottom-right {
-    bottom: -15%;
-    right: -15%;
-    width: 70%;
-    height: 70%;
-    background: linear-gradient(135deg, rgba(13, 54, 158, 0.8) 0%, rgba(29, 96, 235, 0.6) 100%);
-    border-radius: 40% 60% 60% 40% / 60% 40% 40% 60%;
-}
-
-/* Forme 2 (plus claire, en haut à gauche) */
-.shape-top-left {
-    top: 20%;
-    left: -10%;
-    width: 50%;
-    height: 50%;
-    background: linear-gradient(135deg, rgba(29, 96, 235, 0.5) 0%, rgba(60, 140, 250, 0.4) 100%);
-    border-radius: 60% 40% 40% 60% / 40% 60% 60% 40%;
-}
-
-/* Assurer que le contenu textuel et l'image restent au premier plan */
-.hero-section > .content-wrapper,
-.pic-wrapper {
-    position: relative;
-    z-index: 2; /* Au-dessus des formes courbes */
 }
 
 /* Bloc texte */
