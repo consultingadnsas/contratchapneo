@@ -154,6 +154,7 @@ export default defineComponent({
     display: inline-flex; 
     justify-content: center;
     align-items: center;
+    z-index: 1;
 }
 .pic-container::before {
     content: '';
@@ -177,7 +178,6 @@ export default defineComponent({
 }
 
 .pic-container img {
-    width: 200px;
     min-width: 300px;
     aspect-ratio: 1 / 1; 
     height: auto; 
@@ -185,7 +185,7 @@ export default defineComponent({
     border-radius: 50%; 
     display: block;
     position: relative;
-    z-index: 10;
+    z-index: 1;
 }
 
 /* ── Cartes flottantes (Mobile) ──────────────────────────────── */

@@ -16,7 +16,7 @@
 
 <script lang="ts">
 import { ref } from 'vue';
-import companyPic from '../../assets/pictures/partners/PROPARCO_Logo_RVB-1.png'
+import companyPic from '../../assets/pictures/partners/PROPARCO_Logo_RVB-1.png';
 import packCards from '../cards/packCards.vue';
 export default {
     name: 'CompanySection',
