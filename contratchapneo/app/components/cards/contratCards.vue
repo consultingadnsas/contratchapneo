@@ -111,7 +111,7 @@ export default defineComponent({
     inset: 0;
     background: linear-gradient(
         to top, 
-        rgba(0, 0, 0, 0.8) 0%, 
+        rgba(0, 0, 0, 0.626) 0%, 
         rgba(0, 0, 0, 0.4) 40%, 
         transparent 100%
     );
@@ -140,7 +140,7 @@ export default defineComponent({
 .pro-info {
     font-size: 0.80rem;
     font-weight: 500;
-    color: #d1d1d1;
+    color: #edecec;
 }
 
 .pro-specialty {

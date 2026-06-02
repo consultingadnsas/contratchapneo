@@ -13,8 +13,8 @@
             <div class="green-dark-section w-full flex justify-center items-center flex-col gap-4">
                 <div class="subtitle-wrapper">
                     <h4 class="subtitle">Nos contrats les plus téléchargés</h4>
-                    <div class="divider"></div>
                 </div>
+                <div class="divider"></div>
                 
                 <!-- Conteneur original avec sa classe "cards-container" -->
                 <div class="cards-container">
@@ -73,10 +73,10 @@ export default {
         const contratStore = useContratStore();
 
         const legalContrat = ref([
-            { title: 'Contrat de travail' , subtitle: '100% Gratuit', description: 'Un contrat de travail est un accord entre un employeur et son employé.', visuel:'/travail.png'},
-            { title: 'Contrat de Graphiste', subtitle: '15 000 FCFA', description: 'Un contrat de graphiste est un accord entre un graphiste indépendant et un client.', visuel:'/graphiste2.png'},
-            { title: 'contrat de vidéaste', subtitle: '40 000 FCFA', description: 'Un contrat de vidéaste est un accord entre un vidéaste et un acheteur.', visuel:'/videaste2.png'},
-            { title: 'contrat de restauration', subtitle: '5 000 FCFA', description: 'Un contrat de de restauration certifie une fourniture d\'aliment entre une entreprise et un restaurant.', visuel:'/resto.png'},
+            { title: 'Contrat de travail' , subtitle: '100% Gratuit', description: 'Un contrat de travail est un accord entre un employeur et son employé.', visuel:'/pexels-mikhail-nilov-8729948.jpg'},
+            { title: 'Contrat de Graphiste', subtitle: '15 000 FCFA', description: 'Un contrat de graphiste est un accord entre un graphiste indépendant et un client.', visuel:'/graphiste.jpg'},
+            { title: 'contrat de vidéaste', subtitle: '40 000 FCFA', description: 'Un contrat de vidéaste est un accord entre un vidéaste et un acheteur.', visuel:'/videaste.jpg'},
+            { title: 'contrat de restauration', subtitle: '5 000 FCFA', description: 'Un contrat de de restauration certifie une fourniture d\'aliment entre une entreprise et un restaurant.', visuel:'/resto.jpg'},
         ]);
 
         const categoryContrat = ref([
@@ -281,13 +281,15 @@ export default {
     font-weight: 600;
     color: currentColor;
     white-space: nowrap;
+    
 }
 
 .divider {
     flex: 1;
-    height: 1px;
+    height: 0.5px;
     background: linear-gradient(to right, var(--primary-color, #4ade80), transparent);
     opacity: 0.6;
+    margin-left: 40px;
 }
 
 @media (min-width: 768px) {
@@ -296,10 +298,22 @@ export default {
     }
     .subtitle {
         font-size: 1.3rem;
+        width: 100%;
+        text-align: left;
+        margin-left:50px;
     }
     .wrapper-content {
         width: 100%;
-       margin-left: 0;
+        margin-left: 0;
+    }
+    .wrapper-content h3{
+        font-size: 2.2rem;
+        font-weight: 700;
+        max-width: 900px;
+    }
+    .divider {
+        margin-left: 50px;
+        max-width: 50%;
     }
 }
 </style>
