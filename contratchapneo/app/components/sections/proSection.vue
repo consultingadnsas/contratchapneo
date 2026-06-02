@@ -11,7 +11,7 @@
             <div class="green-dark-section w-full flex justify-center items-center flex-col">
                 <!-- Conteneur responsive : carrousel mobile, grille desktop -->
                 <div class="cards-container">
-                    <proCardSecond 
+                    <prodCards 
                         v-for="(card, index) in legalPro" 
                         :key="index"
                         :title="card.title"

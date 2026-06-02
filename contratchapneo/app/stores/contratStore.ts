@@ -104,25 +104,27 @@ export const useContratStore = defineStore('contrat', ()=> {
     };
 
     const getContracts = async (page: number = 1, categoryId: string = '') => {
-    isLoading.value = true;
-    error.value = "";
+        error.value = "";
 
-    try {
-        const params: Record<string, any> = { page };
-        if (categoryId) params.category = categoryId;
+        try 
+        {
+            const params: Record<string, any> = { page };
+            if (categoryId) params.category = categoryId;
 
-        const response = await $api<PaginatedResponse<Contrat>>('/contrat/', {
-            method: 'GET',
-            params
-        });
+            const response = await $api<PaginatedResponse<Contrat>>('/contrat/', {
+                method: 'GET',
+                params
+            });
 
-        if (response) {
-            contracts.value = response.results;
-            totalCount.value = response.count;
-            nextPage.value = response.next;
-            previousPage.value = response.previous;
-            currentPage.value = page;
-        }
+            if (response) {
+                contracts.value = response.results;
+                totalCount.value = response.count;
+                nextPage.value = response.next;
+                previousPage.value = response.previous;
+                currentPage.value = page;
+
+                console.log('Réponse générée', response)
+            }
         } catch (err: any) {
             error.value = err.message;
             throw err;
@@ -130,6 +132,29 @@ export const useContratStore = defineStore('contrat', ()=> {
             isLoading.value = false;
         }
     };
+
+    const getSpecificContract = async(contratId:string)=> {
+        isLoading.value = true;
+        error.value = ""
+
+        try{
+            const response = await $api<Contrat>(`/contrat/${contratId}/`,
+                {method: 'GET'}
+            );
+            if(response){
+                contrat.value = response;
+                console.log("Reponse du contrat", contrat.value)
+            } else{
+                console.log("Reponse du contrat", contrat.value)
+            } 
+        } catch (err: any) {
+            error.value = err.message;
+            throw err;
+        } finally {
+            isLoading.value = false;
+        }
+
+    }
 
     return{
         isLoading,
@@ -147,6 +172,7 @@ export const useContratStore = defineStore('contrat', ()=> {
         // Actions
         getCategories,
         getCategoriesWithContrats,
-        getContracts
+        getContracts,
+        getSpecificContract
     }
 })

@@ -95,9 +95,10 @@ export default {
     options:{
       type:Array,
       default:()=>[
-        {name:"Wave"},
-        {name:"Orange Money"},
-        {name:"Moov Money"}
+        {name:"Contrat de cession"},
+        {name:"Contrat de création"},
+        {name:"Contrat de développeur"},
+        {name:"Contrat de vidéaste"}
       ]
     }
   },

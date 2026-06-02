@@ -5,6 +5,7 @@
             <h2>Découvrez tous nos contrats</h2>
             <p>Nos contrats sont conformes aux lois en vigueur dans l'espace OHADA.</p>
         </header>
+
         
         <div class="toolbar">
             <Basefilter class="toolbar__filter" />
@@ -13,9 +14,15 @@
 
         <contractCardSkeleton v-if="contratStore.isLoading" />
 
-        <emptyState v-else-if="contratStore.contracts.length === 0" />
+        <emptyState
+            v-else-if="contratStore.contracts.length === 0" 
+            title = "Contrat non disponibile pour l'instant"
+            description="Le contrat démandé n'est pas disponible pour l'instant. Faire un contrat sur mesure "
+            @go-to="()=>router.push('contractBank/customContrat')"
+        />
 
         <template v-else>
+            
             <div class="cards-container">
                 <contratCards 
                     v-for="(contrat, index) in contratStore.contracts" 
@@ -24,16 +31,33 @@
                     :description="contrat.description"
                     :price="contrat.prix"
                     :image="contrat.picture || undefined"
+                    @view="openViewModal(contrat.id)"
                 />
             </div>
             
             <Paginator 
-                :current-page="contratStore.currentPage"
-                :total-count="contratStore.totalCount"
-                :page-size="contratStore.pageSize"
+                :currentPage="contratStore.currentPage"
+                :totalCount="contratStore.totalCount"
+                :pageSize="contratStore.pageSize"
                 @page-change="handlePageChange"
             />
+
         </template>
+
+        <Teleport to="body">
+            
+            <cartModale
+                :isOpen="isOpen" 
+                @close="isOpen = false"
+            />
+            
+            <viewModale
+                :file="contratStore.contrat?.pdf_preview"
+                v-if="isViewOpen" 
+                @close="isViewOpen = false"
+            />
+
+        </Teleport>
 
     </div>
 </template>
@@ -45,9 +69,12 @@ import emptyState from '../../tools/emptyState.vue'
 import Basefilter from '../../tools/Basefilter.vue'
 import Paginator from '../../tools/Paginator.vue'
 import BaseSearchInput from '../../input/BaseSearchInput.vue'
-import { ref, onMounted } from 'vue'
+import cartModale from '../../modale/cartModale.vue'
+import viewModale from '../../modale/viewModale.vue'
 
+import { ref, onMounted } from 'vue'
 import {useContratStore} from '../../../stores/contratStore'
+import { useRouter } from 'vue-router'
 
 export default {
     components: {
@@ -56,22 +83,15 @@ export default {
         Paginator,
         BaseSearchInput,
         contractCardSkeleton,
-        emptyState
+        emptyState,
+        cartModale,
+        viewModale
     },
     setup() {
 
-        const contratStore = useContratStore();
+        const router = useRouter();
 
-        const legalContrat = ref([
-            { title: 'Contrat de travail' , subtitle: '100% Gratuit', description: 'Un contrat de travail est un accord entre un employeur et son employé.'},
-            { title: 'Contrat de freelance', subtitle: '15 000 FCFA', description: 'Un contrat de freelance est un accord entre un travailleur indépendant et un client.'},
-            { title: 'contrat de vente', subtitle: '40 000 FCFA', description: 'Un contrat de vente est un accord entre un vendeur et un acheteur.'},
-            { title: 'contrat de bail', subtitle: '5 000 FCFA', description: 'Un contrat de bail est un accord entre un propriétaire et un locataire.'},
-            { title: 'Contrat de travail' , subtitle: '100% Gratuit', description: 'Un contrat de travail est un accord entre un employeur et son employé.'},
-            { title: 'Contrat de freelance', subtitle: '15 000 FCFA', description: 'Un contrat de freelance est un accord entre un travailleur indépendant et un client.'},
-            { title: 'contrat de vente', subtitle: '40 000 FCFA', description: 'Un contrat de vente est un accord entre un vendeur et un acheteur.'},
-            { title: 'contrat de bail', subtitle: '5 000 FCFA', description: 'Un contrat de bail est un accord entre un propriétaire et un locataire.'},
-        ]);
+        const contratStore = useContratStore();
 
         const activeCategoryId = ref('');
 
@@ -79,15 +99,37 @@ export default {
             contratStore.getContracts(page, activeCategoryId.value);
         };
 
+        // About cart view
+        const isOpen = ref<boolean>(false);
+        
+        const openModal = () => {
+            isOpen.value = true;
+        }
+
+        // About modalView
+        const isViewOpen = ref<boolean>(false) // Votre deuxième booléen
+        
+        const openViewModal = async(contratId:string) => {
+            await contratStore.getSpecificContract(contratId)
+            isViewOpen.value = true; // On ouvre la deuxième modale
+            console.log('The item selected', contratId)
+        }
+
         onMounted(()=>{
             contratStore.getContracts(1);
         })
 
         return {
+            router,
             activeCategoryId,
             handlePageChange,
             contratStore,
-            legalContrat
+
+            // modale
+            isOpen,
+            openModal,
+            isViewOpen,
+            openViewModal
         }
     }
 }
@@ -103,7 +145,7 @@ export default {
     align-items: center;
     justify-items: center;
     gap: 2rem;
-    padding: 6rem 1rem 1rem 1rem;
+    padding: 4rem 1rem 1rem 1rem;
     background: #FDFCFC;
 }
 
