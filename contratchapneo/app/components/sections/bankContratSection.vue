@@ -49,12 +49,14 @@
 </template>
 
 <script lang="ts">
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 import mainButton from '../buttons/mainButton.vue';
 import contratCards from '../cards/contratCards.vue';
 import contratCategoryCards from '../cards/contratCategoryCards.vue';
 import cartModale from '../modale/cartModale.vue';
 import viewModale from '../modale/viewModale.vue';
+
+import {useContratStore} from '../../stores/contratStore'
 
 export default {
     name: 'OrdinarySection',
@@ -66,6 +68,9 @@ export default {
         viewModale
     },
     setup() {
+
+        const contratStore = useContratStore();
+
         const legalContrat = ref([
             { title: 'Contrat de travail' , subtitle: '100% Gratuit', description: 'Un contrat de travail est un accord entre un employeur et son employé.', visuel:'/travail.png'},
             { title: 'Contrat de Graphiste', subtitle: '15 000 FCFA', description: 'Un contrat de graphiste est un accord entre un graphiste indépendant et un client.', visuel:'/graphiste.png'},
@@ -93,7 +98,14 @@ export default {
                 console.log('évènement visualisation émis!!!')
         }
 
+        onMounted(()=>{
+
+            contratStore.getContracts();
+
+        })
+
         return { 
+            contratStore,
             legalContrat,
             categoryContrat,
 

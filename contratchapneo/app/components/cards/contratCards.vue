@@ -10,7 +10,7 @@
         <div class="card-info">
             <h4 class="pro-name">{{ title }}</h4>
             <p class="pro-info">{{ description }}</p>
-            <p class="pro-specialty" >{{ subtitle }}</p>
+            <p class="pro-specialty" >{{ price }} FCFA</p>
         </div>
 
         <div class="btn-container">
@@ -49,9 +49,9 @@ export default defineComponent({
             type: String,
             default: 'James Benjamin'
         },
-        subtitle: {
-            type: String,
-            default: 'CEO @ Framify'
+        price: {
+            type: [Number, String],
+            default: 4000
         },
         description: {
             type: String,

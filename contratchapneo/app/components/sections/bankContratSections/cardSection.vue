@@ -2,35 +2,52 @@
     <div class="contrat-card-section">
         
         <header>
-            <h2>
-                Découvrez tous nos contrats
-            </h2>
-            <p>Nos contrats sont conformes aux lois en vigeur dans l'espace OHADA.</p>
+            <h2>Découvrez tous nos contrats</h2>
+            <p>Nos contrats sont conformes aux lois en vigueur dans l'espace OHADA.</p>
         </header>
         
         <div class="toolbar">
-            <Basefilter class="toolbar__filter"/>
+            <Basefilter class="toolbar__filter" />
             <BaseSearchInput class="toolbar__search" placeholder="Rechercher un article ou un produit..."/>
         </div>
 
-        <div class="cards-container">
-            <contratCards 
-                v-for="(contrat, index) in legalContrat" 
-                :key="index"
-                :contrat="contrat"
-            />
-        </div>
+        <contractCardSkeleton v-if="contratStore.isLoading" />
 
-        <Paginator/>
+        <emptyState v-else-if="contratStore.contracts.length === 0" />
+
+        <template v-else>
+            <div class="cards-container">
+                <contratCards 
+                    v-for="(contrat, index) in contratStore.contracts" 
+                    :key="contrat.id || index"
+                    :title="contrat.title"
+                    :description="contrat.description"
+                    :price="contrat.prix"
+                    :image="contrat.picture || undefined"
+                />
+            </div>
+            
+            <Paginator 
+                :current-page="contratStore.currentPage"
+                :total-count="contratStore.totalCount"
+                :page-size="contratStore.pageSize"
+                @page-change="handlePageChange"
+            />
+        </template>
+
     </div>
 </template>
 
 <script lang="ts">
 import contratCards from '../../cards/contratCards.vue'
+import contractCardSkeleton from '../../cards/contractCardSkeleton.vue'
+import emptyState from '../../tools/emptyState.vue'
 import Basefilter from '../../tools/Basefilter.vue'
 import Paginator from '../../tools/Paginator.vue'
 import BaseSearchInput from '../../input/BaseSearchInput.vue'
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
+
+import {useContratStore} from '../../../stores/contratStore'
 
 export default {
     components: {
@@ -38,8 +55,13 @@ export default {
         Basefilter,
         Paginator,
         BaseSearchInput,
+        contractCardSkeleton,
+        emptyState
     },
     setup() {
+
+        const contratStore = useContratStore();
+
         const legalContrat = ref([
             { title: 'Contrat de travail' , subtitle: '100% Gratuit', description: 'Un contrat de travail est un accord entre un employeur et son employé.'},
             { title: 'Contrat de freelance', subtitle: '15 000 FCFA', description: 'Un contrat de freelance est un accord entre un travailleur indépendant et un client.'},
@@ -51,7 +73,20 @@ export default {
             { title: 'contrat de bail', subtitle: '5 000 FCFA', description: 'Un contrat de bail est un accord entre un propriétaire et un locataire.'},
         ]);
 
+        const activeCategoryId = ref('');
+
+        const handlePageChange = (page: number) => {
+            contratStore.getContracts(page, activeCategoryId.value);
+        };
+
+        onMounted(()=>{
+            contratStore.getContracts(1);
+        })
+
         return {
+            activeCategoryId,
+            handlePageChange,
+            contratStore,
             legalContrat
         }
     }

@@ -1,6 +1,9 @@
 <template>
     <section class="hero-section">
-        <div class="flex flex-col gap-4">
+        <div class="bg-shape shape-bottom-right"></div>
+        <div class="bg-shape shape-top-left"></div>
+
+        <div class="flex flex-col gap-4 content-wrapper">
             <span>
                 {{ displayText }}<span class="cursor">|</span>
             </span>
@@ -13,11 +16,9 @@
             <div class="pic-container">
                 <img src="../../assets/pictures/ContratChap/Accueil 2.png" alt="Contrats OHADA">
 
-                <!-- HAUT -->
                 <stat-cards class="floating-card card-top-left"    title="Banque de contrats" @click="router.push('/contractBank')" />
                 <stat-cards class="floating-card card-top-right"   title="Outil de Calcul" />
                 
-                <!-- BAS -->
                 <stat-cards class="floating-card card-bottom-left"  title="Conseil juridique" />
                 <stat-cards class="floating-card card-bottom-right" title="Nos professionnels" />
             </div>
@@ -30,7 +31,7 @@ import { onMounted, ref, defineComponent } from 'vue'
 import mainButton from '../buttons/mainButton.vue'
 import BaseResearchInput from '../input/BaseResearchInput.vue'
 import statCards from '../cards/statCards.vue'
-import {useRouter} from 'vue-router'
+import { useRouter } from 'vue-router'
 
 export default defineComponent({
     name: 'HeroSecondSection',
@@ -95,14 +96,17 @@ export default defineComponent({
 <style scoped>
 /* ── 📱 Mobile First (Valeurs par défaut pour Téléphones) ─────── */
 .hero-section {
+    background: radial-gradient(circle at center, #111827 0%, #0d369e 100%);
+    width: 100%;
+    margin-left: 0;
     width: 110%;
     margin-left: 30px;;
     min-height: 100vh;
-    overflow-x: hidden; /* empêche le débordement horizontal causé par les cartes absolues */
+    overflow-x: hidden;
     border-bottom-left-radius: 1rem;
     border-bottom-right-radius: 1rem;
     display: flex;
-    flex-direction: column;   /* empilé sur mobile */
+    flex-direction: column; 
     align-items: center;
     gap: 2rem;
     padding: 4rem 1rem 1rem 1rem;
@@ -111,16 +115,42 @@ export default defineComponent({
     background: radial-gradient(circle, #202b4a 30%, #0f0f0f 100%);
 }
 
-/* Bloc texte */
-.hero-section > div:first-child {
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-    position: relative;
-    top: 1rem;
+/* --- Nouvelles classes pour les formes de fond --- */
+.bg-shape {
+    position: absolute;
+    z-index: 1; /* Derrière le contenu (z-index: 2) mais devant le fond radial */
+    opacity: 0.7;
+    pointer-events: none; /* Crucial: empêche la div de bloquer les clics de la souris */
 }
 
+/* Forme 1 (plus foncée, en bas à droite) */
+.shape-bottom-right {
+    bottom: -15%;
+    right: -15%;
+    width: 70%;
+    height: 70%;
+    background: linear-gradient(135deg, rgba(13, 54, 158, 0.8) 0%, rgba(29, 96, 235, 0.6) 100%);
+    border-radius: 40% 60% 60% 40% / 60% 40% 40% 60%;
+}
+
+/* Forme 2 (plus claire, en haut à gauche) */
+.shape-top-left {
+    top: 20%;
+    left: -10%;
+    width: 50%;
+    height: 50%;
+    background: linear-gradient(135deg, rgba(29, 96, 235, 0.5) 0%, rgba(60, 140, 250, 0.4) 100%);
+    border-radius: 60% 40% 40% 60% / 40% 60% 60% 40%;
+}
+
+/* Assurer que le contenu textuel et l'image restent au premier plan */
+.hero-section > .content-wrapper,
+.pic-wrapper {
+    position: relative;
+    z-index: 2; /* Au-dessus des formes courbes */
+}
+
+/* Bloc texte */
 .hero-section h1 {
     font-size: clamp(1.8rem, 6vw, 3rem); 
     font-weight: 600;
@@ -148,19 +178,18 @@ export default defineComponent({
 }
 
 /* ── Conteneur image + cartes (Mobile) ────────────────────────── */
-
 .pic-wrapper {
     display: flex;
     justify-content: center;
     align-items: center;
-    padding: 140px 40px; /* Moins de padding sur les côtés pour maximiser l'espace écran */
+    padding: 140px 40px;
     box-sizing: border-box;
     width: 100%;
 }
 
 .pic-container {
     position: relative;
-    width: 180px; /* Image plus petite sur téléphone pour laisser la place aux cartes */
+    width: 180px; 
     display: inline-flex; 
     justify-content: center;
     align-items: center;
@@ -195,14 +224,14 @@ export default defineComponent({
     border-radius: 50%; 
     display: block;
     position: relative;
-    z-index: 1;
+    z-index: 10;
 }
 
 /* ── Cartes flottantes (Mobile) ──────────────────────────────── */
 .floating-card {
     position: absolute;
-    z-index: 10;
-    width: 105px !important; /* Cartes compactes sur mobile */
+    z-index: 5;
+    width: 105px !important;
     height: auto !important;
     top: 50%;
     transform: translateX(var(--tx)) translateY(var(--ty-base));
@@ -216,13 +245,8 @@ export default defineComponent({
     text-align: center;
 }
 
-
-
-/* Décalages Verticaux Adaptés au format 180px de l'image */
 .card-top-left, .card-top-right       { --ty-base: -140px; }
 .card-bottom-left, .card-bottom-right { --ty-base: 40px; }
-
-/* Décalages Horizontaux Resserres pour écrans étroits */
 .card-top-left, .card-bottom-left   { left: 0; --tx: -55%; }
 .card-top-right, .card-bottom-right { right: 0; --tx: 55%; }
 
@@ -251,10 +275,9 @@ export default defineComponent({
     .hero-section {
         padding: 3rem 2.5rem;
         gap: 3rem;
-        margin-left: 2%;
     }
 
-    .hero-section > div:first-child {
+    .hero-section > .content-wrapper {
         top: 2rem;
     }
 
@@ -267,12 +290,10 @@ export default defineComponent({
         min-width: 280px;
     }
 
-    /* Les cartes s'agrandissent */
     .floating-card {
         width: 160px !important;
     }
 
-    /* On recalcule les espacements verticaux et horizontaux */
     .card-top-left, .card-top-right       { --ty-base: -220px; }
     .card-bottom-left, .card-bottom-right { --ty-base: 80px; }
     .card-top-left, .card-mid-left, .card-bottom-left   { --tx: -65%; }
@@ -282,21 +303,19 @@ export default defineComponent({
 /* ── 💻 Desktop (A partir de 1200px) ─────────────────────────── */
 @media (min-width: 1200px) {
     .hero-section {
-        flex-direction: row; /* Le texte à gauche, l'image à droite */
+        flex-direction: row; 
         justify-content: space-between;
-        align-items: center; /* Centre les éléments verticalement */
-        padding: 1rem 5rem !important; /* Un peu plus de padding latéral sur grand écran */
+        align-items: center;
+        padding: 1rem 5rem !important;
         gap: 5rem;
-        width: 100%;
-        margin-left: 0; /* On s'assure qu'il n'y a plus de marge gauche */
         height: 100vh !important;
         min-height: 600px !important;
         top: 0; /* Plus besoin de pousser vers le bas */
     }
 
-    .hero-section > div:first-child {
+    .hero-section > .content-wrapper {
         width: 50%;
-        top: 0; /* Plus besoin de pousser vers le bas */
+        top: 0; 
     }
 
     .pic-wrapper {
@@ -304,7 +323,6 @@ export default defineComponent({
         padding: 60px 40px;
     }
 
-    /* Taille maximale pour le grand écran */
     .pic-container, .pic-container img {
         width: 300px;
         min-width: 350px;
@@ -351,7 +369,6 @@ export default defineComponent({
         z-index: 20; 
     }
 
-    /* Espacements amples pour le grand écran */
     .card-top-left, .card-top-right       { --ty-base: -190px; }
     .card-bottom-left, .card-bottom-right { --ty-base: 50px; }
     .card-top-left, .card-bottom-left   { --tx: -60%; }
