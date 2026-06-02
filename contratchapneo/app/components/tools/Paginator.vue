@@ -35,10 +35,10 @@
 </template>
 
 <script lang="ts">
-import { ref } from 'vue'
+import { computed } from 'vue'
 
 export default {
-  name: 'StaticPagination',
+  name: 'Paginator', // J'ai renommé en Paginator pour correspondre à l'import de ton parent
   props: {
     currentPage: {
       type: Number,
@@ -55,20 +55,26 @@ export default {
   },
   emits: ['page-change'],
   setup(props, { emit }) {
-    // Configuration statique
-    const currentPage = ref(1)
-    const totalPages = ref(5) // Nombre de pages fixe pour le côté statique
+    
+    // 1. On calcule le nombre total de pages dynamiquement
+    const totalPages = computed(() => {
+      // S'il n'y a pas d'éléments, on retourne au moins 1 page
+      if (props.totalCount === 0) return 1;
+      
+      // Math.ceil arrondit à l'entier supérieur (ex: 21 items / 10 = 2.1 => 3 pages)
+      return Math.ceil(props.totalCount / props.pageSize);
+    });
 
+    // 2. On change de page en s'assurant qu'on ne dépasse pas les limites
     const changePage = (page: number) => {
-      if (page >= 1 && page <= totalPages.value) {
-        currentPage.value = page
-        // Émet l'événement au cas où le composant parent en aurait besoin
-        emit('page-change', page)
+      if (page >= 1 && page <= totalPages.value && page !== props.currentPage) {
+        emit('page-change', page);
       }
     }
 
     return {
-      currentPage,
+      // Inutile de retourner currentPage ici, Vue expose automatiquement 
+      // les props dans le template !
       totalPages,
       changePage
     }

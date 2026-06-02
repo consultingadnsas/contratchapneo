@@ -22,25 +22,39 @@
   </div>
 </template>
 
-<script setup lang="ts">
+<script lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue'
 
-const cardsCount = ref(1)
+export default{
 
-const updateCardsCount = () => {
-  if (typeof window !== 'undefined') {
-    cardsCount.value = window.innerWidth >= 1024 ? 4 : 1
+  setup(){
+
+    const cardsCount = ref(1)
+
+    const updateCardsCount = () => {
+      if (typeof window !== 'undefined') {
+        cardsCount.value = window.innerWidth >= 1024 ? 4 : 1
+      }
+    }
+
+    onMounted(() => {
+      updateCardsCount()
+      window.addEventListener('resize', updateCardsCount)
+    })
+
+    onUnmounted(() => {
+      window.removeEventListener('resize', updateCardsCount)
+    })
+
+    return{
+      cardsCount,
+      updateCardsCount
+    }
+
   }
+
 }
 
-onMounted(() => {
-  updateCardsCount()
-  window.addEventListener('resize', updateCardsCount)
-})
-
-onUnmounted(() => {
-  window.removeEventListener('resize', updateCardsCount)
-})
 </script>
 
 <style scoped>
