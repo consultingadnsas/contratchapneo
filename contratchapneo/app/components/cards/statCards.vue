@@ -51,7 +51,7 @@ export default{
     box-sizing: border-box;
 
     /* EFFET GLASSMORPHISM */
-    background: rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.089);
     backdrop-filter: blur(15px);
     -webkit-backdrop-filter: blur(15px);
     border: 1px solid rgba(255, 255, 255, 0.2);
@@ -72,7 +72,7 @@ export default{
     line-height: 1.3;
     font-weight: 600;
     font-size: 0.7rem;
-    color: #ffffff;
+    color: #fff;
     text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
     /* évite que le texte chevauche le bouton */
     padding-right: 3rem;

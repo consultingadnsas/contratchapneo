@@ -3,9 +3,9 @@
         <nav class="nav-container">
 
             <!-- Logo -->
-            <h3 class="logo">
-                <span class="logo-accent">Contrat</span>ChapNeo
-            </h3>
+            <div class="pic__container">
+                <img src="/contratchap.png" alt="">
+            </div>
 
             <!-- Liens desktop (cachés sur mobile) -->
             <ul class="nav-links-desktop">
@@ -218,12 +218,9 @@ export default {
     padding: 0 1.5rem;
 }
 
-.logo {
-    font-family: 'Instrument Sans', sans-serif;
-    font-size: 1.25rem;
-    font-weight: 700;
-    color: var(--primary-color);
-    white-space: nowrap;
+.pic__container img{
+    height: 60px;
+    width: 70px
 }
 
 .logo-accent {
@@ -430,6 +427,11 @@ export default {
         justify-content: center;
     }
 
+    .pic__container img{
+        height: 70px;
+        width: 90px
+    }
+
     .nav-links-desktop li a,
     .nav-links-desktop li .dropdown-trigger {
         position: relative;
@@ -586,7 +588,7 @@ export default {
     .cta-desktop {
         display: block;
         white-space: nowrap;
-        background: var(--primary-color);
+        background: var(--primary-color-dark);
         color: white;
         padding: 0.55rem 1.15rem;
         border-radius: 50px;
