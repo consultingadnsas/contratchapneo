@@ -89,6 +89,7 @@ export default defineComponent({
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
     background-color: #1a1a1a;
     flex-shrink: 0;
+    border-radius: 28px;
 }
 
 /* Image de fond avec effet de zoom au survol */

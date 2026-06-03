@@ -222,6 +222,26 @@ export default defineComponent({
         width: 230px;
         min-width: 230px;
     }
+    .pic-container::before {
+    content: '';
+    position: absolute;
+    
+    /* 1. Le déplacement en haut à gauche */
+    /* Des valeurs négatives le font sortir de sa boîte vers le haut et la gauche */
+    top: 20%; 
+    left: 10%; 
+    
+    /* 2. Une forme concrète et stricte */
+    width: 80%; /* Le cercle fait la même taille que le conteneur du téléphone */
+    aspect-ratio: 1 / 1;
+    border-radius: 50%; /* Ça force la forme en cercle parfait */
+    
+    /* 3. Ton dégradé exact */
+    background: radial-gradient(circle, #32f459 30%, #4db562 100%);
+    
+    /* Assure que le cercle reste bien derrière le téléphone */
+    z-index: 0; 
+}
     .floating-card {
         width: 130px !important;
     }
@@ -247,9 +267,29 @@ export default defineComponent({
     }
     /* L'image passe à sa taille moyenne */
     .pic-container, .pic-container img {
-        width: 280px;
-        min-width: 280px;
+        width: 300px;
+        min-width: 300px;
     }
+    .pic-container::before {
+    content: '';
+    position: absolute;
+    
+    /* 1. Le déplacement en haut à gauche */
+    /* Des valeurs négatives le font sortir de sa boîte vers le haut et la gauche */
+    top: 20%; 
+    left: 10%; 
+    
+    /* 2. Une forme concrète et stricte */
+    width: 80%; /* Le cercle fait la même taille que le conteneur du téléphone */
+    aspect-ratio: 1 / 1;
+    border-radius: 50%; /* Ça force la forme en cercle parfait */
+    
+    /* 3. Ton dégradé exact */
+    background: radial-gradient(circle, #32f459 30%, #4db562 100%);
+    
+    /* Assure que le cercle reste bien derrière le téléphone */
+    z-index: 0; 
+}
 
     .floating-card {
         width: 160px !important;
