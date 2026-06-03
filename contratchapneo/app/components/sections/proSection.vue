@@ -15,6 +15,7 @@
                         v-for="(card, index) in legalPro" 
                         :key="index"
                         :title="card.title"
+                        :image="card.visuel"
                     />
                 </div>
             </div>
@@ -35,10 +36,10 @@ export default {
     components: { mainButton, prodCards, proCardSecond },
     setup() {
         const legalPro = ref([
-            { title: 'Avocat' },
-            { title: 'Commissaire de justice' },
-            { title: 'Notaire' },
-            { title: 'Juriste droit des affaires' },
+            { title: 'Avocat', visuel: '/avocat.jpg' },
+            { title: 'Commissaire de justice', visuel: '/commissaire.jpg' },
+            { title: 'Notaire', visuel: '/notaire.jpg' },
+            { title: 'Juriste droit des affaires', visuel: '/affaire.jpg' },
         ]);
 
         return { legalPro };
