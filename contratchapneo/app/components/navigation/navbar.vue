@@ -9,56 +9,56 @@
 
             <!-- Liens desktop (cachés sur mobile) -->
             <ul class="nav-links-desktop">
-                <li><a href="/">Accueil</a></li>
+                <li><NuxtLink to="/">Accueil</NuxtLink></li>
 
                 <li 
                     class="dropdown-item"
                     @mouseenter="isDropdownOpen = true"
                     @mouseleave="isDropdownOpen = false"
                 >
-                    <a href="contractbank" class="dropdown-trigger">
+                    <NuxtLink to="/contractbank" class="dropdown-trigger">
                         Banque de contrats
                         <svg :class="['chevron', { 'is-open': isDropdownOpen }]" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                             <polyline points="6 9 12 15 18 9"/>
                         </svg>
 
-                    </a>
+                    </NuxtLink>
                     <transition name="dropdown-fade">
                         <ul v-if="isDropdownOpen" class="dropdown-menu">
-                            <li><a href="#">Création & Cession</a></li>
-                            <li><a href="#">Partenariat & Investissement</a></li>
-                            <li><a href="#">Prestation de service & vente</a></li>
-                            <li><a href="#">Technologie & Digital</a></li>
+                            <li><NuxtLink to="/creation-cession">Création & Cession</NuxtLink></li>
+                            <li><NuxtLink to="/partenariat-investissement">Partenariat & Investissement</NuxtLink></li>
+                            <li><NuxtLink to="/prestation-service-vente">Prestation de service & vente</NuxtLink></li>
+                            <li><NuxtLink to="/technologie-digital">Technologie & Digital</NuxtLink></li>
                         </ul>
                     </transition>
                 </li>
 
-                <li><a href="#">Conseils juridiques</a></li>
+                <li><NuxtLink to="/conseil-juridique">Conseils juridiques</NuxtLink></li>
                 <!-- Dropdown Nos professionnels -->
                 <li 
                     class="dropdown-item"
                     @mouseenter="isProDropdownOpen = true"
                     @mouseleave="isProDropdownOpen = false"
                 >
-                    <a href="#" class="dropdown-trigger">
+                    <NuxtLink to="/pro" class="dropdown-trigger">
                         Nos professionnels
                         <svg :class="['chevron', { 'is-open': isProDropdownOpen }]" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                             <polyline points="6 9 12 15 18 9"/>
                         </svg>
-                    </a>
+                    </NuxtLink>
 
                     <transition name="dropdown-fade">
                         <!-- J'ai ajouté la classe 'simple-menu' pour ajuster la largeur en CSS plus bas -->
                         <ul v-if="isProDropdownOpen" class="dropdown-menu simple-menu">
-                            <li><a href="#">Commissaire de justice</a></li>
-                            <li><a href="#">Avocat</a></li>
-                            <li><a href="#">Notaire</a></li>
-                            <li><a href="#">Comptable</a></li>
+                            <li><NuxtLink to="/commissaire-justice">Commissaire de justice</NuxtLink></li>
+                            <li><NuxtLink to="/avocat">Avocat</NuxtLink></li>
+                            <li><NuxtLink to="/notaire">Notaire</NuxtLink></li>
+                            <li><NuxtLink to="/comptable">Comptable</NuxtLink></li>
                         </ul>
                     </transition>
                 </li>
-                <li><a href="#">Outil de calcul</a></li>
-                <li><a href="/about"> À propos</a></li>
+                <li><NuxtLink to="/outil-de-calcul">Outil de calcul</NuxtLink></li>
+                <li><NuxtLink to="/about"> À propos</NuxtLink></li>
             </ul>
 
             <!-- CTA desktop -->
@@ -78,7 +78,7 @@
         <transition name="slide-down">
             <div v-if="isMenuOpen" class="nav-mobile-menu">
                 <ul class="nav-links-mobile">
-                    <li><a href="/" @click="toggleMenu">Accueil</a></li>
+                    <li><NuxtLink to="/" @click="toggleMenu">Accueil</NuxtLink></li>
 
                     <!-- Accordion Banque de contrats sur mobile -->
                     <li class="mobile-accordion">
@@ -94,16 +94,16 @@
 
                         <transition name="accordion">
                             <ul v-if="isMobileDropdownOpen" class="mobile-accordion__list">
-                                <li><a href="#" @click="toggleMenu">Création & Cession</a></li>
-                                <li><a href="#" @click="toggleMenu">Partenariat & Investissement</a></li>
-                                <li><a href="#" @click="toggleMenu">Prestation de service & vente</a></li>
-                                <li><a href="#" @click="toggleMenu">Technologie & Digital</a></li>
-                                <li><a href="#" @click="toggleMenu">Evènementiel, Restauration & Logistique</a></li>
+                                <li><NuxtLink to="/creation-cession" @click="toggleMenu">Création & Cession</NuxtLink></li>
+                                <li><NuxtLink to="/partenariat-investissement" @click="toggleMenu">Partenariat & Investissement</NuxtLink></li>
+                                <li><NuxtLink to="/prestation-service-vente" @click="toggleMenu">Prestation de service & vente</NuxtLink></li>
+                                <li><NuxtLink to="/technologie-digital" @click="toggleMenu">Technologie & Digital</NuxtLink></li>
+                                <li><NuxtLink to="/evenementiel-restauration-logistique" @click="toggleMenu">Evènementiel, Restauration & Logistique</NuxtLink></li>
                             </ul>
                         </transition>
                     </li>
 
-                    <li><a href="#" @click="toggleMenu">Conseils juridiques</a></li>
+                    <li><NuxtLink to="/pro" @click="toggleMenu">Conseils juridiques</NuxtLink></li>
                     <!-- Accordion Nos professionnels sur mobile -->
                     <li class="mobile-accordion">
                         <button 
@@ -118,15 +118,15 @@
 
                         <transition name="accordion">
                             <ul v-if="isMobileProDropdownOpen" class="mobile-accordion__list">
-                                <li><a href="#" @click="toggleMenu">Commissaire de justice</a></li>
-                                <li><a href="#" @click="toggleMenu">Avocat</a></li>
-                                <li><a href="#" @click="toggleMenu">Notaire</a></li>
-                                <li><a href="#" @click="toggleMenu">Comptable</a></li>
+                                <li><NuxtLink to="/commissaire-de-justice" @click="toggleMenu">Commissaire de justice</NuxtLink></li>
+                                <li><NuxtLink to="/avocat" @click="toggleMenu">Avocat</NuxtLink></li>
+                                <li><NuxtLink to="/notaire" @click="toggleMenu">Notaire</NuxtLink></li>
+                                <li><NuxtLink to="/comptable" @click="toggleMenu">Comptable</NuxtLink></li>
                             </ul>
                         </transition>
                     </li>
-                    <li><a href="#" @click="toggleMenu">Outil de calcul</a></li>
-                    <li><a href="/about" @click="toggleMenu"> À propos</a></li>
+                    <li><NuxtLink to="/outil-de-calcul" @click="toggleMenu">Outil de calcul</NuxtLink></li>
+                    <li><NuxtLink to="/about" @click="toggleMenu"> À propos</NuxtLink></li>
                 </ul>
                 <a href="#" class="cta-mobile" @click="toggleMenu">Connexion</a>
             </div>
@@ -403,7 +403,7 @@ export default {
     }
 
     .main-header.is-scrolled {
-        top: 16px;
+        top: 8px;
         background: rgba(255, 255, 255, 0.65);
         backdrop-filter: blur(14px);
         -webkit-backdrop-filter: blur(14px);
@@ -432,6 +432,7 @@ export default {
 
     .nav-links-desktop li a,
     .nav-links-desktop li .dropdown-trigger {
+        position: relative;
         display: flex;
         align-items: center;
         white-space: nowrap;
@@ -446,11 +447,50 @@ export default {
         cursor: pointer;
     }
 
+    /* Étape B : Création du trait de soulignement avec ::after */
+    .nav-links-desktop li a::after,
+    .nav-links-desktop li .dropdown-trigger::after {
+        content: '';
+        position: absolute;
+        bottom: 2px; /* Ajustez selon l'espacement désiré */
+        left: 50%;
+        transform: translateX(-50%);
+        width: 0; /* Invisible par défaut */
+        height: 2px;
+        background-color: currentColor; /* S'adapte automatiquement au thème (blanc ou bleu) */
+        border-radius: 2px;
+        transition: width 0.3s ease;
+    }
+
+    /* Étape C : Afficher le trait pour la page active */
+    /* Nuxt applique 'router-link-active' automatiquement au lien de la page en cours */
+    .nav-links-desktop li a.router-link-active::after,
+    .nav-links-desktop li a.router-link-exact-active::after {
+        width: 60%; /* Remplissez à 60% de la largeur du bouton pour l'élégance */
+    }
+
+    /* Optionnel : Le trait s'agrandit légèrement au survol même si on est sur la page */
+    .nav-links-desktop li a.router-link-active:hover::after {
+        width: 75%;
+    }
+
     .nav-links-desktop li a:hover,
     .nav-links-desktop li .dropdown-trigger:hover {
-        background: rgba(255, 255, 255, 0.4);
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+        background: rgba(255, 255, 255, 0.15) !important;
+        backdrop-filter: blur(12px) !important;
+        -webkit-backdrop-filter: blur(12px) !important;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08) !important;
+        transform: translateY(-1px); /* Léger soulèvement */
     }
+
+    /* Ajustement du glassmorphisme pour le thème clair (pour garantir le contraste) */
+    .theme-light .nav-links-desktop li a:hover,
+    .theme-light .nav-links-desktop li .dropdown-trigger:hover {
+        background: rgba(0, 0, 0, 0.04) !important;
+        border: 1px solid rgba(0, 0, 0, 0.08) !important;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04) !important;
+    }
+    
     .cta-container.desktop-only {
         display: block;
         /* Empêche le bouton d'être écrasé par les liens s'il manque de place */

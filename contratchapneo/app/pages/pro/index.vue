@@ -4,7 +4,7 @@
         
         <navbar theme="light"/>
 
-        <cardSection/>
+        <proSection/>
         
         <!-- <mostContratViewed/> -->
         
@@ -18,6 +18,7 @@
 import navbar from '../../components/navigation/navbar.vue'
 import mostContratViewed from '../../components/sections/bankContratSections/mostContratViewed.vue'
 import cardSection from '../../components/sections/bankContratSections/cardSection.vue'
+import proSection from '../../components/sections/proSections/proSection.vue'
 import footerSection from '../../components/sections/footerSection.vue'
 
 export default {
@@ -26,6 +27,7 @@ export default {
         navbar,
         mostContratViewed,
         cardSection,
+        proSection,
         footerSection
     }
 

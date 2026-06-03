@@ -9,38 +9,43 @@
                 </h3>
             </div>
 
-            <!-- SECTION CONTRATS (inchangée : carrousel mobile / grille desktop) -->
-            <div class="green-dark-section w-full flex justify-center items-center flex-col gap-4">
+            <div class="green-dark-section w-full flex justify-center items-center flex-col gap-4 mt-12">
                 <div class="subtitle-wrapper">
                     <h4 class="subtitle">Nos contrats les plus téléchargés</h4>
                 </div>
                 <div class="divider"></div>
                 
-                <!-- Conteneur original avec sa classe "cards-container" -->
                 <div class="cards-container">
-                    <contratCards 
+                    <ContratCards 
                         v-for="(card, index) in legalContrat" 
                         :key="index"
+                        :ref="el => setCardRef(el)"
+                        :data-index="index"
                         :title="card.title"
                         :description="card.description"
                         :subtitle="card.subtitle"
                         :image="card.visuel"
                         @buy="openModal" 
                         @view="openViewModal"
+                        :class="[
+                            'card-item',
+                            { 'card-animate': animatedCards[index] },
+                            animatedCards[index] ? `card-animate-${(index % 6) + 1}` : ''
+                        ]"
                     />
                 </div>
 
-                <mainButton label="voir tous nos contrats" />
+                <MainButton label="voir tous nos contrats" />
             </div>
             
         </div>
 
         <Teleport to="body">
-            <cart-modale 
+            <CartModale 
                 :isOpen="isOpen" 
                 @close="isOpen = false"
             />
-            <view-modale 
+            <ViewModale 
                 v-if="isViewOpen" 
                 @close="isViewOpen = false"
             />
@@ -50,26 +55,27 @@
 </template>
 
 <script lang="ts">
-import { ref, onMounted } from 'vue';
-import mainButton from '../buttons/mainButton.vue';
-import contratCards from '../cards/contratCards.vue';
-import contratCategoryCards from '../cards/contratCategoryCards.vue';
-import cartModale from '../modale/cartModale.vue';
-import viewModale from '../modale/viewModale.vue';
+import { ref, onMounted, onBeforeUnmount } from 'vue';
 
-import {useContratStore} from '../../stores/contratStore'
+// Convention : Majuscule pour les composants Vue
+import MainButton from '../buttons/mainButton.vue';
+import ContratCards from '../cards/contratCards.vue';
+import ContratCategoryCards from '../cards/contratCategoryCards.vue';
+import CartModale from '../modale/cartModale.vue';
+import ViewModale from '../modale/viewModale.vue';
+
+import { useContratStore } from '../../stores/contratStore';
 
 export default {
     name: 'OrdinarySection',
     components: { 
-        mainButton, 
-        contratCards,
-        contratCategoryCards,
-        cartModale,
-        viewModale
+        MainButton, 
+        ContratCards,
+        ContratCategoryCards,
+        CartModale,
+        ViewModale
     },
     setup() {
-
         const contratStore = useContratStore();
 
         const legalContrat = ref([
@@ -86,36 +92,68 @@ export default {
             { title: 'Partenariat & Investissement' },
         ]);
 
-        // About contrat buying
-        const isOpen = ref<boolean>(false)
+        // Gestion propre des références du DOM via Vue
+        const cardRefs = ref<HTMLElement[]>([]);
+        const setCardRef = (el: any) => {
+            if (el && el.$el) {
+                cardRefs.value.push(el.$el); // Récupère le nœud HTML du composant
+            }
+        };
+
+        const animatedCards = ref<boolean[]>([]);
+        let observer: IntersectionObserver | null = null;
+
+        const isOpen = ref<boolean>(false);
         const openModal = () => {
             isOpen.value = true;
-            console.log('évènement emis!!!')
+            console.log('Événement achat émis !!!');
         }
-        // --- Logique pour la Visualisation (Nouveau) ---
-        const isViewOpen = ref<boolean>(false) // Votre deuxième booléen
+
+        const isViewOpen = ref<boolean>(false);
         const openViewModal = () => {
-            isViewOpen.value = true; // On ouvre la deuxième modale
-                console.log('évènement visualisation émis!!!')
+            isViewOpen.value = true;
+            console.log('Événement visualisation émis !!!');
         }
 
-        onMounted(()=>{
+        onMounted(() => {
+            animatedCards.value = new Array(legalContrat.value.length).fill(false);
+            
+            observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const target = entry.target as HTMLElement;
+                        const index = Number(target.getAttribute('data-index'));
+                        
+                        if (!isNaN(index) && !animatedCards.value[index]) {
+                            animatedCards.value[index] = true;
+                            observer?.unobserve(target);
+                        }
+                    }
+                });
+            }, { threshold: 0.2, rootMargin: '0px 0px -20px 0px' });
 
-            contratStore.getContracts();
+            // On utilise les refs Vue au lieu de document.querySelectorAll
+            setTimeout(() => {
+                cardRefs.value.forEach((cardEl) => {
+                    if (cardEl) observer?.observe(cardEl);
+                });
+            }, 100);
+        });
 
-        })
+        onBeforeUnmount(() => {
+            if (observer) observer.disconnect();
+        });
 
         return { 
             contratStore,
             legalContrat,
             categoryContrat,
-
-            // state
+            animatedCards,
+            setCardRef, // Exposé au template
             isOpen,
             openModal,
             isViewOpen,
             openViewModal
-
         };
     }
 }
@@ -127,6 +165,8 @@ export default {
     background: none;
     position: relative;
     top: -40px;
+    width: 100%;
+    overflow-x: hidden; /* Prévient tout dépassement horizontal imprévu */
 }
 
 .wrapper-content {
@@ -134,8 +174,8 @@ export default {
     flex-direction: column;
     align-items: center;
     gap: 0rem;
-    width: 110%;
-    margin-left: 10px;;
+    width: 100%; /* CORRIGÉ : 110% cause un scroll horizontal sur mobile */
+    padding: 0 1rem; /* CORRIGÉ : On utilise le padding plutôt qu'un margin-left arbitraire */
 }
 
 /* --- STYLES ORIGINAUX DES CONTRATS (carrousel mobile / grille desktop) --- */
@@ -170,7 +210,12 @@ export default {
     }
 }
 
-/* --- STYLES DU CARROUSEL POUR CATÉGORIES (NOUVEAU, sans impact sur les contrats) --- */
+/* --- STYLES DU CARROUSEL POUR CATÉGORIES --- */
+.category-section {
+    margin-top: 2rem;
+    margin-bottom: 2rem;
+}
+
 .subtitle-wrapper.carousel-header {
     display: flex;
     align-items: center;
@@ -217,6 +262,7 @@ export default {
     scroll-snap-type: x mandatory;
     scroll-behavior: smooth;
     scrollbar-width: thin;
+    padding-bottom: 10px;
 }
 
 .category-carousel-container::-webkit-scrollbar {
@@ -246,7 +292,35 @@ export default {
     width: 240px;
 }
 
-/* Responsive du carrousel catégories */
+/* Animation fade-up */
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.card-animate {
+  opacity: 0;
+  animation: fadeUp 0.6s ease forwards;
+}
+
+.card-animate-1 { animation-delay: 0.1s; }
+.card-animate-2 { animation-delay: 0.2s; }
+.card-animate-3 { animation-delay: 0.3s; }
+.card-animate-4 { animation-delay: 0.4s; }
+.card-animate-5 { animation-delay: 0.5s; }
+.card-animate-6 { animation-delay: 0.6s; }
+
+.card-item {
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
 @media (max-width: 767px) {
     .category-carousel-track > * {
         width: 85vw;
@@ -263,10 +337,9 @@ export default {
     .category-carousel-track > * {
         width: 220px;
     }
-
 }
 
-/* --- Autres styles partagés (inchangés) --- */
+/* --- Autres styles partagés --- */
 .subtitle-wrapper {
     display: flex;
     justify-content: center;
@@ -281,7 +354,6 @@ export default {
     font-weight: 600;
     color: currentColor;
     white-space: nowrap;
-    
 }
 
 .divider {
@@ -289,7 +361,7 @@ export default {
     height: 0.5px;
     background: linear-gradient(to right, var(--primary-color, #4ade80), transparent);
     opacity: 0.6;
-    margin-left: 40px;
+    margin-left: 0; /* CORRIGÉ : le 40px n'était pas très esthétique sur mobile */
 }
 
 @media (min-width: 768px) {
@@ -300,11 +372,10 @@ export default {
         font-size: 1.3rem;
         width: 100%;
         text-align: left;
-        margin-left:50px;
+        margin-left: 50px;
     }
     .wrapper-content {
-        width: 100%;
-        margin-left: 0;
+        padding: 0; /* On retire le padding sur desktop si nécessaire */
     }
     .wrapper-content h3{
         font-size: 2.2rem;

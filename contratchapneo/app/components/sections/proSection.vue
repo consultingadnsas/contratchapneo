@@ -50,7 +50,7 @@ export default {
 <style scoped>
 .main-section {
     padding: 2rem 0;
-    background: #e4e4e4;
+    background: #f4faff;
 }
 
 .wrapper-content {
