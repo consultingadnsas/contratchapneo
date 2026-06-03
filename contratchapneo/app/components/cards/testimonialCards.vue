@@ -79,7 +79,7 @@ export default defineComponent({
     overflow: hidden;
 
     /* Thème clair par défaut */
-    background-color: #f8f9fa;
+    background-color: #ffffff;
     color: #111827;
     box-shadow: 0px 2px 4px 0px #656973;
     cursor: pointer;
@@ -98,14 +98,14 @@ export default defineComponent({
     right: 0;
     width: 30px;
     height: 30px;
-    background-color: #0f172a;
+    background-color: #65e17e;
     border-radius: 0 0 0 70px;
     z-index: 0;
 }
 
 /* --- THÈME DE LA CARTE SÉLECTIONNÉE (FONCÉE) --- */
 .testimonials-card.is-featured {
-    background-color: #0f172a;
+    background-color: var(--primary-color-dark);
     color: #ffffff;
 }
 

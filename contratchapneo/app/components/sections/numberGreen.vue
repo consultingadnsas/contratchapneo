@@ -46,11 +46,13 @@ export default {
     --color-success: #4db562; /* Ce vert s'accorde bien avec WhatsApp */
     --color-dark: #294F62;
     
-    background-color: #272147;
+    background-color: #e0f2fe;
     color: #ffffff;
     padding: 3rem 1.5rem;
     position: relative;
     top: -100px;
+    width: 100%;
+    max-width: 1400px;
 }
 
 /* ── Conteneur principal ─────────────────────────────────────── */
@@ -87,11 +89,12 @@ export default {
     font-weight: 700;
     margin: 0 0 0.5rem 0;
     line-height: 1.2;
+    color: var(--color-primary);
 }
 
 .banner-text p {
     font-size: clamp(0.95rem, 2vw, 1.1rem);
-    color: #cbd5e1;
+    color: var(--color-primary);
     margin: 0;
     max-width: 600px;
 }

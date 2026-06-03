@@ -104,7 +104,7 @@ export default {
 /* --- Zone Bleue (Le Simulateur) --- */
 .calculator-section {
     position: relative;
-    background: #272147; /* Un bleu très sombre fait sérieux/juridique */
+    background: var(--primary-color-dark); /* Un bleu très sombre fait sérieux/juridique */
     padding: 4rem 1rem;
     border-radius: 1.5rem; /* Coins plus arrondis pour moderniser */
     overflow: hidden;
