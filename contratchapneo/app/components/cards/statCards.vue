@@ -78,6 +78,7 @@ export default{
     padding-right: 3rem;
     margin-left: 3rem;
     margin-bottom: 0.5rem;
+    text-transform: uppercase;
 }
 
 .btn-container {
@@ -163,7 +164,7 @@ export default{
     }
 
     .features-cards h4 {
-        font-size: clamp(1.1rem, 2vw, 1.5rem);
+        font-size: 0.9rem;
     }
 
     .btn-container {
@@ -190,7 +191,7 @@ export default{
     }
 
     .features-cards h4 {
-        font-size: 1rem;
+        font-size: 0.9rem;
         margin-left: 2.5rem;
         margin-bottom: 0.5rem;
     }
