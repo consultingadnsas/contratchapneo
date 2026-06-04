@@ -56,7 +56,7 @@
 
             <!-- Bouton d'action centré en bas -->
             <div class="action-container">
-                <mainButton label="Calculer vos droits" />
+                <secondButton label="Calculer vos droits" />
             </div>
             
         </div>
@@ -66,11 +66,13 @@
 <script lang="ts">
 import { ref } from 'vue';
 import mainButton from '../buttons/mainButton.vue';
+import secondButton from '../buttons/secondButton.vue'
 
 export default {
     name: 'CalculToolSection',
     components: {
-        mainButton
+        mainButton,
+        secondButton
     },
     setup() {
         const calculOptions = ref([
@@ -115,7 +117,7 @@ export default {
 /* --- Bloc Principal Sombre (D.A. ContratChap) --- */
 .calculator-section {
     position: relative;
-    background: #272147;
+    background: #0155b8;
     padding: 5rem 2rem;
     border-radius: 2rem;
     width: fit-content;
@@ -144,7 +146,7 @@ export default {
     position: absolute;
     font-family: 'Arial', sans-serif;
     font-weight: 900;
-    color: rgba(255, 255, 255, 0.05); /* Très transparent pour ne pas gêner la lecture */
+    color: #32f459; /* Très transparent pour ne pas gêner la lecture */
     /* L'accumulation d'ombres crée l'effet d'épaisseur 3D avec une touche de vert à la base */
     text-shadow: 
         1px 1px 0 rgba(255, 255, 255, 0.05),
@@ -226,7 +228,7 @@ export default {
     align-items: center;
     text-align: center;
     padding: 0.5rem 1rem 1rem 1rem;
-    background: rgba(255, 255, 255, 0.03);
+    background: rgba(255, 255, 255, 0.155);
     backdrop-filter: blur(15px);
     border: 1px solid rgba(255, 255, 255, 0.1);
     box-shadow: inset 0 0 40px rgba(52, 211, 153, 0.1);
@@ -323,7 +325,7 @@ export default {
 .card-icon {
     width: 32px;
     height: 32px;
-    color: #34d399;
+    color: #fff;
     flex-shrink: 0;
 }
 

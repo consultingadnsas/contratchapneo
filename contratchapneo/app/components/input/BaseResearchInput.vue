@@ -71,7 +71,7 @@ export default {
 
 <style scoped>
 .input-group {
-  --glass-bg: rgba(255, 255, 255, 0.1);
+  --glass-bg: rgba(255, 255, 255, 0.167);
   --glass-border: rgba(255, 255, 255, 0.2);
   --primary-color: #60a5fa; 
   --text-color: #ffffff;
@@ -101,8 +101,9 @@ export default {
   padding-left: 3.5rem; 
   font-size: 1.1rem;
   color: var(--text-color);
-  background: var(--glass-bg);
+  background: rgba(255, 255, 255, 0.089);
   backdrop-filter: blur(15px);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
   -webkit-backdrop-filter: blur(15px);
   border: 1px solid var(--glass-border);
   border-radius: 999px; /* Forme pilule parfaite */
@@ -129,15 +130,15 @@ export default {
 }
 
 .input-icon-left {
-    left: 8px; /* On le rapproche un peu du bord gauche */
-    background: var(--secondary-light-color); /* Le fond du rond */
-    width: 40px;  /* Taille du rond */
-    height: 40px; /* Taille du rond */
-    border-radius: 50%; /* Rend le fond parfaitement rond */
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.3s ease;
+  left: 8px; /* On le rapproche un peu du bord gauche */
+  background: var(--secondary-light-color); /* Le fond du rond */
+  width: 40px;  /* Taille du rond */
+  height: 40px; /* Taille du rond */
+  border-radius: 50%; /* Rend le fond parfaitement rond */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
 }
 
 /* On ajuste l'icône à l'intérieur du rond */

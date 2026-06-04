@@ -1,6 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Instrument+Sans:ital,wght@0,400..700;1,400..700&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Zalando+Sans+SemiExpanded:ital,wght@0,200..900;1,200..900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
 
 @import '../css/wrapper.css';
 @import '../css/button.css';
@@ -20,15 +21,18 @@
     --background-white-color: #f5f5f5;
     --my-white: #fff;
 
+    /*  Nathan color*/
+    --nathan-blue:#0155b8;
+
     --background-color:#294F62;
     --background-green-color: #3b8d50;
 
 
-    --glass-bg: rgba(255, 255, 255, 0.1);
+    --glass-bg: rgba(255, 255, 255, 0.84);
     --glass-border: rgba(255, 255, 255, 0.2);
     /* About my different fonts */
     --font-primary: 'Inter', sans-serif;
-    --font-secondary: 'Instrument+Sans', sans-serif;
+    --font-secondary: 'Poppins', sans-serif;
     --font-tertiary: "Zalando Sans SemiExpanded", sans-serif;
 
     /* Font size */
@@ -40,5 +44,5 @@
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    font-family: var(--font-tertiary);
+    font-family: var(--font-secondary);
 }

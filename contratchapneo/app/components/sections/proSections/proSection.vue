@@ -24,7 +24,7 @@
 
         <template v-else>
             
-            <div class="cards-container">
+            <div class="cards-container">                
                 <contratCards 
                     v-for="(contrat, index) in contratStore.contracts" 
                     :key="contrat.id || index"
@@ -80,6 +80,7 @@ import {useContratStore} from '../../../stores/contratStore'
 import { useRouter } from 'vue-router'
 
 export default {
+    
     components: {
         contratCards,
         Basefilter,
@@ -92,6 +93,7 @@ export default {
         cartModale,
         viewModale
     },
+    
     setup() {
 
         const router = useRouter();

@@ -431,6 +431,11 @@ export default {
         justify-content: center;
     }
 
+    .pic__container img{
+        height: 70px;
+        width: 90px
+    }
+
     .nav-links-desktop li a,
     .nav-links-desktop li .dropdown-trigger {
         position: relative;
@@ -587,7 +592,7 @@ export default {
     .cta-desktop {
         display: block;
         white-space: nowrap;
-        background: var(--primary-color);
+        background: var(--primary-color-dark);
         color: white;
         padding: 0.55rem 1.15rem;
         border-radius: 50px;
