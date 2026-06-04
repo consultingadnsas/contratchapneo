@@ -134,7 +134,6 @@ export const useContratStore = defineStore('contrat', ()=> {
     };
 
     const getSpecificContract = async(contratId:string)=> {
-        isLoading.value = true;
         error.value = ""
 
         try{

@@ -9,7 +9,7 @@
         
         <div class="toolbar">
             <Basefilter class="toolbar__filter" />
-            <BaseSearchInput class="toolbar__search" placeholder="Rechercher un article ou un produit..."/>
+            <BaseSearchInput class="toolbar__search" placeholder="Trouver un contrat..."/>
         </div>
 
         <contractCardSkeleton v-if="contratStore.isLoading" />
@@ -136,6 +136,7 @@ export default {
 </script>
 
 <style scoped>
+
 .contrat-card-section {
     width: 100%;
     max-width: 1400px;
