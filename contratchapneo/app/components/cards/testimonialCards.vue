@@ -80,7 +80,7 @@ export default defineComponent({
 
     /* Thème clair par défaut */
     background-color: #ffffff;
-    color: #111827;
+    color: var(--primary-color-dark);    
     box-shadow: 0px 2px 4px 0px #656973;
     cursor: pointer;
 }
@@ -112,7 +112,7 @@ export default defineComponent({
 /* --- ICÔNE GUILLEMETS --- */
 .icon-quote {
     /* Couleur par défaut pour cartes claires */
-    color: #0f172a;
+    color: var(--primary-color);
     margin-bottom: 0.5rem;
     display: block;
     position: relative;
@@ -126,11 +126,13 @@ export default defineComponent({
 
 /* --- TEXTE DU TÉMOIGNAGE (CORPS) --- */
 .quote-text {
-    font-size: 1rem;
-    font-weight: 500;
-    line-height: 1.4;
-    margin: 0;
-    text-align: left;
+    font-size: 0.9rem;
+    font-weight: 400;
+    line-height: 1.5;
+    margin: 0 1.5rem 0 0;
+    display: flex;
+    margin-left: 6.5%;
+    text-align: justify;
     letter-spacing: -0.02em;
     position: relative;
     z-index: 1;
@@ -177,7 +179,8 @@ export default defineComponent({
 
 /* Adaptation des couleurs des métadonnées */
 .testimonials-card:not(.is-featured) .author-details {
-    color: #6b7280;
+    color: var(--primary-color-dark);
+    opacity:0.7;
 }
 
 .testimonials-card.is-featured .author-details {

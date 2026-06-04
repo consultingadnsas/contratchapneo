@@ -3,9 +3,9 @@
         <nav class="nav-container">
 
             <!-- Logo -->
-            <h3 class="logo">
-                <span class="logo-accent">Contrat</span>ChapNeo
-            </h3>
+            <div class="pic__container">
+                <img src="/CONTRATCHAP.png" alt="ContratchapNeo">
+            </div>
 
             <!-- Liens desktop (cachés sur mobile) -->
             <ul class="nav-links-desktop">
@@ -218,12 +218,9 @@ export default {
     padding: 0 1.5rem;
 }
 
-.logo {
-    font-family: 'Instrument Sans', sans-serif;
-    font-size: 1.25rem;
-    font-weight: 700;
-    color: var(--primary-color);
-    white-space: nowrap;
+.pic__container img {
+    width: 70px;
+    height: 60px;
 }
 
 .logo-accent {
@@ -409,6 +406,10 @@ export default {
         -webkit-backdrop-filter: blur(14px);
         border: 1px solid rgba(255, 255, 255, 0.45);
         box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.06);
+    }
+    .pic__container img {
+        width: 90px;
+        height: 70px;
     }
 
     .nav-container {

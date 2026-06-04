@@ -106,7 +106,7 @@ export default defineComponent({
     justify-content: center;
     flex-direction: column; 
     align-items: center;
-    gap: 2rem;
+    gap: 1rem;
     padding: 4rem 1rem 1rem 1rem;
     background: radial-gradient(circle, #202b4a 30%, #0f0f0f 100%);
 }
@@ -143,7 +143,7 @@ export default defineComponent({
     display: flex;
     justify-content: center;
     align-items: center;
-    padding: 140px 40px;
+    padding: 70px 40px;
     box-sizing: border-box;
     width: 100%;
 }
@@ -166,7 +166,7 @@ export default defineComponent({
     left: -12%; 
     
     /* 2. Une forme concrète et stricte */
-    width: 120%; /* Le cercle fait la même taille que le conteneur du téléphone */
+    width: 150%; /* Le cercle fait la même taille que le conteneur du téléphone */
     aspect-ratio: 1 / 1;
     border-radius: 50%; /* Ça force la forme en cercle parfait */
     

@@ -31,22 +31,22 @@ export default {
     setup() {
         const testimonials = ref([
             {
-                quote: "Contratchap a révolutionné notre gestion contractuelle. La rédaction sur-mesure et l'accès aux modèles nous ont fait gagner un temps précieux. Un outil indispensable pour toute PME ambitieuse.",
-                company: "TechSolutions",
-                name: "Aminata Diallo",
-                role: "Directrice Juridique"
+                quote: "Voulez-vous savoir si je trouve utile ou correcte le pack juridique ? Je dirai oui, Dans toutes les activités avec des humains il faut un contrat et les vôtres sont bien rédigés. Après il y a des détails du contrat que vous ne pouvez pas deviner donc il revient aux concernés de les ajouter. Pour ma part, tout y est. Vos modeles passent en tout cas.",
+                company: "O'Mouton Roz",
+                name: "M. Amara BAMBA",
+                role: "CEO"
             },
             {
-                quote: "En tant que startup, nous avions besoin de contrats solides sans exploser notre budget. Contratchap nous a offert exactement cela : professionnalisme et simplicité.",
-                company: "Green Innov",
-                name: "Koffi Mensah",
-                role: "CEO & Co-fondateur"
+                quote: "Je suis tres satisfait du pack de documents juridiques. J'ai utilisé deux modèles de contrat : le contrat à durée indéterminée et le contrat dapporteur d'affaires. Ils étaient clairs et faciles à comprendre, ce qui m'a permis de les utiliser immédiatement. Merci pour cette excellente ressource qui me fait gagner du temps. Je recommande vivement et vous remercie pour votre excellent travail.",
+                company: "INTERPRET-CITY",
+                name: "M. Ibrahim DOUMBIA",
+                role: "Gérant"
             },
             {
-                quote: "Le suivi juridique personnalisé est ce qui fait la différence. L'équipe de Contratchap est réactive et comprend parfaitement les enjeux de notre secteur.",
-                company: "BTP Construction",
-                name: "Sophie Morel",
-                role: "Responsable Administratif"
+                quote: "Je tiens à vous remercier pour le pack de documents juridiques, Ça m'apporte de l'aide dans mes différents partenariats avec les usines chinoises et malaisiennes Le pack nous a fait gagner du temps et a rendu notre activité plus professionnelle Je suis satisfait à 100% . Encore merci à vous.",
+                company: "Word Transit et services",
+                name: "David BOUDA",
+                role: "Gérant"
             },
             {
                 quote: "Nous utilisons Contratchap depuis 6 mois et nous avons déjà réduit nos coûts juridiques de 40 %. La plateforme est intuitive et les documents sont impeccables.",
