@@ -4,15 +4,9 @@
         <div class="bg-shape shape-top-left"></div>
 
         <div class="flex flex-col gap-4 content-wrapper">
-            
-            <!--  
-
-             <span>
+            <span>
                 {{ displayText }}<span class="cursor">|</span>
             </span>
-            
-            -->
-            
             <h1>
                 Téléchargez librement vos contrats
             </h1>
@@ -114,28 +108,7 @@ export default defineComponent({
     align-items: center;
     gap: 1rem;
     padding: 4rem 1rem 1rem 1rem;
-    background: var(--nathan-blue);
-    position: relative; 
-    z-index: 1;
-}
-
-/* ── Le fond d'écran avec motif Outils d'Affaires ──────── */
-.hero-section::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    
-    /* Motif SVG avec plusieurs outils d'affaires (Mallette, Document, Graphique, Calculatrice, Dossier) */
-    background-image: url("data:image/svg+xml,%3Csvg width='300' height='300' viewBox='0 0 300 300' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='%23ffffff' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' stroke-opacity='0.08'%3E%3C!-- Mallette --%3E%3Cg transform='translate(40, 40) scale(1.5)'%3E%3Crect x='2' y='7' width='20' height='14' rx='2' ry='2'/%3E%3Cpath d='M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16'/%3E%3C/g%3E%3C!-- Document --%3E%3Cg transform='translate(200, 50) scale(1.5)'%3E%3Cpath d='M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z'/%3E%3Cpolyline points='14 2 14 8 20 8'/%3E%3Cline x1='16' y1='13' x2='8' y2='13'/%3E%3Cline x1='16' y1='17' x2='8' y2='17'/%3E%3Cpolyline points='10 9 9 9 8 9'/%3E%3C/g%3E%3C!-- Graphique --%3E%3Cg transform='translate(120, 140) scale(1.5)'%3E%3Cpolyline points='23 6 13.5 15.5 8.5 10.5 1 18'/%3E%3Cpolyline points='17 6 23 6 23 12'/%3E%3C/g%3E%3C!-- Calculatrice --%3E%3Cg transform='translate(40, 220) scale(1.5)'%3E%3Crect x='4' y='2' width='16' height='20' rx='2' ry='2'/%3E%3Cline x1='8' y1='6' x2='16' y2='6'/%3E%3Cline x1='16' y1='10' x2='16' y2='10'/%3E%3Cline x1='12' y1='10' x2='12' y2='10'/%3E%3Cline x1='8' y1='10' x2='8' y2='10'/%3E%3Cline x1='8' y1='14' x2='8' y2='14'/%3E%3Cline x1='12' y1='14' x2='12' y2='14'/%3E%3Cline x1='16' y1='14' x2='16' y2='14'/%3E%3Cline x1='8' y1='18' x2='8' y2='18'/%3E%3Cline x1='12' y1='18' x2='12' y2='18'/%3E%3Cline x1='16' y1='18' x2='16' y2='18'/%3E%3C/g%3E%3C!-- Dossier --%3E%3Cg transform='translate(220, 210) scale(1.5)'%3E%3Cpath d='M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
-    
-    background-size: 300px 300px; /* Contrôle l'espacement du groupe d'icônes */
-    background-repeat: repeat;
-    
-    z-index: -1; 
-    pointer-events: none; 
+    background: radial-gradient(circle, #202b4a 30%, #0f0f0f 100%);
 }
 
 /* Bloc texte */
@@ -183,18 +156,17 @@ export default defineComponent({
     align-items: center;
     z-index: 1;
 }
-
 .pic-container::before {
     content: '';
     position: absolute;
     
     /* 1. Le déplacement en haut à gauche */
     /* Des valeurs négatives le font sortir de sa boîte vers le haut et la gauche */
-    top: 25%; 
-    left: -12%; 
+    top: 12%; 
+    left: -30%; 
     
     /* 2. Une forme concrète et stricte */
-    width: 150%; /* Le cercle fait la même taille que le conteneur du téléphone */
+    width: 155%; /* Le cercle fait la même taille que le conteneur du téléphone */
     aspect-ratio: 1 / 1;
     border-radius: 50%; /* Ça force la forme en cercle parfait */
     
@@ -206,7 +178,7 @@ export default defineComponent({
 }
 
 .pic-container img {
-    min-width: 300px;
+    min-width: 320px;
     aspect-ratio: 1 / 1; 
     height: auto; 
     object-fit: cover; 
@@ -335,8 +307,8 @@ export default defineComponent({
         flex-direction: row; 
         justify-content: space-between;
         align-items: center;
-        padding: 1rem 2rem !important;
-        gap: 6rem;
+        padding: 1rem 5rem !important;
+        gap: 5rem;
         height: 100vh !important;
         min-height: 600px !important;
         top: 0; /* Plus besoin de pousser vers le bas */
@@ -345,11 +317,6 @@ export default defineComponent({
     .hero-section > .content-wrapper {
         width: 50%;
         top: 0; 
-    }
-
-    .content-wrapper span{
-        font-weight: 500;
-        color: #32f459;
     }
 
     .pic-wrapper {
@@ -368,11 +335,11 @@ export default defineComponent({
     
     /* 1. Le déplacement en haut à gauche */
     /* Des valeurs négatives le font sortir de sa boîte vers le haut et la gauche */
-    top: 20%; 
-    left: 10%; 
+    top: 10%; 
+    left: 5%; 
     
     /* 2. Une forme concrète et stricte */
-    width: 80%; /* Le cercle fait la même taille que le conteneur du téléphone */
+    width: 90%; /* Le cercle fait la même taille que le conteneur du téléphone */
     aspect-ratio: 1 / 1;
     border-radius: 50%; /* Ça force la forme en cercle parfait */
     
