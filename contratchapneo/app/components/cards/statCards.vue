@@ -71,7 +71,7 @@ export default{
     font-size: clamp(0.85rem, 2.5vw, 1.1rem); /* fluid, jamais trop petit ni trop grand */
     line-height: 1.3;
     font-weight: 600;
-    font-size: 0.7rem;
+    font-size: 0.6rem;
     color: #fff;
     text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
     /* évite que le texte chevauche le bouton */
