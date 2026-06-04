@@ -107,7 +107,7 @@ export default defineComponent({
     flex-direction: column; 
     align-items: center;
     gap: 1rem;
-    padding: 4rem 1rem 1rem 0rem;
+    padding: 4rem 1rem 1rem 1rem;
     background: radial-gradient(circle, #202b4a 30%, #0f0f0f 100%);
 }
 
