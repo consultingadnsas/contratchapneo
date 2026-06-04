@@ -1,5 +1,5 @@
 <template>
-    <section class="main-section" data-aos="fade-up" data-aos-duration="3000">
+    <section class="main-section pack-section">
         <!-- Flaque décorative étendue en bas -->
         <div class="puddle-bg"></div>
         <h3>
@@ -83,9 +83,10 @@ export default {
 .main-section {
     width: 100%;
     position: relative;
-    top: -130px;
+    top: -90px;
+    bottom: 10px;
     overflow: hidden;
-    position: relative;
+    background: #98f7abdd;
 }
 
 /* Flaque décorative qui borde tout le bas de la section */
@@ -120,14 +121,6 @@ export default {
     padding: 1rem;
     width: 100%;
     box-sizing: border-box;
-}
-
-.description h4 {
-    font-size: 1.2rem;
-    font-weight: 600;
-    line-height: 1.4;
-    color: #1f2937;
-    margin-bottom: 0.5rem;
 }
 
 .description p {

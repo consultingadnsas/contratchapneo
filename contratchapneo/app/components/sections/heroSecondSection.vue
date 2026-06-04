@@ -107,7 +107,7 @@ export default defineComponent({
     flex-direction: column; 
     align-items: center;
     gap: 1rem;
-    padding: 4rem 1rem 1rem 1rem;
+    padding: 4rem 1rem 1rem 0rem;
     background: radial-gradient(circle, #202b4a 30%, #0f0f0f 100%);
 }
 
@@ -303,11 +303,12 @@ export default defineComponent({
 
 /* ── 💻 Desktop (A partir de 1200px) ─────────────────────────── */
 @media (min-width: 1200px) {
+    
     .hero-section {
         flex-direction: row; 
         justify-content: space-between;
         align-items: center;
-        padding: 1rem 5rem !important;
+        padding: 1rem 3rem !important;
         gap: 5rem;
         height: 100vh !important;
         min-height: 600px !important;
