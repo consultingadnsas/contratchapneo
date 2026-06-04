@@ -6,7 +6,7 @@
             <!-- SECTION 1 : Qu'est-ce que Contrat Chap (Inspiration : "About our firm") -->
             <section class="navis-section hero-section">
                 <div class="text-content">
-                    <h1 class="main-title">Qu'est-ce que ContratChapNeo ?</h1>
+                    <h1 class="main-title">Qu'est-ce que ContratChap ?</h1>
                     <p class="description muted-text">
                        ContratChapNeo est une Legaltech de l’espace OHADA dédiée à la croissance et à la formalisation des PME's. 
                        Née de l’expertise du cabinet ADN Consulting, la plateforme simplifie la sécurisation juridique des entreprises de la création à la cession.

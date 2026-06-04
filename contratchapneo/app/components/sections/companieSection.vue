@@ -66,14 +66,14 @@ export default {
 .main-section {
     width: 100%;
     position: relative;
-    top: -150px;
+    top: -120px;
     overflow: hidden; /* Sécurité supplémentaire */
 }
 
 .main-section h3 {
     text-align: center;
     font-size: 1.8rem; /* Plus petit pour mobile */
-    padding: 2rem 1rem;
+    padding: 1rem;
     font-weight: 600;
 }
 
@@ -126,7 +126,7 @@ export default {
 }
 
 .carousel-track img {
-    height: 40px; /* Plus petit pour les écrans de téléphone */
+    height: 50px; /* Plus petit pour les écrans de téléphone */
     width: auto;
     flex-shrink: 0; /* Empêche les logos de s'écraser */
 }

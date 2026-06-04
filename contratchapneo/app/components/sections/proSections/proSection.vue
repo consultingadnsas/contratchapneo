@@ -8,7 +8,7 @@
 
         
         <div class="toolbar">
-            <Basefilter class="toolbar__filter" />
+            <baseProFilter class="toolbar__filter"/>
             <BaseCountrySelect class="toolbar__select" placeholder="Choisir le pays" :options="ohadaCountries"/>
             <BaseSearchInput class="toolbar__search" placeholder="Trouver un professionnel"/>
         </div>
@@ -70,6 +70,7 @@ import emptyState from '../../tools/emptyState.vue'
 import Basefilter from '../../tools/Basefilter.vue'
 import BaseSelect from '../../input/BaseSelect.vue'
 import BaseCountrySelect from '../../input/BaseCountrySelect.vue'
+import baseProFilter from '../../tools/baseProFilter.vue'
 import Paginator from '../../tools/Paginator.vue'
 import BaseSearchInput from '../../input/BaseSearchInput.vue'
 import cartModale from '../../modale/cartModale.vue'
@@ -91,7 +92,8 @@ export default {
         contractCardSkeleton,
         emptyState,
         cartModale,
-        viewModale
+        viewModale,
+        baseProFilter
     },
     
     setup() {
