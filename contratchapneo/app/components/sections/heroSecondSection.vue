@@ -8,13 +8,13 @@
                 {{ displayText }}<span class="cursor">|</span>
             </span>
             <h1>
-                Téléchargez librement vos contrats
+                Téléchargez facilement tous vos contrats
             </h1>
             <base-research-input/>
         </div>
         <div class="pic-wrapper">
             <div class="pic-container">
-                <img src="../../assets/pictures/ContratChap/Accueil 2.png" alt="Contrats OHADA">
+                <img src="/Accueil_madame SANS FOND.png" alt="Contrats OHADA">
 
                 <stat-cards class="floating-card card-top-left"    title="Banque de contrats" @click="router.push('/contractBank')" />
                 <stat-cards class="floating-card card-top-right"   title="Outil de Calcul" />
@@ -46,7 +46,7 @@ export default defineComponent({
 
         const phrases = [
             'Profitez de nos contrats gratuits.',
-            'Sécurisez juridiquement vos affaires.',
+            'Sécurisez juridiquement vos business.',
             'Accédez à des modèles conformes à l\'OHADA.'
         ]
 
@@ -324,10 +324,10 @@ export default defineComponent({
         width: 50%;
         padding: 60px 40px;
     }
-
+    
     .pic-container, .pic-container img {
         width: 300px;
-        min-width: 350px;
+        min-width: 355px;
     }
 
     .pic-container::before {

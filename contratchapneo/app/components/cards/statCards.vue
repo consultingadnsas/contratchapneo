@@ -164,7 +164,7 @@ export default{
     }
 
     .features-cards h4 {
-        font-size: clamp(1.1rem, 2vw, 1.5rem);
+        font-size: 0.9rem;
     }
 
     .btn-container {
