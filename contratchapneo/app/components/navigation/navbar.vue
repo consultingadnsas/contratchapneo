@@ -74,7 +74,7 @@
                         </ul>
                     </transition>
                 </li>
-                <li><NuxtLink to="/outil-de-calcul">Outil de calcul</NuxtLink></li>
+                <li><NuxtLink to="/outil-de-calcul">Calcul de droit</NuxtLink></li>
                 <li><NuxtLink to="/about"> À propos</NuxtLink></li>
             </ul>
 
@@ -158,7 +158,7 @@
                             </ul>
                         </transition>
                     </li>
-                    <li><NuxtLink to="/outil-de-calcul" @click="toggleMenu">Outil de calcul</NuxtLink></li>
+                    <li><NuxtLink to="/outil-de-calcul" @click="toggleMenu">Calcul de droit</NuxtLink></li>
                     <li><NuxtLink to="/about" @click="toggleMenu"> À propos</NuxtLink></li>
                 </ul>
                 <a href="#" class="cta-mobile" @click="toggleMenu">Connexion</a>
