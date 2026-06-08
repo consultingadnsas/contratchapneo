@@ -1,13 +1,10 @@
 <template>
     <header :class="['main-header', `theme-${theme}`, { 'is-scrolled': isScrolled }]">
         <nav class="nav-container">
-
-            <!-- Logo -->
             <div class="pic__container">
                 <img src="/CONTRATCHAP.png" alt="ContratchapNeo">
             </div>
 
-            <!-- Liens desktop (cachés sur mobile) -->
             <ul class="nav-links-desktop">
                 <li><NuxtLink to="/">Accueil</NuxtLink></li>
 
@@ -33,8 +30,29 @@
                     </transition>
                 </li>
 
-                <li><NuxtLink to="/conseil-juridique">Conseils juridiques</NuxtLink></li>
-                <!-- Dropdown Nos professionnels -->
+                <li 
+                    class="dropdown-item"
+                    @mouseenter="isServicesDropdownOpen = true"
+                    @mouseleave="isServicesDropdownOpen = false"
+                >
+                    <NuxtLink to="/services" class="dropdown-trigger">
+                        Services juridiques
+                        <svg :class="['chevron', { 'is-open': isServicesDropdownOpen }]" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="6 9 12 15 18 9"/>
+                        </svg>
+                    </NuxtLink>
+                    <transition name="dropdown-fade">
+                        <ul v-if="isServicesDropdownOpen" class="dropdown-menu">
+                            <li><NuxtLink to="/services/assistance-juridique">Assistance Juridique et Fiscale</NuxtLink></li>
+                            <li><NuxtLink to="/services/programmes-juridiques">Programmes Juridiques</NuxtLink></li>
+                            <li><NuxtLink to="/services/brevet-invention">Brevet d'Invention</NuxtLink></li>
+                            <li><NuxtLink to="/services/depot-marque">Dépôt de Marque</NuxtLink></li>
+                            <li><NuxtLink to="/services/legaltech">Legaltech</NuxtLink></li>
+                            <li><NuxtLink to="/services/noms-commerciaux">Enregistrement Noms Commerciaux</NuxtLink></li>
+                        </ul>
+                    </transition>
+                </li>
+
                 <li 
                     class="dropdown-item"
                     @mouseenter="isProDropdownOpen = true"
@@ -48,7 +66,6 @@
                     </NuxtLink>
 
                     <transition name="dropdown-fade">
-                        <!-- J'ai ajouté la classe 'simple-menu' pour ajuster la largeur en CSS plus bas -->
                         <ul v-if="isProDropdownOpen" class="dropdown-menu simple-menu">
                             <li><NuxtLink to="/commissaire-justice">Commissaire de justice</NuxtLink></li>
                             <li><NuxtLink to="/avocat">Avocat</NuxtLink></li>
@@ -61,26 +78,21 @@
                 <li><NuxtLink to="/about"> À propos</NuxtLink></li>
             </ul>
 
-            <!-- CTA desktop -->
-           <div class="cta-container desktop-only">
+            <div class="cta-container desktop-only">
                 <a href="#" class="cta-desktop">Connexion</a>
             </div>
 
-            <!-- Hamburger -->
             <Hamburger
                 :class="['mobile-only', { 'is-active': isMenuOpen }]"
                 :isOpen="isMenuOpen"
                 @toggle="toggleMenu"
             />
         </nav>
-
-        <!-- Menu mobile -->
         <transition name="slide-down">
             <div v-if="isMenuOpen" class="nav-mobile-menu">
                 <ul class="nav-links-mobile">
                     <li><NuxtLink to="/" @click="toggleMenu">Accueil</NuxtLink></li>
 
-                    <!-- Accordion Banque de contrats sur mobile -->
                     <li class="mobile-accordion">
                         <button 
                             class="mobile-accordion__trigger"
@@ -103,8 +115,29 @@
                         </transition>
                     </li>
 
-                    <li><NuxtLink to="/pro" @click="toggleMenu">Conseils juridiques</NuxtLink></li>
-                    <!-- Accordion Nos professionnels sur mobile -->
+                    <li class="mobile-accordion">
+                        <button 
+                            class="mobile-accordion__trigger"
+                            @click="isMobileServicesDropdownOpen = !isMobileServicesDropdownOpen"
+                        >
+                            Services juridiques
+                            <svg :class="['chevron', { 'is-open': isMobileServicesDropdownOpen }]" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"/>
+                            </svg>
+                        </button>
+
+                        <transition name="accordion">
+                            <ul v-if="isMobileServicesDropdownOpen" class="mobile-accordion__list">
+                                <li><NuxtLink to="/services/assistance-juridique" @click="toggleMenu">Assistance Juridique et Fiscale</NuxtLink></li>
+                                <li><NuxtLink to="/services/programmes-juridiques" @click="toggleMenu">Programmes Juridiques</NuxtLink></li>
+                                <li><NuxtLink to="/services/brevet-invention" @click="toggleMenu">Brevet d'Invention</NuxtLink></li>
+                                <li><NuxtLink to="/services/depot-marque" @click="toggleMenu">Dépôt de Marque</NuxtLink></li>
+                                <li><NuxtLink to="/services/legaltech" @click="toggleMenu">Legaltech</NuxtLink></li>
+                                <li><NuxtLink to="/services/noms-commerciaux" @click="toggleMenu">Enregistrement Noms Commerciaux</NuxtLink></li>
+                            </ul>
+                        </transition>
+                    </li>
+
                     <li class="mobile-accordion">
                         <button 
                             class="mobile-accordion__trigger"
@@ -151,16 +184,23 @@ export default {
     setup(props) {
         const isMenuOpen = ref<boolean>(false);
         const isScrolled = ref<boolean>(false);
+        
+        // États des Dropdowns Desktop
         const isDropdownOpen = ref<boolean>(false);
-        const isMobileDropdownOpen = ref<boolean>(false);
+        const isServicesDropdownOpen = ref<boolean>(false); // NOUVEAU
         const isProDropdownOpen = ref<boolean>(false);
+        
+        // États des Dropdowns Mobile
+        const isMobileDropdownOpen = ref<boolean>(false);
+        const isMobileServicesDropdownOpen = ref<boolean>(false); // NOUVEAU
         const isMobileProDropdownOpen = ref<boolean>(false);
 
         const toggleMenu = () => {
             isMenuOpen.value = !isMenuOpen.value;
+            // Réinitialise les accordéons quand on ferme le menu principal
             if (!isMenuOpen.value) {
                 isMobileDropdownOpen.value = false;
-                isProDropdownOpen.value = false;
+                isMobileServicesDropdownOpen.value = false;
                 isMobileProDropdownOpen.value = false;
             }
         };
@@ -178,7 +218,17 @@ export default {
             window.removeEventListener('scroll', handleScroll);
         });
 
-        return { isMenuOpen, isScrolled, isDropdownOpen, isMobileDropdownOpen, isProDropdownOpen, isMobileProDropdownOpen, toggleMenu };
+        return { 
+            isMenuOpen, 
+            isScrolled, 
+            isDropdownOpen, 
+            isServicesDropdownOpen,
+            isProDropdownOpen, 
+            isMobileDropdownOpen, 
+            isMobileServicesDropdownOpen,
+            isMobileProDropdownOpen, 
+            toggleMenu 
+        };
     },
 };
 </script>
@@ -258,6 +308,9 @@ export default {
     gap: 1.5rem;
     padding: 1.5rem 1.5rem 2rem;
     border-top: 1px solid rgba(0, 0, 0, 0.06);
+    /* Ajout d'un max-height et scroll pour les petits écrans avec beaucoup de menus */
+    max-height: calc(100vh - 70px);
+    overflow-y: auto;
 }
 
 .nav-links-mobile li a {
@@ -338,7 +391,8 @@ export default {
 .accordion-leave-active {
     transition: all 0.25s ease;
     overflow: hidden;
-    max-height: 200px;
+    /* Ajusté à 400px pour les menus avec beaucoup d'éléments comme Services */
+    max-height: 400px;
 }
 
 .accordion-enter-from,
@@ -469,13 +523,11 @@ export default {
     }
 
     /* Étape C : Afficher le trait pour la page active */
-    /* Nuxt applique 'router-link-active' automatiquement au lien de la page en cours */
     .nav-links-desktop li a.router-link-active::after,
     .nav-links-desktop li a.router-link-exact-active::after {
         width: 60%; /* Remplissez à 60% de la largeur du bouton pour l'élégance */
     }
 
-    /* Optionnel : Le trait s'agrandit légèrement au survol même si on est sur la page */
     .nav-links-desktop li a.router-link-active:hover::after {
         width: 75%;
     }
@@ -614,14 +666,16 @@ export default {
     .nav-mobile-menu {
         display: none !important;
     }
+    
+    /* Classe pour les menus avec un texte simple (sans description sous le titre) */
     .dropdown-menu.simple-menu {
-        width: 200px; /* Plus fin que l'autre menu */
+        width: 260px; /* Aligné avec les autres menus pour une meilleure cohérence */
     }
 
     .dropdown-menu.simple-menu li a {
         font-weight: 500 !important;
         font-size: 0.9rem !important;
-        padding: 0.6rem 1rem !important; /* Un peu moins haut que les gros boutons de l'autre menu */
+        padding: 0.6rem 1rem !important;
     }
 }
 
