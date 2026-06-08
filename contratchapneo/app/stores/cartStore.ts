@@ -2,8 +2,11 @@ import { defineStore } from "pinia";
 import { ref, computed } from "vue";
 import type { Contrat } from "./contratStore";
 
-export interface CartItem extends Contrat {
+// L'API renvoie les items imbriqués : { id, quantity, contrat: { ... } }
+export interface CartItem {
+  id: string;
   quantity: number;
+  contrat: Contrat;
 }
 
 export interface Cart {
@@ -27,7 +30,7 @@ export const useCartStore = defineStore('cart', () => {
     );
 
     const totalPrice = computed(() =>
-      cart.value.items.reduce((acc, item) => acc + (Number(item.prix) * item.quantity), 0)
+      cart.value.items.reduce((acc, item) => acc + (Number(item.contrat.prix) * item.quantity), 0)
     );
 
     const formattedTotalPrice = computed(() =>
@@ -55,13 +58,13 @@ export const useCartStore = defineStore('cart', () => {
       }
     };
 
-    const addToCart = async (contrat: Contrat) => {
+    const addToCart = async (contrat: string) => {
         isLoading.value = true;
         error.value = null;
         try {
-            const response = await $api<Cart>('/cart/add/', {
+            const response = await $api<Cart>('/ecommerce/cart/add/', {
                 method: 'POST',
-                body: { contrat_id: contrat.id }
+                body: { contrat_id: contrat}
             });
             if (response) {
                 cart.value = response;
@@ -78,7 +81,7 @@ export const useCartStore = defineStore('cart', () => {
         isLoading.value = true;
         error.value = null;
         try {
-            const response = await $api<Cart>(`/cart/remove/${contratId}/`, {
+            const response = await $api<Cart>(`/ecommerce/cart/remove/${contratId}/`, {
                 method: 'DELETE'
             });
             if (response) {

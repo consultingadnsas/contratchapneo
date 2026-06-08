@@ -32,7 +32,7 @@
                     :price="contrat.prix"
                     :image="contrat.picture || undefined"
                     @view="openViewModal(contrat.id)"
-                    @buy="openModal()"
+                    @buy="()=>{addTocart(contrat.id), openModal()}"
                 />
             </div>
             
@@ -60,6 +60,8 @@
 
         </Teleport>
 
+        <cartBubble @open-cart="isCartOpen = true" />
+
     </div>
 </template>
 
@@ -72,11 +74,13 @@ import Paginator from '../../tools/Paginator.vue'
 import BaseSearchInput from '../../input/BaseSearchInput.vue'
 import cartModale from '../../modale/cartModale.vue'
 import viewModale from '../../modale/viewModale.vue'
+import cartBubble from '../../modale/cartBubble.vue'
 
 import { ref, onMounted } from 'vue'
 import {useContratStore} from '../../../stores/contratStore'
 import {useCartStore} from '../../../stores/cartStore'
 import { useRouter } from 'vue-router'
+import type { Contrat } from '../../../stores/contratStore'
 
 export default {
     
@@ -88,7 +92,8 @@ export default {
         contractCardSkeleton,
         emptyState,
         cartModale,
-        viewModale
+        viewModale,
+        cartBubble
     },
     
     setup() {
@@ -108,8 +113,18 @@ export default {
         // About cart view
         const isOpen = ref<boolean>(false);
         
-        const openModal = () => {
+        const openModal = ()=> {
             isOpen.value = true;
+        }
+
+        const addTocart = async (contratId: string) => {
+        try {
+            await cartStore.addToCart(contratId);
+            isOpen.value = true; // La modale s'ouvre uniquement si l'ajout a réussi
+        } catch (error: any) {
+            console.error("Erreur lors de l'ajout au panier", error);
+            // Afficher un message à l'utilisateur
+            alert(error.message || "Une erreur est survenue lors de l'ajout au panier.");}
         }
 
         // About modalView
@@ -136,7 +151,8 @@ export default {
             isOpen,
             openModal,
             isViewOpen,
-            openViewModal
+            openViewModal,
+            addTocart
         }
     }
 }

@@ -28,13 +28,13 @@
             <div class="items-list">
               <div v-for="item in cartStore.cart.items" :key="item.id" class="cart-item">
                 <img
-                  :src="item.picture || picture"
-                  :alt="item.title"
+                  :src="item.contrat.picture || picture"
+                  :alt="item.contrat.title"
                   class="item-image"
                 >
                 <div class="item-details">
-                  <h4 class="item-name">{{ item.contrat.title }}</h4>
-                  <p class="item-price">{{ item.contrat.prix }} FCFA</p>
+                  <h4 class="item-name">{{ item.contrat?.title }}</h4>
+                  <p class="item-price">{{ item.contrat?.prix }} FCFA</p>
                   <div class="quantity-controls">
                     <button
                       class="qty-btn"
@@ -50,7 +50,7 @@
                   </div>
                 </div>
                 <div class="item-total">
-                  <span class="total-price">{{ (Number(item.contrat.prix) * item.quantity).toLocaleString('fr-FR') }} FCFA</span>
+                  <span class="total-price">{{ (Number(item.contrat?.prix) * item.quantity).toLocaleString('fr-FR') }} FCFA</span>
                   <button class="remove-btn" :disabled="cartStore.isLoading" @click="handleRemove(item.id!)">🗑️</button>
                 </div>
               </div>
@@ -95,6 +95,7 @@ export default {
   setup(props, { emit }) {
 
     const router = useRouter();
+    
     const cartStore = useCartStore();
 
     const picture = placeholder;
