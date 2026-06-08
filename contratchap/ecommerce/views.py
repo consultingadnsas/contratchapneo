@@ -12,46 +12,8 @@ from .serializers import (
     OrderSerializer,
     CheckoutSerializer,
 )
+from .helpers import (get_or_create_cart, set_cart_cookie_if_needed)
 from contrat.models import Contrat
-
-
-# ─────────────────────────────────────────
-# HELPERS
-# ─────────────────────────────────────────
-
-def get_or_create_cart(request):
-    """
-    Retourne le panier existant ou en crée un nouveau.
-    - User connecté  → panier lié au user
-    - Invité         → panier lié à la session Django
-    """
-    if request.user.is_authenticated:
-        cart, _ = Cart.objects.get_or_create(user=request.user)
-        return cart
-
-    # Crée la session si elle n'existe pas encore
-    if not request.session.session_key:
-        request.session.create()
-
-    cart, _ = Cart.objects.get_or_create(
-        session_key=request.session.session_key
-    )
-    return cart
-
-def set_cart_cookie_if_needed(request, response):
-    """
-    Helper pour attacher le cookie 'cart_session_id' à la réponse 
-    si un nouveau panier a été créé pour un invité.
-    """
-    if hasattr(request, '_new_cart_session_id'):
-        response.set_cookie(
-            key='cart_session_id',
-            value=request._new_cart_session_id,
-            httponly=True,  # Sécurisé contre les failles XSS
-            max_age=30 * 24 * 60 * 60,  # Expire dans 30 jours
-            samesite='Lax'
-        )
-    return response
 
 # ─────────────────────────────────────────
 # CART VIEWS
@@ -114,6 +76,65 @@ class CartAddItemView(APIView):
         )
         return set_cart_cookie_if_needed(request, response)
 
+
+class CartItemUpdateView(APIView):
+    """
+    PATCH /cart/update/<uuid:contrat_id>/
+    Met à jour la quantité d'un contrat spécifique dans le panier.
+    """
+    # AllowAny car les utilisateurs invités (sessions) peuvent aussi modifier leur panier
+    permission_classes = [AllowAny]
+
+    def patch(self, request, contrat_id):
+        # 1. On récupère le panier de l'utilisateur (ou de la session)
+        cart = get_or_create_cart(request)
+
+        # 2. On cherche la ligne du panier correspondante
+        try:
+            cart_item = CartItem.objects.get(cart=cart, contrat_id=contrat_id)
+        except CartItem.DoesNotExist:
+            return Response(
+                {'message': 'Ce contrat n\'est pas dans votre panier.'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        # 3. On extrait et valide la nouvelle quantité
+        quantity = request.data.get('quantity')
+
+        if quantity is None:
+            return Response(
+                {'message': 'La quantité est requise.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            quantity = int(quantity)
+            if quantity <= 0:
+                # Si la quantité est 0, l'idéal est de dire au front d'utiliser la route DELETE
+                # ou tu pourrais choisir de supprimer l'item ici directement (cart_item.delete())
+                return Response(
+                    {'message': 'La quantité doit être supérieure à zéro.'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+        except ValueError:
+            return Response(
+                {'message': 'La quantité doit être un nombre entier valide.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # 4. On met à jour et on sauvegarde
+        cart_item.quantity = quantity
+        cart_item.save()
+
+        # 5. On renvoie l'état complet du panier mis à jour (comme attendu par ton store Pinia)
+        serializer = CartSerializer(cart)
+        
+        response = Response(serializer.data, status=status.HTTP_200_OK)
+        
+        # Astuce : Si c'est un invité, s'assurer que le cookie de session suit bien
+        # set_cart_cookie_if_needed(request, response) -> Décommente si tu utilises ce helper pour la réponse
+        
+        return response
 
 class CartRemoveItemView(APIView):
     """

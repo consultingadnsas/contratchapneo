@@ -102,7 +102,7 @@ export const useCartStore = defineStore('cart', () => {
         isLoading.value = true;
         error.value = null;
         try {
-            const response = await $api<Cart>(`/cart/update/${contratId}/`, {
+            const response = await $api<Cart>(`/ecommerce/cart/update/${contratId}/`, {
                 method: 'PATCH',
                 body: { quantity }
             });
@@ -125,7 +125,7 @@ export const useCartStore = defineStore('cart', () => {
         isLoading.value = true;
         error.value = null;
         try {
-            await $api('/cart/clear/', { method: 'DELETE' });
+            await $api('/ecommerce/cart/clear/', { method: 'DELETE' });
             cart.value = { items: [] };
         } catch (err: any) {
             error.value = err.message;

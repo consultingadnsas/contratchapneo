@@ -39,19 +39,19 @@
                     <button
                       class="qty-btn"
                       :disabled="item.quantity <= 1 || cartStore.isLoading"
-                      @click="handleUpdateQuantity(item.id!, item.quantity - 1)"
+                      @click="handleUpdateQuantity(item.contrat?.id!, item.quantity - 1)"
                     >-</button>
                     <span class="quantity">{{ item.quantity }}</span>
                     <button
                       class="qty-btn"
                       :disabled="cartStore.isLoading"
-                      @click="handleUpdateQuantity(item.id!, item.quantity + 1)"
+                      @click="handleUpdateQuantity(item.contrat?.id!, item.quantity + 1)"
                     >+</button>
                   </div>
                 </div>
                 <div class="item-total">
                   <span class="total-price">{{ (Number(item.contrat?.prix) * item.quantity).toLocaleString('fr-FR') }} FCFA</span>
-                  <button class="remove-btn" :disabled="cartStore.isLoading" @click="handleRemove(item.id!)">🗑️</button>
+                  <button class="remove-btn" :disabled="cartStore.isLoading" @click="handleRemove(item.contrat?.id!)">🗑️</button>
                 </div>
               </div>
             </div>

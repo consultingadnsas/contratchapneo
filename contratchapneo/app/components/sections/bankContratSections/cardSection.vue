@@ -32,7 +32,7 @@
                     :price="contrat.prix"
                     :image="contrat.picture || undefined"
                     @view="openViewModal(contrat.id)"
-                    @buy="()=>{addTocart(contrat.id), openModal()}"
+                    @buy="()=>{addTocart(contrat.id)}"
                 />
             </div>
             
@@ -60,7 +60,7 @@
 
         </Teleport>
 
-        <cartBubble @open-cart="isCartOpen = true" />
+        <cartBubble @open-cart="openModal()" />
 
     </div>
 </template>
@@ -120,7 +120,6 @@ export default {
         const addTocart = async (contratId: string) => {
         try {
             await cartStore.addToCart(contratId);
-            isOpen.value = true; // La modale s'ouvre uniquement si l'ajout a réussi
         } catch (error: any) {
             console.error("Erreur lors de l'ajout au panier", error);
             // Afficher un message à l'utilisateur
@@ -225,9 +224,6 @@ header p{
    TABLETTE (>= 768px) : recherche toujours visible
 ========================================== */
 @media (min-width: 768px) {
-    .toolbar__filter {
-        
-    }
 
     .toolbar__search {
         max-width: 360px;
