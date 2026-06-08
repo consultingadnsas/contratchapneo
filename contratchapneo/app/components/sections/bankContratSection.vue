@@ -65,6 +65,7 @@ import CartModale from '../modale/cartModale.vue';
 import ViewModale from '../modale/viewModale.vue';
 
 import { useContratStore } from '../../stores/contratStore';
+import {useCartStore} from '../../stores/cartStore'
 
 export default {
     name: 'OrdinarySection',
@@ -76,20 +77,15 @@ export default {
         ViewModale
     },
     setup() {
+        
         const contratStore = useContratStore();
+        const cartStore = useCartStore();
 
         const legalContrat = ref([
             { title: 'Contrat de travail' , subtitle: '100% Gratuit', description: 'Un contrat de travail est un accord entre un employeur et son employé.', visuel:'/pexels-mikhail-nilov-8729948.jpg'},
             { title: 'Contrat de Graphiste', subtitle: '15 000 FCFA', description: 'Un contrat de graphiste est un accord entre un graphiste indépendant et un client.', visuel:'/graphiste.jpg'},
             { title: 'contrat de vidéaste', subtitle: '40 000 FCFA', description: 'Un contrat de vidéaste est un accord entre un vidéaste et un acheteur.', visuel:'/videaste.jpg'},
             { title: 'contrat de restauration', subtitle: '5 000 FCFA', description: 'Un contrat de de restauration certifie une fourniture d\'aliment entre une entreprise et un restaurant.', visuel:'/resto.jpg'},
-        ]);
-
-        const categoryContrat = ref([
-            { title: 'Création & Cession' },
-            { title: 'Recrutement & Ressources humaines' },
-            { title: 'Aménagement foncier & Immobilier ' },
-            { title: 'Partenariat & Investissement' },
         ]);
 
         // Gestion propre des références du DOM via Vue
@@ -146,8 +142,8 @@ export default {
 
         return { 
             contratStore,
+            cartStore,
             legalContrat,
-            categoryContrat,
             animatedCards,
             setCardRef, // Exposé au template
             isOpen,

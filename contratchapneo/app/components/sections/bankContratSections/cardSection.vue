@@ -32,6 +32,7 @@
                     :price="contrat.prix"
                     :image="contrat.picture || undefined"
                     @view="openViewModal(contrat.id)"
+                    @buy="openModal()"
                 />
             </div>
             
@@ -74,9 +75,11 @@ import viewModale from '../../modale/viewModale.vue'
 
 import { ref, onMounted } from 'vue'
 import {useContratStore} from '../../../stores/contratStore'
+import {useCartStore} from '../../../stores/cartStore'
 import { useRouter } from 'vue-router'
 
 export default {
+    
     components: {
         contratCards,
         Basefilter,
@@ -87,11 +90,14 @@ export default {
         cartModale,
         viewModale
     },
+    
     setup() {
 
         const router = useRouter();
 
         const contratStore = useContratStore();
+
+        const cartStore = useCartStore();
 
         const activeCategoryId = ref('');
 
@@ -124,6 +130,7 @@ export default {
             activeCategoryId,
             handlePageChange,
             contratStore,
+            cartStore,
 
             // modale
             isOpen,

@@ -38,6 +38,20 @@ def get_or_create_cart(request):
     )
     return cart
 
+def set_cart_cookie_if_needed(request, response):
+    """
+    Helper pour attacher le cookie 'cart_session_id' à la réponse 
+    si un nouveau panier a été créé pour un invité.
+    """
+    if hasattr(request, '_new_cart_session_id'):
+        response.set_cookie(
+            key='cart_session_id',
+            value=request._new_cart_session_id,
+            httponly=True,  # Sécurisé contre les failles XSS
+            max_age=30 * 24 * 60 * 60,  # Expire dans 30 jours
+            samesite='Lax'
+        )
+    return response
 
 # ─────────────────────────────────────────
 # CART VIEWS
@@ -53,16 +67,15 @@ class CartDetailView(APIView):
     def get(self, request):
         cart = get_or_create_cart(request)
         serializer = CartSerializer(cart)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        
+        response = Response(serializer.data, status=status.HTTP_200_OK)
+        return set_cart_cookie_if_needed(request, response)
 
 
 class CartAddItemView(APIView):
     """
     POST /cart/add/
     Ajoute un contrat au panier.
-    Si le contrat est déjà présent, incrémente la quantité.
-
-    Body: { "contrat_id": "<uuid>", "quantity": 1 }
     """
     permission_classes = [AllowAny]
 
@@ -89,17 +102,17 @@ class CartAddItemView(APIView):
         )
 
         if not created:
-            # Le contrat est déjà dans le panier → on incrémente
             item.quantity += quantity
             item.save()
 
-        return Response(
+        response = Response(
             {
                 'data'   : CartSerializer(cart).data,
                 'message': 'Contrat ajouté au panier.'
             },
             status=status.HTTP_200_OK
         )
+        return set_cart_cookie_if_needed(request, response)
 
 
 class CartRemoveItemView(APIView):
@@ -114,13 +127,14 @@ class CartRemoveItemView(APIView):
         item = get_object_or_404(CartItem, id=item_id, cart=cart)
         item.delete()
 
-        return Response(
+        response = Response(
             {
                 'data'   : CartSerializer(cart).data,
                 'message': 'Article retiré du panier.'
             },
             status=status.HTTP_200_OK
         )
+        return set_cart_cookie_if_needed(request, response)
 
 
 class CartClearView(APIView):
@@ -134,11 +148,11 @@ class CartClearView(APIView):
         cart = get_or_create_cart(request)
         cart.clear()
 
-        return Response(
+        response = Response(
             {'message': 'Panier vidé.'},
             status=status.HTTP_200_OK
         )
-
+        return set_cart_cookie_if_needed(request, response)
 
 # ─────────────────────────────────────────
 # CHECKOUT VIEW
@@ -195,13 +209,14 @@ class CheckoutView(APIView):
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
-        return Response(
+        response = Response(
             {
                 'data'   : OrderSerializer(order).data,
                 'message': 'Commande créée avec succès.'
             },
             status=status.HTTP_201_CREATED
         )
+        return set_cart_cookie_if_needed(request, response)
 
     def _create_order(self, request, cart, validated_data):
         """Logique de création isolée — appelée dans la transaction atomique."""
