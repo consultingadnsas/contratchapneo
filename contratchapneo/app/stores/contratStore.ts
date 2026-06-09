@@ -163,6 +163,49 @@ export const useContratStore = defineStore('contrat', ()=> {
 
     }
 
+    const fetchContracts = async (page = 1, categoryId: string | null = null, searchQuery: string | null = null) => {
+        isLoading.value = true;
+        error.value = null;
+
+        try {
+            // 1. On construit l'URL de base (adapte le chemin selon tes routes d'API, ex: /contrat/ ou /ecommerce/contrats/)
+            let url = `/contrat/?page=${page}`;
+            
+            // 2. On ajoute dynamiquement le filtre de catégorie s'il existe
+            if (categoryId) {
+                url += `&category=${categoryId}`;
+            }
+            
+            // 3. NOUVEAU : On ajoute le paramètre de recherche s'il est fourni
+            if (searchQuery && searchQuery.trim() !== '') {
+                url += `&q=${encodeURIComponent(searchQuery.trim())}`;
+            }
+
+            const response = await $api<PaginatedResponse<Contrat>>(url, { method: 'GET' });
+            
+            if (response && response.results) {
+                // 4. On met à jour le tableau des contrats qui alimente ta vue/vue-table
+                contracts.value = response.results.map(c => ({ 
+                    ...c, 
+                    picture: resolveMediaUrl(c.picture) 
+                }));
+                
+                // 5. On met à jour la pagination
+                totalCount.value = response.count;
+                nextPage.value = response.next;
+                previousPage.value = response.previous;
+                currentPage.value = page;
+
+                console.log('Contrats récupérés avec succès', response.results);
+            }
+        } catch (err: any) {
+            error.value = err.message || "Erreur lors de la récupération des contrats";
+            throw err;
+        } finally {
+            isLoading.value = false;
+        }
+    };
+
     return{
         isLoading,
         error,
@@ -180,6 +223,7 @@ export const useContratStore = defineStore('contrat', ()=> {
         getCategories,
         getCategoriesWithContrats,
         getContracts,
-        getSpecificContract
+        getSpecificContract,
+        fetchContracts
     }
 })

@@ -21,14 +21,13 @@
             </svg>
             
             <input
-            ref="inputRef"
-            type="search"
-            class="search-input"
-            :value="modelValue"
-            @input="handleInput"
-            :placeholder="placeholder"
-            @focus="$emit('focus')"
-            @blur="handleBlur"
+              ref="inputRef"
+              class="search-input"
+              :value="modelValue"
+              @input="handleInput"
+              :placeholder="placeholder"
+              @focus="$emit('focus')"
+              @blur="handleBlur"
             />
 
             <button v-if="modelValue" class="clear-button" @click="clearSearch" aria-label="Effacer">
@@ -75,58 +74,58 @@ export default {
   },
 
   setup(props, { emit }) {
-  const isExpanded = ref(false);
-  const inputRef = ref(null);
+    const isExpanded = ref(false);
+    const inputRef = ref(null);
 
-  // CORRECTION : On détecte tout de suite au lieu de mettre 'false' par défaut
-  const isMobile = ref(typeof window !== 'undefined' ? window.innerWidth < 768 : false);
+    // CORRECTION : On détecte tout de suite au lieu de mettre 'false' par défaut
+    const isMobile = ref(typeof window !== 'undefined' ? window.innerWidth < 768 : false);
 
-  const checkBreakpoint = () => {
-    isMobile.value = window.innerWidth < 768;
-    // Si on repasse sur écran large, on réinitialise l'état étendu
-    if (!isMobile.value) isExpanded.value = false;
-  };
+    const checkBreakpoint = () => {
+      isMobile.value = window.innerWidth < 768;
+      // Si on repasse sur écran large, on réinitialise l'état étendu
+      if (!isMobile.value) isExpanded.value = false;
+    };
 
-  onMounted(() => {
-    // Double vérification par sécurité au montage
-    checkBreakpoint();
-    window.addEventListener('resize', checkBreakpoint);
-  });
+    const expandSearch = async () => {
+      isExpanded.value = true;
+      await nextTick();
+      inputRef.value?.focus();
+    };
 
-  onUnmounted(() => {
-    window.removeEventListener('resize', checkBreakpoint);
-  });
+    const closeSearch = () => {
+      if (!props.modelValue) {
+        isExpanded.value = false;
+      }
+    };
 
-  const expandSearch = async () => {
-    isExpanded.value = true;
-    await nextTick();
-    inputRef.value?.focus();
-  };
+    const handleInput = (event) => {
+      emit('update:modelValue', event.target.value);
+    };
 
-  const closeSearch = () => {
-    if (!props.modelValue) {
-      isExpanded.value = false;
-    }
-  };
+    const clearSearch = () => {
+      emit('update:modelValue', '');
+      inputRef.value?.focus();
+    };
 
-  const handleInput = (event) => {
-    emit('update:modelValue', event.target.value);
-  };
+    onMounted(() => {
+      // Double vérification par sécurité au montage
+      checkBreakpoint();
+      window.addEventListener('resize', checkBreakpoint);
+    });
 
-  const clearSearch = () => {
-    emit('update:modelValue', '');
-    inputRef.value?.focus();
-  };
+    onUnmounted(() => {
+      window.removeEventListener('resize', checkBreakpoint);
+    });
 
-  return {
-    isExpanded,
-    isMobile,
-    inputRef,
-    expandSearch,
-    closeSearch,
-    handleInput,
-    clearSearch
-  };
+    return {
+      isExpanded,
+      isMobile,
+      inputRef,
+      expandSearch,
+      closeSearch,
+      handleInput,
+      clearSearch
+    };
   }
 }
 </script>
@@ -209,6 +208,7 @@ export default {
   cursor: pointer;
   padding: 2px;
   display: flex;
+  max-width: 50px
 }
 
 .clear-icon {
@@ -220,6 +220,7 @@ export default {
 
 /* Quand la loupe est cliquée sur mobile */
 .search-container.is-mobile.is-expanded {
+  flex: 1;
   width: 100%;
 }
 
@@ -233,6 +234,7 @@ export default {
   .search-container {
     width: 100%;
     max-width: 400px; /* S'affiche proprement dans une barre d'outils */
+    flex: 1;
   }
 
   .search-trigger {

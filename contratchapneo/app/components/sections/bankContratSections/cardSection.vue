@@ -1,15 +1,20 @@
 <template>
     <div class="contrat-card-section">
         
-        <header>
+        <header class="w-full flex flex-col justify-center items-center gap-4">
             <h2>Découvrez tous nos contrats</h2>
             <p>Nos contrats sont conformes aux lois en vigueur dans l'espace OHADA.</p>
+            <mainButton label="contrat sur mesure"/>
         </header>
 
         
         <div class="toolbar">
             <Basefilter class="toolbar__filter" />
-            <BaseSearchInput class="toolbar__search" placeholder="Trouver un contrat..."/>
+            <BaseSearchInput 
+                class="toolbar__search" 
+                placeholder="Trouver un contrat..."
+                v-model="searchQuery"
+            />
         </div>
 
         <contractCardSkeleton v-if="contratStore.isLoading" />
@@ -62,6 +67,8 @@
 
         <cartBubble @open-cart="openModal()" />
 
+        <notifications/>
+
     </div>
 </template>
 
@@ -75,8 +82,10 @@ import BaseSearchInput from '../../input/BaseSearchInput.vue'
 import cartModale from '../../modale/cartModale.vue'
 import viewModale from '../../modale/viewModale.vue'
 import cartBubble from '../../modale/cartBubble.vue'
+import notifications from '../../tools/notifications.vue'
+import mainButton from '../../buttons/mainButton.vue'
 
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import {useContratStore} from '../../../stores/contratStore'
 import {useCartStore} from '../../../stores/cartStore'
 import { useRouter } from 'vue-router'
@@ -93,7 +102,9 @@ export default {
         emptyState,
         cartModale,
         viewModale,
-        cartBubble
+        cartBubble,
+        notifications,
+        mainButton
     },
     
     setup() {
@@ -109,6 +120,11 @@ export default {
         const handlePageChange = (page: number) => {
             contratStore.getContracts(page, activeCategoryId.value);
         };
+
+        // Make a query 
+        const searchQuery = ref<string>('');
+
+        let debounceTimeout: NodeJS.Timeout;
 
         // About cart view
         const isOpen = ref<boolean>(false);
@@ -139,10 +155,26 @@ export default {
             contratStore.getContracts(1);
         })
 
+        watch(searchQuery, (newQuery) => {
+            
+            clearTimeout(debounceTimeout);
+
+            // On attends 600ms d'inactivité avant de lancer la requête
+            debounceTimeout = setTimeout(()=> {
+                // On va dans le store pour réccupérer le contrat concerné
+                // paramètres: page=1, categorie, mot-clé
+                contratStore.fetchContracts(1, null, newQuery),
+                // Debug
+                console.log("Recherche lancée pour :", newQuery)
+            }, 500)
+        })
+
         return {
             router,
             activeCategoryId,
             handlePageChange,
+            searchQuery,
+            debounceTimeout,
             contratStore,
             cartStore,
 
