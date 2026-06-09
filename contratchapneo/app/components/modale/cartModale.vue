@@ -51,7 +51,7 @@
                 </div>
                 <div class="item-total">
                   <span class="total-price">{{ (Number(item.contrat?.prix) * item.quantity).toLocaleString('fr-FR') }} FCFA</span>
-                  <button class="remove-btn" :disabled="cartStore.isLoading" @click="handleRemove(item.contrat?.id!)">🗑️</button>
+                  <button class="remove-btn" :disabled="cartStore.isLoading" @click="handleRemove(item.id)">🗑️</button>
                 </div>
               </div>
             </div>
@@ -59,7 +59,7 @@
 
           <div class="order-summary">
             <div class="summary-line"><span>Sous-total</span><span>{{ cartStore.formattedTotalPrice }} FCFA</span></div>
-            <div class="summary-line"><span>J'ai un code promo</span><span>Gratuite</span></div>
+            <div class="summary-line"><span>J'ai un code promo</span><input type="checkbox" checked="checked" class="toggle" /></div>
             <div class="summary-line total"><span>Total</span><span class="final-price">{{ cartStore.formattedTotalPrice }} FCFA</span></div>
           </div>
         </template>

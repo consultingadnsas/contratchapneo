@@ -1,6 +1,5 @@
 <template>
     <div class="main-wrapper">
-        <Navbar theme="light"/>
         <checkoutSectionVue/>
         <footerSection/>
     </div>
@@ -19,6 +18,6 @@ export default {
 }
 </script>
 
-<style>
+<style scoped>
 
 </style>

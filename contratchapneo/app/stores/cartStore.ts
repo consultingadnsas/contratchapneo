@@ -1,6 +1,7 @@
 import { defineStore } from "pinia";
 import { ref, computed } from "vue";
 import type { Contrat } from "./contratStore";
+import type { GuestInfo} from './orderStore';
 
 // L'API renvoie les items imbriqués : { id, quantity, contrat: { ... } }
 export interface CartItem {
@@ -157,6 +158,23 @@ export const useCartStore = defineStore('cart', () => {
         }
     };
 
+    const checkout = async (payload:GuestInfo) => {
+        isLoading.value = true;
+        error.value = null;
+        try {
+            const response = await $api('/ecommerce/checkout/', {
+                method: 'POST',
+                body: { ...payload, cart: cart.value }
+            });
+            return response;
+        } catch (err: any) {
+            error.value = err.message;
+            throw err;
+        } finally {
+            isLoading.value = false;
+        }
+    };
+
     return {
         isLoading,
         error,
@@ -174,5 +192,6 @@ export const useCartStore = defineStore('cart', () => {
         removeFromCart,
         updateQuantity,
         clearCart,
+        checkout,
     };
 });

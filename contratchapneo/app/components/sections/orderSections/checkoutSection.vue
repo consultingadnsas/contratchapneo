@@ -48,7 +48,7 @@ export default {
     justify-content: center;
     align-items: center;
     gap: 2rem;
-    padding: 7rem 1rem 1rem 1rem;
+    padding: 3rem 1rem 1rem 1rem;
 }
 
 .sides{

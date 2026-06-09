@@ -8,10 +8,10 @@
 
         <BaseInput 
             label="Nom complet" 
-            name="name" 
+            name="full_name" 
             type="text" 
             placeholder="Entrez votre nom"
-            v-model="checkoutform.name"
+            v-model="checkoutform.full_name"
         />
         <BaseInput 
             label="Email" 
@@ -22,15 +22,17 @@
         />
         <BaseInput 
             label="Numéro de téléphone" 
-            name="phoneNumber" 
+            name="phone_number" 
             type="tel" 
             placeholder="Entrez votre numéro de téléphone"
             v-model="checkoutform.phone_number"
         />
 
         <BaseSelect 
-            label="Selcetionner votre moyen de paiement"
-            
+            label="Sélectionner votre moyen de paiement"
+            v-model="checkoutform.payment_method"
+            :options="paymentOptions"
+            placeholder="Choisissez un moyen de paiement"
         />
 
         <checkoutButton 
@@ -38,6 +40,8 @@
             type="submit"
             :isLoading="loading"
         />
+
+        <p v-if="error" class="text-red-600 text-sm mt-2">{{ error }}</p>
     </form>
 </template>
 
@@ -46,7 +50,9 @@ import BaseInput from '../input/BaseInput.vue'
 import checkoutButton from '../buttons/checkoutButton.vue'
 import BaseSelect from '../input/BaseSelect.vue'
 
-import {ref, reactive} from 'vue'
+import { ref, reactive } from 'vue'
+import { useCartStore } from '../../stores/cartStore';
+import { useOrderStore } from '../../stores/orderStore';
 
 export default {
     components:{
@@ -60,15 +66,18 @@ export default {
             default: 'Confirmer votre achat'
         }
     },
-
     emits:['succes'],
     setup(props, {emit}){
 
+        const cartStore = useCartStore();
+        const orderStore = useOrderStore();
+
         const checkoutform = reactive(
             {
-                name:"",
+                full_name: "",
                 email: "",
-                phone_number:""
+                phone_number: "",
+                payment_method: ''
             }
         )
 
@@ -76,32 +85,36 @@ export default {
         
         const error = ref(null)
 
-        const optionpayment =[
-            { options: "Wave" },
-            { options: "Orange Money" },
-            { options: "Moov Money" }
-        ]
+        const paymentOptions = [
+            { value: 'wave', name: 'Wave' },
+            { value: 'orange_money', name: 'Orange Money' },
+            { value: 'moov_money', name: 'Moov Money' }
+        ];
 
         const submitForm = async () => {
             loading.value = true
             error.value = null
 
             try {
-                // Simulation d'un appel API (ex: POST /api/checkout)
-                await new Promise((resolve, reject) => {
-                setTimeout(() => {
-                    // Simuler une réussite ou une erreur aléatoire
-                    Math.random() > 0.2 ? resolve({ success: true }) : reject("Erreur serveur")
-                }, 1500)
-                })
-                
+                const payload = {
+                    guest: {
+                        full_name: checkoutform.full_name,
+                        email: checkoutform.email,
+                        phone_number: checkoutform.phone_number || null,
+                    }
+                };
+
+                await orderStore.checkout(payload);
+                await cartStore.fetchCart();
+
                 emit('succes')
 
-                checkoutform.name = "";
+                checkoutform.full_name = "";
                 checkoutform.email = "";
                 checkoutform.phone_number = "";
+                checkoutform.payment_method = '';
             } catch (err) {
-                error.value = err
+                error.value = err?.message ?? err
                 console.error("Échec de la soumission :", err)
             } finally {
                 loading.value = false
@@ -109,6 +122,8 @@ export default {
         }
 
         return{
+            cartStore,
+            orderStore,
             checkoutform,
             loading,
             error,

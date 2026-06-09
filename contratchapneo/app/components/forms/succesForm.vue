@@ -10,6 +10,10 @@
     <p class="success__subtitle">
         Vous serez redirigé dans <span>{{ countdown }}s</span>.
     </p>
+    <mainButton 
+        label="aller page d'accueil" 
+        @click="()=>router.push('/')"
+    />
   </div>
 </template>
 
@@ -17,7 +21,12 @@
 import { useRouter } from '#app';
 import { ref, onMounted, onUnmounted } from 'vue';
 
+import mainButton from '../buttons/mainButton.vue';
+
 export default {
+    components:{
+        mainButton
+    },
     props: {
         message: {
             type: String,
