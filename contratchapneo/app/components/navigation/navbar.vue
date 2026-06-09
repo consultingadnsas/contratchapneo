@@ -94,15 +94,19 @@
                     <li><NuxtLink to="/" @click="toggleMenu">Accueil</NuxtLink></li>
 
                     <li class="mobile-accordion">
-                        <button 
-                            class="mobile-accordion__trigger"
-                            @click="isMobileDropdownOpen = !isMobileDropdownOpen"
-                        >
-                            Banque de contrats
-                            <svg :class="['chevron', { 'is-open': isMobileDropdownOpen }]" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                                <polyline points="6 9 12 15 18 9"/>
-                            </svg>
-                        </button>
+                        <div class="mobile-accordion__trigger-wrapper">
+                            <NuxtLink to="/contractbank" class="mobile-accordion__main-link" @click="toggleMenu">
+                                Banque de contrats
+                            </NuxtLink>
+                            <button 
+                                class="mobile-accordion__icon-btn"
+                                @click="isMobileDropdownOpen = !isMobileDropdownOpen"
+                            >
+                                <svg :class="['chevron', { 'is-open': isMobileDropdownOpen }]" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                    <polyline points="6 9 12 15 18 9"/>
+                                </svg>
+                            </button>
+                        </div>
 
                         <transition name="accordion">
                             <ul v-if="isMobileDropdownOpen" class="mobile-accordion__list">
@@ -116,15 +120,19 @@
                     </li>
 
                     <li class="mobile-accordion">
-                        <button 
-                            class="mobile-accordion__trigger"
-                            @click="isMobileServicesDropdownOpen = !isMobileServicesDropdownOpen"
-                        >
-                            Services juridiques
-                            <svg :class="['chevron', { 'is-open': isMobileServicesDropdownOpen }]" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                                <polyline points="6 9 12 15 18 9"/>
-                            </svg>
-                        </button>
+                        <div class="mobile-accordion__trigger-wrapper">
+                            <NuxtLink to="/services" class="mobile-accordion__main-link" @click="toggleMenu">
+                                Services juridiques
+                            </NuxtLink>
+                            <button 
+                                class="mobile-accordion__icon-btn"
+                                @click="isMobileServicesDropdownOpen = !isMobileServicesDropdownOpen"
+                            >
+                                <svg :class="['chevron', { 'is-open': isMobileServicesDropdownOpen }]" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                    <polyline points="6 9 12 15 18 9"/>
+                                </svg>
+                            </button>
+                        </div>
 
                         <transition name="accordion">
                             <ul v-if="isMobileServicesDropdownOpen" class="mobile-accordion__list">
@@ -139,15 +147,19 @@
                     </li>
 
                     <li class="mobile-accordion">
-                        <button 
-                            class="mobile-accordion__trigger"
-                            @click="isMobileProDropdownOpen = !isMobileProDropdownOpen"
-                        >
-                            Nos professionnels
-                            <svg :class="['chevron', { 'is-open': isMobileProDropdownOpen }]" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                                <polyline points="6 9 12 15 18 9"/>
-                            </svg>
-                        </button>
+                        <div class="mobile-accordion__trigger-wrapper">
+                            <NuxtLink to="/pro" class="mobile-accordion__main-link" @click="toggleMenu">
+                                Nos professionnels
+                            </NuxtLink>
+                            <button 
+                                class="mobile-accordion__icon-btn"
+                                @click="isMobileProDropdownOpen = !isMobileProDropdownOpen"
+                            >
+                                <svg :class="['chevron', { 'is-open': isMobileProDropdownOpen }]" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                    <polyline points="6 9 12 15 18 9"/>
+                                </svg>
+                            </button>
+                        </div>
 
                         <transition name="accordion">
                             <ul v-if="isMobileProDropdownOpen" class="mobile-accordion__list">
@@ -158,6 +170,7 @@
                             </ul>
                         </transition>
                     </li>
+
                     <li><NuxtLink to="/outil-de-calcul" @click="toggleMenu">Calcul de droit</NuxtLink></li>
                     <li><NuxtLink to="/about" @click="toggleMenu"> À propos</NuxtLink></li>
                 </ul>
@@ -337,18 +350,12 @@ export default {
     border-bottom: 1px solid rgba(0, 0, 0, 0.04);
 }
 
-.mobile-accordion__trigger {
+.mobile-accordion__trigger-wrapper {
     width: 100%;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    font-size: 1.1rem;
-    font-weight: 500;
     padding: 1rem 0;
-    color: var(--primary-color);
-    background: none;
-    border: none;
-    cursor: pointer;
 }
 
 .mobile-accordion__list {
@@ -358,6 +365,28 @@ export default {
     display: flex;
     flex-direction: column;
     gap: 0.25rem;
+}
+.mobile-accordion__main-link {
+    font-size: 1.1rem;
+    font-weight: 500;
+    color: var(--primary-color);
+    text-decoration: none;
+    flex-grow: 1; /* Prend tout l'espace disponible à gauche */
+    text-align: left;
+    /* On retire les padding/borders hérités s'il y en a pour éviter les doublons */
+    padding: 0 !important; 
+    border: none !important;
+}
+
+.mobile-accordion__icon-btn {
+    background: none;
+    border: none;
+    color: var(--primary-color);
+    margin-right: -7rem; /* Aligne visuellement la flèche avec le bord droit */
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .mobile-accordion__list li a {
