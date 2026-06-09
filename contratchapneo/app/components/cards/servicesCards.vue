@@ -48,6 +48,7 @@ export default {
         const route = useRoute();
         const activeIndex = ref(0);
         const showcaseRef = ref<HTMLElement | null>(null);
+        const ignoreHover=ref(false);
         let observer: IntersectionObserver | null = null;
 
         // Formater le numéro en "01", "02", etc.
@@ -59,6 +60,7 @@ export default {
 
         // Desktop : Ouverture au survol
         const handleMouseEnter = (index: number) => {
+            if (ignoreHover.value) return;
             if (window.innerWidth >= 768) {
                 activeIndex.value = index;
             }
@@ -103,6 +105,7 @@ export default {
                 const targetId=route.hash.replace('#','');
                 const targetIndex=props.services.findIndex((s:any)=>s.id===targetId);
                 if (targetIndex!==-1){
+                    ignoreHover.value=true;
                     activeIndex.value = targetIndex;
                     // Scroll vers la carte ciblée
                     nextTick(()=>{
@@ -112,7 +115,9 @@ export default {
                             window.scrollTo({ top: y, behavior: 'smooth' });
                         }
                     })
-                }
+                    setTimeout(() => {
+                        ignoreHover.value=false}, 800);
+                } else{ignoreHover.value=false}
             }
         }
 

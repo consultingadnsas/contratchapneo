@@ -522,14 +522,22 @@ export default {
         transition: width 0.3s ease;
     }
 
-    /* Étape C : Afficher le trait pour la page active */
-    .nav-links-desktop li a.router-link-active::after,
-    .nav-links-desktop li a.router-link-exact-active::after {
-        width: 60%; /* Remplissez à 60% de la largeur du bouton pour l'élégance */
+    /* Étape C : Afficher le trait UNIQUEMENT pour les liens principaux actifs */
+    .nav-links-desktop > li > a.router-link-active::after,
+    .nav-links-desktop > li > a.router-link-exact-active::after,
+    .nav-links-desktop > li > .dropdown-trigger.router-link-active::after {
+        width: 60%; 
     }
 
-    .nav-links-desktop li a.router-link-active:hover::after {
+    /* Animation au survol pour les liens principaux actifs */
+    .nav-links-desktop > li > a.router-link-active:hover::after,
+    .nav-links-desktop > li > .dropdown-trigger.router-link-active:hover::after {
         width: 75%;
+    }
+
+    /* GARANTIE : On force l'absence de soulignement dans les sous-menus */
+    .dropdown-menu li a::after {
+        display: none !important;
     }
 
     .nav-links-desktop li a:hover,
