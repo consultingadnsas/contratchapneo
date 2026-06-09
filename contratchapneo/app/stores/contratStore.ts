@@ -33,6 +33,14 @@ export interface PaginatedResponse<T> {
 export const useContratStore = defineStore('contrat', ()=> {
 
     const {$api} = useNuxtApp();
+    const config = useRuntimeConfig();
+
+    const resolveMediaUrl = (path?: string | null) => {
+        if (!path) return path;
+        if (path.startsWith('http')) return path;
+        const base = config.public.apiBase || 'http://localhost:8000';
+        return path.startsWith('/') ? `${base}${path}` : `${base}/${path}`;
+    };
 
     // Ux
     const isLoading = ref(false);
@@ -91,7 +99,7 @@ export const useContratStore = defineStore('contrat', ()=> {
             { method: 'GET' }
             );
             if (response && response.contrats) {
-            contracts.value = response.contrats; // ✅ on assigne bien un tableau
+            contracts.value = response.contrats.map(c => ({ ...c, picture: resolveMediaUrl(c.picture) }));
             } else {
             contracts.value = [];
             }
@@ -117,7 +125,7 @@ export const useContratStore = defineStore('contrat', ()=> {
             });
 
             if (response) {
-                contracts.value = response.results;
+                contracts.value = response.results.map((c: Contrat) => ({ ...c, picture: resolveMediaUrl(c.picture) }));
                 totalCount.value = response.count;
                 nextPage.value = response.next;
                 previousPage.value = response.previous;
@@ -141,7 +149,7 @@ export const useContratStore = defineStore('contrat', ()=> {
                 {method: 'GET'}
             );
             if(response){
-                contrat.value = response;
+                contrat.value = { ...response, picture: resolveMediaUrl(response.picture) };
                 console.log("Reponse du contrat", contrat.value)
             } else{
                 console.log("Reponse du contrat", contrat.value)

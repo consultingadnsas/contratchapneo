@@ -23,7 +23,7 @@
 
         <template v-else>
             
-            <div class="cards-container">
+         <div class="cards-container">
                 <contratCards 
                     v-for="(contrat, index) in contratStore.contracts" 
                     :key="contrat.id || index"
@@ -118,12 +118,11 @@ export default {
         }
 
         const addTocart = async (contratId: string) => {
-        try {
-            await cartStore.addToCart(contratId);
-        } catch (error: any) {
-            console.error("Erreur lors de l'ajout au panier", error);
-            // Afficher un message à l'utilisateur
-            alert(error.message || "Une erreur est survenue lors de l'ajout au panier.");}
+            try {
+                await cartStore.addToCart(contratId);
+            } catch (error: any) {
+                console.error("Erreur lors de l'ajout au panier", error)
+            }
         }
 
         // About modalView
@@ -136,6 +135,7 @@ export default {
         }
 
         onMounted(()=>{
+            // On charge la première page de contrats
             contratStore.getContracts(1);
         })
 
