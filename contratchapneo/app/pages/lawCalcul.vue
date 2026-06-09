@@ -4,7 +4,6 @@
             <Navbar theme="light" />
             
             <section class="hero-section">
-                <span class="pill-badge">Simulateurs Officiels</span>
                 <h1 class="main-title">
                     Vos simulations juridiques <br>
                     <span class="text-accent">claires, rapides et précises.</span>
@@ -278,7 +277,7 @@ export default {
 <style scoped>
 /* --- MISE EN PAGE ET INTEGRATION D.A. --- */
 .page-wrapper {
-    background-color: #f1f5f9; /* Gris extérieur protecteur */
+    background-color: #ffffff; /* Gris extérieur protecteur */
     padding: 3rem 1rem;
     min-height: 100vh;
     display: flex;

@@ -74,7 +74,7 @@
                         </ul>
                     </transition>
                 </li>
-                <li><NuxtLink to="/outil-de-calcul">Calcul de droit</NuxtLink></li>
+                <li><NuxtLink to="/lawCalcul">Calcul de droit</NuxtLink></li>
                 <li><NuxtLink to="/about"> À propos</NuxtLink></li>
             </ul>
 

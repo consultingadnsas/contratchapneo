@@ -35,7 +35,7 @@
                     />
                 </div>
 
-                <MainButton label="voir tous nos contrats" />
+                <MainButton label="voir tous nos contrats" @click="router.push('/contractBank')" />
             </div>
             
         </div>
@@ -56,6 +56,7 @@
 
 <script lang="ts">
 import { ref, onMounted, onBeforeUnmount } from 'vue';
+import { useRouter } from 'vue-router';
 
 // Convention : Majuscule pour les composants Vue
 import MainButton from '../buttons/mainButton.vue';
@@ -73,9 +74,10 @@ export default {
         ContratCards,
         ContratCategoryCards,
         CartModale,
-        ViewModale
+        ViewModale,
     },
     setup() {
+        const router= useRouter();
         const contratStore = useContratStore();
 
         const legalContrat = ref([
@@ -153,7 +155,8 @@ export default {
             isOpen,
             openModal,
             isViewOpen,
-            openViewModal
+            openViewModal,
+            router
         };
     }
 }
