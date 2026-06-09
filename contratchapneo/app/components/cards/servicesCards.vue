@@ -3,6 +3,7 @@
         <article 
             v-for="(service, index) in services" 
             :key="index"
+            :id="service.id"
             :class="['expanding-card', { 'is-active': activeIndex === index }]"
             :data-index="index"
             @mouseenter="handleMouseEnter(index)"
@@ -32,6 +33,7 @@
 
 <script lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue';
+import {useRoute} from 'vue-router';
 
 export default {
     name: 'ServicesCards',
@@ -42,7 +44,8 @@ export default {
             default: () => []
         }
     },
-    setup() {
+    setup(props) {
+        const route = useRoute();
         const activeIndex = ref(0);
         const showcaseRef = ref<HTMLElement | null>(null);
         let observer: IntersectionObserver | null = null;
@@ -95,13 +98,33 @@ export default {
             cards?.forEach(card => observer?.observe(card));
         };
 
+        const scrollToService = () =>{
+            if (route.hash){
+                const targetId=route.hash.replace('#','');
+                const targetIndex=props.services.findIndex((s:any)=>s.id===targetId);
+                if (targetIndex!==-1){
+                    activeIndex.value = targetIndex;
+                    // Scroll vers la carte ciblée
+                    nextTick(()=>{
+                        const element=document.getElementById(targetId);
+                        if(element){
+                            const y=element.getBoundingClientRect().top + window.scrollY - 120;
+                            window.scrollTo({ top: y, behavior: 'smooth' });
+                        }
+                    })
+                }
+            }
+        }
+
         onMounted(() => {
             initIntersectionObserver();
+            scrollToService();
             // Optionnel : Ré-initialiser si on redimensionne la fenêtre
             window.addEventListener('resize', () => {
                 observer?.disconnect();
                 if (window.innerWidth < 768) initIntersectionObserver();
             });
+            watch(()=>route.hash, ()=>{scrollToService();})
         });
 
         onUnmounted(() => {

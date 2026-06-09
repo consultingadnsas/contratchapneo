@@ -87,6 +87,7 @@ export default {
 
         const services = ref([
             {
+                id: 'assistance',
                 title: 'Assistance Juridique et Fiscale',
                 shortTitle: 'Assistance', // Titre court pour l'onglet réduit
                 description: 'Accompagnement rigoureux pour sécuriser vos opérations commerciales, optimiser votre fiscalité et garantir votre conformité légale.',
@@ -94,6 +95,7 @@ export default {
                 gradient: 'linear-gradient(135deg, #e0f2fe 0%, #38bdf8 100%)' // Bleu Tech
             },
             {
+                id: 'programmes',
                 title: 'Programmes Juridiques',
                 shortTitle: 'Programmes',
                 description: 'Mise en place de programmes de mise en conformité, d\'audits structurés et de formations sur mesure pour vos équipes.',
@@ -101,6 +103,7 @@ export default {
                 gradient: 'linear-gradient(135deg, #d1fae5 0%, #34d399 100%)' // Vert ContratChap
             },
             {
+                id: 'brevets',
                 title: 'Brevet d\'Invention',
                 shortTitle: 'Brevets',
                 description: 'Démarches complètes pour protéger vos innovations technologiques, industrielles et scientifiques à l\'échelle nationale et internationale.',
@@ -108,6 +111,7 @@ export default {
                 gradient: 'linear-gradient(135deg, #f1f5f9 0%, #94a3b8 100%)' // Gris Silver
             },
             {
+                id: 'marques',
                 title: 'Dépôt de Marque',
                 shortTitle: 'Marques',
                 description: 'Sécurisation de votre identité visuelle, logos et signes distinctifs auprès des instances compétentes (OAPI).',
@@ -115,6 +119,7 @@ export default {
                 gradient: 'linear-gradient(135deg, #ede9fe 0%, #a78bfa 100%)' // Violet élégant
             },
             {
+                id:'tech',
                 title: 'Legaltech',
                 shortTitle: 'Legaltech',
                 description: 'Développement de solutions technologiques innovantes (à l\'image de ContratChapNeo) pour dématérialiser et automatiser le droit.',
@@ -122,6 +127,7 @@ export default {
                 gradient: 'linear-gradient(135deg, #0f172a 0%, #334155 100%)' // Nuit (comme la navbar)
             },
             {
+                id: 'noms',
                 title: 'Enregistrement Noms',
                 shortTitle: 'Noms Commerciaux',
                 description: 'Prise en charge de vos démarches administratives pour réserver et protéger juridiquement le nom de votre structure.',

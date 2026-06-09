@@ -43,12 +43,12 @@
                     </NuxtLink>
                     <transition name="dropdown-fade">
                         <ul v-if="isServicesDropdownOpen" class="dropdown-menu">
-                            <li><NuxtLink to="/services/assistance-juridique">Assistance Juridique et Fiscale</NuxtLink></li>
-                            <li><NuxtLink to="/services/programmes-juridiques">Programmes Juridiques</NuxtLink></li>
-                            <li><NuxtLink to="/services/brevet-invention">Brevet d'Invention</NuxtLink></li>
-                            <li><NuxtLink to="/services/depot-marque">Dépôt de Marque</NuxtLink></li>
-                            <li><NuxtLink to="/services/legaltech">Legaltech</NuxtLink></li>
-                            <li><NuxtLink to="/services/noms-commerciaux">Enregistrement Noms Commerciaux</NuxtLink></li>
+                            <li><NuxtLink to="/services#assistance">Assistance Juridique et Fiscale</NuxtLink></li>
+                            <li><NuxtLink to="/services#programmes">Programmes Juridiques</NuxtLink></li>
+                            <li><NuxtLink to="/services#brevets">Brevet d'Invention</NuxtLink></li>
+                            <li><NuxtLink to="/services#marques">Dépôt de Marque</NuxtLink></li>
+                            <li><NuxtLink to="/services#tech">Legaltech</NuxtLink></li>
+                            <li><NuxtLink to="/services#noms">Enregistrement Noms Commerciaux</NuxtLink></li>
                         </ul>
                     </transition>
                 </li>
@@ -128,12 +128,12 @@
 
                         <transition name="accordion">
                             <ul v-if="isMobileServicesDropdownOpen" class="mobile-accordion__list">
-                                <li><NuxtLink to="/services/assistance-juridique" @click="toggleMenu">Assistance Juridique et Fiscale</NuxtLink></li>
-                                <li><NuxtLink to="/services/programmes-juridiques" @click="toggleMenu">Programmes Juridiques</NuxtLink></li>
-                                <li><NuxtLink to="/services/brevet-invention" @click="toggleMenu">Brevet d'Invention</NuxtLink></li>
-                                <li><NuxtLink to="/services/depot-marque" @click="toggleMenu">Dépôt de Marque</NuxtLink></li>
-                                <li><NuxtLink to="/services/legaltech" @click="toggleMenu">Legaltech</NuxtLink></li>
-                                <li><NuxtLink to="/services/noms-commerciaux" @click="toggleMenu">Enregistrement Noms Commerciaux</NuxtLink></li>
+                                <li><NuxtLink to="/services#assistance" @click="toggleMenu">Assistance Juridique et Fiscale</NuxtLink></li>
+                                <li><NuxtLink to="/services#programmes" @click="toggleMenu">Programmes Juridiques</NuxtLink></li>
+                                <li><NuxtLink to="/services#brevets" @click="toggleMenu">Brevet d'Invention</NuxtLink></li>
+                                <li><NuxtLink to="/services#marques" @click="toggleMenu">Dépôt de Marque</NuxtLink></li>
+                                <li><NuxtLink to="/services#tech" @click="toggleMenu">Legaltech</NuxtLink></li>
+                                <li><NuxtLink to="/services#noms" @click="toggleMenu">Enregistrement Noms Commerciaux</NuxtLink></li>
                             </ul>
                         </transition>
                     </li>
