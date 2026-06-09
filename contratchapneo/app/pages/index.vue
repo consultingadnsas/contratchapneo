@@ -2,19 +2,23 @@
 
     <div class="main-wrapper">
         
-        <Navbar />
+        <Navbar/>
 
         <heroSecondSection />
 
         <bankContratSection />
 
-        <companySolutions/>
+        <companySolutions />
+
+        <numberGreen />
+
+        <companieSection />
 
         <ProSection title-head="Les professionnels du droits"/>
 
         <calcul-tool-section/>
 
-        <companieSection />
+        <testimonial-section/>
 
         <footer-section/>
 
@@ -30,6 +34,8 @@ import companySolutions from '../components/sections/companySolutions.vue';
 import ProSection from '../components/sections/proSection.vue';
 import calculToolSection from '../components/sections/calculToolSection.vue';
 import companieSection from '../components/sections/companieSection.vue';
+import numberGreen from '../components/sections/numberGreen.vue';
+import testimonialSection from '../components/sections/testimonialSection.vue'
 import FooterSection from '../components/sections/footerSection.vue';
 
 import {ref} from 'vue'
@@ -45,6 +51,8 @@ export default {
         heroSecondSection,
         FooterSection,
         companySolutions,
+        numberGreen,
+        testimonialSection
     },
     setup() {
 

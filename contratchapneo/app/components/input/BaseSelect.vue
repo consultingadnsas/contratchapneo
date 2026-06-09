@@ -95,9 +95,10 @@ export default {
     options:{
       type:Array,
       default:()=>[
-        {name:"Wave"},
-        {name:"Orange Money"},
-        {name:"Moov Money"}
+        {name:"Contrat de cession"},
+        {name:"Contrat de création"},
+        {name:"Contrat de développeur"},
+        {name:"Contrat de vidéaste"}
       ]
     }
   },
@@ -135,7 +136,8 @@ export default {
   display: flex;
   flex-direction: column;
   margin-bottom: 0.5rem;
-  font-family: sans-serif;
+  font-family: sans-serif; 
+  width: 100%;
 }
 
 .input-label {

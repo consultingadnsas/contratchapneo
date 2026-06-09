@@ -9,12 +9,19 @@
             </div>
 
             <div class="green-dark-section w-full flex justify-center items-center flex-col">
-                <!-- Conteneur responsive : carrousel mobile, grille desktop -->
                 <div class="cards-container">
                     <prodCards 
                         v-for="(card, index) in legalPro" 
                         :key="index"
+                        :ref="el => setCardRef(el)"
+                        :data-index="index"
                         :title="card.title"
+                        :image="card.visuel"
+                        :class="[
+                            'card-item',
+                            { 'card-animate': animatedCards[index] },
+                            animatedCards[index] ? `card-animate-${(index % 6) + 1}` : ''
+                        ]"
                     />
                 </div>
             </div>
@@ -25,22 +32,69 @@
 </template>
 
 <script lang="ts">
-import { ref } from 'vue';
+import { ref, onMounted, onBeforeUnmount } from 'vue';
 import mainButton from '../buttons/mainButton.vue';
 import prodCards from '../cards/proCards.vue';
+import proCardSecond from '../cards/proCardSecond.vue';
 
 export default {
     name: 'OrdinarySection',
-    components: { mainButton, prodCards },
+    components: { mainButton, prodCards, proCardSecond },
     setup() {
         const legalPro = ref([
-            { title: 'Avocat' },
-            { title: 'Commissaire de justice' },
-            { title: 'Notaire' },
-            { title: 'Juriste droit des affaires' },
+            { title: 'Avocat', visuel: '/avocat.jpg' },
+            { title: 'Commissaire de justice', visuel: '/commissaire.jpg' },
+            { title: 'Notaire', visuel: '/notaire.jpg' },
+            { title: 'Juriste droit des affaires', visuel: '/affaire.jpg' },
         ]);
 
-        return { legalPro };
+        // Références DOM des cartes
+        const cardRefs = ref<HTMLElement[]>([]);
+        const setCardRef = (el: any) => {
+            if (el && el.$el) {
+                cardRefs.value.push(el.$el);
+            }
+        };
+
+        const animatedCards = ref<boolean[]>([]);
+        let observer: IntersectionObserver | null = null;
+
+        onMounted(() => {
+            // Initialiser le tableau des animations à false
+            animatedCards.value = new Array(legalPro.value.length).fill(false);
+
+            // Créer l'observateur d'intersection
+            observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const target = entry.target as HTMLElement;
+                        const index = Number(target.getAttribute('data-index'));
+
+                        if (!isNaN(index) && !animatedCards.value[index]) {
+                            animatedCards.value[index] = true;
+                            observer?.unobserve(target);
+                        }
+                    }
+                });
+            }, { threshold: 0.2, rootMargin: '0px 0px -20px 0px' });
+
+            // Observer chaque carte après un court délai pour laisser le DOM se stabiliser
+            setTimeout(() => {
+                cardRefs.value.forEach((cardEl) => {
+                    if (cardEl) observer?.observe(cardEl);
+                });
+            }, 100);
+        });
+
+        onBeforeUnmount(() => {
+            if (observer) observer.disconnect();
+        });
+
+        return { 
+            legalPro,
+            animatedCards,
+            setCardRef
+        };
     }
 }
 </script>
@@ -48,7 +102,7 @@ export default {
 <style scoped>
 .main-section {
     padding: 2rem 0;
-    background: #e4e4e4;
+    background: #f4faff;
 }
 
 .wrapper-content {
@@ -91,4 +145,32 @@ export default {
         scroll-snap-align: none;
     }
 }
+
+/* --- Animation fade-up --- */
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.card-item {
+  opacity: 0; /* caché par défaut */
+  transition: opacity 0.2s;
+}
+
+.card-animate {
+  animation: fadeUp 0.6s ease forwards;
+}
+
+.card-animate-1 { animation-delay: 0.1s; }
+.card-animate-2 { animation-delay: 0.2s; }
+.card-animate-3 { animation-delay: 0.3s; }
+.card-animate-4 { animation-delay: 0.4s; }
+.card-animate-5 { animation-delay: 0.5s; }
+.card-animate-6 { animation-delay: 0.6s; }
 </style>
