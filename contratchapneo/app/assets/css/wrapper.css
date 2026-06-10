@@ -100,7 +100,8 @@ h3{
     width: 90%;
     max-width: 500px;
     height: auto;
-    max-height: 80vh;
+    height: 90vh;
+    max-height: 800px;
     border-radius: 1rem;
   }
 }

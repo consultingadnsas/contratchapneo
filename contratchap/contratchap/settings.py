@@ -45,7 +45,8 @@ INSTALLED_APPS = [
     'corsheaders',
     'account',
     'contrat',
-    'ecommerce'
+    'ecommerce',
+    'payments'
 ]
 
 REST_FRAMEWORK = {

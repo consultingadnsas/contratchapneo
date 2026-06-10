@@ -67,8 +67,6 @@
 
         <cartBubble @open-cart="openModal()" />
 
-        <notifications/>
-
     </div>
 </template>
 
