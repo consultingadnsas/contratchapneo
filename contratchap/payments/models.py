@@ -1,8 +1,10 @@
 from django.db import models
 # Remplace 'ecommerce' par le vrai nom de l'application où se trouve ton modèle Order
 from ecommerce.models import Order 
+import uuid
 
 class Transaction(models.Model):
+    
     class TransactionStatus(models.TextChoices):
         PENDING = 'PENDING', 'En attente'
         SUCCESSFUL = 'SUCCESSFUL', 'Réussie'
@@ -13,8 +15,12 @@ class Transaction(models.Model):
         STRIPE = 'STRIPE', 'Stripe'
         CINETPAY = 'CINETPAY', 'CinetPay'
         WAVE = 'WAVE', 'Wave'
-        PAYPAL = 'PAYPAL', 'PayPal'
+        PAYPAL = 'PAYPAL', 'PayPal',
+        SIMULATION = 'SIMULATED', 'Simulation'  # Pour les tests en dev
         # N'hésite pas à adapter cette liste selon tes prestataires africains ou internationaux
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+
 
     # 1. Le lien avec la commande
     # On utilise ForeignKey et non OneToOne car un client peut rater un paiement 

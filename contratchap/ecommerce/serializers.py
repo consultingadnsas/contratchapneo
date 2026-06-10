@@ -95,6 +95,16 @@ class GuestInfoSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("Le nom complet est trop court.")
         return value.strip()
 
+    def validate_phone_number(self, value):
+        import re
+        cleaned = re.sub(r'\s+', '', value.strip())
+        # Accepte les formats : +2250101010101, 0101010101, 01 01 01 01 01
+        if not re.match(r'^\+?\d{8,15}$', cleaned):
+            raise serializers.ValidationError(
+                "Numéro de téléphone invalide. Formats acceptés : +2250701234567 ou 0701234567."
+            )
+        return cleaned
+
 
 # ─────────────────────────────────────────
 # ORDER

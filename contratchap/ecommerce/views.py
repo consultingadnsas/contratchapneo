@@ -275,7 +275,7 @@ class CheckoutView(APIView):
         OrderItem.objects.bulk_create(order_items)
 
         # Vidage du panier
-        cart.clear()
+        # cart.clear(); on va vider le panier après le paiement
 
         return order
 
