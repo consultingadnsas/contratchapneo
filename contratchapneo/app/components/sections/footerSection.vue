@@ -15,7 +15,7 @@
         </div>
         
         <div class="contact-info">
-          <p class="address">Angre 8e tranche, Chiken Nation<br />Abidjan, Côte d'Ivoire</p>
+          <p class="address">Angre 8e tranche, Chicken Nation<br />Abidjan, Côte d'Ivoire</p>
           <p class="email">Consultingadnsas@gmail.com</p>
           <p class="phone">+225 07 79 10 11 70</p>
         </div>

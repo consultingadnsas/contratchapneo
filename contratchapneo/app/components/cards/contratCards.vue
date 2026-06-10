@@ -114,7 +114,7 @@ export default defineComponent({
     background: linear-gradient(
         to top, 
         rgba(0, 0, 0, 0.626) 0%, 
-        rgba(0, 0, 0, 0.4) 40%, 
+        rgba(0, 0, 0, 1.9) 20%, 
         transparent 100%
     );
     z-index: 2;

@@ -20,8 +20,8 @@
                             <p>Satisfaction client</p>
                         </div>
                         <div class="stat-item">
-                            <h3>10+</h3>
-                            <p>Experts juridiques</p>
+                            <h3>10.000+</h3>
+                            <p>Téléchargement</p>
                         </div>
                         <div class="stat-item">
                             <h3>24/7</h3>
