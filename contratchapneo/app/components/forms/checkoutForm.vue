@@ -36,7 +36,7 @@
         />
 
         <checkoutButton 
-            label="Commander" 
+            label="Payer" 
             type="submit"
             :isLoading="loading"
         />

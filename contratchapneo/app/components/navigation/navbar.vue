@@ -30,6 +30,31 @@
                     </transition>
                 </li>
 
+
+                <li 
+                    class="dropdown-item"
+                    @mouseenter="isProDropdownOpen = true"
+                    @mouseleave="isProDropdownOpen = false"
+                >
+                    <NuxtLink to="/pro" class="dropdown-trigger">
+                        Nos professionnels
+                        <svg :class="['chevron', { 'is-open': isProDropdownOpen }]" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="6 9 12 15 18 9"/>
+                        </svg>
+                    </NuxtLink>
+
+                    <transition name="dropdown-fade">
+                        <ul v-if="isProDropdownOpen" class="dropdown-menu simple-menu">
+                            <li><NuxtLink to="/commissaire-justice">Commissaire de justice (Huissier)</NuxtLink></li>
+                            <li><NuxtLink to="/avocat">Avocat</NuxtLink></li>
+                            <li><NuxtLink to="/notaire">Notaire</NuxtLink></li>
+                            <li><NuxtLink to="/comptable">Comptable</NuxtLink></li>
+                            <li><NuxtLink to="/comptable">Conseil juridique</NuxtLink></li>
+                        </ul>
+                    </transition>
+                </li>
+                <li><NuxtLink to="/lawCalcul">Calcul de droit</NuxtLink></li>
+
                 <li 
                     class="dropdown-item"
                     @mouseenter="isServicesDropdownOpen = true"
@@ -49,32 +74,12 @@
                             <li><NuxtLink to="/services#marques">Dépôt de Marque</NuxtLink></li>
                             <li><NuxtLink to="/services#tech">Legaltech</NuxtLink></li>
                             <li><NuxtLink to="/services#noms">Enregistrement Noms Commerciaux</NuxtLink></li>
+                            <li><NuxtLink to="/services#créa">Création d'entreprise</NuxtLink></li>
+
                         </ul>
                     </transition>
                 </li>
 
-                <li 
-                    class="dropdown-item"
-                    @mouseenter="isProDropdownOpen = true"
-                    @mouseleave="isProDropdownOpen = false"
-                >
-                    <NuxtLink to="/pro" class="dropdown-trigger">
-                        Nos professionnels
-                        <svg :class="['chevron', { 'is-open': isProDropdownOpen }]" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                            <polyline points="6 9 12 15 18 9"/>
-                        </svg>
-                    </NuxtLink>
-
-                    <transition name="dropdown-fade">
-                        <ul v-if="isProDropdownOpen" class="dropdown-menu simple-menu">
-                            <li><NuxtLink to="/commissaire-justice">Commissaire de justice</NuxtLink></li>
-                            <li><NuxtLink to="/avocat">Avocat</NuxtLink></li>
-                            <li><NuxtLink to="/notaire">Notaire</NuxtLink></li>
-                            <li><NuxtLink to="/comptable">Comptable</NuxtLink></li>
-                        </ul>
-                    </transition>
-                </li>
-                <li><NuxtLink to="/lawCalcul">Calcul de droit</NuxtLink></li>
                 <li><NuxtLink to="/about"> À propos</NuxtLink></li>
             </ul>
 
@@ -119,6 +124,35 @@
                         </transition>
                     </li>
 
+
+                    <li class="mobile-accordion">
+                        <div class="mobile-accordion__trigger-wrapper">
+                            <NuxtLink to="/pro" class="mobile-accordion__main-link" @click="toggleMenu">
+                                Nos professionnels
+                            </NuxtLink>
+                            <button 
+                                class="mobile-accordion__icon-btn"
+                                @click="isMobileProDropdownOpen = !isMobileProDropdownOpen"
+                            >
+                                <svg :class="['chevron', { 'is-open': isMobileProDropdownOpen }]" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                    <polyline points="6 9 12 15 18 9"/>
+                                </svg>
+                            </button>
+                        </div>
+
+                        <transition name="accordion">
+                            <ul v-if="isMobileProDropdownOpen" class="mobile-accordion__list">
+                                <li><NuxtLink to="/commissaire-de-justice" @click="toggleMenu">Commissaire de justice (Huissier)</NuxtLink></li>
+                                <li><NuxtLink to="/avocat" @click="toggleMenu">Avocat</NuxtLink></li>
+                                <li><NuxtLink to="/notaire" @click="toggleMenu">Notaire</NuxtLink></li>
+                                <li><NuxtLink to="/comptable" @click="toggleMenu">Comptable</NuxtLink></li>
+                                <li><NuxtLink to="/comptable" @click="toggleMenu">Conseil juridique</NuxtLink></li>
+                            </ul>
+                        </transition>
+                    </li>
+
+                    <li><NuxtLink to="/outil-de-calcul" @click="toggleMenu">Calcul de droit</NuxtLink></li>
+
                     <li class="mobile-accordion">
                         <div class="mobile-accordion__trigger-wrapper">
                             <NuxtLink to="/services" class="mobile-accordion__main-link" @click="toggleMenu">
@@ -142,36 +176,12 @@
                                 <li><NuxtLink to="/services#marques" @click="toggleMenu">Dépôt de Marque</NuxtLink></li>
                                 <li><NuxtLink to="/services#tech" @click="toggleMenu">Legaltech</NuxtLink></li>
                                 <li><NuxtLink to="/services#noms" @click="toggleMenu">Enregistrement Noms Commerciaux</NuxtLink></li>
+                                <li><NuxtLink to="/services#créa" @click="toggleMenu">Création d'entreprise</NuxtLink></li>
+
                             </ul>
                         </transition>
                     </li>
 
-                    <li class="mobile-accordion">
-                        <div class="mobile-accordion__trigger-wrapper">
-                            <NuxtLink to="/pro" class="mobile-accordion__main-link" @click="toggleMenu">
-                                Nos professionnels
-                            </NuxtLink>
-                            <button 
-                                class="mobile-accordion__icon-btn"
-                                @click="isMobileProDropdownOpen = !isMobileProDropdownOpen"
-                            >
-                                <svg :class="['chevron', { 'is-open': isMobileProDropdownOpen }]" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                                    <polyline points="6 9 12 15 18 9"/>
-                                </svg>
-                            </button>
-                        </div>
-
-                        <transition name="accordion">
-                            <ul v-if="isMobileProDropdownOpen" class="mobile-accordion__list">
-                                <li><NuxtLink to="/commissaire-de-justice" @click="toggleMenu">Commissaire de justice</NuxtLink></li>
-                                <li><NuxtLink to="/avocat" @click="toggleMenu">Avocat</NuxtLink></li>
-                                <li><NuxtLink to="/notaire" @click="toggleMenu">Notaire</NuxtLink></li>
-                                <li><NuxtLink to="/comptable" @click="toggleMenu">Comptable</NuxtLink></li>
-                            </ul>
-                        </transition>
-                    </li>
-
-                    <li><NuxtLink to="/outil-de-calcul" @click="toggleMenu">Calcul de droit</NuxtLink></li>
                     <li><NuxtLink to="/about" @click="toggleMenu"> À propos</NuxtLink></li>
                 </ul>
                 <a href="#" class="cta-mobile" @click="toggleMenu">Connexion</a>
