@@ -1,9 +1,9 @@
 <template>
     <header :class="['main-header', `theme-${theme}`, { 'is-scrolled': isScrolled }]">
         <nav class="nav-container">
-            <div class="pic__container">
+            <NuxtLink to="/" class="pic__container" @click="closeMenu">
                 <img src="/CONTRATCHAP.png" alt="ContratchapNeo">
-            </div>
+            </NuxtLink>
 
             <ul class="nav-links-desktop">
                 <li><NuxtLink to="/">Accueil</NuxtLink></li>
@@ -217,6 +217,13 @@ export default {
                 isMobileProDropdownOpen.value = false;
             }
         };
+        // Force la fermeture de tous les menus (utile quand on clique sur le logo)
+        const closeMenu = () => {
+            isMenuOpen.value = false;
+            isMobileDropdownOpen.value = false;
+            isMobileServicesDropdownOpen.value = false;
+            isMobileProDropdownOpen.value = false;
+        };
 
         const handleScroll = () => {
             isScrolled.value = window.scrollY > 20;
@@ -240,7 +247,8 @@ export default {
             isMobileDropdownOpen, 
             isMobileServicesDropdownOpen,
             isMobileProDropdownOpen, 
-            toggleMenu 
+            toggleMenu,
+            closeMenu
         };
     },
 };
@@ -367,17 +375,18 @@ export default {
     gap: 0.25rem;
 }
 .mobile-accordion__main-link {
-    font-size: 1.1rem;
+    /* On utilise clamp pour réduire très légèrement la police sur les tout petits écrans, 
+       tout en gardant 1.1rem sur les téléphones standards */
+    font-size: clamp(0.95rem, 4vw, 1.1rem); 
     font-weight: 500;
     color: var(--primary-color);
     text-decoration: none;
-    flex-grow: 1; /* Prend tout l'espace disponible à gauche */
+    flex-grow: 1; 
     text-align: left;
-    /* On retire les padding/borders hérités s'il y en a pour éviter les doublons */
     padding: 0 !important; 
     border: none !important;
+    white-space: nowrap; /* Interdit formellement le retour à la ligne */    
 }
-
 .mobile-accordion__icon-btn {
     background: none;
     border: none;
