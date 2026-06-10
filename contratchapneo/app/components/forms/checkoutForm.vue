@@ -1,6 +1,6 @@
 <template>
     <form 
-        class="w-full flex flex-col gap-2"
+        class="checkout-form w-full flex flex-col gap-2"
         @submit.prevent="submitForm"
     >
 
@@ -36,7 +36,7 @@
         />
 
         <checkoutButton 
-            label="Commander" 
+            label="Payer" 
             type="submit"
             :isLoading="loading"
         />
@@ -124,6 +124,7 @@ export default {
         return{
             cartStore,
             orderStore,
+            paymentOptions,
             checkoutform,
             loading,
             error,
@@ -134,6 +135,14 @@ export default {
 }
 </script>
 
-<style>
+<style scoped>
+.checkout-form{
+    background: #eef2ff;
+    border-radius: 8px;
+    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+}
 
+.checkout-form h3{
+    color:#202b4a;
+}
 </style>

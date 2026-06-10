@@ -1,6 +1,5 @@
 <template>
     <section class="checkout-section">
-        <h2>Finalisez votre commande</h2>
         <div class="sides" v-if="!isSucces">
             <itemsListVue/>
             <checkoutFormVue @succes="()=>isSucces=true"/>
@@ -48,7 +47,13 @@ export default {
     justify-content: center;
     align-items: center;
     gap: 2rem;
-    padding: 3rem 1rem 1rem 1rem;
+    padding: 0.5rem;
+}
+
+.checkout-section h2{
+    font-size: 1.8rem;
+    font-weight: 600;
+    color: var(--primary-color);
 }
 
 .sides{
@@ -61,8 +66,9 @@ export default {
 @media(min-width:1024px){
 
     .sides{
-        display: flex;
-        flex-direction: row;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 2rem;
         justify-content: space-around;
         align-items: center;
     }

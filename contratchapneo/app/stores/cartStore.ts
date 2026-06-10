@@ -166,6 +166,7 @@ export const useCartStore = defineStore('cart', () => {
                 method: 'POST',
                 body: { ...payload, cart: cart.value }
             });
+            console.log("checkout response", response)
             return response;
         } catch (err: any) {
             error.value = err.message;
@@ -174,6 +175,30 @@ export const useCartStore = defineStore('cart', () => {
             isLoading.value = false;
         }
     };
+
+    // About the paiement flow with the frontend
+
+    const initiatePayment = async (payload: GuestInfo) => {
+
+        // UX:UI
+
+        isLoading.value = true;
+        error.value = null;
+
+        try {
+            const response = await $api('/ecommerce/checkout/', {
+                method: 'POST',
+                body: { ...payload, cart: cart.value }
+            });
+            console.log("checkout response", response)
+            return response;
+        } catch (err: any) {
+            error.value = err.message;
+            throw err;
+        } finally {
+            isLoading.value = false;
+        }
+    }
 
     return {
         isLoading,

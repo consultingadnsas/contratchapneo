@@ -47,7 +47,7 @@ export default {
 <style scoped>
 
 .main-button{
-    background-color: var(--primary-color);
+    background-color: #202b4a;
     color: white;
     display: flex;
     justify-content: center;

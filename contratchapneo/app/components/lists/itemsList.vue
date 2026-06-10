@@ -113,7 +113,7 @@ export default {
 .item-price {
   margin: 0 0 0.5rem 0;
   font-size: 0.9rem;
-  color: #007bff;
+  color: #202b4a;
   font-weight: 600;
 }
 
@@ -194,6 +194,6 @@ export default {
 }
 
 .final-price {
-  color: #007bff;
+  color: #202b4a;
 }
 </style>

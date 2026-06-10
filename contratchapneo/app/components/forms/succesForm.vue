@@ -83,7 +83,7 @@ export default {
 .success__icon {
     width: 72px;
     height: 72px;
-    color: var(--background-color);
+    color: #202b4a;
     animation: popIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both;
 }
 
@@ -93,14 +93,14 @@ export default {
 }
 
 .success__title {
-    color: var(--background-color);
+    color: #202b4a;
     font-size: 1.6rem;
     font-weight: 700;
     margin: 0;
 }
 
 .success__subtitle {
-    color: var(--text-color);
+    color: #202b4a;
     font-size: 0.95rem;
     line-height: 1.7;
     margin: 0;
