@@ -1,3 +1,5 @@
+import stripe
+from django.conf import settings
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -14,6 +16,8 @@ from .serializers import (
 )
 from .helpers import (get_or_create_cart, set_cart_cookie_if_needed)
 from contrat.models import Contrat
+
+stripe.api_key = settings.STRIPE_SECRET_KEY
 
 # ─────────────────────────────────────────
 # CART VIEWS

@@ -127,7 +127,7 @@ AUTH_USER_MODEL = 'account.CustomUser'
 # Internationalization
 # https://docs.djangoproject.com/en/6.0/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'fr-fr'
 
 TIME_ZONE = 'UTC'
 
@@ -154,3 +154,6 @@ CORS_ALLOW_CREDENTIALS = True
 
 # Seulement en dev
 CORS_ALLOW_ALL_ORIGINS = True 
+
+# PAIEMENT SETTINGS
+STRIPE_SECRET_KEY = config('STRIPE_SECRET_KEY')
