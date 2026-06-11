@@ -1,4 +1,6 @@
 import logging
+import stripe
+from django.conf import settings
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -15,6 +17,7 @@ from .serializers import (
 from ecommerce.models import Order, Cart  # adapte le chemin
 
 logger = logging.getLogger(__name__)
+stripe.api_key = settings.STRIPE_SECRET_KEY
 
 
 class PaymentInitiateView(APIView):
@@ -31,55 +34,62 @@ class PaymentInitiateView(APIView):
             return Response({'errors': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 
         order_id       = serializer.validated_data['order_id']
-        payment_method = serializer.validated_data['payment_method']
+        payment_method = serializer.validated_data.get('payment_method', 'STRIPE')
 
         # Récupération de la commande
         order = get_object_or_404(Order, id=order_id)
 
-        # Vérification d'accès
-        if not self._can_access(request, order):
+        # Vérification d'accès (j'utilise ta méthode _can_access)
+        if hasattr(self, '_can_access') and not self._can_access(request, order):
+            return Response({'error': 'Accès interdit'}, status=status.HTTP_403_FORBIDDEN)
+
+        try:
+            with db_transaction.atomic():
+                # 2. Stripe veut un montant en CENTIMES. 
+                # Adapte `order.total_price` selon le nom de ton champ sur le modèle Order
+                montant_en_centimes = int(order.total_amount * 100) 
+
+                # 3. Création du PaymentIntent chez Stripe
+                intent = stripe.PaymentIntent.create(
+                    amount=montant_en_centimes,
+                    currency='xof', # ⚠️ Remplace par ta devise ('xof', 'usd'...)
+                    metadata={
+                        'order_id': order.id,
+                        # Sécurité supplémentaire pour les logs Stripe
+                        'is_guest': order.guest is not None, 
+                    }
+                )
+
+                # 4. Création de ta Transaction en base de données
+                txn = Transaction.objects.create(
+                    order=order,
+                    amount=order.total_amount,
+                    payment_method=payment_method,
+                    status=Transaction.TransactionStatus.PENDING,
+                    # 💡 ASTUCE CLÉ : On sauvegarde l'ID du PaymentIntent Stripe (pi_xxxx) 
+                    # dans le provider_reference. Ce sera vital pour ton Webhook plus tard !
+                    provider_reference=intent.id 
+                )
+
+                # 5. On renvoie le client_secret au Frontend (Nuxt 3)
+                return Response({
+                    'message': 'Intention de paiement Stripe créée avec succès',
+                    'transaction_id': txn.id,
+                    'client_secret': intent.client_secret,
+                }, status=status.HTTP_200_OK)
+
+        except stripe.error.StripeError as e:
+            logger.error(f"Erreur Stripe : {str(e)}")
             return Response(
-                {'message': 'Accès non autorisé à cette commande.'},
-                status=status.HTTP_403_FORBIDDEN
+                {'error': "Erreur lors de la communication avec le service de paiement."}, 
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
-
-        # On refuse si la commande n'est pas en attente de paiement
-        if order.status != Order.Status.PENDING:
+        except Exception as e:
+            logger.error(f"Erreur interne lors de l'initiation du paiement : {str(e)}")
             return Response(
-                {'message': f'Cette commande ne peut pas être payée (statut : {order.get_status_display()}).'},
-                status=status.HTTP_400_BAD_REQUEST
+                {'error': 'Une erreur est survenue.'}, 
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
-
-        # Si une transaction PENDING existe déjà, on la retourne — pas de doublon
-        existing = order.transactions.filter(
-            status=Transaction.TransactionStatus.PENDING
-        ).first()
-        if existing:
-            return Response(
-                {
-                    'data'       : TransactionSerializer(existing).data,
-                    'payment_url': self._build_payment_url(existing),
-                    'message'    : 'Une session de paiement est déjà en cours.',
-                },
-                status=status.HTTP_200_OK
-            )
-
-        # Création de la transaction
-        txn = Transaction.objects.create(
-            order          =order,
-            amount         =order.total_amount,
-            payment_method =payment_method,
-            status         =Transaction.TransactionStatus.PENDING,
-        )
-
-        return Response(
-            {
-                'data'       : TransactionSerializer(txn).data,
-                'payment_url': self._build_payment_url(txn),
-                'message'    : 'Session de paiement initialisée.',
-            },
-            status=status.HTTP_201_CREATED
-        )
 
     def _can_access(self, request, order):
         if request.user.is_authenticated:

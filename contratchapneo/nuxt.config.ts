@@ -1,17 +1,23 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
+  
   compatibilityDate: '2025-07-15',
+  
   devtools: { enabled: true },
+  
   css: ['~/assets/css/main.css'],
+  
   vite: {
     optimizeDeps: {
       include: [
         '@vue/devtools-core',
         '@vue/devtools-kit',
         'vue-pdf-embed',
+        '@stripe/stripe-js'
       ]
     }
   },
+  
   postcss: {
     plugins: {
       '@tailwindcss/postcss': {},
@@ -20,4 +26,11 @@ export default defineNuxtConfig({
   },
 
   modules: ['@pinia/nuxt','pinia-plugin-persistedstate/nuxt'],
+
+  runtimeConfig: {
+    public: {
+      // Tout ce qui est ici sera accessible côté frontend
+      stripePublicKey: process.env.STRIPE_PUBLIC_KEY,
+    }
+  }
 })

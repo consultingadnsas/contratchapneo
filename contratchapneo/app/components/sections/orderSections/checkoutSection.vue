@@ -8,7 +8,7 @@
             message="Contrat acheté. Le Téléchargement commence maintenant"
             v-else
         />
-        <paiementModale :isOpen="true"/>
+        <paiementModale :isOpen="false"/>
     </section>
 </template>
 
