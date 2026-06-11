@@ -8,6 +8,7 @@
             message="Contrat acheté. Le Téléchargement commence maintenant"
             v-else
         />
+        <paiementModale :isOpen="true"/>
     </section>
 </template>
 
@@ -16,13 +17,15 @@ import { ref } from 'vue'
 import checkoutFormVue from '../../forms/checkoutForm.vue'
 import succesFormVue from '../../forms/succesForm.vue'
 import itemsListVue from '../../lists/itemsList.vue'
+import paiementModale from '../../modale/paiementModale.vue'
 
 export default {
     name:'CheckoutSection',
     components:{
         checkoutFormVue,
         itemsListVue,
-        succesFormVue
+        succesFormVue,
+        paiementModale
     },
     setup(){
 

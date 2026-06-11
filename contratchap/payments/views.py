@@ -97,9 +97,9 @@ class PaymentInitiateView(APIView):
 
 class PaymentSimulateView(APIView):
     """
-    POST /payments/simulate/
-    Simule un succès ou un échec de paiement.
-    À remplacer par le vrai webhook prestataire en production.
+        POST /payments/simulate/
+        Simule un succès ou un échec de paiement.
+        À remplacer par le vrai webhook prestataire en production.
     """
     permission_classes = [AllowAny]
 

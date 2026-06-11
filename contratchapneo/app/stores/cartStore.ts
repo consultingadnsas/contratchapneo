@@ -219,4 +219,6 @@ export const useCartStore = defineStore('cart', () => {
         clearCart,
         checkout,
     };
-});
+},
+    {persist: true}
+);
