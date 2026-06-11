@@ -1,21 +1,21 @@
 <template>
   <div v-if="isOpen" class="glass-modal-overlay" @click="closeModal">
     <div class="stripe-modal-content" @click.stop>
-      <button class="close-btn" @click="closeModal" :disabled="isLoading" aria-label="Fermer">×</button>
+      <button class="close-btn" @click="closeModal" :disabled="cartStore.isLoading" aria-label="Fermer">×</button>
       
       <div class="stripe-container">
         <h3>Paiement par Carte Bancaire</h3>
         
         <div id="payment-element" class="stripe-element-container"></div>
 
-        <p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>
+        <p v-if="cartStore.error" class="error-message">{{ cartStore.error }}</p>
 
         <button 
           class="btn-pay" 
           @click="handleSubmit" 
-          :disabled="isLoading || !isStripeReady"
+          :disabled="cartStore.isLoading || !cartStore.stripeReady"
         >
-          {{ isLoading ? 'Traitement sécurisé...' : 'Confirmer le règlement' }}
+          {{ cartStore.isLoading ? 'Traitement sécurisé...' : 'Confirmer le règlement' }}
         </button>
       </div>
     </div>
@@ -23,134 +23,69 @@
 </template>
 
 <script lang="ts">
-import { ref, watch, onUnmounted, nextTick } from 'vue';
-import { loadStripe } from '@stripe/stripe-js';
+import { watch, onUnmounted, nextTick } from 'vue';
+import { useCartStore } from '../../stores/cartStore';
+import { useOrderStore } from '../../stores/orderStore';
 
 export default {
   name: 'PaiementModale',
 
   props: {
-    isOpen: { type: Boolean, default: false },
-    orderId: { type: String, required: true },       // L'ID de la commande générée au checkout
-    guestEmail: { type: String, default: '' }       // L'email s'il s'agit d'un achat invité
+    isOpen: { type: Boolean, default: false }
   },
 
   emits: ['close', 'payment-success'],
 
   setup(props, { emit }) {
-    // Récupération de ton instance d'API configurée et de tes variables de config
-    const { $api } = useNuxtApp();
-    const config = useRuntimeConfig();
-    
-    // États Stripe
-    const stripe = ref<any>(null);
-    const elements = ref<any>(null);
-    const isStripeReady = ref<boolean>(false);
-    
-    // États de l'interface graphique (UI)
-    const isLoading = ref<boolean>(false);
-    const errorMessage = ref<string | null>(null);
+    const cartStore = useCartStore();
+    const orderStore = useOrderStore();
 
     const closeModal = () => {
-      if (!isLoading.value) emit('close');
+      if (!cartStore.isLoading) emit('close');
     };
 
-    // Initialisation du formulaire Stripe Elements
     const initializeStripe = async () => {
-      isLoading.value = true;
-      errorMessage.value = null;
+      cartStore.error = null;
+
+      const currentOrder = orderStore.currentOrder;
+      if (!currentOrder?.id) {
+        cartStore.error = "Aucune commande disponible pour le paiement Stripe.";
+        return;
+      }
 
       try {
-        // 1. Chargement de Stripe avec ta clé publique configurée
-        stripe.value = await loadStripe(config.public.stripePublicKey);
+        const elements = await cartStore.initializeStripe(currentOrder.id, currentOrder.guest?.email || '');
+        await nextTick();
 
-        // 2. Préparation de la route Django pour l'initiation
-        const url = props.guestEmail 
-          ? `/payments/initiate/?email=${encodeURIComponent(props.guestEmail)}`
-          : `/payments/initiate/`;
-
-        // 3. Appel de ton backend avec ton plugin global $api (l'URL de base est gérée automatiquement !)
-        const response: any = await $api(url, {
-          method: 'POST',
-          body: {
-            order_id: props.orderId,
-            payment_method: 'STRIPE'
-          }
-        });
-
-        if (response?.client_secret) {
-          // Personnalisation sobre du thème des inputs de carte
-          const appearance = {
-            theme: 'flat',
-            variables: { 
-              colorPrimary: '#007bff', 
-              fontFamily: 'sans-serif' 
-            }
-          };
-
-          // 4. Instanciation du composant Elements
-          elements.value = stripe.value.elements({
-            clientSecret: response.client_secret,
-            appearance,
-          });
-
-          // ✨ LE SECRET : On attend le prochain tick pour s'assurer que Vue 
-          // a bien injecté la div #payment-element avant d'y greffer Stripe !
-          await nextTick();
-
-          const paymentElement = elements.value.create('payment');
+        if (elements) {
+          const paymentElement = elements.create('payment');
           paymentElement.mount('#payment-element');
-
-          isStripeReady.value = true;
-        } else {
-          errorMessage.value = response?.error || "Impossible d'initier la clé d'intention de paiement.";
         }
-      } catch (err: any) {
-        errorMessage.value = err?.message || "Erreur de liaison avec le serveur de paiement.";
-        console.error("Stripe Initialization Error:", err);
-      } finally {
-        isLoading.value = false;
+      } catch (err) {
+        console.error('Stripe Initialization Error:', err);
       }
     };
 
-    // Soumission définitive des informations de paiement
     const handleSubmit = async () => {
-      if (!stripe.value || !elements.value) return;
-
-      isLoading.value = true;
-      errorMessage.value = null;
+      if (!cartStore.stripeReady) return;
 
       try {
-        // Envoi direct de la carte aux serveurs sécurisés de Stripe sans rafraîchir la page entière
-        const { error, paymentIntent } = await stripe.value.confirmPayment({
-          elements: elements.value,
-          redirect: 'if_required', 
-        });
-
-        if (error) {
-          // Erreur instantanée renvoyée par Stripe (ex: provision insuffisante)
-          errorMessage.value = error.message || "La transaction a été refusée.";
-        } else if (paymentIntent && paymentIntent.status === 'succeeded') {
-          // 🎉 Succès total ! On informe le composant parent pour afficher succesFormVue
+        const paymentIntent = await cartStore.confirmStripePayment();
+        if (paymentIntent?.status === 'succeeded') {
           emit('payment-success');
         }
       } catch (err) {
-        errorMessage.value = "Une erreur inattendue est survenue lors de la validation.";
-      } finally {
-        isLoading.value = false;
+        console.error('Stripe confirmation failed:', err);
       }
     };
 
-    // Surveillance de l'état d'ouverture pour bloquer le scroll de l'arrière-plan
     watch(() => props.isOpen, (newValue) => {
       if (newValue) {
         document.body.classList.add('overflow-hidden');
-        initializeStripe(); // Lance l'intégration au moment précis où la modale s'affiche !
+        initializeStripe();
       } else {
         document.body.classList.remove('overflow-hidden');
-        // Nettoyage à la fermeture
-        elements.value = null;
-        isStripeReady.value = false;
+        cartStore.resetStripeState();
       }
     });
 
@@ -159,9 +94,7 @@ export default {
     return {
       closeModal,
       handleSubmit,
-      isLoading,
-      errorMessage,
-      isStripeReady
+      cartStore
     };
   }
 }

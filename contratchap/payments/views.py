@@ -37,11 +37,10 @@ class PaymentInitiateView(APIView):
         payment_method = serializer.validated_data.get('payment_method', 'STRIPE')
 
         # Récupération de la commande
-        order = get_object_or_404(Order, id=order_id)
-
-        # Vérification d'accès (j'utilise ta méthode _can_access)
-        if hasattr(self, '_can_access') and not self._can_access(request, order):
-            return Response({'error': 'Accès interdit'}, status=status.HTTP_403_FORBIDDEN)
+        try:
+            order = Order.objects.get(id=order_id)
+        except Order.DoesNotExist:
+            return Response({'error': 'Commande non trouvée'}, status=status.HTTP_404_NOT_FOUND)
 
         try:
             with db_transaction.atomic():

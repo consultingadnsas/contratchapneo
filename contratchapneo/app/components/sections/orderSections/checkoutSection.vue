@@ -2,7 +2,7 @@
     <section class="checkout-section">
         <div class="sides" v-if="!isPaiementModale">
             <itemsListVue/>
-            <checkoutFormVue @succes="()=>isPaiementModale=true"/>
+            <checkoutFormVue @success="()=>isPaiementModale=true"/>
         </div>
         <paiementModale
             :isOpen="isPaiementModale"
@@ -32,7 +32,7 @@ export default {
     setup(){
 
         // state
-        const isPaiementModale = ref<boolean>(true);
+        const isPaiementModale = ref<boolean>(false);
         const isSuccess = ref<boolean>(false);
 
         return{

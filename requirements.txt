@@ -27,3 +27,4 @@ django-environ # Alternative à python-decouple pour une meilleure intégration 
 python-dotenv # Complément utile pour la gestion des variables d'environnement
 
 requests
+stripe
