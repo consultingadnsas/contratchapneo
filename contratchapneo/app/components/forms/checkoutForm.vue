@@ -12,6 +12,7 @@
             placeholder="Entrez votre nom"
             v-model="checkoutform.full_name"
         />
+        
         <BaseInput
             label="Email"
             name="email"
@@ -19,6 +20,7 @@
             placeholder="Entrez votre adresse email"
             v-model="checkoutform.email"
         />
+        
         <BaseInput
             label="Numéro de téléphone"
             name="phone_number"
@@ -34,43 +36,18 @@
             placeholder="Choisissez un moyen de paiement"
         />
 
-        <!-- Section Stripe : on utilise CardElement, jamais des inputs manuels -->
-        <div
-            v-if="checkoutform.payment_method === 'stripe'"
-            class="stripe-section w-full flex flex-col gap-2"
-        >
-            <label class="text-sm font-medium text-gray-700">
-                Informations de carte bancaire
-            </label>
-
-            <!--
-                Stripe monte son CardElement ici.
-                NE PAS remplacer par des <BaseInput> — les données
-                ne doivent jamais transiter par ton code.
-            -->
-            <div
-                id="card-element"
-                class="stripe-card-element"
-            />
-
-            <p v-if="stripeError" class="text-red-500 text-sm">
-                {{ stripeError }}
-            </p>
-        </div>
-
         <CheckoutButton
             label="Payer"
             type="submit"
-            :isLoading="loading"
+            :isLoading="cartStore.isLoading"
         />
 
-        <p v-if="error" class="text-red-600 text-sm mt-2">{{ error }}</p>
+        <p v-if="cartStore.error" class="text-red-600 text-sm mt-2">{{ cartStore.error }}</p>
     </form>
 </template>
 
 <script>
 import { ref, reactive, onMounted, watch } from 'vue'
-import { loadStripe } from '@stripe/stripe-js'
 
 import BaseInput    from '../input/BaseInput.vue'
 import CheckoutButton from '../buttons/checkoutButton.vue'   // renommer en PascalCase côté fichier aussi
@@ -109,56 +86,6 @@ export default {
             payment_method: '',
         })
 
-        const loading     = ref(false)
-        const error       = ref(null)
-        const stripeError = ref(null)   // erreurs spécifiques au CardElement
-
-        // ── Instances Stripe ──────────────────────────────────────────────
-        let stripe      = null
-        let cardElement = null
-
-        // Monte le CardElement quand l'utilisateur sélectionne Stripe
-        const mountCardElement = async () => {
-            // loadStripe est mis en cache automatiquement — un seul chargement
-            stripe = await loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY)
-
-            const elements = stripe.elements()
-            cardElement = elements.create('card', {
-                style: {
-                    base: {
-                        fontSize:    '16px',
-                        color:       '#202b4a',
-                        fontFamily:  'inherit',
-                        '::placeholder': { color: '#9ca3af' },
-                    },
-                    invalid: { color: '#dc2626' },
-                },
-                hidePostalCode: true,
-            })
-
-            cardElement.mount('#card-element')
-
-            // Affiche les erreurs de saisie en temps réel
-            cardElement.on('change', (event) => {
-                stripeError.value = event.error ? event.error.message : null
-            })
-        }
-
-        // Monte/démonte le CardElement selon le moyen de paiement choisi
-        watch(
-            () => checkoutform.payment_method,
-            async (method) => {
-                if (method === 'stripe') {
-                    // nextTick pour laisser Vue afficher le div #card-element
-                    await new Promise((r) => setTimeout(r, 50))
-                    await mountCardElement()
-                } else if (cardElement) {
-                    cardElement.destroy()
-                    cardElement = null
-                }
-            },
-        )
-
         // ── Validation basique ────────────────────────────────────────────
         const validate = () => {
             if (!checkoutform.full_name.trim())      return 'Le nom complet est requis.'
@@ -170,42 +97,8 @@ export default {
 
         // ── Soumission ────────────────────────────────────────────────────
         const submitForm = async () => {
-            error.value       = null
-            stripeError.value = null
-
-            const validationError = validate()
-            if (validationError) {
-                error.value = validationError
-                return
-            }
-
-            loading.value = true
 
             try {
-                let paymentMethodId = null
-
-                // Flux Stripe : créer un PaymentMethod depuis le CardElement
-                if (checkoutform.payment_method === 'stripe') {
-                    const { paymentMethod, error: stripeErr } =
-                        await stripe.createPaymentMethod({
-                            type: 'card',
-                            card: cardElement,
-                            billing_details: {
-                                name:  checkoutform.full_name,
-                                email: checkoutform.email,
-                                phone: checkoutform.phone_number || undefined,
-                            },
-                        })
-
-                    if (stripeErr) {
-                        // Erreur retournée par Stripe (carte refusée, numéro invalide…)
-                        stripeError.value = stripeErr.message
-                        return
-                    }
-
-                    paymentMethodId = paymentMethod.id
-                }
-
                 // Envoyer au backend : payload complet incluant le moyen de paiement
                 const payload = {
                     guest: {
@@ -213,9 +106,6 @@ export default {
                         email:        checkoutform.email,
                         phone_number: checkoutform.phone_number || null,
                     },
-                    payment_method:    checkoutform.payment_method,
-                    // Pour Stripe : le backend utilise cet ID pour créer/confirmer le PaymentIntent
-                    stripe_payment_method_id: paymentMethodId,
                 }
 
                 await orderStore.checkout(payload)
@@ -229,10 +119,9 @@ export default {
                 })
 
             } catch (err) {
-                error.value = err?.message ?? String(err)
                 console.error('Échec de la soumission :', err)
             } finally {
-                loading.value = false
+                console.log("Soumission terminée")
             }
         }
 
@@ -246,9 +135,6 @@ export default {
                 { value: 'stripe',       name: 'Carte Bancaire (Stripe)' },
             ],
             checkoutform,
-            loading,
-            error,
-            stripeError,
             submitForm,
         }
     },

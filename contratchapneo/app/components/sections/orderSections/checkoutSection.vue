@@ -1,14 +1,16 @@
 <template>
     <section class="checkout-section">
-        <div class="sides" v-if="!isSucces">
+        <div class="sides" v-if="!isPaiementModale">
             <itemsListVue/>
-            <checkoutFormVue @succes="()=>isSucces=true"/>
+            <checkoutFormVue @succes="()=>isPaiementModale=true"/>
         </div>
-        <succesFormVue
-            message="Contrat acheté. Le Téléchargement commence maintenant"
-            v-else
+        <paiementModale
+            :isOpen="isPaiementModale"
         />
-        <paiementModale :isOpen="false"/>
+        <succesFormVue
+            v-if="isSuccess"
+            message="Contrat acheté. Le Téléchargement commence maintenant"
+        />
     </section>
 </template>
 
@@ -30,10 +32,12 @@ export default {
     setup(){
 
         // state
-        const isSucces = ref<boolean>(false)
+        const isPaiementModale = ref<boolean>(true);
+        const isSuccess = ref<boolean>(false);
 
         return{
-            isSucces
+            isPaiementModale,
+            isSuccess
         }
 
 
