@@ -7,6 +7,7 @@
             :class="['expanding-card', { 'is-active': activeIndex === index }]"
             :data-index="index"
             @mouseenter="handleMouseEnter(index)"
+            @click="openDetailedView(index)" 
         >
             <div class="card-inactive" v-show="activeIndex !== index">
                 <span class="big-number">{{ formatNumber(index + 1) }}.</span>
@@ -17,7 +18,12 @@
             </div>
 
             <div class="card-active" v-show="activeIndex === index">
-                <div class="card-image-wrapper" :style="{ background: service.gradient || 'linear-gradient(135deg, #e2e8f0 0%, #cbd5e1 100%)' }">
+                <div class="card-image-wrapper" :style="{ 
+                    backgroundImage: `url(${service.image})`,
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center',
+                    backgroundColor: '#cbd5e1' /* Fallback gris si l'image charge lentement */
+                }">
                     <div class="glass-overlay"></div>
                 </div>
                 
@@ -28,15 +34,26 @@
                 </div>
             </div>
         </article>
+
+        <Teleport to="body">
+            <serviceModale 
+                :is-open="!!selectedService" 
+                :service="selectedService" 
+                @close="closeDetailedView"
+                @quote="triggerQuote"
+            />
+        </Teleport>
     </div>
 </template>
 
 <script lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue';
-import {useRoute} from 'vue-router';
+import { ref, onMounted, onUnmounted, nextTick, watch } from 'vue'; // nextTick et watch ajoutés
+import { useRoute } from 'vue-router';
+import serviceModale from '../modale/serviceModale.vue'; // Assurez-vous du bon chemin
 
 export default {
     name: 'ServicesCards',
+    components: { serviceModale }, // Déclaration du composant
     props: {
         services: {
             type: Array,
@@ -44,12 +61,16 @@ export default {
             default: () => []
         }
     },
-    setup(props) {
+    emits: ['to-contact'], // On déclare l'émission vers la page parente
+    setup(props, { emit }) {
         const route = useRoute();
         const activeIndex = ref(0);
         const showcaseRef = ref<HTMLElement | null>(null);
-        const ignoreHover=ref(false);
+        const ignoreHover = ref(false);
         let observer: IntersectionObserver | null = null;
+
+        // --- NOUVEAU : État de la modale ---
+        const selectedService = ref<any>(null);
 
         // Formater le numéro en "01", "02", etc.
         const formatNumber = (num: number) => {
@@ -66,27 +87,37 @@ export default {
             }
         };
 
-        // --- NOUVEAU : GESTION DU SCROLL AUTOMATIQUE (Mobile) ---
+        // --- NOUVEAU : GESTION DE LA MODALE ---
+        const openDetailedView = (index: number) => {
+            selectedService.value = props.services[index];
+            document.body.style.overflow = 'hidden'; // Bloque le scroll derrière
+        };
 
+        const closeDetailedView = () => {
+            selectedService.value = null;
+            document.body.style.overflow = ''; // Rétablit le scroll
+        };
+
+        const triggerQuote = (serviceTitle: string) => {
+            closeDetailedView();
+            emit('to-contact'); // Déclenche le défilement vers le contact
+        };
+
+        // --- GESTION DU SCROLL AUTOMATIQUE (Mobile) ---
         const initIntersectionObserver = () => {
-            // On ne l'active que sur mobile
             if (window.innerWidth >= 768) return;
 
             const options = {
-                root: null, // Utilise le viewport
-                // rootMargin : On définit une zone "cible" au centre de l'écran. 
-                // '-40% 0px' signifie que l'élément doit être dans les 20% centraux de la hauteur de l'écran.
+                root: null,
                 rootMargin: '-40% 0px -40% 0px', 
-                threshold: 0 // Dès qu'un pixel entre dans la zone cible
+                threshold: 0
             };
 
             const callback = (entries: IntersectionObserverEntry[]) => {
                 entries.forEach(entry => {
-                    // Si la carte entre dans la zone centrale
                     if (entry.isIntersecting) {
                         const indexStr = entry.target.getAttribute('data-index');
                         if (indexStr !== null) {
-                            // On ouvre cette carte automatiquement
                             activeIndex.value = parseInt(indexStr, 10);
                         }
                     }
@@ -95,7 +126,6 @@ export default {
 
             observer = new IntersectionObserver(callback, options);
 
-            // On observe toutes les cartes
             const cards = showcaseRef.value?.querySelectorAll('.expanding-card');
             cards?.forEach(card => observer?.observe(card));
         };
@@ -107,7 +137,6 @@ export default {
                 if (targetIndex!==-1){
                     ignoreHover.value=true;
                     activeIndex.value = targetIndex;
-                    // Scroll vers la carte ciblée
                     nextTick(()=>{
                         const element=document.getElementById(targetId);
                         if(element){
@@ -116,15 +145,17 @@ export default {
                         }
                     })
                     setTimeout(() => {
-                        ignoreHover.value=false}, 800);
-                } else{ignoreHover.value=false}
+                        ignoreHover.value=false
+                    }, 800);
+                } else {
+                    ignoreHover.value=false
+                }
             }
         }
 
         onMounted(() => {
             initIntersectionObserver();
             scrollToService();
-            // Optionnel : Ré-initialiser si on redimensionne la fenêtre
             window.addEventListener('resize', () => {
                 observer?.disconnect();
                 if (window.innerWidth < 768) initIntersectionObserver();
@@ -134,14 +165,19 @@ export default {
 
         onUnmounted(() => {
             observer?.disconnect();
+            document.body.style.overflow = ''; // Sécurité à la destruction
             window.removeEventListener('resize', initIntersectionObserver);
         });
 
         return {
             activeIndex,
             showcaseRef,
+            selectedService,
             formatNumber,
             handleMouseEnter,
+            openDetailedView,
+            closeDetailedView,
+            triggerQuote
         };
     }
 }

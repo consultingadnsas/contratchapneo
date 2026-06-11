@@ -18,18 +18,18 @@
                         <svg :class="['chevron', { 'is-open': isDropdownOpen }]" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                             <polyline points="6 9 12 15 18 9"/>
                         </svg>
-
                     </NuxtLink>
                     <transition name="dropdown-fade">
                         <ul v-if="isDropdownOpen" class="dropdown-menu">
-                            <li><NuxtLink to="/creation-cession">Création & Cession</NuxtLink></li>
-                            <li><NuxtLink to="/partenariat-investissement">Partenariat & Investissement</NuxtLink></li>
-                            <li><NuxtLink to="/prestation-service-vente">Prestation de service & vente</NuxtLink></li>
-                            <li><NuxtLink to="/technologie-digital">Technologie & Digital</NuxtLink></li>
+                            <li v-for="category in contratStore.categories" :key="category.id">
+                                <NuxtLink :to="`/contractbank/${category.id}`">{{ category.title }}</NuxtLink>
+                            </li>
+                            <li v-if="contratStore.isLoading">
+                                <span class="muted-text pl-3 text-sm">Chargement...</span>
+                            </li>
                         </ul>
                     </transition>
                 </li>
-
 
                 <li 
                     class="dropdown-item"
@@ -49,7 +49,7 @@
                             <li><NuxtLink to="/avocat">Avocat</NuxtLink></li>
                             <li><NuxtLink to="/notaire">Notaire</NuxtLink></li>
                             <li><NuxtLink to="/comptable">Comptable</NuxtLink></li>
-                            <li><NuxtLink to="/comptable">Conseil juridique</NuxtLink></li>
+                            <li><NuxtLink to="/conseil-juridique">Conseil juridique</NuxtLink></li>
                         </ul>
                     </transition>
                 </li>
@@ -75,7 +75,6 @@
                             <li><NuxtLink to="/services#tech">Legaltech</NuxtLink></li>
                             <li><NuxtLink to="/services#noms">Enregistrement Noms Commerciaux</NuxtLink></li>
                             <li><NuxtLink to="/services#créa">Création d'entreprise</NuxtLink></li>
-
                         </ul>
                     </transition>
                 </li>
@@ -93,6 +92,7 @@
                 @toggle="toggleMenu"
             />
         </nav>
+
         <transition name="slide-down">
             <div v-if="isMenuOpen" class="nav-mobile-menu">
                 <ul class="nav-links-mobile">
@@ -115,15 +115,15 @@
 
                         <transition name="accordion">
                             <ul v-if="isMobileDropdownOpen" class="mobile-accordion__list">
-                                <li><NuxtLink to="/creation-cession" @click="toggleMenu">Création & Cession</NuxtLink></li>
-                                <li><NuxtLink to="/partenariat-investissement" @click="toggleMenu">Partenariat & Investissement</NuxtLink></li>
-                                <li><NuxtLink to="/prestation-service-vente" @click="toggleMenu">Prestation de service & vente</NuxtLink></li>
-                                <li><NuxtLink to="/technologie-digital" @click="toggleMenu">Technologie & Digital</NuxtLink></li>
-                                <li><NuxtLink to="/evenementiel-restauration-logistique" @click="toggleMenu">Evènementiel, Restauration & Logistique</NuxtLink></li>
+                                <li v-for="category in contratStore.categories" :key="category.id">
+                                    <NuxtLink :to="`/contractbank/${category.id}`" @click="toggleMenu">
+                                        {{ category.title }}
+                                    </NuxtLink>
+                                </li>
+                                <li v-if="contratStore.isLoading" class="pl-2 opacity-50 text-sm">Chargement...</li>
                             </ul>
                         </transition>
                     </li>
-
 
                     <li class="mobile-accordion">
                         <div class="mobile-accordion__trigger-wrapper">
@@ -142,16 +142,16 @@
 
                         <transition name="accordion">
                             <ul v-if="isMobileProDropdownOpen" class="mobile-accordion__list">
-                                <li><NuxtLink to="/commissaire-de-justice" @click="toggleMenu">Commissaire de justice (Huissier)</NuxtLink></li>
+                                <li><NuxtLink to="/commissaire-justice" @click="toggleMenu">Commissaire de justice (Huissier)</NuxtLink></li>
                                 <li><NuxtLink to="/avocat" @click="toggleMenu">Avocat</NuxtLink></li>
                                 <li><NuxtLink to="/notaire" @click="toggleMenu">Notaire</NuxtLink></li>
                                 <li><NuxtLink to="/comptable" @click="toggleMenu">Comptable</NuxtLink></li>
-                                <li><NuxtLink to="/comptable" @click="toggleMenu">Conseil juridique</NuxtLink></li>
+                                <li><NuxtLink to="/conseil-juridique" @click="toggleMenu">Conseil juridique</NuxtLink></li>
                             </ul>
                         </transition>
                     </li>
 
-                    <li><NuxtLink to="/outil-de-calcul" @click="toggleMenu">Calcul de droit</NuxtLink></li>
+                    <li><NuxtLink to="/lawCalcul" @click="toggleMenu">Calcul de droit</NuxtLink></li>
 
                     <li class="mobile-accordion">
                         <div class="mobile-accordion__trigger-wrapper">
@@ -177,7 +177,6 @@
                                 <li><NuxtLink to="/services#tech" @click="toggleMenu">Legaltech</NuxtLink></li>
                                 <li><NuxtLink to="/services#noms" @click="toggleMenu">Enregistrement Noms Commerciaux</NuxtLink></li>
                                 <li><NuxtLink to="/services#créa" @click="toggleMenu">Création d'entreprise</NuxtLink></li>
-
                             </ul>
                         </transition>
                     </li>
@@ -193,6 +192,7 @@
 <script lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue';
 import Hamburger from '../buttons/hamburger.vue';
+import { useContratStore } from '../../stores/contratStore'; 
 
 export default {
     name: 'MainHeader',
@@ -205,17 +205,20 @@ export default {
     },
 
     setup(props) {
+        // Initialisation du store Pinia
+        const contratStore = useContratStore();
+
         const isMenuOpen = ref<boolean>(false);
         const isScrolled = ref<boolean>(false);
         
         // États des Dropdowns Desktop
         const isDropdownOpen = ref<boolean>(false);
-        const isServicesDropdownOpen = ref<boolean>(false); // NOUVEAU
+        const isServicesDropdownOpen = ref<boolean>(false);
         const isProDropdownOpen = ref<boolean>(false);
         
         // États des Dropdowns Mobile
         const isMobileDropdownOpen = ref<boolean>(false);
-        const isMobileServicesDropdownOpen = ref<boolean>(false); // NOUVEAU
+        const isMobileServicesDropdownOpen = ref<boolean>(false);
         const isMobileProDropdownOpen = ref<boolean>(false);
 
         const toggleMenu = () => {
@@ -227,6 +230,7 @@ export default {
                 isMobileProDropdownOpen.value = false;
             }
         };
+        
         // Force la fermeture de tous les menus (utile quand on clique sur le logo)
         const closeMenu = () => {
             isMenuOpen.value = false;
@@ -239,9 +243,14 @@ export default {
             isScrolled.value = window.scrollY > 20;
         };
 
-        onMounted(() => {
+        onMounted(async () => {
             window.addEventListener('scroll', handleScroll);
             handleScroll();
+
+            // Appel dynamique des catégories au chargement de la navbar
+            if (contratStore.categories.length === 0) {
+                await contratStore.getCategories();
+            }
         });
 
         onUnmounted(() => {
@@ -258,7 +267,8 @@ export default {
             isMobileServicesDropdownOpen,
             isMobileProDropdownOpen, 
             toggleMenu,
-            closeMenu
+            closeMenu,
+            contratStore // N'oubliez pas d'exposer le store pour le template
         };
     },
 };

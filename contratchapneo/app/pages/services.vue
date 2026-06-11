@@ -5,8 +5,7 @@
             <section class="hero-section">
                 <div class="hero-content">
                     <h1 class="main-title">
-                        Nos Services Juridiques<br>
-                        <span class="text-accent">L'expertise derrière ContratChap.</span>
+                        L'expertise derrière<span class="text-accent"> ContratChap.</span>
                     </h1>
                     <p class="hero-description muted-text">
                         Créateur de la plateforme technologique ContratChap, le cabinet <strong>ADN Consulting SAS</strong> vous accompagne au quotidien avec une gamme complète de services juridiques, fiscaux et stratégiques pour propulser votre croissance.
@@ -81,7 +80,7 @@ export default {
     setup() {
         const stats = ref([
             { number: '9', label: 'Années d\'Expertise' },
-            { number: '500+', label: 'Entreprises Accompagnées' },
+            { number: '1000+', label: 'Entreprises Accompagnées' },
             { number: '1', label: 'Solution Legaltech Innovante' }
         ]);
 
@@ -92,7 +91,9 @@ export default {
                 shortTitle: 'Assistance', // Titre court pour l'onglet réduit
                 description: 'Accompagnement rigoureux pour sécuriser vos opérations commerciales, optimiser votre fiscalité et garantir votre conformité légale.',
                 icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>',
-                gradient: 'linear-gradient(135deg, #e0f2fe 0%, #38bdf8 100%)' // Bleu Tech
+                image:'/services/1.jpg',
+                features: ['Audit complet', 'support 24/7'],
+                price: '150 000 FCFA',
             },
             {
                 id: 'programmes',
@@ -100,15 +101,20 @@ export default {
                 shortTitle: 'Programmes',
                 description: 'Mise en place de programmes de mise en conformité, d\'audits structurés et de formations sur mesure pour vos équipes.',
                 icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>',
-                gradient: 'linear-gradient(135deg, #d1fae5 0%, #34d399 100%)' // Vert ContratChap
+                image:'/services/2.jpg',
+                features: ['Accompagnement par des avocats','Mise en conformité'],
+                price:'250 000 FCFA'
             },
             {
                 id: 'brevets',
                 title: 'Brevet d\'Invention',
                 shortTitle: 'Brevets',
                 description: 'Démarches complètes pour protéger vos innovations technologiques, industrielles et scientifiques à l\'échelle nationale et internationale.',
+                longDescription:'Nous vous accompagnons dans le processus, en fonction de votre égibilité et des conditions de brevetabilité. le dépôt d\'un brevet invention reste un titre de propriété industrielle qui confère à son titulaire le droit exclusif d’exploiter une invention pendant une durée déterminée (en général 20 ans), sous certaines conditions Nous constituons tout le dossier comportant: un formulaire de demande, une description de l’invention, tous les dessins techniques, un résumé des travaux d’invention, un justificatif du paiement des taxes, etc..',
                 icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18h6"></path><path d="M10 22h4"></path><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1.5.5 2.5 1.5 3.5.76.76 1.23 1.52 1.41 2.5"></path></svg>',
-                gradient: 'linear-gradient(135deg, #f1f5f9 0%, #94a3b8 100%)' // Gris Silver
+                image:'/services/3.jpg',
+                features:['droit exclusive d’exploitation', 'Possibiliter de licencier ou vendre le brevet','Valorisation de la technologie aupres d’investisseurs'],
+                price:'1 000 000 FCFA'
             },
             {
                 id: 'marques',
@@ -116,15 +122,20 @@ export default {
                 shortTitle: 'Marques',
                 description: 'Sécurisation de votre identité visuelle, logos et signes distinctifs auprès des instances compétentes (OAPI).',
                 icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line></svg>',
-                gradient: 'linear-gradient(135deg, #ede9fe 0%, #a78bfa 100%)' // Violet élégant
+                image:'/services/3.jpg',
+                features:['design logo','marketing'],
+                price:'300 000 FCFA'
             },
             {
                 id:'tech',
                 title: 'Legaltech',
                 shortTitle: 'Legaltech',
                 description: 'Développement de solutions technologiques innovantes (à l\'image de ContratChapNeo) pour dématérialiser et automatiser le droit.',
+                longDescription:'Nous rédigeons la mise en conformité, qui constitue dansl’ensemble es actions nécessaires pour s’assurer qu’un site respecte les lois et réglementations en vigueur. Il s’agit d’une formule appliquée à un site web ou une application mobile qui consiste en:',
                 icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>',
-                gradient: 'linear-gradient(135deg, #0f172a 0%, #334155 100%)' // Nuit (comme la navbar)
+                image:'/services/2.jpg',
+                features: ['la rédaction des conditions générales d’utilisation et/ou de vente', 'Accessibilité numérique (RGAA – Référentiel Général d\'Amélioration de l\'Accessibilité)', 'Sécurité du site et Conformité E-commerce', 'Propriété Intellectuelle'],
+                price: '250 000 FCFA'
             },
             {
                 id: 'noms',
@@ -132,7 +143,19 @@ export default {
                 shortTitle: 'Noms Commerciaux',
                 description: 'Prise en charge de vos démarches administratives pour réserver et protéger juridiquement le nom de votre structure.',
                 icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>',
-                gradient: 'linear-gradient(135deg, #ffedd5 0%, #fdba74 100%)' // Orange subtil
+                image:'/services/2.jpg',
+                features: ['formalisation commerciale'],
+                price: '250 000 FCFA'
+            },
+            {
+                id:'créa',
+                title:'Création d\'entreprise',
+                shortTitle: 'Création',
+                description:'prise en charge pour la création de votre entreprise, on met en place tous les documents nécessaire à celà- et on vous accompagne tout au long du processus juridique',
+                icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>',
+                image:'/services/1.jpg',
+                features: ['Document formel et juridique', 'Accompagnement premium'],
+                price: '1 250 000 FCFA'
             }
         ]);
 
@@ -191,7 +214,7 @@ export default {
 }
 
 .text-accent {
-    color: #34d399; 
+    color:#10507e; 
 }
 
 /* --- 1. HERO SECTION --- */
