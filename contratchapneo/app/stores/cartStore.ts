@@ -3,6 +3,7 @@ import { ref, computed } from "vue";
 import { loadStripe } from '@stripe/stripe-js';
 import type { Contrat } from "./contratStore";
 import type { GuestInfo} from './orderStore';
+import { useHead } from '#imports';
 
 // L'API renvoie les items imbriqués : { id, quantity, contrat: { ... } }
 export interface CartItem {

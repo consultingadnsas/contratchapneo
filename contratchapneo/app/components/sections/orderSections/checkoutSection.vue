@@ -8,6 +8,8 @@
         <paiementModale
             :isOpen="isPaiementModale"
         />
+
+        <XpayeModale/>
         <succesFormVue
             v-if="isSuccess"
             message="Contrat acheté. Le Téléchargement commence maintenant"
@@ -22,6 +24,7 @@ import checkoutFormVue from '../../forms/checkoutForm.vue'
 import succesFormVue from '../../forms/succesForm.vue'
 import itemsListVue from '../../lists/itemsList.vue'
 import paiementModale from '../../modale/paiementModale.vue'
+import XpayeModale from '../../modale/XpayeModale.vue'
 
 export default {
     name:'CheckoutSection',
@@ -29,7 +32,8 @@ export default {
         checkoutFormVue,
         itemsListVue,
         succesFormVue,
-        paiementModale
+        paiementModale,
+        XpayeModale
     },
     setup(){
 
