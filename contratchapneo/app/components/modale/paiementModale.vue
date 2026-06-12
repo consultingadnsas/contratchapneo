@@ -1,7 +1,10 @@
 <template>
+  
   <div v-if="isOpen" class="glass-modal-overlay" @click="closeModal">
+    
     <div class="stripe-modal-content" @click.stop>
-      <button class="close-btn" @click="closeModal" :disabled="cartStore.isLoading" aria-label="Fermer">×</button>
+      
+      <button class="close-btn" @click="closeModal" :disabled="cartStore.isLoading" aria-label="Fermer">x</button>
       
       <div class="stripe-container">
         <h3>Paiement par Carte Bancaire</h3>
@@ -19,7 +22,9 @@
         </button>
       </div>
     </div>
+
   </div>
+  
 </template>
 
 <script lang="ts">
@@ -28,6 +33,7 @@ import { useCartStore } from '../../stores/cartStore';
 import { useOrderStore } from '../../stores/orderStore';
 
 export default {
+  
   name: 'PaiementModale',
 
   props: {
@@ -70,7 +76,13 @@ export default {
       if (!cartStore.stripeReady) return;
 
       try {
-        const paymentIntent = await cartStore.confirmStripePayment();
+        // 💡 Récupération de l'ID de la commande en cours pour fabriquer l'URL de redirection sécurisée
+        const currentOrderId = orderStore.currentOrder?.id;
+        const returnUrl = `${window.location.origin}/ecommerce/orders/${currentOrderId}`;
+
+        // On passe l'URL à l'action de ton cartStore
+        const paymentIntent = await cartStore.confirmStripePayment(returnUrl);
+        
         if (paymentIntent?.status === 'succeeded') {
           emit('payment-success');
         }
@@ -125,8 +137,11 @@ export default {
   border-radius: 1.5rem;
   padding: 2.5rem 2rem;
   position: relative;
-  max-width: 90%;
-  width: 440px;
+  width: 90%;
+  max-width: 500px;
+  height: 90%;
+  max-height: 600px;
+  overflow-y: auto;
   animation: modalFadeIn 0.3s ease-out forwards;
 }
 

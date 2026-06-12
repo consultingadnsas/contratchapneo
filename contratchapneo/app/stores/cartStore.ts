@@ -255,7 +255,7 @@ export const useCartStore = defineStore('cart', () => {
         }
     };
 
-    const confirmStripePayment = async () => {
+    const confirmStripePayment = async (returnUrl: string) => {
         if (!stripeInstance || !stripeElements) {
             const err = new Error('Stripe n\'est pas encore initialisé.');
             error.value = err.message;
@@ -268,6 +268,10 @@ export const useCartStore = defineStore('cart', () => {
         try {
             const { error: stripeError, paymentIntent } = await stripeInstance.confirmPayment({
                 elements: stripeElements,
+                confirmParams: {
+                    // 💡 OBLIGATOIRE : Ajout de la clé attendue par Stripe pour valider la requête
+                    return_url: returnUrl,
+                },
                 redirect: 'if_required',
             });
 
