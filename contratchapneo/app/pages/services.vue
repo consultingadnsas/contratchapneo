@@ -100,10 +100,11 @@ export default {
                 id: 'programmes',
                 title: 'Programmes Juridiques',
                 shortTitle: 'Programmes',
-                description: 'Mise en place de programmes de mise en conformité, d\'audits structurés et de formations sur mesure pour vos équipes.',
+                description: 'Mise en place de programmes d\'un suivi personnalisé pour vos problème juridique.',
+                longDescription:'Le programme juridique est un ensemble de programme personnalisé pour entreprise et particulier. Ils servent généralement à vous accompagner dans des domaines spécifique du droit pour que vous ayez à vous inquiéter de rien. ',
                 icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>',
-                image:'/services/2.jpg',
-                features: ['Accompagnement par des avocats','Mise en conformité'],
+                image:'/services/6.jpg',
+                features: ['Programme spécial Mon conseiller juridique','Programme de suivi trimestriel','Suivi ponctuel de licenciement','Accompagnement permanent','Rédaction ponctuel de document juridique'],
                 price:'250 000 FCFA'
             },
             {

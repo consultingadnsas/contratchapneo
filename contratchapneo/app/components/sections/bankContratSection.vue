@@ -17,7 +17,7 @@
                 
                 <div class="cards-container">
                     <ContratCards 
-                        v-for="(contrat, index) in contratStore.contracts" 
+                        v-for="(contrat, index) in contratStore.contracts.slice(0, 4)" 
                         :key="contrat.id || index"
                         :title="contrat.title"
                         :description="contrat.description"
