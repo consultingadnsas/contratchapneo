@@ -1,15 +1,19 @@
 <template>
     
     <section class="checkout-section">
-        <div class="sides" v-if="!isPaiementModale">
+        <div class="sides" v-if="!isPaiementModale && !isXpayeModale">
             <itemsListVue/>
-            <checkoutFormVue @success="()=>isPaiementModale=true"/>
+            <checkoutFormVue @success="handlePaiementSuccess"/>
         </div>
         <paiementModale
             :isOpen="isPaiementModale"
         />
 
-        <XpayeModale/>
+        <XpayeModale
+            :isOpen="isXpayeModale"
+            :paymentMethod="selectedPaymentMethod"
+            @close="isXpayeModale = false"
+        />
         <succesFormVue
             v-if="isSuccess"
             message="Contrat acheté. Le Téléchargement commence maintenant"
@@ -19,12 +23,15 @@
 </template>
 
 <script lang="ts">
-import { ref } from 'vue'
+import { ref, defineAsyncComponent } from 'vue'
 import checkoutFormVue from '../../forms/checkoutForm.vue'
 import succesFormVue from '../../forms/succesForm.vue'
 import itemsListVue from '../../lists/itemsList.vue'
 import paiementModale from '../../modale/paiementModale.vue'
-import XpayeModale from '../../modale/XpayeModale.vue'
+import { usePaiementStore } from '../../../stores/paiementStore'
+import { useCartStore } from '../../../stores/cartStore'
+import { useOrderStore } from '../../../stores/orderStore'
+const XpayeModale = defineAsyncComponent(() => import('../../modale/XpayeModale.vue') as Promise<any>)
 
 export default {
     name:'CheckoutSection',
@@ -39,11 +46,57 @@ export default {
 
         // state
         const isPaiementModale = ref<boolean>(false);
+        const isXpayeModale = ref<boolean>(false);
+        const selectedPaymentMethod = ref<string>('');
         const isSuccess = ref<boolean>(false);
+
+        const handlePaiementSuccess = (data: any) => {
+            console.log('💳 [CheckoutSection] handlePaiementSuccess appelé avec:', data);
+            const paiementStore = usePaiementStore();
+            const cartStore = useCartStore();
+            const orderStore = useOrderStore();
+
+            console.log('📊 [CheckoutSection] CartStore state:', {
+                totalPrice: cartStore.totalPrice,
+                items: cartStore.cart?.items?.length || 0
+            });
+            console.log('🔑 [CheckoutSection] OrderStore state:', {
+                currentOrderId: orderStore.currentOrder?.id
+            });
+
+            selectedPaymentMethod.value = data.paymentMethod;
+            console.log('✓ Méthode de paiement définie:', data.paymentMethod);
+
+            // Remplir le store paiement avec les données de la commande
+            if (data.paymentMethod !== 'stripe') {
+                console.log('📝 [CheckoutSection] Remplissage du paiementStore...');
+                paiementStore.paiement.amount = cartStore.totalPrice;
+                paiementStore.paiement.channel = data.paymentMethod;
+                paiementStore.paiement.customerEmail = data.email;
+                paiementStore.paiement.customerFirstName = data.fullName.split(' ')[0];
+                paiementStore.paiement.customerLastname = data.fullName.split(' ').slice(1).join(' ');
+                paiementStore.paiement.customerPhoneNumber = data.phone || '';
+                paiementStore.paiement.referenceNumber = orderStore.currentOrder?.id || '';
+                paiementStore.paiement.description = 'Achat de contrats';
+                
+                console.log('✅ [CheckoutSection] PaiementStore rempli:', paiementStore.paiement);
+            }
+
+            if (data.paymentMethod === 'stripe') {
+                console.log('🔵 [CheckoutSection] Ouverture modale Stripe');
+                isPaiementModale.value = true;
+            } else {
+                console.log('🟢 [CheckoutSection] Ouverture modale Xpaye');
+                isXpayeModale.value = true;
+            }
+        };
 
         return{
             isPaiementModale,
-            isSuccess
+            isXpayeModale,
+            selectedPaymentMethod,
+            isSuccess,
+            handlePaiementSuccess,
         }
 
 

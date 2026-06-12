@@ -75,8 +75,11 @@ export default {
     emits: ['success'],   // ✅ corrigé : 'succes' → 'success'
 
     setup(props, { emit }) {
+        console.log('📋 [CheckoutForm] Montage du composant CheckoutForm')
         const cartStore  = useCartStore()
         const orderStore = useOrderStore()
+        console.log('🛒 [CheckoutForm] CartStore:', { totalPrice: cartStore.totalPrice, totalItems: cartStore.totalItems })
+        console.log('🛍️ [CheckoutForm] OrderStore:', { hasOrder: !!orderStore.currentOrder })
 
         // ── État du formulaire ────────────────────────────────────────────
         const checkoutform = reactive({
@@ -88,10 +91,24 @@ export default {
 
         // ── Validation basique ────────────────────────────────────────────
         const validate = () => {
-            if (!checkoutform.full_name.trim())      return 'Le nom complet est requis.'
-            if (!checkoutform.email.trim())           return "L'adresse email est requise."
-            if (!/\S+@\S+\.\S+/.test(checkoutform.email)) return "L'adresse email est invalide."
-            if (!checkoutform.payment_method)         return 'Veuillez choisir un moyen de paiement.'
+            console.log('🔍 [CheckoutForm] Validation du formulaire')
+            if (!checkoutform.full_name.trim()) {
+                console.warn('⚠️ Le nom complet est requis.')
+                return 'Le nom complet est requis.'
+            }
+            if (!checkoutform.email.trim()) {
+                console.warn('⚠️ L\'adresse email est requise.')
+                return "L'adresse email est requise."
+            }
+            if (!/\S+@\S+\.\S+/.test(checkoutform.email)) {
+                console.warn('⚠️ L\'adresse email est invalide:', checkoutform.email)
+                return "L'adresse email est invalide."
+            }
+            if (!checkoutform.payment_method) {
+                console.warn('⚠️ Veuillez choisir un moyen de paiement.')
+                return 'Veuillez choisir un moyen de paiement.'
+            }
+            console.log('✅ Validation réussie')
             return null
         }
 
@@ -106,12 +123,18 @@ export default {
                         email:        checkoutform.email,
                         phone_number: checkoutform.phone_number || null,
                     },
+                    payment_method: checkoutform.payment_method,
                 }
 
                 await orderStore.checkout(payload)
                 await cartStore.fetchCart()
 
-                emit('success')   // ✅ corrigé
+                emit('success', {
+                    paymentMethod: checkoutform.payment_method,
+                    email: checkoutform.email,
+                    fullName: checkoutform.full_name,
+                    phone: checkoutform.phone_number,
+                })
 
                 // Reset
                 Object.assign(checkoutform, {

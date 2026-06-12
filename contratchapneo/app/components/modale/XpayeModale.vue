@@ -1,8 +1,32 @@
 <template>
-    <div class="glass-modal-overlay">
+    <div v-if="isOpen" class="glass-modal-overlay" @click.self="closeModal">
 
         <div class="kkiapay-modal-content">
+            <button class="close-btn" @click="closeModal" aria-label="Fermer">x</button>
             <h3>Formulaire de Paiement</h3>
+            <p v-if="paymentMethod" class="payment-method-label">
+                Mode de paiement : {{ paymentMethodLabel }}
+            </p>
+
+            <!-- Affichage des données de paiement -->
+            <div class="payment-info">
+                <div class="info-group">
+                    <label>Montant :</label>
+                    <p class="info-value">{{ paiementStore.paiement.amount.toLocaleString('fr-FR') }} FCFA</p>
+                </div>
+                <div class="info-group">
+                    <label>Email :</label>
+                    <p class="info-value">{{ paiementStore.paiement.customerEmail }}</p>
+                </div>
+                <div class="info-group">
+                    <label>Nom :</label>
+                    <p class="info-value">{{ paiementStore.paiement.customerFirstName }} {{ paiementStore.paiement.customerLastname }}</p>
+                </div>
+                <div class="info-group" v-if="paiementStore.paiement.customerPhoneNumber">
+                    <label>Téléphone :</label>
+                    <p class="info-value">{{ paiementStore.paiement.customerPhoneNumber }}</p>
+                </div>
+            </div>
 
             <div v-if="errorMessage" class="error-message">
                 {{ errorMessage }}
@@ -14,16 +38,15 @@
                 @click="lancerPaiement"
             >
                 <span v-if="loading">Initialisation...</span>
-                <span v-else>Payer {{ paiementStore.paiement.amount }} FCFA</span>
+                <span v-else>Confirmer et Payer {{ paiementStore.paiement.amount.toLocaleString('fr-FR') }} FCFA</span>
             </button>
         </div>
 
     </div>
 </template>
 
-<script setup lang="ts">
-import { ref, onMounted } from 'vue'
-import { useHead } from '#imports'
+<script lang="ts">
+import { defineComponent, ref, onMounted, computed } from 'vue'
 import { usePaiementStore } from '../../stores/paiementStore'
 
 // Déclaration du type global pour éviter les erreurs TypeScript
@@ -40,90 +63,155 @@ declare global {
         success: boolean
         url: string
         error: string
+        constructor(merchantId: string)
         getUrlPayment(): Promise<void>
     }
 }
 
-const MARCHAND_ID = 'VOTRE_ID_MARCHAND' // 👈 Remplacer par votre ID
+export default defineComponent({
+    name: 'XpayeModale',
+    props: {
+        isOpen: { type: Boolean, default: false },
+        paymentMethod: { type: String, default: '' },
+    },
+    emits: ['close'],
+    setup(props, { emit }) {
+        const MARCHAND_ID = 'PP-F324' // 👈 Remplacer par votre ID
 
-const paiementStore = usePaiementStore()
-const loading = ref(false)
-const errorMessage = ref('')
-const scriptPret = ref(false)
+        const paiementStore = usePaiementStore()
+        const loading = ref(false)
+        const errorMessage = ref('')
+        const scriptPret = ref(false)
 
-// Charge le script PaiementPro dans le <head>
-useHead({
-    script: [
-        {
-            src: 'https://www.paiementpro.net/webservice/onlinepayment/js/paiementpro.v1.0.2.js',
-            onload: () => { scriptPret.value = true },
-        }
-    ]
-})
-
-// Fallback : vérifie si PaiementPro est déjà disponible au montage
-// (cas où le script était déjà en cache)
-onMounted(() => {
-    if (typeof PaiementPro !== 'undefined') {
-        scriptPret.value = true
-    }
-})
-
-// Attend que PaiementPro soit disponible dans le window
-function attendreScript(timeout = 10000): Promise<void> {
-    return new Promise((resolve, reject) => {
-        if (typeof PaiementPro !== 'undefined') return resolve()
-
-        const debut = Date.now()
-        const intervalle = setInterval(() => {
+        onMounted(() => {
+            console.log('🟢 [XpayeModale] Montage du composant');
+            console.log('Props reçues:', { isOpen: props.isOpen, paymentMethod: props.paymentMethod });
+            console.log('PaiementStore:', paiementStore.paiement);
+            
             if (typeof PaiementPro !== 'undefined') {
-                clearInterval(intervalle)
-                resolve()
-            } else if (Date.now() - debut > timeout) {
-                clearInterval(intervalle)
-                reject(new Error('Le script PaiementPro n\'a pas pu se charger.'))
+                console.log('✅ [XpayeModale] Script PaiementPro déjà disponible');
+                scriptPret.value = true
+                return
             }
-        }, 100)
-    })
-}
 
-async function lancerPaiement() {
-    loading.value = true
-    errorMessage.value = ''
+            console.log('📥 [XpayeModale] Chargement du script PaiementPro...');
+            const script = document.createElement('script')
+            script.src = 'https://www.paiementpro.net/webservice/onlinepayment/js/paiementpro.v1.0.2.js'
+            script.async = true
+            script.onload = () => {
+                console.log('✅ [XpayeModale] Script PaiementPro chargé');
+                scriptPret.value = true
+            }
+            script.onerror = () => {
+                console.error('❌ [XpayeModale] Erreur lors du chargement du script PaiementPro');
+                errorMessage.value = 'Impossible de charger le script PaiementPro.'
+            }
+            document.head.appendChild(script)
+        })
 
-    try {
-        // S'assure que le script externe est chargé
-        await attendreScript()
+        function attendreScript(timeout = 10000): Promise<void> {
+            console.log('⏳ [XpayeModale] Attente du script PaiementPro (timeout:', timeout, 'ms)');
+            return new Promise((resolve, reject) => {
+                if (typeof PaiementPro !== 'undefined') {
+                    console.log('✅ [XpayeModale] PaiementPro disponible immédiatement');
+                    return resolve()
+                }
 
-        const { paiement } = paiementStore
-
-        const paiementPro = new PaiementPro(MARCHAND_ID)
-        paiementPro.amount              = paiement.amount
-        paiementPro.channel             = paiement.channel
-        paiementPro.referenceNumber     = paiement.referenceNumber
-        paiementPro.customerEmail       = paiement.customerEmail
-        paiementPro.customerFirstName   = paiement.customerFirstName
-        paiementPro.customerLastname    = paiement.customerLastname
-        paiementPro.customerPhoneNumber = paiement.customerPhoneNumber
-        paiementPro.description         = paiement.description
-
-        await paiementPro.getUrlPayment()
-
-        if (paiementPro.success) {
-            // Redirection vers la passerelle de paiement
-            window.location.href = paiementPro.url
-        } else {
-            errorMessage.value = 'Erreur : ' + paiementPro.error
+                const debut = Date.now()
+                const intervalle = setInterval(() => {
+                    if (typeof PaiementPro !== 'undefined') {
+                        clearInterval(intervalle)
+                        console.log('✅ [XpayeModale] PaiementPro disponible après', Date.now() - debut, 'ms');
+                        resolve()
+                    } else if (Date.now() - debut > timeout) {
+                        clearInterval(intervalle)
+                        console.error('❌ [XpayeModale] Timeout: Le script PaiementPro n\'a pas pu se charger.');
+                        reject(new Error('Le script PaiementPro n\'a pas pu se charger.'))
+                    }
+                }, 100)
+            })
         }
 
-    } catch (err: unknown) {
-        errorMessage.value = err instanceof Error
-            ? err.message
-            : 'Une erreur inattendue est survenue.'
-    } finally {
-        loading.value = false
+        function closeModal() {
+            emit('close')
+        }
+
+        const paymentMethodLabel = computed(() => {
+            switch (props.paymentMethod) {
+                case 'wave': return 'Wave'
+                case 'orange_money': return 'Orange Money'
+                case 'moov_money': return 'Moov Money'
+                case 'stripe': return 'Carte bancaire'
+                default: return 'Inconnu'
+            }
+        })
+
+        async function lancerPaiement() {
+            console.log('💰 [XpayeModale] Début du paiement');
+            console.log('Données du paiement:', paiementStore.paiement);
+            loading.value = true
+            errorMessage.value = ''
+
+            try {
+                // S'assure que le script externe est chargé
+                console.log('⏳ [XpayeModale] Attente du script...');
+                await attendreScript()
+                console.log('✅ [XpayeModale] Script prêt');
+
+                const { paiement } = paiementStore
+                
+                console.log('🔨 [XpayeModale] Création de l\'instance PaiementPro avec ID:', MARCHAND_ID);
+                const paiementPro = new PaiementPro(MARCHAND_ID)
+                
+                console.log('📝 [XpayeModale] Attribution des propriétés...');
+                paiementPro.amount              = paiement.amount
+                paiementPro.channel             = paiement.channel
+                paiementPro.referenceNumber     = paiement.referenceNumber
+                paiementPro.customerEmail       = paiement.customerEmail
+                paiementPro.customerFirstName   = paiement.customerFirstName
+                paiementPro.customerLastname    = paiement.customerLastname
+                paiementPro.customerPhoneNumber = paiement.customerPhoneNumber
+                paiement.description            = 'Achat de contrats'
+
+                console.log('📤 [XpayeModale] Appel à getUrlPayment()...');
+                await paiementPro.getUrlPayment()
+
+                console.log('✓ [XpayeModale] Réponse reçue:', {
+                    success: paiementPro.success,
+                    error: paiementPro.error,
+                    url: paiementPro.url ? 'URL disponible' : 'Pas d\'URL'
+                });
+
+                if (paiementPro.success) {
+                    // Redirection vers la passerelle de paiement
+                    console.log('✅ [XpayeModale] Paiement réussi! Redirection vers:', paiementPro.url);
+                    window.location.href = paiementPro.url
+                } else {
+                    console.error('❌ [XpayeModale] Erreur PaiementPro:', paiementPro.error);
+                    errorMessage.value = 'Erreur : ' + paiementPro.error
+                }
+
+            } catch (err: unknown) {
+                console.error('❌ [XpayeModale] Exception lors du paiement:', err);
+                errorMessage.value = err instanceof Error
+                    ? err.message
+                    : 'Une erreur inattendue est survenue.'
+            } finally {
+                loading.value = false
+                console.log('📊 [XpayeModale] État final - loading:', loading.value);
+            }
+        }
+
+        return {
+            paiementStore,
+            loading,
+            errorMessage,
+            paymentMethodLabel,
+            closeModal,
+            lancerPaiement,
+        }
     }
-}
+})
 </script>
 
 <style scoped>
@@ -151,10 +239,41 @@ async function lancerPaiement() {
     position: relative;
     width: 90%;
     max-width: 500px;
+    max-height: 90vh;
+    overflow-y: auto;
     display: flex;
     flex-direction: column;
     gap: 1.5rem;
     animation: modalFadeIn 0.3s ease-out forwards;
+}
+
+.payment-info {
+    background: #f5f7fa;
+    border-radius: 0.75rem;
+    padding: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.info-group {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+}
+
+.info-group label {
+    font-weight: 600;
+    color: #334155;
+    min-width: 100px;
+}
+
+.info-value {
+    margin: 0;
+    color: #1a1a1a;
+    text-align: right;
+    flex: 1;
 }
 
 .pay-button {
@@ -179,6 +298,23 @@ async function lancerPaiement() {
     cursor: not-allowed;
 }
 
+.close-btn {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: transparent;
+    border: none;
+    color: #334155;
+    font-size: 1.4rem;
+    cursor: pointer;
+}
+
+.payment-method-label {
+    color: #334155;
+    font-size: 0.95rem;
+    margin: 0;
+}
+
 .error-message {
     background: #fef2f2;
     border: 1px solid #fca5a5;
@@ -186,6 +322,14 @@ async function lancerPaiement() {
     border-radius: 0.5rem;
     padding: 0.75rem 1rem;
     font-size: 0.9rem;
+}
+
+h3 {
+    margin: 0 0 0.5rem 0;
+    color: #1a1a1a;
+    font-size: 1.25rem;
+    font-weight: 700;
+    text-align: center;
 }
 
 @keyframes modalFadeIn {
