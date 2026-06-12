@@ -66,7 +66,6 @@
         </Teleport>
 
         <cartBubble @open-cart="openModal()" />
-
     </div>
 </template>
 
@@ -199,14 +198,14 @@ export default {
     justify-items: center;
     gap: 2rem;
     padding: 4rem 1rem 1rem 1rem;
-    background: #FDFCFC;
+    background: linear-gradient(to bottom, #0f172a 0%, #1e293b 40%, #1e293b60 96%, #ffffff 100%);
 }
 
 .contrat-card-section h2 {
     font-size: 2rem;
     font-weight: 500;
     line-height: 1.5;
-    color: var(--primary-color);
+    color: #ffffff;
 }
 
 header{
@@ -216,6 +215,7 @@ header{
 
 header p{
     font-size: 1.2rem;
+    color: #cbd5e1;
 }
 
 /* ==========================================
