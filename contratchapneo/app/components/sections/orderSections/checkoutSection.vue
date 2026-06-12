@@ -1,4 +1,5 @@
 <template>
+    
     <section class="checkout-section">
         <div class="sides" v-if="!isPaiementModale">
             <itemsListVue/>
@@ -12,6 +13,7 @@
             message="Contrat acheté. Le Téléchargement commence maintenant"
         />
     </section>
+    
 </template>
 
 <script lang="ts">

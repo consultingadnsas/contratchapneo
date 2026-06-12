@@ -13,7 +13,8 @@ export default defineNuxtConfig({
         '@vue/devtools-core',
         '@vue/devtools-kit',
         'vue-pdf-embed',
-        '@stripe/stripe-js'
+        '@stripe/stripe-js',
+        'kkiapay'
       ]
     }
   },

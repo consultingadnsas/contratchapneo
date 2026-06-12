@@ -13,6 +13,7 @@
     "@pinia/nuxt": "^0.11.3",
     "@stripe/stripe-js": "^9.8.0",
     "@tailwindcss/vite": "^4.2.4",
+    "kkiapay": "^2.0.38",
     "nuxt": "^4.4.2",
     "pinia": "^3.0.4",
     "pinia-plugin-persistedstate": "^4.7.1",
