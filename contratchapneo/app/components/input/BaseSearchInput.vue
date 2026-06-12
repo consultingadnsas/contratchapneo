@@ -1,8 +1,8 @@
 <template>
     <div 
         class="search-container" 
-        :class="{ 'is-expanded': isExpanded || !isMobile, 'is-mobile': isMobile }"
-        v-click-outside="closeSearch"
+        :class="[`theme-${theme}`, { 'is-expanded': isExpanded || !isMobile, 'is-mobile': isMobile }]"
+          v-click-outside="closeSearch"
     >
         <button 
             v-if="isMobile && !isExpanded" 
@@ -52,7 +52,11 @@ export default {
     placeholder: {
       type: String,
       default: 'Rechercher...'
-    }
+    },
+    theme: {
+            type: String,
+            default: 'light'
+        }
   },
   emits: ['update:modelValue', 'focus', 'blur'],
   
@@ -158,6 +162,55 @@ export default {
   cursor: pointer;
   color: #4b5563;
   transition: background-color 0.2s;
+}
+
+/* --- THÈME SUR FOND SOMBRE (theme="dark") --- */
+.search-container.theme-dark {
+  --bg-color: rgba(255, 255, 255, 0.1); /* Fond légèrement translucide */
+  --text-color: #ffffff; /* Texte blanc */
+  --border-color: rgba(255, 255, 255, 0.3); /* Bordure discrète */
+  --icon-color: #e2e8f0; /* Icône blanche/gris clair */
+  --focus-ring: rgba(255, 255, 255, 0.3);
+  --primary-color: #ffffff;
+}
+
+/* Le fond devient tout blanc uniquement quand on clique dessus (focus) */
+.search-container.theme-dark .search-input:focus {
+  background-color: #ffffff;
+  color: #0f172a; /* Texte noir/sombre */
+}
+/* Quand l'input devient blanc, les icônes (loupe/croix) doivent devenir sombres */
+.search-container.theme-dark .search-input:focus ~ .clear-button,
+.search-container.theme-dark:focus-within .internal-icon {
+  color: #64748b; 
+}
+
+
+/* ==========================================
+   APPLICATION DES VARIABLES
+========================================== */
+.search-input {
+  width: 100%;
+  padding: 0.7rem 2.5rem 0.7rem 2.7rem;
+  font-size: 1rem;
+  
+  /* Utilisation des variables ici */
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  border: 1px solid var(--border-color);
+  
+  border-radius: 1.5rem;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+/* Le placeholder prend la couleur de l'icône */
+.search-input::placeholder {
+  color: var(--icon-color);
+}
+
+.internal-icon, .clear-button {
+  color: var(--icon-color);
 }
 
 .search-trigger:hover {
