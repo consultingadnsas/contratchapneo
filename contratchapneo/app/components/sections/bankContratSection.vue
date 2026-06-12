@@ -17,21 +17,14 @@
                 
                 <div class="cards-container">
                     <ContratCards 
-                        v-for="(card, index) in legalContrat" 
-                        :key="index"
-                        :ref="el => setCardRef(el)"
-                        :data-index="index"
-                        :title="card.title"
-                        :description="card.description"
-                        :subtitle="card.subtitle"
-                        :image="card.visuel"
-                        @buy="openModal" 
-                        @view="openViewModal"
-                        :class="[
-                            'card-item',
-                            { 'card-animate': animatedCards[index] },
-                            animatedCards[index] ? `card-animate-${(index % 6) + 1}` : ''
-                        ]"
+                        v-for="(contrat, index) in contratStore.contracts" 
+                        :key="contrat.id || index"
+                        :title="contrat.title"
+                        :description="contrat.description"
+                        :price="contrat.prix"
+                        :image="contrat.picture || undefined"
+                        @view="openViewModal(contrat.id)"
+                        @buy="()=>{addTocart(contrat.id)}"
                     />
                 </div>
 
@@ -64,7 +57,6 @@ import ContratCards from '../cards/contratCards.vue';
 import ContratCategoryCards from '../cards/contratCategoryCards.vue';
 import CartModale from '../modale/cartModale.vue';
 import ViewModale from '../modale/viewModale.vue';
-
 import { useContratStore } from '../../stores/contratStore';
 import {useCartStore} from '../../stores/cartStore'
 
@@ -81,13 +73,6 @@ export default {
         const router= useRouter();
         const contratStore = useContratStore();
         const cartStore = useCartStore();
-
-        const legalContrat = ref([
-            { title: 'Contrat de travail' , subtitle: '100% Gratuit', description: 'Un contrat de travail est un accord entre un employeur et son employé.', visuel:'/pexels-mikhail-nilov-8729948.jpg'},
-            { title: 'Contrat de Graphiste', subtitle: '15 000 FCFA', description: 'Un contrat de graphiste est un accord entre un graphiste indépendant et un client.', visuel:'/graphiste.jpg'},
-            { title: 'contrat de vidéaste', subtitle: '40 000 FCFA', description: 'Un contrat de vidéaste est un accord entre un vidéaste et un acheteur.', visuel:'/videaste.jpg'},
-            { title: 'contrat de restauration', subtitle: '5 000 FCFA', description: 'Un contrat de de restauration certifie une fourniture d\'aliment entre une entreprise et un restaurant.', visuel:'/resto.jpg'},
-        ]);
 
         // Gestion propre des références du DOM via Vue
         const cardRefs = ref<HTMLElement[]>([]);
@@ -106,15 +91,21 @@ export default {
             console.log('Événement achat émis !!!');
         }
 
+        const addTocart = async (contratId: string) => {
+            try {
+                await cartStore.addToCart(contratId);
+            } catch (error: any) {
+                console.error("Erreur lors de l'ajout au panier", error)
+            }
+        }
+
         const isViewOpen = ref<boolean>(false);
         const openViewModal = () => {
             isViewOpen.value = true;
             console.log('Événement visualisation émis !!!');
         }
 
-        onMounted(() => {
-            animatedCards.value = new Array(legalContrat.value.length).fill(false);
-            
+        onMounted(() => {            
             observer = new IntersectionObserver((entries) => {
                 entries.forEach(entry => {
                     if (entry.isIntersecting) {
@@ -135,6 +126,7 @@ export default {
                     if (cardEl) observer?.observe(cardEl);
                 });
             }, 100);
+            contratStore.getContracts();
         });
 
         onBeforeUnmount(() => {
@@ -144,12 +136,12 @@ export default {
         return { 
             contratStore,
             cartStore,
-            legalContrat,
             animatedCards,
             setCardRef, // Exposé au template
             isOpen,
             openModal,
             isViewOpen,
+            addTocart,
             openViewModal,
             router
         };
