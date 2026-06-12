@@ -90,9 +90,10 @@ export default {
                 title: 'Assistance Juridique et Fiscale',
                 shortTitle: 'Assistance', // Titre court pour l'onglet réduit
                 description: 'Accompagnement rigoureux pour sécuriser vos opérations commerciales, optimiser votre fiscalité et garantir votre conformité légale.',
+                longDescription:'L’accompagnement juridique permanent consiste à devenir le département juridique externalisé de l’entreprise cliente. un service proposé par le cabinet ADN, visant à fournir aux entreprises une assistance juridique continue pour prévenir les litiges, garantir la conformité légale et sécuriser les décisions de gestion. Elle comporte tous les éléments prévus au programme trimestriel ainsi que tous autres besoins d’ordre juridique que peut avoir l’entreprise.',
                 icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>',
-                image:'/services/1.jpg',
-                features: ['Audit complet', 'support 24/7'],
+                image:'/services/4.jpg',
+                features: ['Assistance juridique quotidienne', 'Rédaction et Validation de documents juridiques','Veille Réglementaire et Alerte Juridique','Gestion de risque Juridique','Assistance en cas de Précontentieux et Contentieux'],
                 price: '150 000 FCFA',
             },
             {
@@ -121,9 +122,10 @@ export default {
                 title: 'Dépôt de Marque',
                 shortTitle: 'Marques',
                 description: 'Sécurisation de votre identité visuelle, logos et signes distinctifs auprès des instances compétentes (OAPI).',
+                longDescription:'Nous vous accompagnons dans le processus, en fonction de votre dossier. le dépôt demarque reste une démarche juridique qui consiste à enregistrer officiellement une marque(nom, logo, slogan, etc.) auprès d’un office de propriété intellectuelle O.A.P.I. pour en obtenir l’exclusivité d’utilisation.',
                 icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line></svg>',
-                image:'/services/3.jpg',
-                features:['design logo','marketing'],
+                image:'/services/5.jpg',
+                features:['Protéger votre nom, logo ou slogan contre l’utilisation non autorisée par d’autres.','Obtenir un droit exclusif d’exploitation sur un territoire donné.','Valoriser vos produits ou services, renforcer votre image de marque.','Faciliter des actions juridiques en cas de contrefaçon'],
                 price:'300 000 FCFA'
             },
             {
@@ -142,7 +144,7 @@ export default {
                 title: 'Enregistrement Noms',
                 shortTitle: 'Noms Commerciaux',
                 description: 'Prise en charge de vos démarches administratives pour réserver et protéger juridiquement le nom de votre structure.',
-                icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>',
+                icon: '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m3.75 9v7.5m2.25-6.466a9.016 9.016 0 0 0-3.461-.203c-.536.072-.974.478-1.021 1.017a4.559 4.559 0 0 0-.018.402c0 .464.336.844.775.994l2.95 1.012c.44.15.775.53.775.994 0 .136-.006.27-.018.402-.047.539-.485.945-1.021 1.017a9.077 9.077 0 0 1-3.461-.203M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" /></svg>',
                 image:'/services/2.jpg',
                 features: ['formalisation commerciale'],
                 price: '250 000 FCFA'
@@ -152,9 +154,10 @@ export default {
                 title:'Création d\'entreprise',
                 shortTitle: 'Création',
                 description:'prise en charge pour la création de votre entreprise, on met en place tous les documents nécessaire à celà- et on vous accompagne tout au long du processus juridique',
+                longDescription:'Nous prenons en charge, sur la base des pièces fournies, de rediger entièrement tous les documents nécessaires aux formalités administratives et dont certains aussi font partie des livrables en termes de documents légaux de votre entreprise (statuts; déclaration de souscription et versement; liste de dirigeants etc.)',
                 icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>',
                 image:'/services/1.jpg',
-                features: ['Document formel et juridique', 'Accompagnement premium'],
+                features: ['Diagnostic juridique', 'Création clé en main de société','Création basique de société'],
                 price: '1 250 000 FCFA'
             }
         ]);

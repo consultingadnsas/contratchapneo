@@ -38,7 +38,7 @@ export default defineComponent({
     components: { 
         mainButton, 
         BaseResearchInput, 
-        statCards 
+        statCards,
     },
 
     setup() {

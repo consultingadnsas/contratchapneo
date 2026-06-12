@@ -14,23 +14,23 @@
                         backgroundPosition: 'center'
                     }">
                         <div class="modal-icon-large" v-html="service.icon"></div>
-                        <div class="price-tag glass-effect">
-                            <span class="price-label">Tarif estimatif</span>
-                            <span class="price-amount">{{ service.price }}</span>
-                        </div>
                     </div>
 
                     <div class="modal-info">
-                        <h2>{{ service.title }}</h2>
-                        <p class="long-description muted-text">{{ service.longDescription }}</p>                        
-                        <div class="features-section">
-                            <h4>Ce qui est inclus :</h4>
-                            <ul class="features-list">
-                                <li v-for="(feature, idx) in service.features" :key="idx">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="#34d399" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                                    {{ feature }}
-                                </li>
-                            </ul>
+                        <h2 class="modal-title">{{ service.title }}</h2>
+                        
+                        <div class="scrollable-body">
+                            <p class="long-description muted-text">{{ service.longDescription }}</p>                        
+                            
+                            <div class="features-section">
+                                <h4>Ce qui est inclus :</h4>
+                                <ul class="features-list">
+                                    <li v-for="(feature, idx) in service.features" :key="idx">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="#34d399" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                                        {{ feature }}
+                                    </li>
+                                </ul>
+                            </div>
                         </div>
                         
                         <div class="modal-actions">
@@ -76,6 +76,7 @@ export default {
     box-shadow: 0 25px 50px rgba(0, 0, 0, 0.1);
 }
 
+/* --- MODIFICATIONS PRINCIPALES ICI --- */
 .details-modal {
     width: 100%;
     max-width: 950px;
@@ -83,6 +84,11 @@ export default {
     position: relative;
     overflow: hidden;
     animation: modalSlideIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    
+    /* On force la modale à ne pas dépasser 90% de la hauteur de l'écran */
+    max-height: 90vh; 
+    display: flex;
+    flex-direction: column;
 }
 
 @keyframes modalSlideIn {
@@ -101,7 +107,9 @@ export default {
 .close-btn svg { width: 18px; height: 18px; }
 
 .modal-layout {
-    display: grid; grid-template-columns: 1fr 1.6fr; min-height: 550px;
+    display: grid; grid-template-columns: 1fr 1.6fr; 
+    min-height: 550px;
+    height: 100%; /* S'assure de prendre toute la place dispo */
 }
 
 /* Visuel Gauche */
@@ -109,6 +117,7 @@ export default {
     padding: 4rem; display: flex; flex-direction: column;
     justify-content: space-between; align-items: center;
     color: #ffffff;
+    position: relative; /* Sécurité pour le layout */
 }
 
 .modal-icon-large {
@@ -123,16 +132,40 @@ export default {
     background: rgba(255, 255, 255, 0.1) !important; border: 1px solid rgba(255,255,255,0.2);
 }
 
-.price-label { font-size: 0.8rem; font-weight: 600; text-transform: uppercase; color: rgba(255, 255, 255, 0.8); margin-bottom: 0.3rem; }
-.price-amount { font-size: 1.3rem; font-weight: 800; }
-
 /* Contenu Droite */
 .modal-info {
-    padding: 4rem; background: #ffffff;
+    /* Padding réduit en haut et en bas pour maximiser l'espace du scroll */
+    padding: 3rem 3rem 3rem 4rem; 
+    background: #ffffff;
     display: flex; flex-direction: column; align-items: flex-start;
+    
+    /* Structure pour le scroll interne */
+    height: 100%;
+    overflow: hidden; 
 }
 
-.modal-info h2 { font-size: 2.2rem; font-weight: 800; color: #0f172a; margin: 0.8rem 0; line-height: 1.1; }
+/* Le titre ne doit pas bouger */
+.modal-title { 
+    font-size: 2.2rem; font-weight: 800; color: #0f172a; 
+    margin: 0 0 1.5rem 0; line-height: 1.1; 
+    flex-shrink: 0; 
+}
+
+/* --- LA ZONE MAGIQUE DE DÉFILEMENT --- */
+.scrollable-body {
+    flex-grow: 1; /* Prend l'espace libre au centre */
+    overflow-y: auto; /* Active le scroll vertical */
+    padding-right: 1.5rem; /* Écarte le texte de la scrollbar */
+    margin-bottom: 1.5rem; /* Écarte le texte des boutons */
+    width: 100%;
+}
+
+/* Design Premium pour la Scrollbar sur mesure (Webkit Chrome/Safari) */
+.scrollable-body::-webkit-scrollbar { width: 6px; }
+.scrollable-body::-webkit-scrollbar-track { background: #f8fafc; border-radius: 10px; }
+.scrollable-body::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+.scrollable-body::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
 .long-description { font-size: 1.05rem; line-height: 1.6; color: #64748b; margin-bottom: 2rem; }
 
 /* Liste Features */
@@ -142,8 +175,12 @@ export default {
 .features-list li { display: flex; align-items: flex-start; gap: 0.8rem; font-size: 0.95rem; font-weight: 600; color: #334155; line-height: 1.4;}
 .features-list svg { width: 20px; height: 20px; flex-shrink: 0; margin-top: 2px;}
 
-/* Actions */
-.modal-actions { display: flex; gap: 1rem; width: 100%; margin-top: 2rem; }
+/* Actions en bas */
+.modal-actions { 
+    display: flex; gap: 1rem; width: 100%; 
+    margin-top: auto; 
+    flex-shrink: 0; /* Empêche les boutons d'être écrasés */
+}
 .btn-primary { background-color: #34d399; color: #0f172a; font-weight: 700; border: none; padding: 1rem 2rem; border-radius: 12px; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; transition: transform 0.2s;}
 .btn-primary:hover { transform: translateY(-2px); }
 .btn-primary svg { width: 18px; height: 18px; }
@@ -153,13 +190,39 @@ export default {
 .modal-fade-enter-active, .modal-fade-leave-active { transition: opacity 0.3s; }
 .modal-fade-enter-from, .modal-fade-leave-to { opacity: 0; }
 
+/* =============================================
+   RESPONSIVE MOBILE 
+   ============================================= */
 @media (max-width: 768px) {
-    .modal-layout { grid-template-columns: 1fr; min-height: auto;}
+    .details-modal { 
+        max-height: 95vh; 
+        display: block; /* Annule le flex global */
+        overflow-y: auto; /* Fait scroller toute la fenêtre nativement */
+    }
+    .modal-layout { 
+        grid-template-columns: 1fr; 
+        min-height: auto;
+        display: block;
+    }
     .modal-visual { padding: 3rem 2rem; min-height: 250px; }
-    .modal-info { padding: 2rem; }
-    .modal-info h2 { font-size: 1.8rem; }
+    
+    .modal-info { 
+        padding: 2rem; 
+        height: auto;
+        overflow: visible; /* Annule la contrainte */
+    }
+    
+    /* Sur mobile on désactive la boite de scroll interne (inutile) */
+    .scrollable-body {
+        overflow-y: visible;
+        padding-right: 0;
+        margin-bottom: 0;
+    }
+    
+    .modal-title { font-size: 1.8rem; margin-bottom: 1rem; }
     .features-list { grid-template-columns: 1fr; }
-    .modal-actions { flex-direction: column; }
+    
+    .modal-actions { flex-direction: column; margin-top: 2rem; }
     .details-overlay { padding: 1rem; }
 }
 </style>
