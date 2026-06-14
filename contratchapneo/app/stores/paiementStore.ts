@@ -2,6 +2,24 @@ import {useHead} from '#imports';
 import { ref} from 'vue';
 import { defineStore } from 'pinia';
 
+/*
+{
+  "merchantId": "PP-F324",
+  "amount": 1000,
+  "description": "Abonnement Premium",
+  "channel": "CARD",
+  "countryCurrencyCode": "952",
+  "referenceNumber": "REF-772105",
+  "customerEmail": "test@gmail.com",
+  "customerFirstName": "Ishola",
+  "customerLastname": "Lamine",
+  "customerPhoneNumber": "01234567",
+  "notificationURL": "https://votre-site.com/webhook",
+  "returnURL": "https://votre-site.com/retour",
+  "returnContext": "{\"order_id\":\"123\", \"user\":\"88\"}"
+}
+*/
+
 export interface Paiement {
     amount: number,
     channel: string,
@@ -10,12 +28,15 @@ export interface Paiement {
     customerFirstName: string,
     customerLastname: string,
     customerPhoneNumber: string,
-    description: string
+    description: string,
+    merchantId?: string,
+    notificationURL?: string,
+    returnURL?: string,
+    returnContext?: string,
 }
 
 export const usePaiementStore = defineStore('paiement', ()=>{
 
-    
     const paiement = ref<Paiement>({
         amount: 0,
         channel: '',
@@ -24,11 +45,22 @@ export const usePaiementStore = defineStore('paiement', ()=>{
         customerFirstName: '',
         customerLastname: '',
         customerPhoneNumber: '',
-        description: ''
-
+        description: '',
+        merchantId: 'PP-F324',
+        notificationURL: 'https://votre-site.com/webhook',
+        returnURL: 'https://votre-site.com/retour',
+        returnContext: '{"order_id":"123", "user":"88"}',
     })
+
+    const sandboxMode = ref(true)
+
+    const setSandboxMode = (enabled: boolean) => {
+        sandboxMode.value = enabled
+    }
 
     return {
         paiement,
+        sandboxMode,
+        setSandboxMode,
     }
 })

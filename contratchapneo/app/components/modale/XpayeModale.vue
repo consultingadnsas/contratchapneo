@@ -4,6 +4,9 @@
         <div class="kkiapay-modal-content">
             <button class="close-btn" @click="closeModal" aria-label="Fermer">x</button>
             <h3>Formulaire de Paiement</h3>
+            <p v-if="isSandbox" class="sandbox-badge">
+                Mode sandbox activé — test uniquement
+            </p>
             <p v-if="paymentMethod" class="payment-method-label">
                 Mode de paiement : {{ paymentMethodLabel }}
             </p>
@@ -60,6 +63,9 @@ declare global {
         customerLastname: string
         customerPhoneNumber: string
         description: string
+        notificationURL?: string
+        returnURL?: string
+        returnContext?: string
         success: boolean
         url: string
         error: string
@@ -76,17 +82,34 @@ export default defineComponent({
     },
     emits: ['close'],
     setup(props, { emit }) {
-        const MARCHAND_ID = 'PP-F324' // 👈 Remplacer par votre ID
-
         const paiementStore = usePaiementStore()
         const loading = ref(false)
         const errorMessage = ref('')
         const scriptPret = ref(false)
 
+        const isSandbox = computed(() => paiementStore.sandboxMode)
+
+        function mapPaymentChannel(method: string) {
+            switch (method) {
+                case 'wave':
+                    return 'WAVE'
+                case 'orange_money':
+                    return 'ORANGE_MONEY'
+                case 'moov_money':
+                    return 'MOOV_MONEY'
+                case 'card':
+                case 'stripe':
+                    return 'CARD'
+                default:
+                    return method.toUpperCase()
+            }
+        }
+
         onMounted(() => {
             console.log('🟢 [XpayeModale] Montage du composant');
             console.log('Props reçues:', { isOpen: props.isOpen, paymentMethod: props.paymentMethod });
             console.log('PaiementStore:', paiementStore.paiement);
+            console.log('Sandbox actif:', isSandbox.value);
             
             if (typeof PaiementPro !== 'undefined') {
                 console.log('✅ [XpayeModale] Script PaiementPro déjà disponible');
@@ -153,25 +176,34 @@ export default defineComponent({
             errorMessage.value = ''
 
             try {
-                // S'assure que le script externe est chargé
+                if (isSandbox.value) {
+                    console.log('🧪 [XpayeModale] Mode sandbox activé');
+                }
+
                 console.log('⏳ [XpayeModale] Attente du script...');
                 await attendreScript()
                 console.log('✅ [XpayeModale] Script prêt');
 
-                const { paiement } = paiementStore
-                
-                console.log('🔨 [XpayeModale] Création de l\'instance PaiementPro avec ID:', MARCHAND_ID);
-                const paiementPro = new PaiementPro(MARCHAND_ID)
-                
+                const paiement = paiementStore.paiement
+                const marchandId = paiement.merchantId || 'PP-F324'
+                const channel = mapPaymentChannel(paiement.channel || props.paymentMethod)
+
+                console.log('🔨 [XpayeModale] Création de l\'instance PaiementPro avec ID:', marchandId);
+                const paiementPro = new PaiementPro(marchandId)
+
                 console.log('📝 [XpayeModale] Attribution des propriétés...');
                 paiementPro.amount              = paiement.amount
-                paiementPro.channel             = paiement.channel
-                paiementPro.referenceNumber     = paiement.referenceNumber
-                paiementPro.customerEmail       = paiement.customerEmail
-                paiementPro.customerFirstName   = paiement.customerFirstName
-                paiementPro.customerLastname    = paiement.customerLastname
-                paiementPro.customerPhoneNumber = paiement.customerPhoneNumber
-                paiement.description            = 'Achat de contrats'
+                paiementPro.channel             = channel
+                paiementPro.referenceNumber     = paiement.referenceNumber || `REF-${Date.now()}`
+                paiementPro.customerEmail       = paiement.customerEmail || 'client@example.com'
+                paiementPro.customerFirstName   = paiement.customerFirstName || 'Prénom'
+                paiementPro.customerLastname    = paiement.customerLastname || 'Nom'
+                paiementPro.customerPhoneNumber = paiement.customerPhoneNumber || '00000000'
+                paiementPro.description         = paiement.description || 'Achat de contrats'
+
+                if (paiement.notificationURL) paiementPro.notificationURL = paiement.notificationURL
+                if (paiement.returnURL) paiementPro.returnURL = paiement.returnURL
+                if (paiement.returnContext) paiementPro.returnContext = paiement.returnContext
 
                 console.log('📤 [XpayeModale] Appel à getUrlPayment()...');
                 await paiementPro.getUrlPayment()
@@ -183,9 +215,14 @@ export default defineComponent({
                 });
 
                 if (paiementPro.success) {
-                    // Redirection vers la passerelle de paiement
-                    console.log('✅ [XpayeModale] Paiement réussi! Redirection vers:', paiementPro.url);
-                    window.location.href = paiementPro.url
+                    if (isSandbox.value && !paiementPro.url) {
+                        const sandboxUrl = `${window.location.origin}/sandbox-result?status=success&ref=${encodeURIComponent(paiementPro.referenceNumber)}`
+                        console.log('🧪 [XpayeModale] Sandbox simulée, redirection vers:', sandboxUrl);
+                        window.location.href = sandboxUrl
+                    } else {
+                        console.log('✅ [XpayeModale] Paiement réussi! Redirection vers:', paiementPro.url);
+                        window.location.href = paiementPro.url
+                    }
                 } else {
                     console.error('❌ [XpayeModale] Erreur PaiementPro:', paiementPro.error);
                     errorMessage.value = 'Erreur : ' + paiementPro.error
@@ -193,6 +230,12 @@ export default defineComponent({
 
             } catch (err: unknown) {
                 console.error('❌ [XpayeModale] Exception lors du paiement:', err);
+                if (isSandbox.value && err instanceof Error && err.message.includes('PaiementPro')) {
+                    console.log('🧪 [XpayeModale] Simulation sandbox en cas d\'erreur du script PaiementPro');
+                    const sandboxUrl = `${window.location.origin}/sandbox-result?status=error&ref=${encodeURIComponent(paiementStore.paiement.referenceNumber || 'sandbox')}`
+                    window.location.href = sandboxUrl
+                    return
+                }
                 errorMessage.value = err instanceof Error
                     ? err.message
                     : 'Une erreur inattendue est survenue.'
@@ -206,6 +249,7 @@ export default defineComponent({
             paiementStore,
             loading,
             errorMessage,
+            isSandbox,
             paymentMethodLabel,
             closeModal,
             lancerPaiement,
@@ -254,6 +298,12 @@ export default defineComponent({
     display: flex;
     flex-direction: column;
     gap: 1rem;
+}
+
+.sandbox-badge {
+    color: #1d4ed8;
+    font-weight: 700;
+    margin: 0.25rem 0 0;
 }
 
 .info-group {

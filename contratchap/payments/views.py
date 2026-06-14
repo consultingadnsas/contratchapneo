@@ -1,3 +1,4 @@
+import os
 import logging
 import stripe
 from django.conf import settings
@@ -15,6 +16,7 @@ from .serializers import (
     PaymentSimulateSerializer,
 )
 from ecommerce.models import Order, Cart  # adapte le chemin
+from django.http import FileResponse, Http404
 
 logger = logging.getLogger(__name__)
 stripe.api_key = settings.STRIPE_SECRET_KEY
@@ -240,3 +242,70 @@ class PaymentWebhookView(APIView):
         except Exception as e:
             logger.error(f"Erreur webhook : {str(e)}")
             return Response({'error': 'Erreur interne'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+    def get(self, request):
+        # Avec une requête GET, les données ne sont pas dans request.data
+        # Elles sont dans request.query_params !
+        
+        # On récupère la référence que tu avais générée dans ton payload Vue.js
+        reference_number = request.query_params.get('referenceNumber')
+        
+        # On récupère le code de statut (ex: '0' signifie souvent 'Succès' chez les agrégateurs)
+        response_code = request.query_params.get('responsecode')
+        
+        # On récupère l'ID de transaction du prestataire
+        pay_id = request.query_params.get('payId')
+
+        print(f"🚀 Webhook GET reçu ! Réf: {reference_number}, Statut: {response_code}")
+
+        if response_code == '0':  # Adapte selon la documentation de ton prestataire
+            try:
+                # Retrouver la transaction associée (si tu as créé une PENDING au moment du clic)
+                # ou retrouver directement la commande via le 'returnContext'
+                
+                # Exemple générique de mise à jour si tu as le bon numéro de référence :
+                # order = Order.objects.get(transaction_ref=reference_number)
+                # order.status = Order.Status.PAID
+                # order.save()
+                
+                return Response({'message': 'Paiement Sandbox validé !'}, status=status.HTTP_200_OK)
+
+            except Exception as e:
+                print(f"❌ Erreur lors de la mise à jour de la commande : {e}")
+                return Response({'error': 'Commande introuvable'}, status=status.HTTP_404_NOT_FOUND)
+        else:
+            return Response({'message': 'Le paiement a échoué'}, status=status.HTTP_400_BAD_REQUEST)
+
+class DownloadContractView(APIView):
+    permission_classes = [AllowAny] # Permet aux invités de télécharger s'ils ont l'ID de commande
+
+    def get(self, request, order_id):
+        try:
+            # 1. On récupère la commande
+            order = Order.objects.get(id=order_id)
+            
+            # 2. SÉCURITÉ CRUCIALE : On vérifie si la commande est payée
+            if order.status != Order.Status.PAID:
+                return Response(
+                    {'error': 'Cette commande n\'a pas encore été réglée.'}, 
+                    status=status.HTTP_403_FORBIDDEN
+                )
+            
+            # 3. Récupération du fichier associé au contrat de la commande
+            # (Je suppose ici que ton modèle Order possède une relation vers le contrat ou un fichier)
+            # Exemple générique : order.contract.file.path
+            if not order.contract or not order.contract.file:
+                raise Http404("Fichier de contrat introuvable pour cette commande.")
+                
+            file_path = order.contract.file.path
+            
+            if os.path.exists(file_path):
+                # 4. On renvoie le fichier sous forme de flux téléchargeable
+                response = FileResponse(open(file_path, 'rb'), content_type='application/pdf')
+                response['Content-Disposition'] = f'attachment; filename="Contrat_{order.id}.pdf"'
+                return response
+            else:
+                raise Http404("Le fichier physique n'existe pas sur le serveur.")
+
+        except Order.DoesNotExist:
+            return Response({'error': 'Commande introuvable.'}, status=status.HTTP_404_NOT_FOUND)
