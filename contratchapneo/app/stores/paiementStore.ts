@@ -1,6 +1,7 @@
 import {useHead} from '#imports';
 import { ref} from 'vue';
 import { defineStore } from 'pinia';
+import type {Order} from '../stores/orderStore'
 
 /*
 {
@@ -37,20 +38,10 @@ export interface Paiement {
 
 export const usePaiementStore = defineStore('paiement', ()=>{
 
-    const paiement = ref<Paiement>({
-        amount: 0,
-        channel: '',
-        referenceNumber: '',
-        customerEmail: '',
-        customerFirstName: '',
-        customerLastname: '',
-        customerPhoneNumber: '',
-        description: '',
-        merchantId: 'PP-F324',
-        notificationURL: 'https://kettle-diploma-lifter.ngrok-free.dev/payments/webhook/',
-        returnURL: 'http://localhost:3000/',
-        returnContext: '{"order_id":"123", "user":"88"}',
-    })
+    //
+    const order = ref<Order | null>(null)
+
+    const paiement = ref<Paiement | null>(null)
 
     const sandboxMode = ref(true)
 
@@ -59,6 +50,7 @@ export const usePaiementStore = defineStore('paiement', ()=>{
     }
 
     return {
+        order,
         paiement,
         sandboxMode,
         setSandboxMode,

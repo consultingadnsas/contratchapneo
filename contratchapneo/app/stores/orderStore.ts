@@ -78,9 +78,12 @@ export const useOrderStore = defineStore('order', () => {
             // backend returns { data: Order, message }
             const order = response?.data ?? response ?? null;
             currentOrder.value = order;
+            //Debug my function
+            console.log("La reponse du backend", response?.data)
             return order;
         } catch (err: any) {
             error.value = err.message ?? String(err);
+            console.error("erreur rencontrée", err)
             throw err;
         } finally {
             isLoading.value = false;
