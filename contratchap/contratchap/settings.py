@@ -28,11 +28,11 @@ SECRET_KEY = config('SECRET_KEY')
 DEBUG = True
 
 ALLOWED_HOSTS = [
-    'localhost',
     '.ngrok-free.app', 
     '.ngrok-free.dev', 
     'kettle-diploma-lifter.ngrok-free.dev', 
-    '127.0.0.1'
+    '127.0.0.1',
+    'localhost'
 ]
 
 
