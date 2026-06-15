@@ -1,7 +1,7 @@
 <template>
   <div class="filter-wrapper">
     <div class="mobile-filter">
-      <select v-model="selectedCategoryId" @change="handleMobileFilter">
+      <select :value="selectedCategoryId" @change="handleMobileFilter">
         <option value="">Toutes les catégories</option>
         <option v-for="cat in categoryStore.categories" :key="cat.id" :value="cat.id">
           {{ cat.title }}
@@ -29,45 +29,52 @@
 </template>
 
 <script lang="ts">
-import { ref, onMounted } from 'vue';
+import { computed, onMounted } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 import { useContratStore } from '../../stores/contratStore';
 
 export default {
   name: 'CategoryFilter',
-  emits: ['filter-change'],
-  setup(props, { emit }) {
+  setup() {
+    const route = useRoute();
+    const router = useRouter();
     const categoryStore = useContratStore();
     
-    // On stocke uniquement l'ID de la catégorie sous forme de string
-    const selectedCategoryId = ref<string>('');
+    // 1. DYNAMIQUE : Le filtre actif correspond TOUJOURS à ce qui est écrit dans l'URL
+    const selectedCategoryId = computed(() => {
+      return (route.query.category as string) || '';
+    });
 
-    // Déclenchée par les boutons Desktop
-    const selectCategory = async (categoryId: string) => {
-      selectedCategoryId.value = categoryId;
-      await executeFilter(categoryId);
+    // 2. Déclenchée par les boutons Desktop
+    const selectCategory = (categoryId: string) => {
+      updateUrl(categoryId);
     };
 
-    // Déclenchée par le select Mobile
-    const handleMobileFilter = async () => {
-      await executeFilter(selectedCategoryId.value);
+    // 3. Déclenchée par le select Mobile
+    const handleMobileFilter = (event: Event) => {
+      const target = event.target as HTMLSelectElement;
+      updateUrl(target.value);
     };
 
-    // Logique centrale de filtrage
-    const executeFilter = async (categoryId: string) => {
-      emit('filter-change', categoryId);
-
-      if (!categoryId) {
-          await categoryStore.getContracts(1); // ← reset à page 1
-      } else {
-          await categoryStore.getCategoriesWithContrats(categoryId);
-          // Note : getCategoriesWithContrats ne passe pas par la pagination DRF
-          // Si tu veux la pagination aussi sur le filtre catégorie,
-          // utilise getContracts(1, categoryId) à la place
-      }
+    // 4. Logique centrale : On modifie simplement l'URL ! 
+    // Le composant parent (cardSection.vue) détectera ce changement 
+    // et s'occupera d'appeler l'API Django.
+    const updateUrl = (categoryId: string) => {
+      router.push({
+        path: route.path, // Reste sur la page actuelle
+        query: { 
+          ...route.query, 
+          // Si on clique sur "Tout" (vide), on retire 'category' de l'URL proprement
+          category: categoryId || undefined 
+        }
+      });
     };
 
     onMounted(() => {
-      categoryStore.getCategories();
+      // On charge les catégories seulement si elles ne sont pas déjà en mémoire
+      if (categoryStore.categories.length === 0) {
+        categoryStore.getCategories();
+      }
     });
 
     return {

@@ -27,7 +27,13 @@ SECRET_KEY = config('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['.ngrok-free.app', '.ngrok-free.dev']
+ALLOWED_HOSTS = [
+    'localhost',
+    '.ngrok-free.app', 
+    '.ngrok-free.dev', 
+    'kettle-diploma-lifter.ngrok-free.dev', 
+    '127.0.0.1'
+]
 
 
 # Application definition
@@ -157,3 +163,13 @@ CORS_ALLOW_ALL_ORIGINS = True
 
 # PAIEMENT SETTINGS
 STRIPE_SECRET_KEY = config('STRIPE_SECRET_KEY')
+
+# ── xpaye ─────────────────────────────────────────────────
+XPAYE_MERCHANT_ID      = config('XPAYE_MERCHANT_ID')                                    # ton merchantId sandbox
+XPAYE_API_URL          = config('XPAYE_API_URL')     # URL sandbox xpaye
+XPAYE_NOTIFICATION_URL = config('XPAYE_NOTIFICATION_URL')     # ngrok en dev
+XPAYE_RETURN_URL       = config('XPAYE_RETURN_URL')    # ton frontend
+
+# ── Email & Frontend ───────────────────────────────────────
+FRONTEND_URL       = 'http://localhost:3000'
+DEFAULT_FROM_EMAIL = 'no-reply@tonsite.com'

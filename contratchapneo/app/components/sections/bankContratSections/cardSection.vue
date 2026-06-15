@@ -86,7 +86,7 @@ import mainButton from '../../buttons/mainButton.vue'
 import { ref, onMounted, watch } from 'vue'
 import {useContratStore} from '../../../stores/contratStore'
 import {useCartStore} from '../../../stores/cartStore'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import type { Contrat } from '../../../stores/contratStore'
 
 export default {
@@ -108,12 +108,13 @@ export default {
     setup() {
 
         const router = useRouter();
+        const route = useRoute();
 
         const contratStore = useContratStore();
 
         const cartStore = useCartStore();
 
-        const activeCategoryId = ref('');
+        const activeCategoryId = ref((route.query.category as string) || '');
 
         const handlePageChange = (page: number) => {
             contratStore.getContracts(page, activeCategoryId.value);
@@ -150,8 +151,16 @@ export default {
 
         onMounted(()=>{
             // On charge la première page de contrats
-            contratStore.getContracts(1);
+            contratStore.getContracts(1, activeCategoryId.value);
         })
+        watch(
+            () => route.query.category,
+            (newCategoryId) => {
+                activeCategoryId.value = (newCategoryId as string) || '';
+                // On relance la recherche depuis la page 1 avec le nouveau filtre
+                contratStore.getContracts(1, activeCategoryId.value);
+            }
+        );
 
         watch(searchQuery, (newQuery) => {
             
@@ -161,7 +170,7 @@ export default {
             debounceTimeout = setTimeout(()=> {
                 // On va dans le store pour réccupérer le contrat concerné
                 // paramètres: page=1, categorie, mot-clé
-                contratStore.fetchContracts(1, null, newQuery),
+                contratStore.fetchContracts(1, activeCategoryId.value, newQuery),
                 // Debug
                 console.log("Recherche lancée pour :", newQuery)
             }, 500)

@@ -22,7 +22,9 @@
                     <transition name="dropdown-fade">
                         <ul v-if="isDropdownOpen" class="dropdown-menu">
                             <li v-for="category in contratStore.categories" :key="category.id">
-                                <NuxtLink :to="`/contractbank/${category.id}`">{{ category.title }}</NuxtLink>
+                                <NuxtLink :to="{ path: '/contractbank', query: { category: category.id } }">
+                                    {{ category.title }}
+                                </NuxtLink>
                             </li>
                             <li v-if="contratStore.isLoading">
                                 <span class="muted-text pl-3 text-sm">Chargement...</span>
@@ -116,7 +118,10 @@
                         <transition name="accordion">
                             <ul v-if="isMobileDropdownOpen" class="mobile-accordion__list">
                                 <li v-for="category in contratStore.categories" :key="category.id">
-                                    <NuxtLink :to="`/contractbank/${category.id}`" @click="toggleMenu">
+                                    <NuxtLink 
+                                        :to="{ path: '/contractbank', query: { category: category.id } }" 
+                                        @click="toggleMenu"
+                                    >
                                         {{ category.title }}
                                     </NuxtLink>
                                 </li>
