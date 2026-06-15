@@ -1,37 +1,102 @@
 <template>
+    
     <section class="checkout-section">
-        <h2>Finalisez votre commande</h2>
-        <div class="sides" v-if="!isSucces">
+        <div class="sides" v-if="!isPaiementModale && !isXpayeModale">
             <itemsListVue/>
-            <checkoutFormVue @succes="()=>isSucces=true"/>
+            <checkoutFormVue @success="handlePaiementSuccess"/>
         </div>
+        <paiementModale
+            :isOpen="isPaiementModale"
+        />
+
+        <XpayeModale
+            :isOpen="isXpayeModale"
+            :paymentMethod="selectedPaymentMethod"
+            @close="isXpayeModale = false"
+        />
         <succesFormVue
+            v-if="isSuccess"
             message="Contrat acheté. Le Téléchargement commence maintenant"
-            v-else
         />
     </section>
+    
 </template>
 
 <script lang="ts">
-import { ref } from 'vue'
+import { ref, defineAsyncComponent } from 'vue'
 import checkoutFormVue from '../../forms/checkoutForm.vue'
 import succesFormVue from '../../forms/succesForm.vue'
 import itemsListVue from '../../lists/itemsList.vue'
+import paiementModale from '../../modale/paiementModale.vue'
+import { usePaiementStore } from '../../../stores/paiementStore'
+import { useCartStore } from '../../../stores/cartStore'
+import { useOrderStore } from '../../../stores/orderStore'
+const XpayeModale = defineAsyncComponent(() => import('../../modale/XpayeModale.vue') as Promise<any>)
 
 export default {
     name:'CheckoutSection',
     components:{
         checkoutFormVue,
         itemsListVue,
-        succesFormVue
+        succesFormVue,
+        paiementModale,
+        XpayeModale
     },
     setup(){
 
         // state
-        const isSucces = ref<boolean>(false)
+        const isPaiementModale = ref<boolean>(false);
+        const isXpayeModale = ref<boolean>(false);
+        const selectedPaymentMethod = ref<string>('');
+        const isSuccess = ref<boolean>(false);
+
+        const handlePaiementSuccess = (data: any) => {
+            console.log('💳 [CheckoutSection] handlePaiementSuccess appelé avec:', data);
+            const paiementStore = usePaiementStore();
+            const cartStore = useCartStore();
+            const orderStore = useOrderStore();
+
+            console.log('📊 [CheckoutSection] CartStore state:', {
+                totalPrice: cartStore.totalPrice,
+                items: cartStore.cart?.items?.length || 0
+            });
+            console.log('🔑 [CheckoutSection] OrderStore state:', {
+                currentOrderId: orderStore.currentOrder?.id
+            });
+
+            selectedPaymentMethod.value = data.paymentMethod;
+            console.log('✓ Méthode de paiement définie:', data.paymentMethod);
+
+            // Remplir le store paiement avec les données de la commande
+            if (data.paymentMethod !== 'stripe') {
+                console.log('📝 [CheckoutSection] Remplissage du paiementStore...');
+                paiementStore.paiement.amount = cartStore.totalPrice;
+                paiementStore.paiement.channel = data.paymentMethod;
+                paiementStore.paiement.customerEmail = data.email;
+                paiementStore.paiement.customerFirstName = data.fullName.split(' ')[0];
+                paiementStore.paiement.customerLastname = data.fullName.split(' ').slice(1).join(' ');
+                paiementStore.paiement.customerPhoneNumber = data.phone || '';
+                paiementStore.paiement.referenceNumber = orderStore.currentOrder?.id || '';
+                paiementStore.paiement.description = 'Achat de contrats';
+                
+                console.log('✅ [CheckoutSection] PaiementStore rempli:', paiementStore.paiement);
+            }
+
+            if (data.paymentMethod === 'stripe') {
+                console.log('🔵 [CheckoutSection] Ouverture modale Stripe');
+                isPaiementModale.value = true;
+            } else {
+                console.log('🟢 [CheckoutSection] Ouverture modale Xpaye');
+                isXpayeModale.value = true;
+            }
+        };
 
         return{
-            isSucces
+            isPaiementModale,
+            isXpayeModale,
+            selectedPaymentMethod,
+            isSuccess,
+            handlePaiementSuccess,
         }
 
 
@@ -48,7 +113,13 @@ export default {
     justify-content: center;
     align-items: center;
     gap: 2rem;
-    padding: 7rem 1rem 1rem 1rem;
+    padding: 0.5rem;
+}
+
+.checkout-section h2{
+    font-size: 1.8rem;
+    font-weight: 600;
+    color: var(--primary-color);
 }
 
 .sides{
@@ -61,8 +132,9 @@ export default {
 @media(min-width:1024px){
 
     .sides{
-        display: flex;
-        flex-direction: row;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 2rem;
         justify-content: space-around;
         align-items: center;
     }

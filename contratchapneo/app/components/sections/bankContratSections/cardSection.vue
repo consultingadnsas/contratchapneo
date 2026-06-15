@@ -1,15 +1,21 @@
 <template>
     <div class="contrat-card-section">
         
-        <header>
+        <header class="w-full flex flex-col justify-center items-center gap-4">
             <h2>Découvrez tous nos contrats</h2>
             <p>Nos contrats sont conformes aux lois en vigueur dans l'espace OHADA.</p>
+            <mainButton label="contrat sur mesure"/>
         </header>
 
         
         <div class="toolbar">
             <Basefilter class="toolbar__filter" />
-            <BaseSearchInput class="toolbar__search" placeholder="Trouver un contrat..."/>
+            <BaseSearchInput 
+                class="toolbar__search" 
+                placeholder="Trouver un contrat..."
+                v-model="searchQuery"
+                theme="dark"
+            />
         </div>
 
         <contractCardSkeleton v-if="contratStore.isLoading" />
@@ -23,7 +29,7 @@
 
         <template v-else>
             
-            <div class="cards-container">
+         <div class="cards-container">
                 <contratCards 
                     v-for="(contrat, index) in contratStore.contracts" 
                     :key="contrat.id || index"
@@ -32,6 +38,7 @@
                     :price="contrat.prix"
                     :image="contrat.picture || undefined"
                     @view="openViewModal(contrat.id)"
+                    @buy="()=>{addTocart(contrat.id)}"
                 />
             </div>
             
@@ -59,6 +66,7 @@
 
         </Teleport>
 
+        <cartBubble @open-cart="openModal()" />
     </div>
 </template>
 
@@ -71,12 +79,18 @@ import Paginator from '../../tools/Paginator.vue'
 import BaseSearchInput from '../../input/BaseSearchInput.vue'
 import cartModale from '../../modale/cartModale.vue'
 import viewModale from '../../modale/viewModale.vue'
+import cartBubble from '../../modale/cartBubble.vue'
+import notifications from '../../tools/notifications.vue'
+import mainButton from '../../buttons/mainButton.vue'
 
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import {useContratStore} from '../../../stores/contratStore'
-import { useRouter } from 'vue-router'
+import {useCartStore} from '../../../stores/cartStore'
+import { useRouter, useRoute } from 'vue-router'
+import type { Contrat } from '../../../stores/contratStore'
 
 export default {
+    
     components: {
         contratCards,
         Basefilter,
@@ -85,25 +99,45 @@ export default {
         contractCardSkeleton,
         emptyState,
         cartModale,
-        viewModale
+        viewModale,
+        cartBubble,
+        notifications,
+        mainButton
     },
+    
     setup() {
 
         const router = useRouter();
+        const route = useRoute();
 
         const contratStore = useContratStore();
 
-        const activeCategoryId = ref('');
+        const cartStore = useCartStore();
+
+        const activeCategoryId = ref((route.query.category as string) || '');
 
         const handlePageChange = (page: number) => {
             contratStore.getContracts(page, activeCategoryId.value);
         };
 
+        // Make a query 
+        const searchQuery = ref<string>('');
+
+        let debounceTimeout: NodeJS.Timeout;
+
         // About cart view
         const isOpen = ref<boolean>(false);
         
-        const openModal = () => {
+        const openModal = ()=> {
             isOpen.value = true;
+        }
+
+        const addTocart = async (contratId: string) => {
+            try {
+                await cartStore.addToCart(contratId);
+            } catch (error: any) {
+                console.error("Erreur lors de l'ajout au panier", error)
+            }
         }
 
         // About modalView
@@ -116,20 +150,47 @@ export default {
         }
 
         onMounted(()=>{
-            contratStore.getContracts(1);
+            // On charge la première page de contrats
+            contratStore.getContracts(1, activeCategoryId.value);
+        })
+        watch(
+            () => route.query.category,
+            (newCategoryId) => {
+                activeCategoryId.value = (newCategoryId as string) || '';
+                // On relance la recherche depuis la page 1 avec le nouveau filtre
+                contratStore.getContracts(1, activeCategoryId.value);
+            }
+        );
+
+        watch(searchQuery, (newQuery) => {
+            
+            clearTimeout(debounceTimeout);
+
+            // On attends 600ms d'inactivité avant de lancer la requête
+            debounceTimeout = setTimeout(()=> {
+                // On va dans le store pour réccupérer le contrat concerné
+                // paramètres: page=1, categorie, mot-clé
+                contratStore.fetchContracts(1, activeCategoryId.value, newQuery),
+                // Debug
+                console.log("Recherche lancée pour :", newQuery)
+            }, 500)
         })
 
         return {
             router,
             activeCategoryId,
             handlePageChange,
+            searchQuery,
+            debounceTimeout,
             contratStore,
+            cartStore,
 
             // modale
             isOpen,
             openModal,
             isViewOpen,
-            openViewModal
+            openViewModal,
+            addTocart
         }
     }
 }
@@ -147,14 +208,14 @@ export default {
     justify-items: center;
     gap: 2rem;
     padding: 4rem 1rem 1rem 1rem;
-    background: #FDFCFC;
+    background: linear-gradient(to bottom, #0f172a 0%, #1e293b 40%, #1e293b60 96%, #ffffff 100%);
 }
 
 .contrat-card-section h2 {
     font-size: 2rem;
     font-weight: 500;
     line-height: 1.5;
-    color: var(--primary-color);
+    color: #ffffff;
 }
 
 header{
@@ -164,6 +225,7 @@ header{
 
 header p{
     font-size: 1.2rem;
+    color: #cbd5e1;
 }
 
 /* ==========================================
@@ -202,9 +264,6 @@ header p{
    TABLETTE (>= 768px) : recherche toujours visible
 ========================================== */
 @media (min-width: 768px) {
-    .toolbar__filter {
-        
-    }
 
     .toolbar__search {
         max-width: 360px;

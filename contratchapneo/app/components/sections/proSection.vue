@@ -26,7 +26,7 @@
                 </div>
             </div>
 
-            <mainButton label="consulter un pro" />
+            <mainButton label="consulter un pro" @click="router.push('/pro')" />
         </div>
     </section>
 </template>
@@ -36,11 +36,13 @@ import { ref, onMounted, onBeforeUnmount } from 'vue';
 import mainButton from '../buttons/mainButton.vue';
 import prodCards from '../cards/proCards.vue';
 import proCardSecond from '../cards/proCardSecond.vue';
+import { useRouter } from 'vue-router';
 
 export default {
     name: 'OrdinarySection',
     components: { mainButton, prodCards, proCardSecond },
     setup() {
+        const router = useRouter();
         const legalPro = ref([
             { title: 'Avocat', visuel: '/avocat.jpg' },
             { title: 'Commissaire de justice', visuel: '/commissaire.jpg' },
@@ -93,7 +95,8 @@ export default {
         return { 
             legalPro,
             animatedCards,
-            setCardRef
+            setCardRef,
+            router
         };
     }
 }

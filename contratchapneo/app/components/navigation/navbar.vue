@@ -1,13 +1,10 @@
 <template>
     <header :class="['main-header', `theme-${theme}`, { 'is-scrolled': isScrolled }]">
         <nav class="nav-container">
-
-            <!-- Logo -->
-            <div class="pic__container">
+            <NuxtLink to="/" class="pic__container" @click="closeMenu">
                 <img src="/CONTRATCHAP.png" alt="ContratchapNeo">
-            </div>
+            </NuxtLink>
 
-            <!-- Liens desktop (cachés sur mobile) -->
             <ul class="nav-links-desktop">
                 <li><NuxtLink to="/">Accueil</NuxtLink></li>
 
@@ -21,20 +18,21 @@
                         <svg :class="['chevron', { 'is-open': isDropdownOpen }]" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                             <polyline points="6 9 12 15 18 9"/>
                         </svg>
-
                     </NuxtLink>
                     <transition name="dropdown-fade">
                         <ul v-if="isDropdownOpen" class="dropdown-menu">
-                            <li><NuxtLink to="/creation-cession">Création & Cession</NuxtLink></li>
-                            <li><NuxtLink to="/partenariat-investissement">Partenariat & Investissement</NuxtLink></li>
-                            <li><NuxtLink to="/prestation-service-vente">Prestation de service & vente</NuxtLink></li>
-                            <li><NuxtLink to="/technologie-digital">Technologie & Digital</NuxtLink></li>
+                            <li v-for="category in contratStore.categories" :key="category.id">
+                                <NuxtLink :to="{ path: '/contractbank', query: { category: category.id } }">
+                                    {{ category.title }}
+                                </NuxtLink>
+                            </li>
+                            <li v-if="contratStore.isLoading">
+                                <span class="muted-text pl-3 text-sm">Chargement...</span>
+                            </li>
                         </ul>
                     </transition>
                 </li>
 
-                <li><NuxtLink to="/conseil-juridique">Conseils juridiques</NuxtLink></li>
-                <!-- Dropdown Nos professionnels -->
                 <li 
                     class="dropdown-item"
                     @mouseenter="isProDropdownOpen = true"
@@ -48,25 +46,48 @@
                     </NuxtLink>
 
                     <transition name="dropdown-fade">
-                        <!-- J'ai ajouté la classe 'simple-menu' pour ajuster la largeur en CSS plus bas -->
                         <ul v-if="isProDropdownOpen" class="dropdown-menu simple-menu">
-                            <li><NuxtLink to="/commissaire-justice">Commissaire de justice</NuxtLink></li>
+                            <li><NuxtLink to="/commissaire-justice">Commissaire de justice (Huissier)</NuxtLink></li>
                             <li><NuxtLink to="/avocat">Avocat</NuxtLink></li>
                             <li><NuxtLink to="/notaire">Notaire</NuxtLink></li>
                             <li><NuxtLink to="/comptable">Comptable</NuxtLink></li>
+                            <li><NuxtLink to="/conseil-juridique">Conseil juridique</NuxtLink></li>
                         </ul>
                     </transition>
                 </li>
-                <li><NuxtLink to="/outil-de-calcul">Outil de calcul</NuxtLink></li>
+                <li><NuxtLink to="/lawCalcul">Calcul de droit</NuxtLink></li>
+
+                <li 
+                    class="dropdown-item"
+                    @mouseenter="isServicesDropdownOpen = true"
+                    @mouseleave="isServicesDropdownOpen = false"
+                >
+                    <NuxtLink to="/services" class="dropdown-trigger">
+                        Services juridiques
+                        <svg :class="['chevron', { 'is-open': isServicesDropdownOpen }]" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="6 9 12 15 18 9"/>
+                        </svg>
+                    </NuxtLink>
+                    <transition name="dropdown-fade">
+                        <ul v-if="isServicesDropdownOpen" class="dropdown-menu">
+                            <li><NuxtLink to="/services#assistance">Assistance Juridique et Fiscale</NuxtLink></li>
+                            <li><NuxtLink to="/services#programmes">Programmes Juridiques</NuxtLink></li>
+                            <li><NuxtLink to="/services#brevets">Brevet d'Invention</NuxtLink></li>
+                            <li><NuxtLink to="/services#marques">Dépôt de Marque</NuxtLink></li>
+                            <li><NuxtLink to="/services#tech">Legaltech</NuxtLink></li>
+                            <li><NuxtLink to="/services#noms">Enregistrement Noms Commerciaux</NuxtLink></li>
+                            <li><NuxtLink to="/services#créa">Création d'entreprise</NuxtLink></li>
+                        </ul>
+                    </transition>
+                </li>
+
                 <li><NuxtLink to="/about"> À propos</NuxtLink></li>
             </ul>
 
-            <!-- CTA desktop -->
-           <div class="cta-container desktop-only">
+            <div class="cta-container desktop-only">
                 <a href="#" class="cta-desktop">Connexion</a>
             </div>
 
-            <!-- Hamburger -->
             <Hamburger
                 :class="['mobile-only', { 'is-active': isMenuOpen }]"
                 :isOpen="isMenuOpen"
@@ -74,58 +95,97 @@
             />
         </nav>
 
-        <!-- Menu mobile -->
         <transition name="slide-down">
             <div v-if="isMenuOpen" class="nav-mobile-menu">
                 <ul class="nav-links-mobile">
                     <li><NuxtLink to="/" @click="toggleMenu">Accueil</NuxtLink></li>
 
-                    <!-- Accordion Banque de contrats sur mobile -->
                     <li class="mobile-accordion">
-                        <button 
-                            class="mobile-accordion__trigger"
-                            @click="isMobileDropdownOpen = !isMobileDropdownOpen"
-                        >
-                            Banque de contrats
-                            <svg :class="['chevron', { 'is-open': isMobileDropdownOpen }]" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                                <polyline points="6 9 12 15 18 9"/>
-                            </svg>
-                        </button>
+                        <div class="mobile-accordion__trigger-wrapper">
+                            <NuxtLink to="/contractbank" class="mobile-accordion__main-link" @click="toggleMenu">
+                                Banque de contrats
+                            </NuxtLink>
+                            <button 
+                                class="mobile-accordion__icon-btn"
+                                @click="isMobileDropdownOpen = !isMobileDropdownOpen"
+                            >
+                                <svg :class="['chevron', { 'is-open': isMobileDropdownOpen }]" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                    <polyline points="6 9 12 15 18 9"/>
+                                </svg>
+                            </button>
+                        </div>
 
                         <transition name="accordion">
                             <ul v-if="isMobileDropdownOpen" class="mobile-accordion__list">
-                                <li><NuxtLink to="/creation-cession" @click="toggleMenu">Création & Cession</NuxtLink></li>
-                                <li><NuxtLink to="/partenariat-investissement" @click="toggleMenu">Partenariat & Investissement</NuxtLink></li>
-                                <li><NuxtLink to="/prestation-service-vente" @click="toggleMenu">Prestation de service & vente</NuxtLink></li>
-                                <li><NuxtLink to="/technologie-digital" @click="toggleMenu">Technologie & Digital</NuxtLink></li>
-                                <li><NuxtLink to="/evenementiel-restauration-logistique" @click="toggleMenu">Evènementiel, Restauration & Logistique</NuxtLink></li>
+                                <li v-for="category in contratStore.categories" :key="category.id">
+                                    <NuxtLink 
+                                        :to="{ path: '/contractbank', query: { category: category.id } }" 
+                                        @click="toggleMenu"
+                                    >
+                                        {{ category.title }}
+                                    </NuxtLink>
+                                </li>
+                                <li v-if="contratStore.isLoading" class="pl-2 opacity-50 text-sm">Chargement...</li>
                             </ul>
                         </transition>
                     </li>
 
-                    <li><NuxtLink to="/pro" @click="toggleMenu">Conseils juridiques</NuxtLink></li>
-                    <!-- Accordion Nos professionnels sur mobile -->
                     <li class="mobile-accordion">
-                        <button 
-                            class="mobile-accordion__trigger"
-                            @click="isMobileProDropdownOpen = !isMobileProDropdownOpen"
-                        >
-                            Nos professionnels
-                            <svg :class="['chevron', { 'is-open': isMobileProDropdownOpen }]" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                                <polyline points="6 9 12 15 18 9"/>
-                            </svg>
-                        </button>
+                        <div class="mobile-accordion__trigger-wrapper">
+                            <NuxtLink to="/pro" class="mobile-accordion__main-link" @click="toggleMenu">
+                                Nos professionnels
+                            </NuxtLink>
+                            <button 
+                                class="mobile-accordion__icon-btn"
+                                @click="isMobileProDropdownOpen = !isMobileProDropdownOpen"
+                            >
+                                <svg :class="['chevron', { 'is-open': isMobileProDropdownOpen }]" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                    <polyline points="6 9 12 15 18 9"/>
+                                </svg>
+                            </button>
+                        </div>
 
                         <transition name="accordion">
                             <ul v-if="isMobileProDropdownOpen" class="mobile-accordion__list">
-                                <li><NuxtLink to="/commissaire-de-justice" @click="toggleMenu">Commissaire de justice</NuxtLink></li>
+                                <li><NuxtLink to="/commissaire-justice" @click="toggleMenu">Commissaire de justice (Huissier)</NuxtLink></li>
                                 <li><NuxtLink to="/avocat" @click="toggleMenu">Avocat</NuxtLink></li>
                                 <li><NuxtLink to="/notaire" @click="toggleMenu">Notaire</NuxtLink></li>
                                 <li><NuxtLink to="/comptable" @click="toggleMenu">Comptable</NuxtLink></li>
+                                <li><NuxtLink to="/conseil-juridique" @click="toggleMenu">Conseil juridique</NuxtLink></li>
                             </ul>
                         </transition>
                     </li>
-                    <li><NuxtLink to="/outil-de-calcul" @click="toggleMenu">Outil de calcul</NuxtLink></li>
+
+                    <li><NuxtLink to="/lawCalcul" @click="toggleMenu">Calcul de droit</NuxtLink></li>
+
+                    <li class="mobile-accordion">
+                        <div class="mobile-accordion__trigger-wrapper">
+                            <NuxtLink to="/services" class="mobile-accordion__main-link" @click="toggleMenu">
+                                Services juridiques
+                            </NuxtLink>
+                            <button 
+                                class="mobile-accordion__icon-btn"
+                                @click="isMobileServicesDropdownOpen = !isMobileServicesDropdownOpen"
+                            >
+                                <svg :class="['chevron', { 'is-open': isMobileServicesDropdownOpen }]" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                    <polyline points="6 9 12 15 18 9"/>
+                                </svg>
+                            </button>
+                        </div>
+
+                        <transition name="accordion">
+                            <ul v-if="isMobileServicesDropdownOpen" class="mobile-accordion__list">
+                                <li><NuxtLink to="/services#assistance" @click="toggleMenu">Assistance Juridique et Fiscale</NuxtLink></li>
+                                <li><NuxtLink to="/services#programmes" @click="toggleMenu">Programmes Juridiques</NuxtLink></li>
+                                <li><NuxtLink to="/services#brevets" @click="toggleMenu">Brevet d'Invention</NuxtLink></li>
+                                <li><NuxtLink to="/services#marques" @click="toggleMenu">Dépôt de Marque</NuxtLink></li>
+                                <li><NuxtLink to="/services#tech" @click="toggleMenu">Legaltech</NuxtLink></li>
+                                <li><NuxtLink to="/services#noms" @click="toggleMenu">Enregistrement Noms Commerciaux</NuxtLink></li>
+                                <li><NuxtLink to="/services#créa" @click="toggleMenu">Création d'entreprise</NuxtLink></li>
+                            </ul>
+                        </transition>
+                    </li>
+
                     <li><NuxtLink to="/about" @click="toggleMenu"> À propos</NuxtLink></li>
                 </ul>
                 <a href="#" class="cta-mobile" @click="toggleMenu">Connexion</a>
@@ -137,6 +197,7 @@
 <script lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue';
 import Hamburger from '../buttons/hamburger.vue';
+import { useContratStore } from '../../stores/contratStore'; 
 
 export default {
     name: 'MainHeader',
@@ -149,36 +210,71 @@ export default {
     },
 
     setup(props) {
+        // Initialisation du store Pinia
+        const contratStore = useContratStore();
+
         const isMenuOpen = ref<boolean>(false);
         const isScrolled = ref<boolean>(false);
+        
+        // États des Dropdowns Desktop
         const isDropdownOpen = ref<boolean>(false);
-        const isMobileDropdownOpen = ref<boolean>(false);
+        const isServicesDropdownOpen = ref<boolean>(false);
         const isProDropdownOpen = ref<boolean>(false);
+        
+        // États des Dropdowns Mobile
+        const isMobileDropdownOpen = ref<boolean>(false);
+        const isMobileServicesDropdownOpen = ref<boolean>(false);
         const isMobileProDropdownOpen = ref<boolean>(false);
 
         const toggleMenu = () => {
             isMenuOpen.value = !isMenuOpen.value;
+            // Réinitialise les accordéons quand on ferme le menu principal
             if (!isMenuOpen.value) {
                 isMobileDropdownOpen.value = false;
-                isProDropdownOpen.value = false;
+                isMobileServicesDropdownOpen.value = false;
                 isMobileProDropdownOpen.value = false;
             }
+        };
+        
+        // Force la fermeture de tous les menus (utile quand on clique sur le logo)
+        const closeMenu = () => {
+            isMenuOpen.value = false;
+            isMobileDropdownOpen.value = false;
+            isMobileServicesDropdownOpen.value = false;
+            isMobileProDropdownOpen.value = false;
         };
 
         const handleScroll = () => {
             isScrolled.value = window.scrollY > 20;
         };
 
-        onMounted(() => {
+        onMounted(async () => {
             window.addEventListener('scroll', handleScroll);
             handleScroll();
+
+            // Appel dynamique des catégories au chargement de la navbar
+            if (contratStore.categories.length === 0) {
+                await contratStore.getCategories();
+            }
         });
 
         onUnmounted(() => {
             window.removeEventListener('scroll', handleScroll);
         });
 
-        return { isMenuOpen, isScrolled, isDropdownOpen, isMobileDropdownOpen, isProDropdownOpen, isMobileProDropdownOpen, toggleMenu };
+        return { 
+            isMenuOpen, 
+            isScrolled, 
+            isDropdownOpen, 
+            isServicesDropdownOpen,
+            isProDropdownOpen, 
+            isMobileDropdownOpen, 
+            isMobileServicesDropdownOpen,
+            isMobileProDropdownOpen, 
+            toggleMenu,
+            closeMenu,
+            contratStore // N'oubliez pas d'exposer le store pour le template
+        };
     },
 };
 </script>
@@ -258,6 +354,9 @@ export default {
     gap: 1.5rem;
     padding: 1.5rem 1.5rem 2rem;
     border-top: 1px solid rgba(0, 0, 0, 0.06);
+    /* Ajout d'un max-height et scroll pour les petits écrans avec beaucoup de menus */
+    max-height: calc(100vh - 70px);
+    overflow-y: auto;
 }
 
 .nav-links-mobile li a {
@@ -284,18 +383,12 @@ export default {
     border-bottom: 1px solid rgba(0, 0, 0, 0.04);
 }
 
-.mobile-accordion__trigger {
+.mobile-accordion__trigger-wrapper {
     width: 100%;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    font-size: 1.1rem;
-    font-weight: 500;
     padding: 1rem 0;
-    color: var(--primary-color);
-    background: none;
-    border: none;
-    cursor: pointer;
 }
 
 .mobile-accordion__list {
@@ -305,6 +398,29 @@ export default {
     display: flex;
     flex-direction: column;
     gap: 0.25rem;
+}
+.mobile-accordion__main-link {
+    /* On utilise clamp pour réduire très légèrement la police sur les tout petits écrans, 
+       tout en gardant 1.1rem sur les téléphones standards */
+    font-size: clamp(0.95rem, 4vw, 1.1rem); 
+    font-weight: 500;
+    color: var(--primary-color);
+    text-decoration: none;
+    flex-grow: 1; 
+    text-align: left;
+    padding: 0 !important; 
+    border: none !important;
+    white-space: nowrap; /* Interdit formellement le retour à la ligne */    
+}
+.mobile-accordion__icon-btn {
+    background: none;
+    border: none;
+    color: var(--primary-color);
+    margin-right: -7rem; /* Aligne visuellement la flèche avec le bord droit */
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .mobile-accordion__list li a {
@@ -338,7 +454,8 @@ export default {
 .accordion-leave-active {
     transition: all 0.25s ease;
     overflow: hidden;
-    max-height: 200px;
+    /* Ajusté à 400px pour les menus avec beaucoup d'éléments comme Services */
+    max-height: 400px;
 }
 
 .accordion-enter-from,
@@ -468,16 +585,22 @@ export default {
         transition: width 0.3s ease;
     }
 
-    /* Étape C : Afficher le trait pour la page active */
-    /* Nuxt applique 'router-link-active' automatiquement au lien de la page en cours */
-    .nav-links-desktop li a.router-link-active::after,
-    .nav-links-desktop li a.router-link-exact-active::after {
-        width: 60%; /* Remplissez à 60% de la largeur du bouton pour l'élégance */
+    /* Étape C : Afficher le trait UNIQUEMENT pour les liens principaux actifs */
+    .nav-links-desktop > li > a.router-link-active::after,
+    .nav-links-desktop > li > a.router-link-exact-active::after,
+    .nav-links-desktop > li > .dropdown-trigger.router-link-active::after {
+        width: 60%; 
     }
 
-    /* Optionnel : Le trait s'agrandit légèrement au survol même si on est sur la page */
-    .nav-links-desktop li a.router-link-active:hover::after {
+    /* Animation au survol pour les liens principaux actifs */
+    .nav-links-desktop > li > a.router-link-active:hover::after,
+    .nav-links-desktop > li > .dropdown-trigger.router-link-active:hover::after {
         width: 75%;
+    }
+
+    /* GARANTIE : On force l'absence de soulignement dans les sous-menus */
+    .dropdown-menu li a::after {
+        display: none !important;
     }
 
     .nav-links-desktop li a:hover,
@@ -614,14 +737,16 @@ export default {
     .nav-mobile-menu {
         display: none !important;
     }
+    
+    /* Classe pour les menus avec un texte simple (sans description sous le titre) */
     .dropdown-menu.simple-menu {
-        width: 200px; /* Plus fin que l'autre menu */
+        width: 260px; /* Aligné avec les autres menus pour une meilleure cohérence */
     }
 
     .dropdown-menu.simple-menu li a {
         font-weight: 500 !important;
         font-size: 0.9rem !important;
-        padding: 0.6rem 1rem !important; /* Un peu moins haut que les gros boutons de l'autre menu */
+        padding: 0.6rem 1rem !important;
     }
 }
 

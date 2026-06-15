@@ -17,10 +17,10 @@
                 <img src="/Accueil_madame SANS FOND.png" alt="Contrats OHADA">
 
                 <stat-cards class="floating-card card-top-left"    title="Banque de contrats" @click="router.push('/contractBank')" />
-                <stat-cards class="floating-card card-top-right"   title="Outil de Calcul" />
+                <stat-cards class="floating-card card-top-right"   title="Outil de Calcul" @click="router.push('/lawCalcul')" />
                 
-                <stat-cards class="floating-card card-bottom-left"  title="Conseil juridique" />
-                <stat-cards class="floating-card card-bottom-right" title="Nos professionnels" />
+                <stat-cards class="floating-card card-bottom-left"  title="Services juridiques" @click="router.push('/services')" />
+                <stat-cards class="floating-card card-bottom-right" title="Nos professionnels" @click="router.push('/pro')" />
             </div>
         </div>
     </section>
@@ -38,7 +38,7 @@ export default defineComponent({
     components: { 
         mainButton, 
         BaseResearchInput, 
-        statCards 
+        statCards,
     },
 
     setup() {

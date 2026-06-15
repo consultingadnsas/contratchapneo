@@ -117,6 +117,14 @@ class ContractListView(ListAPIView):
         
         if category_id:
             queryset = queryset.filter(category_id=category_id)
+
+        search_query = self.request.query_params.get('q', None)
+        if search_query:
+            # Recherche insensible à la casse (icontains) sur le titre OU la description
+            queryset = queryset.filter(
+                Q(title__icontains=search_query) | 
+                Q(description__icontains=search_query)
+            )
             
         return queryset
 

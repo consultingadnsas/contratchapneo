@@ -65,3 +65,43 @@ h3{
 }
 
 /* Our modal definition */ 
+.cart-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+/* Contenu de la modale */
+.cart-modal-content {
+  background: white;
+  width: 100%;
+  height: 100vh;
+  border-top-left-radius: 1.5rem;
+  border-top-right-radius: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.15);
+}
+
+@media (min-width: 768px) {
+  .cart-modal-overlay {
+    align-items: center;
+    justify-content: center;
+  }
+
+  .cart-modal-content {
+    width: 90%;
+    max-width: 500px;
+    height: auto;
+    height: 90vh;
+    max-height: 800px;
+    border-radius: 1rem;
+  }
+}

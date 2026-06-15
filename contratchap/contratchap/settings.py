@@ -27,7 +27,13 @@ SECRET_KEY = config('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    '.ngrok-free.app', 
+    '.ngrok-free.dev', 
+    'kettle-diploma-lifter.ngrok-free.dev', 
+    '127.0.0.1',
+    'localhost'
+]
 
 
 # Application definition
@@ -45,7 +51,8 @@ INSTALLED_APPS = [
     'corsheaders',
     'account',
     'contrat',
-    'ecommerce'
+    'ecommerce',
+    'payments'
 ]
 
 REST_FRAMEWORK = {
@@ -126,7 +133,7 @@ AUTH_USER_MODEL = 'account.CustomUser'
 # Internationalization
 # https://docs.djangoproject.com/en/6.0/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'fr-fr'
 
 TIME_ZONE = 'UTC'
 
@@ -153,3 +160,16 @@ CORS_ALLOW_CREDENTIALS = True
 
 # Seulement en dev
 CORS_ALLOW_ALL_ORIGINS = True 
+
+# PAIEMENT SETTINGS
+STRIPE_SECRET_KEY = config('STRIPE_SECRET_KEY')
+
+# ── xpaye ─────────────────────────────────────────────────
+XPAYE_MERCHANT_ID      = config('XPAYE_MERCHANT_ID')                                    # ton merchantId sandbox
+XPAYE_API_URL          = config('XPAYE_API_URL')     # URL sandbox xpaye
+XPAYE_NOTIFICATION_URL = config('XPAYE_NOTIFICATION_URL')     # ngrok en dev
+XPAYE_RETURN_URL       = config('XPAYE_RETURN_URL')    # ton frontend
+
+# ── Email & Frontend ───────────────────────────────────────
+FRONTEND_URL       = 'http://localhost:3000'
+DEFAULT_FROM_EMAIL = 'no-reply@tonsite.com'

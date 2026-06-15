@@ -22,7 +22,7 @@
         :aria-invalid="!!errorMessage"
         :aria-describedby="errorMessage ? `${inputId}-error` : hint ? `${inputId}-hint` : undefined"
         v-bind="$attrs"
-        @change="handleChange"
+        @change="handleInput"
       >
         <option value="" disabled selected v-if="placeholder">{{ placeholder }}</option>
         

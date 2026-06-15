@@ -1,19 +1,19 @@
 <template>
     <div class="cart-items">
-        <div class="items-list">
-            <div v-for="item in cartItems" :key="item.id" class="cart-item">
-            <img src="../../assets/pictures/ContratChap/black-person-signing-job-contract.jpg" :alt="item.name" class="item-image">
+            <div class="items-list">
+              <div v-for="item in cartItems" :key="item.id" class="cart-item">
+              <img :src="item.image || placeholder" :alt="item.name" class="item-image">
             <div class="item-details">
                 <h4 class="item-name">{{ item.name }}</h4>
                 <p class="item-price">{{ item.price }} FCFA</p>
                 <div class="quantity-controls">
-                <button class="qty-btn" @click="item.quantity--" :disabled="item.quantity <= 1">-</button>
+                <button class="qty-btn" @click="decrease(item.id, item.quantity)" :disabled="item.quantity <= 1">-</button>
                 <span class="quantity">{{ item.quantity }}</span>
-                <button class="qty-btn" @click="item.quantity++">+</button>
+                <button class="qty-btn" @click="increase(item.id, item.quantity)">+</button>
                 </div>
             </div>
             <div class="item-total">
-                <span class="total-price">{{ (item.price * item.quantity) }} FCFA</span>
+                <span class="total-price">{{ (Number(item.price) * item.quantity).toLocaleString('fr-FR') }} FCFA</span>
                 <button class="remove-btn" @click="removeFromCart(item.id)">🗑️</button>
             </div>
             </div>
@@ -27,26 +27,47 @@
     </div>
 </template>
 <script lang="ts">
-import { ref, watch, onUnmounted, computed } from 'vue';
+import { computed } from 'vue';
+import { useCartStore } from '../../stores/cartStore';
+import placeholder from '@/assets/pictures/ContratChap/pexels-thirdman-5060819.jpg';
+
 export default {
   name: 'Itemslist',
   setup(){
-    const cartItems = ref([
-      { id: 1, name: "Contrat de travail CDD", price: 5000, quantity: 1, image: '../../assets/pictures/ContratChap/pexels-thirdman-5060819.jpg'},
-      { id: 2, name: "Contrat de prestation", price: 8000, quantity: 1, image: '../../assets/pictures/ContratChap/pexels-thirdman-5060819.jpg' }
-    ]);
+    const cartStore = useCartStore();
 
-    const isEmpty = computed(() => cartItems.value.length === 0);
-    const totalItems = computed(() => cartItems.value.reduce((acc, item) => acc + item.quantity, 0));
-    const formattedTotalPrice = computed(() => 
-      cartItems.value.reduce((acc, item) => acc + (item.price * item.quantity), 0).toLocaleString()
-    );
+    const cartItems = computed(() => (
+      (cartStore.cart?.items ?? []).map(i => ({
+        id: i.id,
+        name: i.contrat?.title ?? 'Contrat',
+        price: Number(i.contrat?.prix ?? 0),
+        quantity: i.quantity,
+        image: i.contrat?.picture
+      }))
+    ));
+
+    const formattedTotalPrice = computed(() => cartStore.formattedTotalPrice);
+
+    const removeFromCart = async (id: string) => {
+      await cartStore.removeFromCart(id);
+    };
+
+    const decrease = async (id: string, qty: number) => {
+      if (qty <= 1) return;
+      await cartStore.updateQuantity(id, qty - 1);
+    };
+
+    const increase = async (id: string, qty: number) => {
+      await cartStore.updateQuantity(id, qty + 1);
+    };
 
     return {
       cartItems,
-      isEmpty,
-      totalItems,
-      formattedTotalPrice
+      formattedTotalPrice,
+      removeFromCart,
+      decrease,
+      increase,
+      placeholder,
     }
   }
 }
@@ -92,7 +113,7 @@ export default {
 .item-price {
   margin: 0 0 0.5rem 0;
   font-size: 0.9rem;
-  color: #007bff;
+  color: #202b4a;
   font-weight: 600;
 }
 
@@ -173,6 +194,6 @@ export default {
 }
 
 .final-price {
-  color: #007bff;
+  color: #202b4a;
 }
 </style>

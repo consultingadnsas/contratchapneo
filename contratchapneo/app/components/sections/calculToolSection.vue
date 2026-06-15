@@ -56,7 +56,7 @@
 
             <!-- Bouton d'action centré en bas -->
             <div class="action-container">
-                <secondButton label="Calculer vos droits" />
+                <secondButton label="Calculer vos droits" @click="router.push('/lawcalcul')" />
             </div>
             
         </div>
@@ -66,7 +66,8 @@
 <script lang="ts">
 import { ref } from 'vue';
 import mainButton from '../buttons/mainButton.vue';
-import secondButton from '../buttons/secondButton.vue'
+import secondButton from '../buttons/secondButton.vue';
+import { useRouter } from 'vue-router';
 
 export default {
     name: 'CalculToolSection',
@@ -75,6 +76,7 @@ export default {
         secondButton
     },
     setup() {
+        const router = useRouter();
         const calculOptions = ref([
             { 
                 title: 'Indemnités de licenciement', 
@@ -84,7 +86,8 @@ export default {
         ]);
 
         return {
-            calculOptions
+            calculOptions,
+            router
         };
     }
 }

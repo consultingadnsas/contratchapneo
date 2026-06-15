@@ -1,7 +1,8 @@
 <template>
     <div class="main-wrapper">
-        <Navbar theme="light"/>
-        <checkoutSectionVue/>
+        <div class="checkout-wrapper">
+            <checkoutSectionVue/>
+        </div>
         <footerSection/>
     </div>
 </template>
@@ -19,6 +20,22 @@ export default {
 }
 </script>
 
-<style>
+<style scoped>
+.main-wrapper {
+    background: radial-gradient(circle, #202b4a 30%, #0f0f0f 100%);
+}
 
+.checkout-wrapper {
+    width: 95%;
+    min-height: 100vh;
+    max-width: 800px;
+    margin: 1rem auto;
+    background: #fff;
+    border-radius: 8px;
+    /*  */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
 </style>

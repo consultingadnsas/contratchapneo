@@ -8,15 +8,15 @@
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
               <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 10.5V6a3.75 3.75 0 1 0-7.5 0v4.5m11.356-1.993 1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 0 1-1.12-1.243l1.264-12A1.125 1.125 0 0 1 5.513 7.5h12.974c.576 0 1.059.435 1.119 1.007ZM8.625 10.5a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm7.5 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z" />
             </svg>
-            Mon Panier
+            Mon Panier de contrats
           </h2>
-          <span class="item-count">{{ totalItems }} article{{ totalItems > 1 ? 's' : '' }}</span>
+          <span class="item-count">{{ cartStore.totalItems }} Contrat{{ cartStore.totalItems > 1 ? 's' : '' }}</span>
         </div>
         <button class="close-icon" @click="closeModal">x</button>
       </div>
 
       <div class="cart-body">
-        <div v-if="isEmpty" class="empty-cart">
+        <div v-if="cartStore.isEmpty" class="empty-cart">
           <div class="empty-icon">🛒</div>
           <h3>Votre panier est vide</h3>
           <p>Ajoutez des articles pour commencer vos achats</p>
@@ -26,34 +26,46 @@
         <template v-else>
           <div class="cart-items">
             <div class="items-list">
-              <div v-for="item in cartItems" :key="item.id" class="cart-item">
-                <img src="../../assets/pictures/ContratChap/black-person-signing-job-contract.jpg" :alt="item.name" class="item-image">
+              <div v-for="item in cartStore.cart.items" :key="item.id" class="cart-item">
+                <img
+                  :src="item.contrat.picture || picture"
+                  :alt="item.contrat.title"
+                  class="item-image"
+                >
                 <div class="item-details">
-                  <h4 class="item-name">{{ item.name }}</h4>
-                  <p class="item-price">{{ item.price }} FCFA</p>
+                  <h4 class="item-name">{{ item.contrat?.title }}</h4>
+                  <p class="item-price">{{ item.contrat?.prix }} FCFA</p>
                   <div class="quantity-controls">
-                    <button class="qty-btn" @click="item.quantity--" :disabled="item.quantity <= 1">-</button>
+                    <button
+                      class="qty-btn"
+                      :disabled="item.quantity <= 1 || cartStore.isLoading"
+                      @click="handleUpdateQuantity(item.contrat?.id!, item.quantity - 1)"
+                    >-</button>
                     <span class="quantity">{{ item.quantity }}</span>
-                    <button class="qty-btn" @click="item.quantity++">+</button>
+                    <button
+                      class="qty-btn"
+                      :disabled="cartStore.isLoading"
+                      @click="handleUpdateQuantity(item.contrat?.id!, item.quantity + 1)"
+                    >+</button>
                   </div>
                 </div>
                 <div class="item-total">
-                  <span class="total-price">{{ (item.price * item.quantity) }} FCFA</span>
-                  <button class="remove-btn" @click="removeFromCart(item.id)">🗑️</button>
+                  <span class="total-price">{{ (Number(item.contrat?.prix) * item.quantity).toLocaleString('fr-FR') }} FCFA</span>
+                  <button class="remove-btn" :disabled="cartStore.isLoading" @click="handleRemove(item.id)">🗑️</button>
                 </div>
               </div>
             </div>
           </div>
 
           <div class="order-summary">
-            <div class="summary-line"><span>Sous-total</span><span>{{ formattedTotalPrice }} FCFA</span></div>
-            <div class="summary-line"><span>J'ai un code promo</span><span>Gratuite</span></div>
-            <div class="summary-line total"><span>Total</span><span class="final-price">{{ formattedTotalPrice }} FCFA</span></div>
+            <div class="summary-line"><span>Sous-total</span><span>{{ cartStore.formattedTotalPrice }} FCFA</span></div>
+            <div class="summary-line"><span>J'ai un code promo</span><input type="checkbox" checked="checked" class="toggle" /></div>
+            <div class="summary-line total"><span>Total</span><span class="final-price">{{ cartStore.formattedTotalPrice }} FCFA</span></div>
           </div>
         </template>
       </div>
 
-      <div class="cart-footer flex justify-center items-center" v-if="!isEmpty">
+      <div class="cart-footer flex justify-center items-center" v-if="!cartStore.isEmpty">
         <checkoutButton label="Commander" @handleClicked="proceedToCheckout" />
       </div>
     </div>
@@ -61,37 +73,44 @@
 </template>
 
 <script lang="ts">
-import { ref, watch, onUnmounted, computed } from 'vue';
+import { watch, onMounted, onUnmounted } from 'vue';
 import { useRouter } from '#app';
+import { useCartStore } from '../../stores/cartStore';
+
 import checkoutButton from '../buttons/checkoutButton.vue';
-import placeholder from '@/assets/pictures/ContratChap/pexels-thirdman-5060819.jpg'
+import placeholder from '@/assets/pictures/ContratChap/pexels-thirdman-5060819.jpg';
 
 export default {
+
   name: 'CartModal',
+
   components: { checkoutButton },
+
   props: {
     isOpen: { type: Boolean, default: false }
   },
-  emits: ['close'],
-  setup(props, { emit }) {
-    const router = useRouter();
-    const picture= placeholder
-    // Données statiques de tes contrats
-    const cartItems = ref([
-      { id: 1, name: "Contrat de travail CDD", price: 5000, quantity: 1, image: '../../assets/pictures/ContratChap/pexels-thirdman-5060819.jpg'},
-      { id: 2, name: "Contrat de prestation", price: 8000, quantity: 1, image: '../../assets/pictures/ContratChap/pexels-thirdman-5060819.jpg' }
-    ]);
 
-    const isEmpty = computed(() => cartItems.value.length === 0);
-    const totalItems = computed(() => cartItems.value.reduce((acc, item) => acc + item.quantity, 0));
-    const formattedTotalPrice = computed(() => 
-      cartItems.value.reduce((acc, item) => acc + (item.price * item.quantity), 0).toLocaleString()
-    );
+  emits: ['close'],
+
+  setup(props, { emit }) {
+
+    const router = useRouter();
+    
+    const cartStore = useCartStore();
+
+    const picture = placeholder;
 
     const closeModal = () => emit('close');
-    const removeFromCart = (id: number) => {
-      cartItems.value = cartItems.value.filter(item => item.id !== id);
+
+    const handleRemove = async (id: string) => {
+      await cartStore.removeFromCart(id);
     };
+
+    const handleUpdateQuantity = async (id: string, quantity: number) => {
+      if (quantity < 1) return;
+      await cartStore.updateQuantity(id, quantity);
+    };
+
     const proceedToCheckout = () => {
       closeModal();
       router.push('/order/checkout');
@@ -103,39 +122,27 @@ export default {
       else document.body.classList.remove('overflow-hidden');
     });
 
+    onMounted(async () => {
+      await cartStore.fetchCart();
+      console.log("Votre panier", cartStore.cart.items);
+    });
+
     onUnmounted(() => document.body.classList.remove('overflow-hidden'));
 
-    return { isEmpty, cartItems, totalItems, formattedTotalPrice,picture, closeModal, removeFromCart, proceedToCheckout };
+    return {
+      cartStore,
+      picture,
+      closeModal,
+      handleRemove,
+      handleUpdateQuantity,
+      proceedToCheckout,
+    };
   }
 }
 </script>
 
 <style scoped>
 /* Overlay */
-.cart-modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
-  z-index: 1000;
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
-}
-
-/* Contenu de la modale */
-.cart-modal-content {
-  background: white;
-  width: 100%;
-  height: 85vh;
-  border-top-left-radius: 1.5rem;
-  border-top-right-radius: 1.5rem;
-  display: flex;
-  flex-direction: column;
-  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.15);
-}
 
 /* Header */
 .cart-header {
@@ -379,18 +386,5 @@ export default {
 }
 
 /* Responsive */
-@media (min-width: 768px) {
-  .cart-modal-overlay {
-    align-items: center;
-    justify-content: center;
-  }
 
-  .cart-modal-content {
-    width: 90%;
-    max-width: 500px;
-    height: auto;
-    max-height: 80vh;
-    border-radius: 1rem;
-  }
-}
 </style>

@@ -4,6 +4,7 @@ from .views import (
     CartAddItemView,
     CartRemoveItemView,
     CartClearView,
+    CartItemUpdateView,
     CheckoutView,
     OrderListView,
     OrderDetailView,
@@ -14,6 +15,7 @@ urlpatterns = [
     # Panier
     path('cart/',                    CartDetailView.as_view(),    name='cart-detail'),
     path('cart/add/',                CartAddItemView.as_view(),   name='cart-add'),
+    path('cart/update/<uuid:contrat_id>/', CartItemUpdateView.as_view(), name='cart-update-item'),
     path('cart/remove/<uuid:item_id>/', CartRemoveItemView.as_view(), name='cart-remove'),
     path('cart/clear/',              CartClearView.as_view(),     name='cart-clear'),
     path('cart/checkout/',           CheckoutView.as_view(),      name='cart-checkout'),

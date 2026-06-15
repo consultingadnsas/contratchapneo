@@ -1,3 +1,5 @@
+import stripe
+from django.conf import settings
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -12,32 +14,10 @@ from .serializers import (
     OrderSerializer,
     CheckoutSerializer,
 )
+from .helpers import (get_or_create_cart, set_cart_cookie_if_needed)
 from contrat.models import Contrat
 
-
-# ─────────────────────────────────────────
-# HELPERS
-# ─────────────────────────────────────────
-
-def get_or_create_cart(request):
-    """
-    Retourne le panier existant ou en crée un nouveau.
-    - User connecté  → panier lié au user
-    - Invité         → panier lié à la session Django
-    """
-    if request.user.is_authenticated:
-        cart, _ = Cart.objects.get_or_create(user=request.user)
-        return cart
-
-    # Crée la session si elle n'existe pas encore
-    if not request.session.session_key:
-        request.session.create()
-
-    cart, _ = Cart.objects.get_or_create(
-        session_key=request.session.session_key
-    )
-    return cart
-
+stripe.api_key = settings.STRIPE_SECRET_KEY
 
 # ─────────────────────────────────────────
 # CART VIEWS
@@ -53,16 +33,15 @@ class CartDetailView(APIView):
     def get(self, request):
         cart = get_or_create_cart(request)
         serializer = CartSerializer(cart)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        
+        response = Response(serializer.data, status=status.HTTP_200_OK)
+        return set_cart_cookie_if_needed(request, response)
 
 
 class CartAddItemView(APIView):
     """
     POST /cart/add/
     Ajoute un contrat au panier.
-    Si le contrat est déjà présent, incrémente la quantité.
-
-    Body: { "contrat_id": "<uuid>", "quantity": 1 }
     """
     permission_classes = [AllowAny]
 
@@ -89,18 +68,77 @@ class CartAddItemView(APIView):
         )
 
         if not created:
-            # Le contrat est déjà dans le panier → on incrémente
             item.quantity += quantity
             item.save()
 
-        return Response(
+        response = Response(
             {
                 'data'   : CartSerializer(cart).data,
                 'message': 'Contrat ajouté au panier.'
             },
             status=status.HTTP_200_OK
         )
+        return set_cart_cookie_if_needed(request, response)
 
+
+class CartItemUpdateView(APIView):
+    """
+    PATCH /cart/update/<uuid:contrat_id>/
+    Met à jour la quantité d'un contrat spécifique dans le panier.
+    """
+    # AllowAny car les utilisateurs invités (sessions) peuvent aussi modifier leur panier
+    permission_classes = [AllowAny]
+
+    def patch(self, request, contrat_id):
+        # 1. On récupère le panier de l'utilisateur (ou de la session)
+        cart = get_or_create_cart(request)
+
+        # 2. On cherche la ligne du panier correspondante
+        try:
+            cart_item = CartItem.objects.get(cart=cart, contrat_id=contrat_id)
+        except CartItem.DoesNotExist:
+            return Response(
+                {'message': 'Ce contrat n\'est pas dans votre panier.'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        # 3. On extrait et valide la nouvelle quantité
+        quantity = request.data.get('quantity')
+
+        if quantity is None:
+            return Response(
+                {'message': 'La quantité est requise.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            quantity = int(quantity)
+            if quantity <= 0:
+                # Si la quantité est 0, l'idéal est de dire au front d'utiliser la route DELETE
+                # ou tu pourrais choisir de supprimer l'item ici directement (cart_item.delete())
+                return Response(
+                    {'message': 'La quantité doit être supérieure à zéro.'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+        except ValueError:
+            return Response(
+                {'message': 'La quantité doit être un nombre entier valide.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # 4. On met à jour et on sauvegarde
+        cart_item.quantity = quantity
+        cart_item.save()
+
+        # 5. On renvoie l'état complet du panier mis à jour (comme attendu par ton store Pinia)
+        serializer = CartSerializer(cart)
+        
+        response = Response(serializer.data, status=status.HTTP_200_OK)
+        
+        # Astuce : Si c'est un invité, s'assurer que le cookie de session suit bien
+        # set_cart_cookie_if_needed(request, response) -> Décommente si tu utilises ce helper pour la réponse
+        
+        return response
 
 class CartRemoveItemView(APIView):
     """
@@ -114,13 +152,14 @@ class CartRemoveItemView(APIView):
         item = get_object_or_404(CartItem, id=item_id, cart=cart)
         item.delete()
 
-        return Response(
+        response = Response(
             {
                 'data'   : CartSerializer(cart).data,
                 'message': 'Article retiré du panier.'
             },
             status=status.HTTP_200_OK
         )
+        return set_cart_cookie_if_needed(request, response)
 
 
 class CartClearView(APIView):
@@ -134,11 +173,11 @@ class CartClearView(APIView):
         cart = get_or_create_cart(request)
         cart.clear()
 
-        return Response(
+        response = Response(
             {'message': 'Panier vidé.'},
             status=status.HTTP_200_OK
         )
-
+        return set_cart_cookie_if_needed(request, response)
 
 # ─────────────────────────────────────────
 # CHECKOUT VIEW
@@ -195,13 +234,14 @@ class CheckoutView(APIView):
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
-        return Response(
+        response = Response(
             {
                 'data'   : OrderSerializer(order).data,
                 'message': 'Commande créée avec succès.'
             },
             status=status.HTTP_201_CREATED
         )
+        return set_cart_cookie_if_needed(request, response)
 
     def _create_order(self, request, cart, validated_data):
         """Logique de création isolée — appelée dans la transaction atomique."""
@@ -239,7 +279,7 @@ class CheckoutView(APIView):
         OrderItem.objects.bulk_create(order_items)
 
         # Vidage du panier
-        cart.clear()
+        # cart.clear(); on va vider le panier après le paiement
 
         return order
 
