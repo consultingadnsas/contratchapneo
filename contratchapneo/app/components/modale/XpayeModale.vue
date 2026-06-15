@@ -92,11 +92,11 @@ export default defineComponent({
         function mapPaymentChannel(method: string) {
             switch (method) {
                 case 'wave':
-                    return 'WAVE'
+                    return 'WAVECI'
                 case 'orange_money':
-                    return 'ORANGE_MONEY'
+                    return 'OMCIV2'
                 case 'moov_money':
-                    return 'MOOV_MONEY'
+                    return 'FLOOZ'
                 case 'card':
                 case 'stripe':
                     return 'CARD'
@@ -119,6 +119,7 @@ export default defineComponent({
 
             console.log('📥 [XpayeModale] Chargement du script PaiementPro...');
             const script = document.createElement('script')
+            //https://sandbox.paiementpro.net/webservice/onlinepayment/init/curl-init.php
             script.src = 'https://www.paiementpro.net/webservice/onlinepayment/js/paiementpro.v1.0.2.js'
             script.async = true
             script.onload = () => {

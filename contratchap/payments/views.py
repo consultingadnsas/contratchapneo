@@ -1,248 +1,272 @@
-import os
-import logging
-import stripe
-from django.conf import settings
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import status
-from rest_framework.permissions import AllowAny, IsAuthenticated
-from django.db import transaction as db_transaction
-from django.shortcuts import get_object_or_404
+# payment/views.py
+import json
+import zipfile
+import io
+import requests  # pip install requests
 
-from .models import Transaction
-from .serializers import (
+from django.http    import FileResponse
+from django.conf    import settings
+from django.core.mail import send_mail
+from django.shortcuts import get_object_or_404
+from django.db.models import F
+
+from rest_framework.views       import APIView
+from rest_framework.response    import Response
+from rest_framework             import status
+from rest_framework.permissions import AllowAny
+
+from ecommerce.models import Order
+from contrat.models   import Contrat
+from .models          import Transaction
+from .serializers     import (
     TransactionSerializer,
     PaymentInitiateSerializer,
     PaymentSimulateSerializer,
 )
-from ecommerce.models import Order, Cart  # adapte le chemin
-from django.http import FileResponse, Http404
 
-logger = logging.getLogger(__name__)
-stripe.api_key = settings.STRIPE_SECRET_KEY
 
+# ─────────────────────────────────────────
+# INITIATE  —  POST /payment/initiate/
+# ─────────────────────────────────────────
 
 class PaymentInitiateView(APIView):
     """
-    POST /payments/initiate/
-    Crée une Transaction PENDING liée à une commande.
-    Retourne un payment_url simulé que le frontend peut "suivre".
+    POST /payment/initiate/
+    Crée une Transaction PENDING, appelle l'API sandbox xpaye,
+    et retourne l'URL de redirection vers leur page de paiement.
     """
     permission_classes = [AllowAny]
 
     def post(self, request):
         serializer = PaymentInitiateSerializer(data=request.data)
         if not serializer.is_valid():
-            return Response({'errors': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {'errors': serializer.errors},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
         order_id       = serializer.validated_data['order_id']
-        payment_method = serializer.validated_data.get('payment_method', 'STRIPE')
+        payment_method = serializer.validated_data['payment_method']
 
-        # Récupération de la commande
-        try:
-            order = Order.objects.get(id=order_id)
-        except Order.DoesNotExist:
-            return Response({'error': 'Commande non trouvée'}, status=status.HTTP_404_NOT_FOUND)
+        # On précharge guest et user pour éviter des requêtes supplémentaires
+        order = get_object_or_404(
+            Order.objects.select_related('guest', 'user'),
+            id=order_id
+        )
 
-        try:
-            with db_transaction.atomic():
-                # 2. Stripe veut un montant en CENTIMES. 
-                # Adapte `order.total_price` selon le nom de ton champ sur le modèle Order
-                montant_en_centimes = int(order.total_amount * 100) 
-
-                # 3. Création du PaymentIntent chez Stripe
-                intent = stripe.PaymentIntent.create(
-                    amount=montant_en_centimes,
-                    currency='xof', # ⚠️ Remplace par ta devise ('xof', 'usd'...)
-                    metadata={
-                        'order_id': order.id,
-                        # Sécurité supplémentaire pour les logs Stripe
-                        'is_guest': order.guest is not None, 
-                    }
-                )
-
-                # 4. Création de ta Transaction en base de données
-                txn = Transaction.objects.create(
-                    order=order,
-                    amount=order.total_amount,
-                    payment_method=payment_method,
-                    status=Transaction.TransactionStatus.PENDING,
-                    # 💡 ASTUCE CLÉ : On sauvegarde l'ID du PaymentIntent Stripe (pi_xxxx) 
-                    # dans le provider_reference. Ce sera vital pour ton Webhook plus tard !
-                    provider_reference=intent.id 
-                )
-
-                # 5. On renvoie le client_secret au Frontend (Nuxt 3)
-                return Response({
-                    'message': 'Intention de paiement Stripe créée avec succès',
-                    'transaction_id': txn.id,
-                    'client_secret': intent.client_secret,
-                }, status=status.HTTP_200_OK)
-
-        except stripe.error.StripeError as e:
-            logger.error(f"Erreur Stripe : {str(e)}")
+        if order.status != Order.Status.PENDING:
             return Response(
-                {'error': "Erreur lors de la communication avec le service de paiement."}, 
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
-        except Exception as e:
-            logger.error(f"Erreur interne lors de l'initiation du paiement : {str(e)}")
-            return Response(
-                {'error': 'Une erreur est survenue.'}, 
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                {'message': f'Commande non payable (statut : {order.get_status_display()}).'},
+                status=status.HTTP_400_BAD_REQUEST
             )
 
-    def _can_access(self, request, order):
-        if request.user.is_authenticated:
-            return order.user == request.user
-        email = request.query_params.get('email', '').lower().strip()
-        return order.guest is not None and order.guest.email == email
+        # ── Créer la Transaction — son UUID devient notre referenceNumber ──
+        transaction = Transaction.objects.create(
+            order              = order,
+            amount             = order.total_amount,
+            payment_method     = payment_method,
+            status             = Transaction.TransactionStatus.PENDING,
+            provider_reference = None,
+        )
+        transaction.provider_reference = str(transaction.id)
+        transaction.save(update_fields=['provider_reference'])
 
-    def _build_payment_url(self, txn):
-        """
-        En simulation, on renvoie juste une URL interne vers la vue de simulation.
-        En prod, ce serait l'URL de redirection CinetPay / Wave / etc.
-        """
-        return f"/payments/simulate/?transaction_id={txn.id}"
+        # ── Décomposer le nom (GuestInfo.full_name → first / last) ────────
+        if order.guest:
+            # GuestInfo.full_name = "Ishola Lamine" → split sur le premier espace
+            name_parts = order.guest.full_name.strip().split(' ', 1)
+            first_name = name_parts[0]
+            last_name  = name_parts[1] if len(name_parts) > 1 else ''
+            phone      = order.guest.phone_number   # GuestInfo.phone_number
+        else:
+            first_name = getattr(order.user, 'first_name', '') or ''
+            last_name  = getattr(order.user, 'last_name',  '') or ''
+            phone      = getattr(order.user, 'phone_number', '') or ''
 
+        # ── Payload calé sur leur format sandbox ──────────────────────────
+        xpaye_payload = {
+            'merchantId'         : settings.XPAYE_MERCHANT_ID,
+            'amount'             : int(order.total_amount),      # entier FCFA
+            'description'        : f'Commande {str(order.id)[:8]}',
+            'channel'            : 'CARD',
+            'countryCurrencyCode': '952',                        # FCFA XOF
+            'referenceNumber'    : str(transaction.id),          # ← notre clé de récup
+            'customerEmail'      : order.buyer_email,            # property Order
+            'customerFirstName'  : first_name,
+            'customerLastname'   : last_name,
+            'customerPhoneNumber': phone,
+            'notificationURL'    : settings.XPAYE_NOTIFICATION_URL,
+            'returnURL'          : settings.XPAYE_RETURN_URL,
+            'returnContext'      : json.dumps({'order_id': str(order.id)}),
+        }
+
+        # ── Appel API sandbox xpaye ───────────────────────────────────────
+        try:
+            xpaye_resp = requests.post(
+                settings.XPAYE_API_URL,
+                json    = xpaye_payload,
+                timeout = 15,
+            )
+            xpaye_resp.raise_for_status()
+            xpaye_data = xpaye_resp.json()
+        except requests.RequestException as e:
+            # Transaction reste PENDING → l'utilisateur peut réessayer
+            return Response(
+                {'message': 'Erreur de connexion à xpaye.', 'error': str(e)},
+                status=status.HTTP_502_BAD_GATEWAY
+            )
+
+        # ── Réponse xpaye : {"success": true, "message": "...", "url": "..."} ──
+        if not xpaye_data.get('success'):
+            # xpaye a répondu mais avec un échec applicatif
+            transaction.status        = Transaction.TransactionStatus.FAILED
+            transaction.error_message = xpaye_data.get('message', 'Échec retourné par xpaye.')
+            transaction.save(update_fields=['status', 'error_message'])
+
+            return Response(
+                {'message': xpaye_data.get('message', 'Paiement non initialisé.')},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # ── Succès → retourner l'URL au frontend pour redirection ─────────
+        return Response(
+            {
+                'data'       : TransactionSerializer(transaction).data,
+                'payment_url': xpaye_data.get('url'),   # "https://sandbox.paiementpro.net/..."
+                'message'    : xpaye_data.get('message', 'Initialisation réussie.'),
+            },
+            status=status.HTTP_201_CREATED
+        )
+
+# ─────────────────────────────────────────
+# SIMULATE  —  POST /payment/simulate/
+# (sandbox / DEBUG uniquement)
+# ─────────────────────────────────────────
 
 class PaymentSimulateView(APIView):
     """
-        POST /payments/simulate/
-        Simule un succès ou un échec de paiement.
-        À remplacer par le vrai webhook prestataire en production.
+    Simule un retour xpaye sans appeler leur API.
+    Désactivé automatiquement hors DEBUG.
     """
     permission_classes = [AllowAny]
 
     def post(self, request):
-        serializer = PaymentSimulateSerializer(data=request.data)
-        if not serializer.is_valid():
-            return Response({'errors': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
-
-        transaction_id = serializer.validated_data['transaction_id']
-        outcome        = serializer.validated_data['outcome']
-
-        try:
-            with db_transaction.atomic():
-                txn = Transaction.objects.select_for_update().get(id=transaction_id)
-
-                # Idempotence — on ne retraite pas une transaction déjà finalisée
-                if txn.status != Transaction.TransactionStatus.PENDING:
-                    return Response(
-                        {
-                            'data'   : TransactionSerializer(txn).data,
-                            'message': 'Transaction déjà traitée.',
-                        },
-                        status=status.HTTP_200_OK
-                    )
-
-                if outcome == 'SUCCESS':
-                    txn.status             = Transaction.TransactionStatus.SUCCESSFUL
-                    txn.provider_reference = f"SIM-{txn.id}"  # référence simulée
-                    txn.save()
-
-                    order        = txn.order
-                    order.status = Order.Status.PAID
-                    order.save()
-
-                    # Vider le panier maintenant que le paiement est confirmé
-                    self._clear_cart(order)
-
-                    logger.info(f"[SIMULATION] Paiement validé — commande {order.id}")
-
-                    return Response(
-                        {
-                            'data'   : TransactionSerializer(txn).data,
-                            'message': 'Paiement simulé avec succès. Commande confirmée.',
-                        },
-                        status=status.HTTP_200_OK
-                    )
-
-                else:  # FAILED
-                    txn.status        = Transaction.TransactionStatus.FAILED
-                    txn.error_message = "Paiement refusé (simulation)."
-                    txn.save()
-
-                    logger.warning(f"[SIMULATION] Paiement échoué — commande {txn.order.id}")
-
-                    return Response(
-                        {
-                            'data'   : TransactionSerializer(txn).data,
-                            'message': 'Paiement simulé échoué. La commande reste en attente.',
-                        },
-                        status=status.HTTP_200_OK
-                    )
-
-        except Transaction.DoesNotExist:
+        if not settings.DEBUG:
             return Response(
-                {'message': 'Transaction introuvable.'},
-                status=status.HTTP_404_NOT_FOUND
+                {'message': 'Endpoint non disponible en production.'},
+                status=status.HTTP_403_FORBIDDEN
             )
 
-    def _clear_cart(self, order):
-        """Vide le panier lié à la commande après confirmation du paiement."""
-        try:
-            if order.user:
-                cart = order.user.cart
-            else:
-                # Invité : le panier est déjà vide après checkout,
-                # mais on tente quand même par sécurité
-                return
-            cart.clear()
-        except Exception:
-            # Le panier peut ne plus exister — ce n'est pas bloquant
-            pass
+        serializer = PaymentSimulateSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(
+                {'errors': serializer.errors},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
+        transaction_id = serializer.validated_data['transaction_id']
+        outcome        = serializer.validated_data['outcome']   # 'SUCCESS' ou 'FAILED'
+
+        transaction = get_object_or_404(
+            Transaction.objects.select_related('order__guest', 'order__user'),
+            id=transaction_id
+        )
+
+        if transaction.status != Transaction.TransactionStatus.PENDING:
+            return Response(
+                {'message': f'Transaction déjà traitée ({transaction.get_status_display()}).'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        if outcome == 'SUCCESS':
+            transaction.status = Transaction.TransactionStatus.SUCCESSFUL
+            transaction.save()
+
+            order        = transaction.order
+            order.status = Order.Status.PAID
+            order.save()
+
+            _increment_downloads(order)
+            _send_download_email(order)
+
+        else:
+            transaction.status        = Transaction.TransactionStatus.FAILED
+            transaction.error_message = 'Échec simulé manuellement (sandbox).'
+            transaction.save()
+
+        return Response(
+            {
+                'data'   : TransactionSerializer(transaction).data,
+                'message': f'Simulation terminée : {outcome}.',
+            },
+            status=status.HTTP_200_OK
+        )
+
+
+# ─────────────────────────────────────────
+# WEBHOOK  —  POST /payment/webhook/
+# ─────────────────────────────────────────
 
 class PaymentWebhookView(APIView):
     """
-    POST /payments/webhook/
-    Webhook réel — à activer quand tu branches un vrai prestataire.
-    Laissé en place mais non utilisé en simulation.
+    Reçoit la notification xpaye après paiement (notificationURL).
+
+    xpaye renvoie le referenceNumber qu'on lui a envoyé = str(transaction.id)
+    → on retrouve directement la Transaction.
+
+    On répond TOUJOURS 200 pour éviter les réessais xpaye.
     """
-    permission_classes = [AllowAny]
+    permission_classes     = [AllowAny]
+    authentication_classes = []   # Webhook externe, pas de session Django
 
-    def post(self, request, *args, **kwargs):
-        payload            = request.data
-        provider_reference = payload.get('transaction_id')
-        payment_status     = payload.get('status')
-
-        if not provider_reference:
-            return Response({'error': 'Référence manquante'}, status=status.HTTP_400_BAD_REQUEST)
-
+    def post(self, request):
         try:
-            with db_transaction.atomic():
-                txn = Transaction.objects.select_for_update().get(
-                    provider_reference=provider_reference
-                )
+            data = json.loads(request.body)
+        except json.JSONDecodeError:
+            return Response({'message': 'Payload JSON invalide.'}, status=status.HTTP_200_OK)
 
-                if txn.status != Transaction.TransactionStatus.PENDING:
-                    return Response({'message': 'Déjà traité'}, status=status.HTTP_200_OK)
+        # ⚠️ xpaye renvoie notre referenceNumber — à confirmer dans leur doc sandbox
+        reference  = data.get('referenceNumber')
+        # ⚠️ Adapter la clé et les valeurs exactes selon leur réponse sandbox
+        pay_status = data.get('status')   # ex: 'SUCCESS', 'FAILED', 'PENDING'...
+        error_msg  = data.get('message', '')
 
-                if payment_status == 'SUCCESS':
-                    txn.status             = Transaction.TransactionStatus.SUCCESSFUL
-                    txn.save()
-                    order        = txn.order
-                    order.status = Order.Status.PAID
-                    order.save()
-                    logger.info(f"Paiement validé — commande {order.id}")
+        if not reference:
+            return Response({'message': 'referenceNumber manquant.'}, status=status.HTTP_200_OK)
 
-                elif payment_status == 'FAILED':
-                    txn.status        = Transaction.TransactionStatus.FAILED
-                    txn.error_message = payload.get('error_message', 'Raison non fournie')
-                    txn.save()
-                    logger.warning(f"Paiement échoué — commande {txn.order.id}")
-
-            return Response({'message': 'Webhook traité'}, status=status.HTTP_200_OK)
-
+        # Retrouver la Transaction via provider_reference = str(transaction.id)
+        try:
+            transaction = Transaction.objects.select_related(
+                'order__guest', 'order__user'
+            ).get(provider_reference=reference)
         except Transaction.DoesNotExist:
-            logger.error(f"Transaction inconnue — ref: {provider_reference}")
-            return Response({'error': 'Transaction introuvable'}, status=status.HTTP_404_NOT_FOUND)
+            return Response({'message': 'Transaction inconnue.'}, status=status.HTTP_200_OK)
 
-        except Exception as e:
-            logger.error(f"Erreur webhook : {str(e)}")
-            return Response({'error': 'Erreur interne'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-        
+        # Idempotence — on ne retraite pas un webhook déjà reçu
+        if transaction.status != Transaction.TransactionStatus.PENDING:
+            return Response({'message': 'Déjà traité.'}, status=status.HTTP_200_OK)
+
+        # ── Traitement selon le statut xpaye ────────────────────────────
+        if pay_status == 'SUCCESS':
+            transaction.status = Transaction.TransactionStatus.SUCCESSFUL
+            transaction.save()
+
+            order        = transaction.order
+            order.status = Order.Status.PAID
+            order.save()
+
+            _increment_downloads(order)
+            _send_download_email(order)
+
+        elif pay_status == 'FAILED':
+            transaction.status        = Transaction.TransactionStatus.FAILED
+            transaction.error_message = error_msg or 'Échec renvoyé par xpaye.'
+            transaction.save()
+
+        # Toujours 200
+        return Response({'message': 'Webhook traité.'}, status=status.HTTP_200_OK)
+    
+    # 2. 👇 NOUVELLE MÉTHODE GET POUR LA SANDBOX 👇
     def get(self, request):
         # Avec une requête GET, les données ne sont pas dans request.data
         # Elles sont dans request.query_params !
@@ -276,36 +300,154 @@ class PaymentWebhookView(APIView):
         else:
             return Response({'message': 'Le paiement a échoué'}, status=status.HTTP_400_BAD_REQUEST)
 
+
+# ─────────────────────────────────────────
+# DOWNLOAD  —  GET /payment/download/<order_id>/
+# ─────────────────────────────────────────
+
 class DownloadContractView(APIView):
-    permission_classes = [AllowAny] # Permet aux invités de télécharger s'ils ont l'ID de commande
+    """
+    Accès :
+    - User connecté  → doit être le propriétaire (order.user == request.user)
+    - Invité         → ?email=  (order.guest.email — même logique que OrderDetailView)
+
+    Condition : order.status == 'paid'
+    """
+    permission_classes = [AllowAny]
 
     def get(self, request, order_id):
-        try:
-            # 1. On récupère la commande
-            order = Order.objects.get(id=order_id)
-            
-            # 2. SÉCURITÉ CRUCIALE : On vérifie si la commande est payée
-            if order.status != Order.Status.PAID:
-                return Response(
-                    {'error': 'Cette commande n\'a pas encore été réglée.'}, 
-                    status=status.HTTP_403_FORBIDDEN
-                )
-            
-            # 3. Récupération du fichier associé au contrat de la commande
-            # (Je suppose ici que ton modèle Order possède une relation vers le contrat ou un fichier)
-            # Exemple générique : order.contract.file.path
-            if not order.contract or not order.contract.file:
-                raise Http404("Fichier de contrat introuvable pour cette commande.")
-                
-            file_path = order.contract.file.path
-            
-            if os.path.exists(file_path):
-                # 4. On renvoie le fichier sous forme de flux téléchargeable
-                response = FileResponse(open(file_path, 'rb'), content_type='application/pdf')
-                response['Content-Disposition'] = f'attachment; filename="Contrat_{order.id}.pdf"'
-                return response
-            else:
-                raise Http404("Le fichier physique n'existe pas sur le serveur.")
+        order = get_object_or_404(
+            Order.objects.prefetch_related('order_items__contrat')
+                         .select_related('guest', 'user'),
+            id=order_id
+        )
 
-        except Order.DoesNotExist:
-            return Response({'error': 'Commande introuvable.'}, status=status.HTTP_404_NOT_FOUND)
+        # Même vérification que OrderDetailView._can_access et OrderCancelView._can_access
+        if not self._can_access(request, order):
+            return Response(
+                {'message': 'Accès non autorisé à cette commande.'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        if order.status != Order.Status.PAID:
+            return Response(
+                {'message': f'Téléchargement impossible — statut : « {order.get_status_display()} ».'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        # Contrats dont fichier_modele est encore disponible
+        # (contrat peut être null — on_delete=SET_NULL sur OrderItem.contrat)
+        contrats = [
+            item.contrat
+            for item in order.order_items.all()
+            if item.contrat is not None and item.contrat.fichier_modele
+        ]
+
+        if not contrats:
+            return Response(
+                {'message': 'Aucun fichier disponible pour cette commande.'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        if len(contrats) == 1:
+            return _stream_pdf(contrats[0])
+
+        return _stream_zip(contrats, order_id)
+
+    def _can_access(self, request, order) -> bool:
+        """
+        Copie exacte de OrderDetailView._can_access / OrderCancelView._can_access.
+        """
+        if request.user.is_authenticated:
+            return order.user == request.user
+        # Invité : GET /payment/download/<id>/?email=john@example.com
+        email = request.query_params.get('email', '').lower().strip()
+        return (
+            order.guest is not None and
+            order.guest.email == email
+        )
+
+
+# ─────────────────────────────────────────
+# HELPERS PRIVÉS
+# ─────────────────────────────────────────
+
+def _increment_downloads(order: Order):
+    """
+    Incrémente Contrat.downloads pour chaque contrat de la commande.
+    F() évite les race conditions si deux webhooks arrivent simultanément.
+    """
+    contrat_ids = [
+        item.contrat_id
+        for item in order.order_items.all()
+        if item.contrat_id is not None
+    ]
+    if contrat_ids:
+        Contrat.objects.filter(id__in=contrat_ids).update(
+            downloads=F('downloads') + 1
+        )
+
+
+def _send_download_email(order: Order):
+    """
+    Envoie le lien de téléchargement après paiement confirmé.
+
+    - User connecté → lien simple (il s'auth lui-même)
+    - Invité        → lien avec ?email= (order.guest.email via order.buyer_email)
+    """
+    buyer_email   = order.buyer_email          # property sur Order — user ou guest
+    base_url      = settings.FRONTEND_URL.rstrip('/')
+    download_path = f'/payment/download/{order.id}/'
+
+    if order.guest:
+        download_url = f'{base_url}{download_path}?email={buyer_email}'
+    else:
+        download_url = f'{base_url}{download_path}'
+
+    # contrat_title est un snapshot — toujours présent même si le contrat est supprimé
+    titres     = [item.contrat_title for item in order.order_items.all()]
+    titres_str = '\n'.join(f'  • {t}' for t in titres)
+
+    send_mail(
+        subject   = '✅ Paiement confirmé — Vos contrats sont disponibles',
+        message   = (
+            f'Bonjour,\n\n'
+            f'Votre paiement de {order.total_amount} FCFA a été validé.\n\n'
+            f'Contrat(s) acheté(s) :\n{titres_str}\n\n'
+            f'Téléchargez-les ici :\n{download_url}\n\n'
+            f'Merci pour votre confiance.'
+        ),
+        from_email    = settings.DEFAULT_FROM_EMAIL,
+        recipient_list= [buyer_email],
+        fail_silently = False,
+    )
+
+
+def _stream_pdf(contrat: Contrat) -> FileResponse:
+    """
+    Streame contrat.fichier_modele directement en PDF.
+    """
+    response = FileResponse(
+        contrat.fichier_modele.open('rb'),
+        content_type='application/pdf',
+    )
+    response['Content-Disposition'] = f'attachment; filename="{contrat.title}.pdf"'
+    return response
+
+
+def _stream_zip(contrats: list, order_id) -> FileResponse:
+    """
+    Zippe plusieurs contrat.fichier_modele et streame le ZIP.
+    Utilisé quand le panier contenait plusieurs contrats.
+    """
+    buffer = io.BytesIO()
+    with zipfile.ZipFile(buffer, 'w', zipfile.ZIP_DEFLATED) as zf:
+        for contrat in contrats:
+            zf.writestr(f'{contrat.title}.pdf', contrat.fichier_modele.read())
+    buffer.seek(0)
+
+    response = FileResponse(buffer, content_type='application/zip')
+    response['Content-Disposition'] = (
+        f'attachment; filename="commande-{str(order_id)[:8]}.zip"'
+    )
+    return response

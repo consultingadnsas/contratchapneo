@@ -47,8 +47,8 @@ export const usePaiementStore = defineStore('paiement', ()=>{
         customerPhoneNumber: '',
         description: '',
         merchantId: 'PP-F324',
-        notificationURL: 'https://votre-site.com/webhook',
-        returnURL: 'https://votre-site.com/retour',
+        notificationURL: 'https://kettle-diploma-lifter.ngrok-free.dev/payments/webhook/',
+        returnURL: 'http://localhost:3000/',
         returnContext: '{"order_id":"123", "user":"88"}',
     })
 
