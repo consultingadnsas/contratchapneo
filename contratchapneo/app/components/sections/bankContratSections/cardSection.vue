@@ -64,9 +64,8 @@
                 @close="isViewOpen = false"
             />
 
+            <cartBubble @open-cart="openModal()" />
         </Teleport>
-
-        <cartBubble @open-cart="openModal()" />
     </div>
 </template>
 
@@ -198,39 +197,115 @@ export default {
 
 <style scoped>
 
+/* ==========================================
+   1. VOTRE ZONE DE TRAVAIL (Intacte)
+========================================== */
 .contrat-card-section {
+    position: relative;
     width: 100%;
     max-width: 1400px;
     min-height: 100vh;
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-items: center;
     gap: 2rem;
     padding: 4rem 1rem 1rem 1rem;
-    background: linear-gradient(to bottom, #0f172a 0%, #1e293b 40%, #1e293b60 96%, #ffffff 100%);
-}
-
-.contrat-card-section h2 {
-    font-size: 2rem;
-    font-weight: 500;
-    line-height: 1.5;
-    color: #ffffff;
-}
-
-header{
-    margin-top: 2rem;
-    margin-bottom: 1rem;
-}
-
-header p{
-    font-size: 1.2rem;
-    color: #cbd5e1;
+    overflow: hidden; /* Empêche les éléments décoratifs de déborder */
+    
+    /* On garde votre fond d'origine pour la table de travail (blanc ou gris très clair) */
+    background-color: #fdfcfc; 
 }
 
 /* ==========================================
-   TOOLBAR : filtre + recherche côte à côte
+   2. LE COFFRE NUMÉRIQUE (L'en-tête sombre)
 ========================================== */
+.contrat-card-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    /* On garde 460px pour Desktop, on gèrera le mobile plus bas */
+    height: 460px; 
+    
+    /* Le bleu nuit du coffre */
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+    
+    /* La courbe élégante en bas */
+    border-bottom-left-radius: 48px;
+    border-bottom-right-radius: 48px;
+    box-shadow: 0 10px 30px rgba(15, 23, 42, 0.15);
+    z-index: 0;
+}
+
+/* ==========================================
+   3. LES CONTRATS FLOTTANTS (Effet Verre)
+========================================== */
+.contrat-card-section::after {
+    content: '';
+    position: absolute;
+    top: 20px;
+    right: 8%;
+    width: 280px;
+    height: 380px;
+    background: linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.01) 100%);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 16px;
+    transform: rotate(12deg);
+    z-index: 0;
+    pointer-events: none;
+}
+
+/* Sécurité : Tout votre vrai contenu passe AU-DESSUS du coffre */
+.contrat-card-section > * {
+    position: relative;
+    z-index: 2;
+}
+
+/* ==========================================
+   4. TYPOGRAPHIE DU HEADER ET BADGE
+========================================== */
+header {
+    margin-top: 2rem;
+    margin-bottom: 2rem;
+    text-align: center;
+    width: 100%;
+}
+
+/* Le badge "Espace Sécurisé" */
+header::before {
+    display: inline-block;
+    font-size: 0.8rem;
+    font-weight: 800;
+    letter-spacing: 0.15em;
+    color: #34d399; /* Le vert de votre charte */
+    background: rgba(52, 211, 153, 0.1);
+    padding: 0.4rem 1rem;
+    border-radius: 50px;
+    margin-bottom: 1.2rem;
+    border: 1px solid rgba(52, 211, 153, 0.2);
+}
+
+.contrat-card-section h2 {
+    font-size: clamp(2.2rem, 5vw, 3.5rem);
+    font-weight: 700;
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+    color: #ffffff;
+    margin-bottom: 1rem;
+}
+
+header p {
+    font-size: 1.15rem;
+    color: #cbd5e1;
+    max-width: 550px;
+    margin: 0 auto;
+    line-height: 1.6;
+}
+
+/* On relève légèrement votre barre de recherche pour qu'elle morde sur le coffre */
 .toolbar {
     width: 100%;
     max-width: 1200px;
@@ -249,7 +324,7 @@ header p{
 }
 
 .toolbar__search {
-    flex: 0 0 auto;   /* taille naturelle (bouton rond) par défaut */
+    flex: 0 0 auto; 
 }
 
 /* Quand la recherche s'étend sur mobile, elle ne chasse pas le filtre :
@@ -298,6 +373,36 @@ header p{
 @media (min-width: 1300px) {
     .cards-container {
         grid-template-columns: repeat(4, 1fr);
+    }
+}
+/* ==========================================
+   AJUSTEMENTS MOBILE (<= 768px)
+========================================== */
+/* ==========================================
+   AJUSTEMENTS MOBILE (<= 768px)
+========================================== */
+@media (max-width: 768px) {
+    /* 1. On aspire l'espace sous le bouton "Contrat sur mesure" */
+    header {
+        margin-bottom: 0.2rem !important; /* Réduit drastiquement l'espace au-dessus de la toolbar */
+    }
+
+    /* 2. On réduit légèrement l'espacement (gap) entre le titre, le paragraphe et le bouton */
+    header.flex {
+        gap: 0.75rem !important; 
+    }
+
+    /* 3. On s'assure que la toolbar remonte bien collée au bouton */
+    .toolbar {
+        margin-top: 0; /* La remonte (réglage précédent) */
+        justify-content: center; /* Centre parfaitement le filtre et la loupe */
+        gap: 1rem; /* Ajoute un joli petit espace régulier entre les deux */
+        width: 100%;
+        max-width: 92%; /* Laisse une petite marge respirable sur les bords de l'écran */
+        margin-left: auto; /* Centre la boîte globale */
+        margin-right: auto;
+        position: relative;
+        z-index: 3;
     }
 }
 </style>
