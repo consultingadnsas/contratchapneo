@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
+import {useCartStore} from '../stores/cartStore'
 
 export interface GuestInfo {
     id?: string;
@@ -25,6 +26,8 @@ export interface OrderItem {
     quantity?: number;
     created_at?: string;
 }
+
+const cartStore = useCartStore()
 
 export const useOrderStore = defineStore('order', () => {
     const { $api } = useNuxtApp();
@@ -79,7 +82,7 @@ export const useOrderStore = defineStore('order', () => {
             const order = response?.data ?? response ?? null;
             currentOrder.value = order;
             //Debug my function
-            console.log("La reponse du backend", response?.data)
+            console.log("La reponse du backend", currentOrder.value)
             return order;
         } catch (err: any) {
             error.value = err.message ?? String(err);

@@ -9,11 +9,20 @@
             :isOpen="isPaiementModale"
         />
 
-        <XpayeModale
+        <!--
+            <XpayeModale
+                :isOpen="isXpayeModale"
+                :paymentMethod="selectedPaymentMethod"
+                @close="isXpayeModale = false"
+            />
+        -->
+        
+        <XpaySandBoxe 
             :isOpen="isXpayeModale"
             :paymentMethod="selectedPaymentMethod"
             @close="isXpayeModale = false"
         />
+
         <succesFormVue
             v-if="isSuccess"
             message="Contrat acheté. Le Téléchargement commence maintenant"
@@ -32,6 +41,7 @@ import { usePaiementStore } from '../../../stores/paiementStore'
 import { useCartStore } from '../../../stores/cartStore'
 import { useOrderStore } from '../../../stores/orderStore'
 const XpayeModale = defineAsyncComponent(() => import('../../modale/XpayeModale.vue') as Promise<any>)
+const XpaySandBoxe = defineAsyncComponent(()=>import('../../modale/XpaySandBoxe.vue'))
 
 export default {
     name:'CheckoutSection',
@@ -40,7 +50,8 @@ export default {
         itemsListVue,
         succesFormVue,
         paiementModale,
-        XpayeModale
+        XpayeModale,
+        XpaySandBoxe
     },
     setup(){
 
@@ -70,14 +81,18 @@ export default {
             // Remplir le store paiement avec les données de la commande
             if (data.paymentMethod !== 'stripe') {
                 console.log('📝 [CheckoutSection] Remplissage du paiementStore...');
-                paiementStore.paiement.amount = cartStore.totalPrice;
-                paiementStore.paiement.channel = data.paymentMethod;
-                paiementStore.paiement.customerEmail = data.email;
-                paiementStore.paiement.customerFirstName = data.fullName.split(' ')[0];
-                paiementStore.paiement.customerLastname = data.fullName.split(' ').slice(1).join(' ');
-                paiementStore.paiement.customerPhoneNumber = data.phone || '';
-                paiementStore.paiement.referenceNumber = orderStore.currentOrder?.id || '';
-                paiementStore.paiement.description = 'Achat de contrats';
+                
+                // On assigne tout le bloc d'un coup pour éviter le bug du "null"
+                paiementStore.paiement = {
+                    amount: cartStore.totalPrice,
+                    channel: data.paymentMethod,
+                    customerEmail: data.email,
+                    customerFirstName: data.fullName.split(' ')[0],
+                    customerLastname: data.fullName.split(' ').slice(1).join(' '),
+                    customerPhoneNumber: data.phone || '',
+                    referenceNumber: orderStore.currentOrder?.id || '',
+                    description: 'Achat de contrats'
+                };
                 
                 console.log('✅ [CheckoutSection] PaiementStore rempli:', paiementStore.paiement);
             }

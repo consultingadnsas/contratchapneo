@@ -19,14 +19,14 @@ export interface Cart {
 export const useCartStore = defineStore('cart', () => {
 
     const { $api } = useNuxtApp();
-        const config = useRuntimeConfig();
+    const config = useRuntimeConfig();
 
-        const resolveMediaUrl = (path?: string | null) => {
-            if (!path) return path;
-            if (path.startsWith('http')) return path;
-            const base = config.public.apiBase || 'http://localhost:8000';
-            return path.startsWith('/') ? `${base}${path}` : `${base}/${path}`;
-        };
+    const resolveMediaUrl = (path?: string | null) => {
+        if (!path) return path;
+        if (path.startsWith('http')) return path;
+        const base = config.public.apiBase || 'http://localhost:8000';
+        return path.startsWith('/') ? `${base}${path}` : `${base}/${path}`;
+    };
 
     // UX
     const isLoading = ref(false);
@@ -39,15 +39,15 @@ export const useCartStore = defineStore('cart', () => {
     let stripeElements: any = null;
     let stripeClientSecret: string | null = null;
 
-        const normalizeCart = (data: any): Cart => {
-            const payload = data?.data ?? data;
-            const rawItems = Array.isArray(payload?.items) ? payload.items : [];
-            const items = rawItems.map((it: any) => ({
-                ...it,
-                contrat: it.contrat ? { ...it.contrat, picture: resolveMediaUrl(it.contrat.picture) } : it.contrat
-            }));
-            return { items };
-        };
+    const normalizeCart = (data: any): Cart => {
+        const payload = data?.data ?? data;
+        const rawItems = Array.isArray(payload?.items) ? payload.items : [];
+        const items = rawItems.map((it: any) => ({
+            ...it,
+            contrat: it.contrat ? { ...it.contrat, picture: resolveMediaUrl(it.contrat.picture) } : it.contrat
+        }));
+        return { items };
+    };
 
     // Computed
     const cartItems = computed(() => cart.value?.items ?? []);
@@ -186,6 +186,7 @@ export const useCartStore = defineStore('cart', () => {
 
     const initiatePayment = async (payload: Object, email: string) => {
 
+        console.log("Initiate a payment")
         isLoading.value = true;
         error.value = null;
 
@@ -195,9 +196,11 @@ export const useCartStore = defineStore('cart', () => {
                 method: 'POST',
                 body: { ...payload, cart: cart.value }
             });
+            console.log("initiate a payment", response)
             return response;
         } catch (err: any) {
             error.value = err.message;
+            console.error(err)
             throw err;
         } finally {
             isLoading.value = false;

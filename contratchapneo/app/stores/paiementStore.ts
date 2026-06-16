@@ -38,6 +38,11 @@ export interface Paiement {
 
 export const usePaiementStore = defineStore('paiement', ()=>{
 
+    const {$api} = useNuxtApp();
+
+    const isLoading = ref(false);
+    const error = ref<string | null>(null);
+
     //
     const order = ref<Order | null>(null)
 
@@ -48,6 +53,8 @@ export const usePaiementStore = defineStore('paiement', ()=>{
     const setSandboxMode = (enabled: boolean) => {
         sandboxMode.value = enabled
     }
+
+    // State
 
     return {
         order,

@@ -107,6 +107,9 @@ class PaymentInitiateView(APIView):
                 json    = xpaye_payload,
                 timeout = 15,
             )
+            # 💡 ASTUCE DEBUG : Affiche la réponse brute de la sandbox dans ton terminal Django
+            print(f"--- STATUS XPAYE : {xpaye_resp.status_code} ---")
+            print(f"--- REPONSE XPAYE : {xpaye_resp.text} ---")
             xpaye_resp.raise_for_status()
             xpaye_data = xpaye_resp.json()
         except requests.RequestException as e:

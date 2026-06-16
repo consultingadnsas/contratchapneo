@@ -115,6 +115,10 @@ export default {
         // ── Soumission ────────────────────────────────────────────────────
         const submitForm = async () => {
 
+            // 🕵️‍♂️ LOGS DE DÉBOGAGE À AJOUTER ICI
+            console.log("🔍 Contenu complet de currentOrder:", orderStore.currentOrder)
+            console.log("🔍 L'ID extrait est-il valide ? :", orderStore.currentOrder?.id)
+
             try {
                 // Envoyer au backend : payload complet incluant le moyen de paiement
                 const payload = {
@@ -126,8 +130,23 @@ export default {
                     payment_method: checkoutform.payment_method,
                 }
 
-                await orderStore.checkout(payload)
-                await cartStore.fetchCart()
+                const order = await orderStore.checkout(payload)
+                
+                if (!order?.id) {
+                    console.error("❌ order.id manquant après checkout :", order)
+                    return
+                }
+
+                console.log("✅ Order créé avec ID :", order.id)
+
+                // Étape 3 : Initier le paiement avec le vrai order.id
+                await cartStore.initiatePayment(
+                    {
+                        order_id:       order.id,           // ✅ depuis le retour direct, pas orderStore.currentOrder
+                        payment_method: checkoutform.payment_method.toUpperCase() // souvent attendu en majuscules
+                    },
+                    checkoutform.email
+                )
 
                 emit('success', {
                     paymentMethod: checkoutform.payment_method,

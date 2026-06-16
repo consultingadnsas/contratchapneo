@@ -253,6 +253,7 @@ class CheckoutView(APIView):
             guest = GuestInfo.objects.create(
                 email    =guest_data['email'],
                 full_name=guest_data['full_name'],
+                phone_number=guest_data['phone_number']
             )
 
         # Snapshot du total depuis le panier
