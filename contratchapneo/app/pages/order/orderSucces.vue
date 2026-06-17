@@ -1,8 +1,6 @@
 <template>
     <div class="main-wrapper">
-        <div class="checkout-wrapper">
-            <checkoutSectionVue/>
-        </div>
+        <succesForm/>
         <footerSection/>
     </div>
 </template>
@@ -11,19 +9,19 @@
 import Navbar from '../../components/navigation/navbar.vue';
 import checkoutSectionVue from '../../components/sections/orderSections/checkoutSection.vue'
 import footerSection from '../../components/sections/footerSection.vue';
+import succesForm from '../../components/forms/succesForm.vue'
+
 export default {
     components:{
         Navbar,
         checkoutSectionVue,
-        footerSection
+        footerSection,
+        succesForm
     }
 }
 </script>
 
 <style scoped>
-.main-wrapper {
-    background: radial-gradient(circle, #202b4a 30%, #0f0f0f 100%);
-}
 
 .checkout-wrapper {
     width: 95%;

@@ -5,11 +5,16 @@
 </template>
 
 <script>
+import succesForm from '../components/forms/succesForm.vue'
 export default {
+
+    components:{
+        succesForm
+    }
 
 }
 </script>
 
-<style>
+<style scoped>
 
 </style>

@@ -9,6 +9,9 @@ from django.conf    import settings
 from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404
 from django.db.models import F
+from django.utils.decorators import method_decorator
+from django.views.decorators.csrf import csrf_exempt
+from rest_framework.decorators import (api_view, authentication_classes, permission_classes)
 
 from rest_framework.views       import APIView
 from rest_framework.response    import Response
@@ -210,6 +213,78 @@ class PaymentSimulateView(APIView):
 # WEBHOOK  —  POST /payment/webhook/
 # ─────────────────────────────────────────
 
+@csrf_exempt
+@api_view(['POST'])
+@authentication_classes([])
+@permission_classes([AllowAny])
+def payment_webhook_view(request):
+    """
+    Reçoit la notification xpaye après paiement.
+    Met à jour la transaction, la commande, et envoie l'email.
+    On répond TOUJOURS 200 pour éviter les réessais intempestifs de xpaye.
+    """
+    try:
+        data = request.data if request.data else json.loads(request.body)
+    except json.JSONDecodeError:
+        return Response({'message': 'Payload JSON invalide.'}, status=status.HTTP_200_OK)
+
+    print("Webhook reçu :", data)
+
+    reference      = data.get('referenceNumber')
+    response_code  = data.get('responsecode')
+    pay_status     = data.get('status')
+    success_flag   = data.get('success')
+    error_msg      = data.get('message', '')
+
+    # XPAYE peut envoyer un code numérique (0 = succès) ou un statut texte.
+    is_success = (
+        str(response_code) == '0'
+        or str(pay_status).upper() in {'SUCCESS', 'SUCCEEDED', 'PAID', 'OK'}
+        or str(success_flag).upper() in {'TRUE', '1', 'SUCCESS', 'SUCCEEDED'}
+    )
+
+    if not reference:
+        return Response({'message': 'referenceNumber manquant.'}, status=status.HTTP_200_OK)
+
+    try:
+        transaction = Transaction.objects.select_related(
+            'order__guest', 'order__user'
+        ).get(provider_reference=reference)
+    except Transaction.DoesNotExist:
+        return Response({'message': 'Transaction inconnue.'}, status=status.HTTP_200_OK)
+
+    # Idempotence
+    if transaction.status != Transaction.TransactionStatus.PENDING:
+        return Response({'message': 'Déjà traité.'}, status=status.HTTP_200_OK)
+
+    if is_success:
+        transaction.status = Transaction.TransactionStatus.SUCCESSFUL
+        transaction.error_message = None
+        transaction.save(update_fields=['status', 'error_message'])
+
+        order = transaction.order
+        order.status = Order.Status.PAID
+        order.save(update_fields=['status'])
+
+        _increment_downloads(order)
+        #_send_download_email(order)
+
+        return Response(
+            {'message': 'Paiement confirmé — téléchargement prêt.'},
+            status=status.HTTP_200_OK
+        )
+
+    transaction.status = Transaction.TransactionStatus.FAILED
+    transaction.error_message = error_msg or (
+        f"Échec du paiement (responsecode={response_code})."
+    )
+    transaction.save(update_fields=['status', 'error_message'])
+
+    return Response(
+        {'message': 'Paiement échoué.'},
+        status=status.HTTP_200_OK
+    )
+
 class PaymentWebhookView(APIView):
     """
     Reçoit la notification xpaye après paiement (notificationURL).
@@ -220,7 +295,7 @@ class PaymentWebhookView(APIView):
     On répond TOUJOURS 200 pour éviter les réessais xpaye.
     """
     permission_classes     = [AllowAny]
-    authentication_classes = []   # Webhook externe, pas de session Django
+    authentication_classes = []   # Webhook externe, pas de session Django 
 
     def post(self, request):
         try:
@@ -228,16 +303,21 @@ class PaymentWebhookView(APIView):
         except json.JSONDecodeError:
             return Response({'message': 'Payload JSON invalide.'}, status=status.HTTP_200_OK)
 
-        # ⚠️ xpaye renvoie notre referenceNumber — à confirmer dans leur doc sandbox
-        reference  = data.get('referenceNumber')
-        # ⚠️ Adapter la clé et les valeurs exactes selon leur réponse sandbox
-        pay_status = data.get('status')   # ex: 'SUCCESS', 'FAILED', 'PENDING'...
-        error_msg  = data.get('message', '')
+        reference      = data.get('referenceNumber')
+        response_code  = data.get('responsecode')
+        pay_status     = data.get('status')
+        success_flag   = data.get('success')
+        error_msg      = data.get('message', '')
+
+        is_success = (
+            str(response_code) == '0'
+            or str(pay_status).upper() in {'SUCCESS', 'SUCCEEDED', 'PAID', 'OK'}
+            or str(success_flag).upper() in {'TRUE', '1', 'SUCCESS', 'SUCCEEDED'}
+        )
 
         if not reference:
             return Response({'message': 'referenceNumber manquant.'}, status=status.HTTP_200_OK)
 
-        # Retrouver la Transaction via provider_reference = str(transaction.id)
         try:
             transaction = Transaction.objects.select_related(
                 'order__guest', 'order__user'
@@ -245,29 +325,32 @@ class PaymentWebhookView(APIView):
         except Transaction.DoesNotExist:
             return Response({'message': 'Transaction inconnue.'}, status=status.HTTP_200_OK)
 
-        # Idempotence — on ne retraite pas un webhook déjà reçu
         if transaction.status != Transaction.TransactionStatus.PENDING:
             return Response({'message': 'Déjà traité.'}, status=status.HTTP_200_OK)
 
-        # ── Traitement selon le statut xpaye ────────────────────────────
-        if pay_status == 'SUCCESS':
+        if is_success:
             transaction.status = Transaction.TransactionStatus.SUCCESSFUL
-            transaction.save()
+            transaction.error_message = None
+            transaction.save(update_fields=['status', 'error_message'])
 
-            order        = transaction.order
+            order = transaction.order
             order.status = Order.Status.PAID
-            order.save()
+            order.save(update_fields=['status'])
 
-            _increment_downloads(order)
-            _send_download_email(order)
+            #_increment_downloads(order)
+            #_send_download_email(order)
+            return Response(
+                {'message': 'Paiement confirmé — téléchargement prêt.'},
+                status=status.HTTP_200_OK
+            )
 
-        elif pay_status == 'FAILED':
-            transaction.status        = Transaction.TransactionStatus.FAILED
-            transaction.error_message = error_msg or 'Échec renvoyé par xpaye.'
-            transaction.save()
+        transaction.status = Transaction.TransactionStatus.FAILED
+        transaction.error_message = error_msg or (
+            f"Échec du paiement (responsecode={response_code})."
+        )
+        transaction.save(update_fields=['status', 'error_message'])
 
-        # Toujours 200
-        return Response({'message': 'Webhook traité.'}, status=status.HTTP_200_OK)
+        return Response({'message': 'Paiement échoué.'}, status=status.HTTP_200_OK)
     
     # 2. 👇 NOUVELLE MÉTHODE GET POUR LA SANDBOX 👇
     def get(self, request):

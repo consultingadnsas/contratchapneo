@@ -18,7 +18,7 @@
 </template>
 
 <script lang="ts">
-import { useRouter } from '#app';
+import { useRouter, useRoute } from 'vue-router'
 import { ref, onMounted, onUnmounted } from 'vue';
 
 import mainButton from '../buttons/mainButton.vue';
@@ -30,16 +30,21 @@ export default {
     props: {
         message: {
             type: String,
-            default: 'Action effectuée avec succès !'
+            default: 'Paiement effectuée avec succès !'
         }
     },
     emits:['succes'],
     setup(props, {emit}) {
-        const router = useRouter();
+        
+        const router = useRouter()
+        const route = useRoute()
         const countdown = ref(3);
         let countdownTimer: any = null;
 
         onMounted(() => {
+            if (Object.keys(route.query).length > 0) {
+                router.replace({ path: route.path, query: {} })
+            }
             // CRUCIAL : Lancer le décompte dès que le composant apparaît
             countdownTimer = setInterval(() => {
                 countdown.value--;
@@ -56,6 +61,7 @@ export default {
         });
 
         return {
+            route,
             router,
             countdown
         }
@@ -66,8 +72,10 @@ export default {
 <style scoped>
 /* ── Écran de succès ── */
 .success__screen {
+    height: 100vh;
     display: flex;
     flex-direction: column;
+    justify-content: center;
     align-items: center;
     gap: 1.25rem;
     padding: 2.5rem 1.5rem;

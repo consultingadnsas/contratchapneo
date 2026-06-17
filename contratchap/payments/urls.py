@@ -1,11 +1,18 @@
 # urls.py
 from django.urls import path
-from .views import PaymentInitiateView, PaymentSimulateView, PaymentWebhookView, DownloadContractView
+from .views import (
+    PaymentInitiateView, 
+    PaymentSimulateView, 
+    PaymentWebhookView, 
+    DownloadContractView,
+    payment_webhook_view
+)
+from django.views.decorators.csrf import csrf_exempt
 
 urlpatterns = [
     path('initiate/', PaymentInitiateView.as_view(), name='payment-initiate'),
     path('simulate/', PaymentSimulateView.as_view(), name='payment-simulate'),
-    path('webhook/',  PaymentWebhookView.as_view(),  name='payment-webhook'),
+    path('webhook/', payment_webhook_view, name='payment-webhook'),
     # 👇 Nouvelle route pour le téléchargement
     path('download/<str:order_id>/', DownloadContractView.as_view(), name='download-contract'),
 ]

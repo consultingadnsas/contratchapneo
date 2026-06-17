@@ -1,6 +1,5 @@
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
-import {useCartStore} from '../stores/cartStore'
 
 export interface GuestInfo {
     id?: string;
@@ -26,8 +25,6 @@ export interface OrderItem {
     quantity?: number;
     created_at?: string;
 }
-
-const cartStore = useCartStore()
 
 export const useOrderStore = defineStore('order', () => {
     const { $api } = useNuxtApp();

@@ -56,10 +56,31 @@ export const usePaiementStore = defineStore('paiement', ()=>{
 
     // State
 
+    const downloadContracts = async(orderId:string)=>{
+
+        isLoading.value = true;
+        error.value = "";
+
+        try{
+            const response = await $api(`/payment/download/${orderId}`,
+                {method: 'GET'}
+            );
+            console.log("votre réponse du backend", response)
+            return response;
+        }catch(err:any) {
+            error.value = err.message ?? String(err);
+            console.error("erreur interceptée", error);
+        }
+
+    }
+
     return {
+        isLoading,
+        error,
         order,
         paiement,
         sandboxMode,
         setSandboxMode,
+        downloadContracts
     }
 })

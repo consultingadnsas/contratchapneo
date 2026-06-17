@@ -14,7 +14,12 @@ class ContratMiniSerializer(serializers.ModelSerializer):
     """
     class Meta:
         model = Contrat
-        fields = ['id', 'title', 'prix', 'picture']
+        fields = [
+            'id', 
+            'title', 
+            'prix', 
+            'picture'
+        ]
 
 
 # ─────────────────────────────────────────

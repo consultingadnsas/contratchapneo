@@ -24,6 +24,8 @@ urlpatterns = [
     path('account/', include('account.urls')),
     path('contrat/', include('contrat.urls')),
     path('ecommerce/', include('ecommerce.urls')),
+    # Support both route forms to avoid provider URL mismatches.
+    path('payment/', include('payments.urls')),
     path('payments/', include('payments.urls')),
 ]
 
