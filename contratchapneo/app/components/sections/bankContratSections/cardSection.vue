@@ -24,7 +24,7 @@
             v-else-if="contratStore.contracts.length === 0" 
             title = "Contrat non disponibile pour l'instant"
             description="Le contrat démandé n'est pas disponible pour l'instant. Faire un contrat sur mesure "
-            @go-to="()=>router.push('contractBank/customContrat')"
+            @go-to="() => router.push('contractBank/customContrat')"
         />
 
         <template v-else>
@@ -198,7 +198,7 @@ export default {
 <style scoped>
 
 /* ==========================================
-   1. VOTRE ZONE DE TRAVAIL (Intacte)
+   1. STRUCTURE GLOBALE ET ZONE DE TRAVAIL
 ========================================== */
 .contrat-card-section {
     position: relative;
@@ -210,14 +210,12 @@ export default {
     align-items: center;
     gap: 2rem;
     padding: 4rem 1rem 1rem 1rem;
-    overflow: hidden; /* Empêche les éléments décoratifs de déborder */
-    
-    /* On garde votre fond d'origine pour la table de travail (blanc ou gris très clair) */
+    overflow: hidden; 
     background-color: #fdfcfc; 
 }
 
 /* ==========================================
-   2. LE COFFRE NUMÉRIQUE (L'en-tête sombre)
+   2. LE COFFRE NUMÉRIQUE (Arrière-plan)
 ========================================== */
 .contrat-card-section::before {
     content: '';
@@ -225,13 +223,8 @@ export default {
     top: 0;
     left: 0;
     width: 100%;
-    /* On garde 460px pour Desktop, on gèrera le mobile plus bas */
-    height: 460px; 
-    
-    /* Le bleu nuit du coffre */
+    height: 440px; 
     background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-    
-    /* La courbe élégante en bas */
     border-bottom-left-radius: 48px;
     border-bottom-right-radius: 48px;
     box-shadow: 0 10px 30px rgba(15, 23, 42, 0.15);
@@ -256,16 +249,17 @@ export default {
     transform: rotate(12deg);
     z-index: 0;
     pointer-events: none;
+    transition: all 0.3s ease;
 }
 
-/* Sécurité : Tout votre vrai contenu passe AU-DESSUS du coffre */
+/* On force le contenu textuel et les cartes au premier plan */
 .contrat-card-section > * {
     position: relative;
     z-index: 2;
 }
 
 /* ==========================================
-   4. TYPOGRAPHIE DU HEADER ET BADGE
+   4. TYPOGRAPHIE ET EN-TÊTE
 ========================================== */
 header {
     margin-top: 2rem;
@@ -274,13 +268,12 @@ header {
     width: 100%;
 }
 
-/* Le badge "Espace Sécurisé" */
 header::before {
     display: inline-block;
     font-size: 0.8rem;
     font-weight: 800;
     letter-spacing: 0.15em;
-    color: #34d399; /* Le vert de votre charte */
+    color: #34d399; 
     background: rgba(52, 211, 153, 0.1);
     padding: 0.4rem 1rem;
     border-radius: 50px;
@@ -305,7 +298,9 @@ header p {
     line-height: 1.6;
 }
 
-/* On relève légèrement votre barre de recherche pour qu'elle morde sur le coffre */
+/* ==========================================
+   5. TOOLBAR (Filtres & Recherche)
+========================================== */
 .toolbar {
     width: 100%;
     max-width: 1200px;
@@ -316,19 +311,15 @@ header p {
     padding: 0.5rem;
 }
 
-/* Sur mobile : le select prend sa place naturelle (auto),
-   la loupe est un bouton rond fixe → rien ne disparaît */
 .toolbar__filter {
-    min-width: 0;     /* évite le débordement flex */
-    margin: 0;        /* retire le margin: 1rem 0 du composant */
+    min-width: 0; 
+    margin: 0; 
 }
 
 .toolbar__search {
     flex: 0 0 auto; 
 }
 
-/* Quand la recherche s'étend sur mobile, elle ne chasse pas le filtre :
-   on lui donne une largeur fixe max plutôt que 100% */
 :deep(.search-container.is-mobile.is-expanded) {
     width: auto;
     flex: 1 1 auto;
@@ -336,18 +327,7 @@ header p {
 }
 
 /* ==========================================
-   TABLETTE (>= 768px) : recherche toujours visible
-========================================== */
-@media (min-width: 768px) {
-
-    .toolbar__search {
-        max-width: 360px;
-        margin-left: auto; /* pousse la recherche à droite */
-    }
-}
-
-/* ==========================================
-   GRILLE DE CARTES
+   6. GRILLE DE CARTES (Base Mobile)
 ========================================== */
 .cards-container {
     width: 100%;
@@ -355,54 +335,87 @@ header p {
     display: grid;
     grid-template-columns: 1fr;
     place-items: center;
-    gap: 1rem;
+    gap: 1.5rem;
 }
 
-@media (min-width: 768px) {
-    .cards-container {
-        grid-template-columns: repeat(2, 1fr);
-    }
-}
 
-@media (min-width: 1024px) {
-    .cards-container {
-        grid-template-columns: repeat(4, 1fr);
-    }
-}
-
-@media (min-width: 1300px) {
-    .cards-container {
-        grid-template-columns: repeat(4, 1fr);
-    }
-}
 /* ==========================================
-   AJUSTEMENTS MOBILE (<= 768px)
+   === MEDIA QUERIES (RESPONSIVE DESIGN) ===
 ========================================== */
-/* ==========================================
-   AJUSTEMENTS MOBILE (<= 768px)
-========================================== */
-@media (max-width: 768px) {
-    /* 1. On aspire l'espace sous le bouton "Contrat sur mesure" */
+
+/* 📱 SMARTPHONES (Max 767px) */
+@media (max-width: 767px) {
     header {
-        margin-bottom: 0.2rem !important; /* Réduit drastiquement l'espace au-dessus de la toolbar */
+        margin-bottom: 0.2rem !important; 
     }
 
-    /* 2. On réduit légèrement l'espacement (gap) entre le titre, le paragraphe et le bouton */
     header.flex {
         gap: 0.75rem !important; 
     }
 
-    /* 3. On s'assure que la toolbar remonte bien collée au bouton */
     .toolbar {
-        margin-top: 0; /* La remonte (réglage précédent) */
-        justify-content: center; /* Centre parfaitement le filtre et la loupe */
-        gap: 1rem; /* Ajoute un joli petit espace régulier entre les deux */
+        margin-top: 0; 
+        justify-content: center; 
+        gap: 1rem; 
         width: 100%;
-        max-width: 92%; /* Laisse une petite marge respirable sur les bords de l'écran */
-        margin-left: auto; /* Centre la boîte globale */
+        max-width: 92%; 
+        margin-left: auto; 
         margin-right: auto;
         position: relative;
         z-index: 3;
+    }
+
+    /* On réduit l'effet de verre pour ne pas polluer l'écran mobile */
+    .contrat-card-section::after {
+        right: -50px;
+        top: -20px;
+        transform: scale(0.6) rotate(15deg);
+    }
+}
+
+/* 💊 TABLETTES (De 768px à 1023px) */
+@media (min-width: 768px) and (max-width: 1023px) {
+    .cards-container {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1.5rem;
+    }
+
+    .toolbar {
+        padding: 0.5rem 1rem;
+    }
+
+    .toolbar__search {
+        max-width: 320px;
+        margin-left: auto;
+    }
+
+    /* On réduit légèrement l'effet de verre pour qu'il ne chevauche pas le titre sur un iPad */
+    .contrat-card-section::after {
+        right: -20px;
+        transform: scale(0.8) rotate(12deg);
+    }
+}
+
+/* 💻 PETITS ÉCRANS & ORDINATEURS PORTABLES (De 1024px à 1279px) */
+@media (min-width: 1024px) {
+    /* 3 colonnes au lieu de 4 pour éviter des cartes trop écrasées sur petits PC */
+    .cards-container {
+        grid-template-columns: repeat(3, 1fr);
+    }
+
+    .toolbar__search {
+        max-width: 360px;
+        margin-left: auto;
+    }
+    .toolbar{
+        padding:0%;
+    }
+}
+
+/* 🖥️ GRANDS ÉCRANS (1280px et plus) */
+@media (min-width: 1280px) {
+    .cards-container {
+        grid-template-columns: repeat(4, 1fr);
     }
 }
 </style>

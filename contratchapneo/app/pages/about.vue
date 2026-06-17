@@ -8,10 +8,10 @@
                 <div class="text-content">
                     <h1 class="main-title">Qu'est-ce que ContratChap ?</h1>
                     <p class="description muted-text">
-                       ContratChapNeo est une Legaltech de l’espace OHADA dédiée à la croissance et à la formalisation des PME's. 
+                       ContratChap est une Legaltech spécialisé dans le téléchargement de contrat digital dans l’espace OHADA. 
                        Née de l’expertise du cabinet ADN Consulting, la plateforme simplifie la sécurisation juridique des entreprises de la création à la cession.
-                        Elle propose des centaines de modèles de contrats sécurisés et expliqués, des offres de packs, ainsi que du conseil en temps réel et des options de rédaction sur mesure. 
-                        Via ContratChapNeo, accédez simplement à un réseau étendu d’experts du droit (avocats, notaires, etc.) pour protéger vos affaires.
+                       Elle propose des centaines de modèles de contrats sécurisés conforme au système OHADA, des offres de packs dédiée à la croissance et à la formalisation des PME's, ainsi que du conseil en temps réel et des options de rédaction sur mesure. 
+                       Via ContratChap, accédez simplement à un réseau étendu d’experts du droit (avocats, notaires, etc.) pour protéger vos affaires.
                     </p>
 
                     <div class="stats-grid">
@@ -44,7 +44,7 @@
                 <div class="text-content">
                     <h2 class="section-title">Les solutions que nous apportons au quotidien.</h2>
                     <p class="description muted-text">
-                        Si vous doutez de la sécurité juridique de vos contrats avant de les signer, ContratChapNeo est la réponse. Nous avons conçu la première solution taillée sur mesure pour les entrepreneurs de l'espace OHADA. Ne téléchargez plus de modèles inadaptés ; exercez enfin votre activité en sachant que tous vos intérêts sont juridiquement protégés.
+                        Si vous doutez de la sécurité juridique de vos contrats avant de les signer, ContratChap est la réponse. Avec plus d'une centaine de contrat sécurisé et conforme à l'espace OHADA, nous avons conçu la première solution taillée sur mesure pour les entrepreneurs de l'espace OHADA. Ne téléchargez plus de modèles inadaptés ; exercez enfin votre activité en sachant que tous vos intérêts sont juridiquement protégés.
                     </p>
 
                     <!-- Grille 2 colonnes comme sur l'image, mise à jour avec vos 6 points -->
@@ -95,9 +95,9 @@
                     <h2 class="section-title">Qui sommes-nous ?</h2>
                     <p class="description muted-text">
                         ADN CONSULTING SAS est un cabinet juridique innovant fondé en 2017 qui à travers un positionnement particulier, 
-                        une équipe compétente et smart et des offres répondant aux besoins et réalité des PME's ET STARTUPS, 
-                        s'est donné pour mission, depuis sa date de création de: faire en sorte que dans toutes les actions et engagements, 
-                        les PMEs/startups voient leurs intérêts grandement protégéset grandissent sainement.
+                        une équipe compétente et smart et des offres répondant aux besoins et réalité des PME's et startups, 
+                        s'est donné pour mission, depuis sa date de création de faire en sorte que dans toutes les actions et engagements, 
+                        les PMEs/startups voient leurs intérêts grandement protégés et grandissent sainement.
                     </p>
                 </div>
 

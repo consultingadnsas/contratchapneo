@@ -1,0 +1,316 @@
+<template>
+  <aside class="sidebar" :class="{ 'is-reduced': isReduced }">
+
+    <!-- LOGO ET BOUTON DE RÉDUCTION (Desktop) -->
+    <div class="logo hidden-mobile">
+      <span class="logo-text" v-if="!isReduced">ContratChap</span>
+      <!-- Bouton Menu (Hamburger) pour réduire/agrandir -->
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="toggle-icon" @click="toggleReduce">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 0 1 6 3.75h2.25A2.25 2.25 0 0 1 10.5 6v2.25a2.25 2.25 0 0 1-2.25 2.25H6a2.25 2.25 0 0 1-2.25-2.25V6ZM3.75 15.75A2.25 2.25 0 0 1 6 13.5h2.25a2.25 2.25 0 0 1 2.25 2.25V18a2.25 2.25 0 0 1-2.25 2.25H6A2.25 2.25 0 0 1 3.75 18v-2.25ZM13.5 6a2.25 2.25 0 0 1 2.25-2.25H18A2.25 2.25 0 0 1 20.25 6v2.25A2.25 2.25 0 0 1 18 10.5h-2.25a2.25 2.25 0 0 1-2.25-2.25V6ZM13.5 15.75a2.25 2.25 0 0 1 2.25-2.25H18a2.25 2.25 0 0 1 2.25 2.25V18A2.25 2.25 0 0 1 18 20.25h-2.25A2.25 2.25 0 0 1 13.5 18v-2.25Z" />
+      </svg>
+    </div>
+
+    <!-- NAVIGATION PRINCIPALE -->
+    <nav class="nav-menu">
+      
+      <!-- Vue d'ensemble -->
+      <button class="nav-item active">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="icon">
+          <path stroke-linecap="round" stroke-linejoin="round" d="m2.25 12 8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
+        </svg>
+        <span class="nav-label" v-if="!isReduced">Vue d'ensemble</span>
+      </button>
+
+      <!-- Mes Dossiers -->
+      <button class="nav-item">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="icon">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12.75V12A2.25 2.25 0 0 1 4.5 9.75h15A2.25 2.25 0 0 1 21.75 12v.75m-8.69-6.44l-2.12-2.12a1.5 1.5 0 0 0-1.061-.44H4.5A2.25 2.25 0 0 0 2.25 6v12a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9a2.25 2.25 0 0 0-2.25-2.25h-5.379a1.5 1.5 0 0 1-1.06-.44z" />
+        </svg>
+        <span class="nav-label" v-if="!isReduced">Mes Dossiers</span>
+      </button>
+
+      <!-- Banque de modèles -->
+      <button class="nav-item">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="icon">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 21v-8.25M15.75 21v-8.25M8.25 21v-8.25M3 9l9-6 9 6m-1.5 12V10.332A48.36 48.36 0 0012 9.75c-2.551 0-5.056.2-7.5.582V21M3 21h18M12 6.75h.008v.008H12V6.75z" />
+        </svg>
+        <span class="nav-label" v-if="!isReduced">Modèles</span>
+      </button>
+
+      <!-- Signatures -->
+      <button class="nav-item">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="icon">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487zm0 0L19.5 7.125" />
+        </svg>
+        <span class="nav-label" v-if="!isReduced">Signatures</span>
+      </button>
+
+      <!-- Paramètres -->
+      <button class="nav-item">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="icon">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 0 1 1.37.49l1.296 2.247a1.125 1.125 0 0 1-.26 1.43l-1.003.767c-.3.23-.452.617-.432.998.003.074.005.147.005.22s-.002.146-.005.22c-.02.381.13.768.432.998l1.003.767a1.125 1.125 0 0 1 .26 1.43l-1.296 2.247a1.125 1.125 0 0 1-1.37.49l-1.216-.456c-.356-.133-.751-.072-1.076.124a6.57 6.57 0 0 1-.22.128c-.331.183-.581.495-.644.869l-.213 1.28c-.09.543-.56.941-1.11.941h-2.594c-.55 0-1.02-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 0 1-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 0 1-1.369-.49l-1.297-2.247a1.125 1.125 0 0 1 .26-1.43l1.004-.767c.301-.23.452-.617.432-.998-.003-.074-.005-.147-.005-.22s.002-.146.005-.22c.02-.381-.13-.768-.432-.998L2.26 9.17a1.125 1.125 0 0 1-.26-1.43l1.297-2.247a1.125 1.125 0 0 1 1.37-.49l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.087.22-.128.332-.183.582-.495.644-.869l.214-1.28Z" />
+          <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+        </svg>
+        <span class="nav-label" v-if="!isReduced">Paramètres</span>
+      </button>
+    </nav>
+
+    <!-- DÉCONNEXION -->
+    <div class="logout">
+      <button class="nav-item" >
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="icon">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15M12 9l-3 3m0 0 3 3m-3-3h12.75" />
+        </svg>
+        <span class="nav-label" v-if="!isReduced">Déconnexion</span>
+      </button>
+    </div>
+  </aside>
+</template>
+
+<script lang="ts">
+import { ref } from 'vue';
+
+export default {
+  name: 'Sidebar',
+  setup() {
+    const isReduced = ref(false);
+
+    const toggleReduce = () => {
+      isReduced.value = !isReduced.value;
+    };
+
+    return { isReduced, toggleReduce };
+  }
+}
+</script>
+
+<style scoped>
+/* =========================================
+   VARIABLES DE THÈME CONTRATCHAP
+   ========================================= */
+.sidebar {
+  --sb-bg: #0f172a;           /* Bleu nuit profond */
+  --sb-text: #94a3b8;         /* Gris ardoise (Texte inactif) */
+  --sb-text-active: #ffffff;  /* Blanc éclatant */
+  --sb-accent: #34d399;       /* Vert émeraude */
+  --sb-border: rgba(255, 255, 255, 0.08); /* Bordure subtile */
+  --sb-hover-bg: rgba(255, 255, 255, 0.05); /* Fond au survol */
+}
+
+/* =========================================
+   1. STRUCTURE MOBILE (Barre en bas)
+   ========================================= */
+.sidebar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: calc(65px + env(safe-area-inset-bottom));
+  background-color: var(--sb-bg);
+  border-top: 1px solid var(--sb-border);
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  padding-bottom: env(safe-area-inset-bottom);
+  z-index: 100;
+  /* Ombre inversée pour que la barre se détache du fond blanc du dashboard */
+  box-shadow: 0 -4px 20px rgba(15, 23, 42, 0.1); 
+}
+
+.nav-menu {
+  display: flex;
+  width: 100%;
+  /* 1. On aligne au début au lieu de répartir l'espace */
+  justify-content: flex-start; 
+  align-items: center;
+  
+  /* 2. La magie du Scroll Horizontal */
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch; /* Rendu fluide sur iOS */
+  
+  /* 3. On ajoute un petit espace entre les boutons et sur les bords */
+  gap: 0.5rem;
+  padding: 0 1rem;
+  
+  /* 4. On cache la barre de défilement (très important pour le design) */
+  scrollbar-width: none; /* Pour Firefox */
+}
+
+.nav-menu::-webkit-scrollbar{
+    display: none;
+}
+
+.nav-item {
+  background: none;
+  border: none;
+  color: var(--sb-text);
+  cursor: pointer;
+  padding: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  flex-shrink: 0;
+  width: 100px;
+  min-height: 50px;
+  font-size: 0.65rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.icon {
+  width: 24px;
+  height: 24px;
+  margin-bottom: 0.2rem;
+  transition: transform 0.2s ease;
+}
+
+/* États Actif & Survol */
+.nav-item.active { 
+  color: var(--sb-accent); 
+}
+.nav-item.active .icon {
+  transform: translateY(-2px);
+}
+.nav-item:hover:not(.active) {
+  color: var(--sb-text-active);
+}
+
+.hidden-mobile { 
+  display: none; 
+}
+.logout span{
+    color:#ef4444
+}
+.logout .nav-item{
+    color: #ef4444;
+}
+
+/* =========================================
+   2. STRUCTURE DESKTOP (À gauche, extensible)
+   ========================================= */
+@media (min-width: 1024px) {
+  .hidden-mobile { 
+    display: flex; 
+  }
+
+  .sidebar {
+    position: relative;
+    bottom: auto;
+    left: auto;
+    width: 260px; /* Largeur par défaut déployée */
+    height: 100vh;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: stretch;
+    padding: 1.5rem 1rem;
+    border-top: none;
+    border-right: 1px solid var(--sb-border); /* La bordure passe à DROITE de la sidebar */
+    box-shadow: none;
+    gap: 2.5rem;
+    transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* État Réduit sur Desktop */
+  .sidebar.is-reduced {
+    width: 88px;
+    padding: 1.5rem 0.5rem;
+  }
+
+  /* Alignement Logo & Bouton Hamburger */
+  .logo {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 0.5rem;
+  }
+  
+  .sidebar.is-reduced .logo {
+    justify-content: center;
+    padding: 0;
+  }
+
+  .logo-text {
+    font-weight: 700;
+    font-size: 1.25rem;
+    color: var(--sb-text-active);
+    letter-spacing: -0.02em;
+  }
+
+  .toggle-icon {
+    width: 28px;
+    height: 28px;
+    color: var(--sb-text);
+    cursor: pointer;
+    transition: color 0.2s ease;
+  }
+
+  .toggle-icon:hover {
+    color: var(--sb-accent);
+  }
+
+  /* Menu vertical & Items */
+  .nav-menu {
+    flex-direction: column;
+    width: 100%;
+    gap: 0.5rem;
+  }
+
+  .nav-item {
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+    gap: 1rem;
+    padding: 0.8rem 1rem;
+    border-radius: 12px;
+    font-size: 0.95rem;
+  }
+
+  /* Redéfinition des hovers pour Desktop */
+  .nav-item:hover {
+    background-color: var(--sb-hover-bg);
+    color: var(--sb-text-active);
+  }
+  
+  .nav-item.active {
+    background-color: rgba(52, 211, 153, 0.1); /* Vert transparent très léger */
+    color: var(--sb-accent);
+  }
+
+  .nav-item.active .icon {
+    transform: none; /* Annule l'effet mobile */
+  }
+
+  /* Ajustements en mode réduit */
+  .sidebar.is-reduced .nav-item {
+    justify-content: center;
+    padding: 0.8rem 0;
+  }
+
+  .nav-label {
+    white-space: nowrap;
+    animation: fadeIn 0.2s ease forwards;
+  }
+
+  /* Bouton de déconnexion */
+  .logout {
+    margin-top: auto;
+    width: 100%;
+    border-top: 1px solid var(--sb-border);
+    padding-top: 1rem;
+  }
+
+  
+  .logout .nav-item:hover {
+    background-color: rgba(239, 68, 68, 0.1); /* Rouge très léger */
+    color: #ef4444; /* Rouge pour symboliser la sortie */
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateX(-5px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+</style>
