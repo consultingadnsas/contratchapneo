@@ -7,6 +7,8 @@
         </div>
         <paiementModale
             :isOpen="isPaiementModale"
+            @payment-success="handlePaymentConfirmed"
+            @close="isPaiementModale = false"
         />
 
         <!--
@@ -112,12 +114,20 @@ export default {
             }
         };
 
+        const handlePaymentConfirmed = () => {
+            console.log('✅ [CheckoutSection] Paiement confirmé, affichage de l’écran de succès');
+            isSuccess.value = true;
+            isPaiementModale.value = false;
+            isXpayeModale.value = false;
+        }
+
         return{
             isPaiementModale,
             isXpayeModale,
             selectedPaymentMethod,
             isSuccess,
             handlePaiementSuccess,
+            handlePaymentConfirmed,
         }
 
 

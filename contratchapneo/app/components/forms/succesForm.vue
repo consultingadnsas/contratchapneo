@@ -10,6 +10,13 @@
     <p class="success__subtitle">
         Vous serez redirigé dans <span>{{ countdown }}s</span>.
     </p>
+    <button
+        class="success__download"
+        :disabled="downloading || !canDownload"
+        @click="downloadContract"
+    >
+        {{ downloading ? 'Téléchargement en cours...' : 'Télécharger le contrat' }}
+    </button>
     <mainButton 
         label="aller page d'accueil" 
         @click="()=>router.push('/')"
@@ -19,7 +26,9 @@
 
 <script lang="ts">
 import { useRouter, useRoute } from 'vue-router'
-import { ref, onMounted, onUnmounted } from 'vue';
+import { ref, onMounted, onUnmounted, computed, watch } from 'vue';
+import { useOrderStore } from '../../stores/orderStore'
+import { usePaiementStore } from '../../stores/paiementStore'
 
 import mainButton from '../buttons/mainButton.vue';
 
@@ -55,6 +64,35 @@ export default {
             }, 1000);
         });
 
+        const orderStore = useOrderStore()
+        const paiementStore = usePaiementStore()
+
+        const canDownload = computed(() => !!orderStore.currentOrder?.id)
+        const downloading = computed(() => paiementStore.isLoading)
+
+        const autoTriggered = ref(false)
+
+        const downloadContract = async () => {
+            if (!orderStore.currentOrder?.id) return
+            await paiementStore.downloadContracts(orderStore.currentOrder.id)
+        }
+
+        // Auto-trigger download when component mounts or when order becomes available
+        onMounted(() => {
+            if (canDownload.value && !autoTriggered.value) {
+                autoTriggered.value = true
+                downloadContract()
+            }
+        })
+
+        // If the order arrives shortly after mount, trigger once it exists
+        watch(canDownload, (val) => {
+            if (val && !autoTriggered.value) {
+                autoTriggered.value = true
+                downloadContract()
+            }
+        })
+
         onUnmounted(() => {
             // Nettoyage pour éviter les fuites de mémoire
             if (countdownTimer) clearInterval(countdownTimer);
@@ -63,7 +101,10 @@ export default {
         return {
             route,
             router,
-            countdown
+            countdown,
+            canDownload,
+            downloading,
+            downloadContract
         }
     }
 }
@@ -112,5 +153,25 @@ export default {
     font-size: 0.95rem;
     line-height: 1.7;
     margin: 0;
+}
+
+.success__download {
+    background: #2f6dff;
+    color: #fff;
+    border: none;
+    border-radius: 999px;
+    padding: 0.9rem 1.5rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.success__download:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.success__download:hover:not(:disabled) {
+    transform: translateY(-1px);
 }
 </style>

@@ -59,17 +59,43 @@ export const usePaiementStore = defineStore('paiement', ()=>{
     const downloadContracts = async(orderId:string)=>{
 
         isLoading.value = true;
-        error.value = "";
+        error.value = null;
 
         try{
-            const response = await $api(`/payment/download/${orderId}`,
-                {method: 'GET'}
-            );
-            console.log("votre réponse du backend", response)
-            return response;
-        }catch(err:any) {
-            error.value = err.message ?? String(err);
-            console.error("erreur interceptée", error);
+            const config = useRuntimeConfig()
+            const baseURL = config.public.apiBase || window.location.origin
+            const downloadUrl = `${baseURL}/payment/download/${orderId}`
+
+            const response = await window.fetch(downloadUrl, {
+                method: 'GET',
+                credentials: 'include',
+            })
+
+            if (!response.ok) {
+                throw new Error(`Erreur de téléchargement : ${response.status}`)
+            }
+
+            const blob = await response.blob()
+            const disposition = response.headers.get('Content-Disposition') || ''
+            const filenameMatch = disposition.match(/filename="?(.*?)"?$/)
+            const filename = filenameMatch?.[1] || `contrat-${orderId}.pdf`
+
+            const url = URL.createObjectURL(blob)
+            const anchor = document.createElement('a')
+            anchor.href = url
+            anchor.download = filename
+            document.body.appendChild(anchor)
+            anchor.click()
+            document.body.removeChild(anchor)
+            URL.revokeObjectURL(url)
+
+            return true
+        } catch(err:any) {
+            error.value = err.message ?? String(err)
+            console.error("erreur interceptée", error.value)
+            return false
+        } finally {
+            isLoading.value = false
         }
 
     }
