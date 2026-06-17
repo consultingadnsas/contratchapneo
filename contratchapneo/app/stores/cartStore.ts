@@ -194,7 +194,7 @@ export const useCartStore = defineStore('cart', () => {
             const emailQuery = email ? `?email=${encodeURIComponent(email)}` : '';
             const response = await $api(`/payments/initiate/${emailQuery}`, {
                 method: 'POST',
-                body: { ...payload, cart: cart.value }
+                body: payload
             });
             console.log("initiate a payment", response)
             return response;

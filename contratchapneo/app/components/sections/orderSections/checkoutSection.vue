@@ -97,6 +97,12 @@ export default {
                 console.log('✅ [CheckoutSection] PaiementStore rempli:', paiementStore.paiement);
             }
 
+            if (data.paymentUrl && data.paymentMethod !== 'stripe') {
+                console.log('🔗 [CheckoutSection] Redirection vers sandbox de paiement:', data.paymentUrl);
+                window.location.href = data.paymentUrl;
+                return;
+            }
+
             if (data.paymentMethod === 'stripe') {
                 console.log('🔵 [CheckoutSection] Ouverture modale Stripe');
                 isPaiementModale.value = true;

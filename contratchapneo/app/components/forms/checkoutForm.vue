@@ -120,14 +120,13 @@ export default {
             console.log("🔍 L'ID extrait est-il valide ? :", orderStore.currentOrder?.id)
 
             try {
-                // Envoyer au backend : payload complet incluant le moyen de paiement
+                // Envoyer au backend : uniquement les données invité requises pour le checkout
                 const payload = {
                     guest: {
                         full_name:    checkoutform.full_name,
                         email:        checkoutform.email,
                         phone_number: checkoutform.phone_number || null,
                     },
-                    payment_method: checkoutform.payment_method,
                 }
 
                 const order = await orderStore.checkout(payload)
@@ -140,7 +139,7 @@ export default {
                 console.log("✅ Order créé avec ID :", order.id)
 
                 // Étape 3 : Initier le paiement avec le vrai order.id
-                await cartStore.initiatePayment(
+                const paiementResponse = await cartStore.initiatePayment(
                     {
                         order_id:       order.id,           // ✅ depuis le retour direct, pas orderStore.currentOrder
                         payment_method: checkoutform.payment_method.toUpperCase() // souvent attendu en majuscules
@@ -153,6 +152,7 @@ export default {
                     email: checkoutform.email,
                     fullName: checkoutform.full_name,
                     phone: checkoutform.phone_number,
+                    paymentUrl: paiementResponse?.payment_url || null,
                 })
 
                 // Reset
