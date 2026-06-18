@@ -1,7 +1,7 @@
-import {useHead} from '#imports';
-import { ref} from 'vue';
+import { useHead } from '#imports';
+import { ref } from 'vue';
 import { defineStore } from 'pinia';
-import type {Order} from '../stores/orderStore'
+import type { Order } from '../stores/orderStore'
 
 /*
 {
@@ -36,9 +36,9 @@ export interface Paiement {
     returnContext?: string,
 }
 
-export const usePaiementStore = defineStore('paiement', ()=>{
+export const usePaiementStore = defineStore('paiement', () => {
 
-    const {$api} = useNuxtApp();
+    const { $api } = useNuxtApp();
 
     const isLoading = ref(false);
     const error = ref<string | null>(null);
@@ -56,26 +56,26 @@ export const usePaiementStore = defineStore('paiement', ()=>{
 
     // State
 
-    const downloadContracts = async(orderId:string)=>{
+    const downloadContracts = async (orderId: string) => {
 
         isLoading.value = true;
         error.value = null;
 
-        try{
-            const config = useRuntimeConfig()
-            const baseURL = config.public.apiBase || window.location.origin
-            const downloadUrl = `${baseURL}/payment/download/${orderId}`
+        try {
+            // Use the persisted order details to recover the guest email when needed.
+            const { useOrderStore } = await import('./orderStore');
+            const orderStore = useOrderStore();
+            //const email = orderStore.currentOrder?.guest?.email || '';
+            const email = 'consultingadnsas@gmail.com';
 
-            const response = await window.fetch(downloadUrl, {
+            // Use $api.raw to access both the Blob data and the headers (for filename)
+            const response = await $api.raw(`/payment/download/${orderId}/?email=${email}`, {
                 method: 'GET',
-                credentials: 'include',
+                responseType: 'blob',
+                query: email ? { email } : undefined,
             })
 
-            if (!response.ok) {
-                throw new Error(`Erreur de téléchargement : ${response.status}`)
-            }
-
-            const blob = await response.blob()
+            const blob = response._data as Blob
             const disposition = response.headers.get('Content-Disposition') || ''
             const filenameMatch = disposition.match(/filename="?(.*?)"?$/)
             const filename = filenameMatch?.[1] || `contrat-${orderId}.pdf`
@@ -89,8 +89,10 @@ export const usePaiementStore = defineStore('paiement', ()=>{
             document.body.removeChild(anchor)
             URL.revokeObjectURL(url)
 
+            console.log("Email pour le téléchargement")
+
             return true
-        } catch(err:any) {
+        } catch (err: any) {
             error.value = err.message ?? String(err)
             console.error("erreur interceptée", error.value)
             return false

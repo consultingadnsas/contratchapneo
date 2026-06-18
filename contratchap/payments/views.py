@@ -374,9 +374,11 @@ class PaymentWebhookView(APIView):
                 # ou retrouver directement la commande via le 'returnContext'
                 
                 # Exemple générique de mise à jour si tu as le bon numéro de référence :
-                # order = Order.objects.get(transaction_ref=reference_number)
-                # order.status = Order.Status.PAID
-                # order.save()
+                order = Order.objects.get(transaction_ref=reference_number)
+                order.status = Order.Status.PAID
+                order.save()
+
+                print(f"l'ordre est mis sur paid {order}")
                 
                 return Response({'message': 'Paiement Sandbox validé !'}, status=status.HTTP_200_OK)
 
@@ -400,6 +402,7 @@ class DownloadContractView(APIView):
     Condition : order.status == 'paid'
     """
     permission_classes = [AllowAny]
+    authentication_classes = []
 
     def get(self, request, order_id):
         order = get_object_or_404(

@@ -124,4 +124,4 @@ export const useOrderStore = defineStore('order', () => {
         checkout,
         cancelOrder,
     };
-});
+}, { persist: true });

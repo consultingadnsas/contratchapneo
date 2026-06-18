@@ -50,11 +50,17 @@ export default {
         const countdown = ref(3);
         let countdownTimer: any = null;
 
+        const orderStore = useOrderStore()
+        const paiementStore = usePaiementStore()
+
+        // Capture order ID from query before clearing it
+        const queryOrderId = route.query.order_id || route.query.id || route.query.referenceNumber || null;
+        const capturedOrderId = ref(queryOrderId);
+
         onMounted(() => {
             if (Object.keys(route.query).length > 0) {
                 router.replace({ path: route.path, query: {} })
             }
-            // CRUCIAL : Lancer le décompte dès que le composant apparaît
             countdownTimer = setInterval(() => {
                 countdown.value--;
                 if (countdown.value <= 0) {
@@ -64,20 +70,22 @@ export default {
             }, 1000);
         });
 
-        const orderStore = useOrderStore()
-        const paiementStore = usePaiementStore()
+        const activeOrderId = computed(() => orderStore.currentOrder?.id || capturedOrderId.value);
 
-        const canDownload = computed(() => !!orderStore.currentOrder?.id)
+        const canDownload = computed(() => !!activeOrderId.value)
         const downloading = computed(() => paiementStore.isLoading)
 
         const autoTriggered = ref(false)
 
         const downloadContract = async () => {
-            if (!orderStore.currentOrder?.id) return
-            await paiementStore.downloadContracts(orderStore.currentOrder.id)
+            if (!activeOrderId.value) {
+                console.error("Impossible de télécharger: Aucun ID de commande trouvé.");
+                return;
+            }
+            console.log("Lancement du téléchargement pour la commande:", activeOrderId.value);
+            await paiementStore.downloadContracts(activeOrderId.value as string);
         }
 
-        // Auto-trigger download when component mounts or when order becomes available
         onMounted(() => {
             if (canDownload.value && !autoTriggered.value) {
                 autoTriggered.value = true
@@ -85,7 +93,6 @@ export default {
             }
         })
 
-        // If the order arrives shortly after mount, trigger once it exists
         watch(canDownload, (val) => {
             if (val && !autoTriggered.value) {
                 autoTriggered.value = true
@@ -94,7 +101,6 @@ export default {
         })
 
         onUnmounted(() => {
-            // Nettoyage pour éviter les fuites de mémoire
             if (countdownTimer) clearInterval(countdownTimer);
         });
 
