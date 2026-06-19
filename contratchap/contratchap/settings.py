@@ -52,7 +52,8 @@ INSTALLED_APPS = [
     'account',
     'contrat',
     'ecommerce',
-    'payments'
+    'payments',
+    'pro'
 ]
 
 REST_FRAMEWORK = {
