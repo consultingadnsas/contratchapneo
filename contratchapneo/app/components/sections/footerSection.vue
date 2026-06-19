@@ -17,7 +17,8 @@
         <div class="contact-info">
           <p class="address">Angre 8e tranche, Chicken Nation<br />Abidjan, Côte d'Ivoire</p>
           <p class="email">Consultingadnsas@gmail.com</p>
-          <p class="phone">+225 07 79 10 11 70</p>
+          <p class="phone">+225 05 08 88 40 88</p>
+          <p class="phone">+229 01 57 21 83 91</p>
         </div>
       </div>
 

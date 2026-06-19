@@ -1,7 +1,7 @@
 <template>
     <div class="page-wrapper">
         <main class="legal-services-page">
-            <Navbar theme="light"/>
+            <Navbar/>
             <section class="hero-section">
                 <div class="hero-content">
                     <h1 class="main-title">

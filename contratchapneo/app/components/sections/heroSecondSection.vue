@@ -46,8 +46,8 @@ export default defineComponent({
 
         const phrases = [
             'Profitez de nos contrats gratuits.',
-            'Sécurisez juridiquement vos business.',
-            'Accédez à des modèles conformes à l\'OHADA.'
+            'Sécurisez juridiquement vos business en un clic.',
+            'Accédez à des modèles conformes aux droits OHADA.'
         ]
 
         const displayText = ref<string>('');
@@ -113,7 +113,7 @@ export default defineComponent({
 
 /* Bloc texte */
 .hero-section h1 {
-    font-size: clamp(1.8rem, 6vw, 3rem); 
+    font-size: clamp(1.5rem, 6vw, 2.5rem); 
     font-weight: 600;
     color: var(--my-white);
     line-height: 1.2;
@@ -122,7 +122,7 @@ export default defineComponent({
 
 .hero-section span {
     color: var(--secondary-light-color);
-    font-size: clamp(1rem, 3.5vw, 1.5rem);
+    font-size: clamp(1rem, 3.5vw, 1.3rem);
     font-weight: 600;
     line-height: 1.2;
 }

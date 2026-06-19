@@ -2,7 +2,7 @@
     <!-- Le fond gris clair extérieur pour faire ressortir la grande "carte" blanche de la page -->
     <div class="page-wrapper">
         <main class="about-page">
-            <Navbar theme="light" />
+            <Navbar />
             <!-- SECTION 1 : Qu'est-ce que Contrat Chap (Inspiration : "About our firm") -->
             <section class="navis-section hero-section">
                 <div class="text-content">

@@ -1,5 +1,5 @@
 <template>
-    <header :class="['main-header', `theme-${theme}`, { 'is-scrolled': isScrolled }]">
+    <header :class="['main-header', `theme-${theme}`]">
         <nav class="nav-container">
             <NuxtLink to="/" class="pic__container" @click="closeMenu">
                 <img src="/CONTRATCHAP.png" alt="ContratchapNeo">
@@ -39,7 +39,7 @@
                     @mouseleave="isProDropdownOpen = false"
                 >
                     <NuxtLink to="/pro" class="dropdown-trigger">
-                        Nos professionnels
+                        Experts
                         <svg :class="['chevron', { 'is-open': isProDropdownOpen }]" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                             <polyline points="6 9 12 15 18 9"/>
                         </svg>
@@ -55,7 +55,7 @@
                         </ul>
                     </transition>
                 </li>
-                <li><NuxtLink to="/lawCalcul">Calcul de droit</NuxtLink></li>
+                <li><NuxtLink to="/lawCalcul">Calcul de droits</NuxtLink></li>
 
                 <li 
                     class="dropdown-item"
@@ -70,16 +70,20 @@
                     </NuxtLink>
                     <transition name="dropdown-fade">
                         <ul v-if="isServicesDropdownOpen" class="dropdown-menu">
-                            <li><NuxtLink to="/services#assistance">Assistance Juridique et Fiscale</NuxtLink></li>
-                            <li><NuxtLink to="/services#programmes">Programmes Juridiques</NuxtLink></li>
-                            <li><NuxtLink to="/services#brevets">Brevet d'Invention</NuxtLink></li>
-                            <li><NuxtLink to="/services#marques">Dépôt de Marque</NuxtLink></li>
-                            <li><NuxtLink to="/services#tech">Legaltech</NuxtLink></li>
+                            <li><NuxtLink to="/services#assistance">Diagnostic juridique</NuxtLink></li>
+                            <li><NuxtLink to="/services#programmes">Domiciliation d'entreprise</NuxtLink></li>
+                            <li><NuxtLink to="/services#créa">Créations d'entreprises</NuxtLink></li>
+                            <li><NuxtLink to="/services#assistance">Assistance juridique</NuxtLink></li>
+                            <li><NuxtLink to="/services#assistance">Programmes juridiques</NuxtLink></li>
                             <li><NuxtLink to="/services#noms">Enregistrement Noms Commerciaux</NuxtLink></li>
-                            <li><NuxtLink to="/services#créa">Création d'entreprise</NuxtLink></li>
+                            <li><NuxtLink to="/services#marques">Dépôt de Marque</NuxtLink></li>
+                            <li><NuxtLink to="/services#brevets">Brevet d'Invention</NuxtLink></li>
+                            <li><NuxtLink to="/services#tech">Legaltech</NuxtLink></li>
                         </ul>
                     </transition>
                 </li>
+
+                <li><NuxtLink to="/">Etude de contrats</NuxtLink></li>
 
                 <li><NuxtLink to="/about"> À propos</NuxtLink></li>
             </ul>
@@ -133,7 +137,7 @@
                     <li class="mobile-accordion">
                         <div class="mobile-accordion__trigger-wrapper">
                             <NuxtLink to="/pro" class="mobile-accordion__main-link" @click="toggleMenu">
-                                Nos professionnels
+                                Experts
                             </NuxtLink>
                             <button 
                                 class="mobile-accordion__icon-btn"
@@ -175,13 +179,15 @@
 
                         <transition name="accordion">
                             <ul v-if="isMobileServicesDropdownOpen" class="mobile-accordion__list">
-                                <li><NuxtLink to="/services#assistance" @click="toggleMenu">Assistance Juridique et Fiscale</NuxtLink></li>
-                                <li><NuxtLink to="/services#programmes" @click="toggleMenu">Programmes Juridiques</NuxtLink></li>
-                                <li><NuxtLink to="/services#brevets" @click="toggleMenu">Brevet d'Invention</NuxtLink></li>
-                                <li><NuxtLink to="/services#marques" @click="toggleMenu">Dépôt de Marque</NuxtLink></li>
-                                <li><NuxtLink to="/services#tech" @click="toggleMenu">Legaltech</NuxtLink></li>
+                                <li><NuxtLink to="/services#assistance" @click="toggleMenu">Diagnostic juridique</NuxtLink></li>
+                                <li><NuxtLink to="/services#programmes" @click="toggleMenu">Domiciliation d'entreprise</NuxtLink></li>
+                                <li><NuxtLink to="/services#créa" @click="toggleMenu">Créations d'entreprises</NuxtLink></li>
+                                <li><NuxtLink to="/services#assistance" @click="toggleMenu">Assistance juridique</NuxtLink></li>
+                                <li><NuxtLink to="/services#assistance" @click="toggleMenu">Programmes juridiques</NuxtLink></li>
                                 <li><NuxtLink to="/services#noms" @click="toggleMenu">Enregistrement Noms Commerciaux</NuxtLink></li>
-                                <li><NuxtLink to="/services#créa" @click="toggleMenu">Création d'entreprise</NuxtLink></li>
+                                <li><NuxtLink to="/services#marques" @click="toggleMenu">Dépôt de Marque</NuxtLink></li>
+                                <li><NuxtLink to="/services#brevets" @click="toggleMenu">Brevet d'Invention</NuxtLink></li>
+                                <li><NuxtLink to="/services#tech" @click="toggleMenu">Legaltech</NuxtLink></li>
                             </ul>
                         </transition>
                     </li>
@@ -289,7 +295,7 @@ export default {
     left: 0;
     width: 100%;
     z-index: 100;
-    background: rgba(255, 255, 255, 0);
+    background: #068cec;
     backdrop-filter: blur(0px);
     -webkit-backdrop-filter: blur(0px);
     border-bottom: 1px solid rgba(255, 255, 255, 0);
@@ -474,7 +480,7 @@ export default {
     background: var(--primary-color);
     width: 70%;
     color: white;
-    padding: 0.85rem 1.5rem;
+    padding: 0.8rem 1.5rem;
     border-radius: 50px;
     font-weight: 600;
     font-size: 0.95rem;
@@ -509,7 +515,7 @@ export default {
         width: 100%;
         max-width: 1200px;
         border-radius: 50px;
-        background: rgba(255, 255, 255, 0);
+        background: #068cec;
         backdrop-filter: blur(0px);
         -webkit-backdrop-filter: blur(0px);
         border: 1px solid rgba(255, 255, 255, 0);
@@ -525,8 +531,8 @@ export default {
         box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.06);
     }
     .pic__container img {
-        width: 90px;
-        height: 70px;
+        width: 70px;
+        height: 50px;
     }
 
     .nav-container {
@@ -548,18 +554,13 @@ export default {
         justify-content: center;
     }
 
-    .pic__container img{
-        height: 70px;
-        width: 90px
-    }
-
     .nav-links-desktop li a,
     .nav-links-desktop li .dropdown-trigger {
         position: relative;
         display: flex;
         align-items: center;
         white-space: nowrap;
-        font-size: clamp(0.8rem, 0.9vw, 0.9rem);
+        font-size: clamp(0.85rem, 0.9vw, 0.9rem);
         gap: 0.3rem;
         font-weight: 500;
         padding: 0.5rem 0.6rem;
@@ -720,7 +721,7 @@ export default {
         padding: 0.55rem 1.15rem;
         border-radius: 50px;
         font-weight: 800;
-        font-size: 0.88rem;
+        font-size: 0.85rem;
         text-decoration: none;
         transition: opacity 0.2s, transform 0.2s;
     }

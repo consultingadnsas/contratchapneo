@@ -2,7 +2,7 @@
 
     <div class="main-wrapper">
         
-        <navbar theme="light"/>
+        <navbar/>
 
         <proSection/>
         
