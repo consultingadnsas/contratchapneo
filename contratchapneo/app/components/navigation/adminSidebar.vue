@@ -137,7 +137,7 @@ export default {
 
 @media (min-width: 1024px) {
   .hidden-mobile { display: flex; }
-  .sidebar { position: relative; width: 260px; height: 100vh; flex-direction: column; padding: 1.5rem 1rem; border-top: none; border-right: 1px solid var(--sb-border); }
+  .sidebar { position: relative; width: 260px; height: 100vh; flex-direction: column; padding: 1.5rem 1rem; border-top: none; border-right: 1px solid var(--sb-border);}
   .sidebar.is-reduced { width: 88px; padding: 1.5rem 0.5rem; }
   .logo { display: flex; align-items: center; justify-content: space-between; padding: 0 0.5rem; gap: 1.5rem; }
   .sidebar.is-reduced .logo { justify-content: center; padding: 0; }

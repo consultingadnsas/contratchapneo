@@ -20,7 +20,9 @@
 
         <!-- Le contenu (A terme, ce sera un <router-view />) -->
         <div class="workspace-content">
-          <AdminOverview v-if="activePageId === 'overview'" />
+          <adminHome v-if="activePageId === 'overview'" />
+          <adminContrats v-if="activePageId === 'contracts'"/>
+          <adminHistory v-if="activePageId === 'history'"/>
           
           <!-- Exemple d'espace vide pour les autres pages en attendant -->
           <div v-else class="placeholder-page">
@@ -36,30 +38,32 @@
 import { ref, computed } from 'vue';
 import AdminSidebar, { MenuItem } from '../../components/navigation/adminSidebar.vue' // Ajustez vos chemins
 import AdminHeader from '../../components/heroSection/adminHeader.vue';
-import AdminOverview from '../../components/sections/adminSection.vue';
+import adminHome from '../../components/sections/adminSection/adminHome.vue';
+import adminContrats from '../../components/sections/adminSection/adminContrats.vue';
+import adminHistory from '../../components/sections/adminSection/adminHistory.vue'
 import { 
   HomeIcon, 
-  ChartBarIcon, 
+  BookOpenIcon, 
   InboxIcon, 
   DocumentTextIcon, 
-  ArchiveBoxIcon, 
-  TrashIcon 
+  TrashIcon,
+  Cog8ToothIcon
 } from '@heroicons/vue/24/outline';
 
 export default {
   name: 'AdminLayout',
-  components: { AdminSidebar, AdminHeader, AdminOverview },
+  components: { AdminSidebar, AdminHeader, adminHome, adminContrats, adminHistory },
   setup() {
     // La liste stricte des rubriques demandées
    // La liste stricte des rubriques demandées
 
     const adminMenu = ref<MenuItem[]>([
-      { id: 'overview', label: "Vue d'ensemble", isActive: true, icon: HomeIcon },
-      { id: 'stats', label: 'Statistiques', isActive: false, icon: ChartBarIcon },
+      { id: 'overview', label: "Tableau de bord", isActive: true, icon: HomeIcon },
+      { id: 'history', label: 'Historiques', isActive: false, icon: BookOpenIcon },
       { id: 'inbox', label: 'Boîte de réception', isActive: false, icon: InboxIcon },
       { id: 'contracts', label: 'Contrats', isActive: false, icon: DocumentTextIcon },
-      { id: 'archives', label: 'Archives', isActive: false, icon: ArchiveBoxIcon },
       { id: 'trash', label: 'Corbeille', isActive: false, icon: TrashIcon },
+      {id: 'settings', label: 'Paramètre', isActive:false, icon: Cog8ToothIcon },
     ]);
 
     const activePageId = ref('overview');
