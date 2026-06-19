@@ -211,46 +211,17 @@ export default {
     gap: 2rem;
     padding: 4rem 1rem 1rem 1rem;
     overflow: hidden; 
-    background-color: #fdfcfc; 
+    background-color: #fffbf4; 
 }
 
 /* ==========================================
    2. LE COFFRE NUMÉRIQUE (Arrière-plan)
 ========================================== */
-.contrat-card-section::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 440px; 
-    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-    border-bottom-left-radius: 48px;
-    border-bottom-right-radius: 48px;
-    box-shadow: 0 10px 30px rgba(15, 23, 42, 0.15);
-    z-index: 0;
-}
 
 /* ==========================================
    3. LES CONTRATS FLOTTANTS (Effet Verre)
 ========================================== */
-.contrat-card-section::after {
-    content: '';
-    position: absolute;
-    top: 20px;
-    right: 8%;
-    width: 280px;
-    height: 380px;
-    background: linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.01) 100%);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    border-radius: 16px;
-    transform: rotate(12deg);
-    z-index: 0;
-    pointer-events: none;
-    transition: all 0.3s ease;
-}
+
 
 /* On force le contenu textuel et les cartes au premier plan */
 .contrat-card-section > * {
@@ -286,13 +257,13 @@ header::before {
     font-weight: 700;
     line-height: 1.2;
     letter-spacing: -0.02em;
-    color: #ffffff;
+    color: var(--primary-color-dark);
     margin-bottom: 1rem;
 }
 
 header p {
     font-size: 1.15rem;
-    color: #cbd5e1;
+    color: var(--primary-color-dark);
     max-width: 550px;
     margin: 0 auto;
     line-height: 1.6;

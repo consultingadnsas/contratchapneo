@@ -1,6 +1,7 @@
 import { useHead } from '#imports';
 import { ref } from 'vue';
 import { defineStore } from 'pinia';
+import { useCartStore } from './cartStore'
 import type { Order } from '../stores/orderStore'
 
 /*
@@ -62,6 +63,13 @@ export const usePaiementStore = defineStore('paiement', () => {
         error.value = null;
 
         try {
+            const cartStore = useCartStore();
+            try {
+                await cartStore.clearCart();
+            } catch (cartError) {
+                console.warn('Impossible de vider le panier avant téléchargement:', cartError);
+            }
+
             // Use the persisted order details to recover the guest email when needed.
             const { useOrderStore } = await import('./orderStore');
             const orderStore = useOrderStore();
