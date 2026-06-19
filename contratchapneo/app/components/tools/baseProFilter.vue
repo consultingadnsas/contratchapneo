@@ -1,101 +1,93 @@
 <template>
   <div class="filter-wrapper">
+    
     <div class="mobile-filter">
-      <select v-model="selectedCategoryId" @change="handleMobileFilter">
-        <option value="">Toutes les catégories</option>
-        <option v-for="cat in proList" :key="cat" :value="cat">
-          {{ cat.title }}
+      <select v-model="selectedDomainSlug" @change="handleFilter">
+        <option value="">Tous les domaines</option>
+        
+        <option v-for="domain in domains" :key="domain.id" :value="domain.slug">
+          {{ domain.name }}
         </option>
       </select>
     </div>
 
     <div class="desktop-filter">
       <button 
-        :class="{ active: selectedCategoryId === '' }" 
-        @click="selectCategory('')"
+        :class="{ active: selectedDomainSlug === '' }" 
+        @click="selectDomain('')"
       >
         Tout
       </button>
+      
       <button 
-        v-for="cat in proList" :key="cat" :value="cat"
-        :class="{ active: selectedCategoryId === cat.id }"
-        @click="selectCategory(cat.id)"
+        v-for="domain in domains" 
+        :key="domain.id" 
+        :class="{ active: selectedDomainSlug === domain.slug }"
+        @click="selectDomain(domain.slug)"
       >
-        {{ cat.title }}
+        {{ domain.name }}
       </button>
     </div>
+    
   </div>
 </template>
 
 <script lang="ts">
-import { ref, onMounted } from 'vue';
-import { useContratStore } from '../../stores/contratStore';
+import { ref, PropType } from 'vue';
+
+// Typage des données reçues du parent
+export interface LegalDomain {
+    id: number;
+    name: string;
+    slug: string;
+}
 
 export default {
-  name: 'CategoryFilter',
-  emits: ['filter-change'],
+  name: 'BaseProFilter',
+  
+  // On reçoit les domaines depuis `proSection`
+  props: {
+    domains: {
+        type: Array as PropType<LegalDomain[]>,
+        default: () => []
+    }
+  },
+  
+  emits: ['filter'],
+  
   setup(props, { emit }) {
-    const categoryStore = useContratStore();
-    
-    // On stocke uniquement l'ID de la catégorie sous forme de string
-    const selectedCategoryId = ref<string>('');
+    // On utilise le 'slug' comme identifiant de filtre, car c'est ce que Django attend
+    const selectedDomainSlug = ref<string>('');
 
-    // Déclenchée par les boutons Desktop
-    const selectCategory = async (categoryId: string) => {
-      selectedCategoryId.value = categoryId;
-      await executeFilter(categoryId);
+    // Déclenché par le clic sur un bouton Desktop
+    const selectDomain = (slug: string) => {
+      selectedDomainSlug.value = slug;
+      emit('filter', selectedDomainSlug.value);
     };
 
-    // Déclenchée par le select Mobile
-    const handleMobileFilter = async () => {
-      await executeFilter(selectedCategoryId.value);
+    // Déclenché par le select Mobile
+    const handleFilter = () => {
+      emit('filter', selectedDomainSlug.value);
     };
-
-    // Logique centrale de filtrage
-    const executeFilter = async (categoryId: string) => {
-      emit('filter-change', categoryId);
-
-      if (!categoryId) {
-          await categoryStore.getContracts(1); // ← reset à page 1
-      } else {
-          await categoryStore.getCategoriesWithContrats(categoryId);
-          // Note : getCategoriesWithContrats ne passe pas par la pagination DRF
-          // Si tu veux la pagination aussi sur le filtre catégorie,
-          // utilise getContracts(1, categoryId) à la place
-      }
-    };
-
-    const proList = ref([
-        {title: 'Avocat'},
-        {title: 'Commissaire de justice'},
-        {title: 'juriste en droit d\'affaire'},
-        {title: 'commissaire au compte'}
-    ])
-
-    onMounted(() => {
-      
-    });
 
     return {
-      categoryStore,
-      selectedCategoryId,
-      proList,
-      selectCategory,
-      handleMobileFilter
+      selectedDomainSlug,
+      selectDomain,
+      handleFilter
     };
   }
 };
 </script>
 
 <style scoped>
+/* ==========================================
+   STYLE MOBILE (Par défaut)
+   ========================================== */
 .filter-wrapper {
   width: 100%;
   margin: 1rem 0;
 }
 
-/* ==========================================
-   STYLE MOBILE (Par défaut)
-   ========================================== */
 .desktop-filter {
   display: none;
 }
@@ -110,6 +102,8 @@ export default {
   color: #1a1a1a;
   cursor: pointer;
   outline: none;
+  /* Optionnel : cacher la flèche native pour mettre une custom */
+  /* appearance: none; */
 }
 
 /* ==========================================
@@ -124,11 +118,11 @@ export default {
     display: flex;
     gap: 0.5rem;
     width: 100%;
-    max-width: 600px; /* Ajusté pour une meilleure largeur */
+    /* J'ai supprimé la limite de 600px pour que les boutons occupent la place qu'il faut dans ta toolbar */
     overflow-x: auto;
-    padding-bottom: 0.5rem; /* Espace pour la barre de défilement */
+    padding-bottom: 0.5rem;
     
-    /* Défilement fluide sur les appareils tactiles (tablettes) */
+    /* Défilement fluide sur les appareils tactiles */
     -webkit-overflow-scrolling: touch;
     
     /* Firefox : barre de scroll plus fine */
@@ -151,10 +145,8 @@ export default {
   }
 
   .desktop-filter button {
-    /* Propriétés essentielles pour le scroll horizontal */
-    flex-shrink: 0; /* Empêche le bouton de se compresser */
-    white-space: nowrap; /* Empêche le texte de passer à la ligne */
-    
+    flex-shrink: 0;
+    white-space: nowrap;
     padding: 0.4rem 1rem;
     font-size: 0.95rem;
     font-weight: 500;
@@ -165,7 +157,6 @@ export default {
     cursor: pointer;
     transition: all 0.2s ease;
     width: auto;
-
   }
 
   .desktop-filter button:hover {

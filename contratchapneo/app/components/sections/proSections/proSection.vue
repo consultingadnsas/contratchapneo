@@ -6,44 +6,51 @@
             <p>Pour un suivi plus personnalisé concernant vos besoins.</p>
         </header>
 
-        
         <div class="toolbar">
-            <baseProFilter class="toolbar__filter"/>
-            <BaseCountrySelect class="toolbar__select" placeholder="Choisir le pays" :options="ohadaCountries"/>
-            <BaseSearchInput class="toolbar__search" placeholder="Trouver un professionnel"/>
+            <baseProFilter 
+                class="toolbar__filter" 
+                :domains="proStore.domains"
+                @filter="handleDomainFilter"
+            />
+            
+            <BaseCountrySelect 
+                class="toolbar__select" 
+                placeholder="Choisir le pays" 
+                :options="proStore.countries"
+                @select="handleCountryFilter"
+            />
+            
+            <BaseSearchInput 
+                class="toolbar__search" 
+                placeholder="Trouver un professionnel"
+                v-model="searchQuery"
+                @search="handleSearch"
+            />
         </div>
 
-        <contractCardSkeleton v-if="contratStore.isLoading" />
+        <contractCardSkeleton v-if="proStore.isLoading" />
 
         <emptyState
-            v-else-if="contratStore.contracts.length === 0" 
-            title = "Aucun professionnel disponibile pour cette catégorie"
-            description="Le professionnel que vous cherchez n'est pas encore disponible. En attendant, vous pouvez consulter nos contrats standards ou nous contacter pour plus d'informations."
-            @go-to="()=>router.push('contractBank/customContrat')"
+            v-else-if="proStore.professionals.length === 0" 
+            title="Aucun professionnel disponible pour cette recherche"
+            description="Le professionnel que vous cherchez n'est pas encore disponible. Essayez de modifier vos filtres ou contactez-nous pour plus d'informations."
+            @go-to="() => router.push('/')"
         />
 
         <template v-else>
             
             <div class="cards-container">                
-                <contratCards 
-                    v-for="(contrat, index) in contratStore.contracts" 
-                    :key="contrat.id || index"
-                    :title="contrat.title"
-                    :description="contrat.description"
-                    :price="contrat.prix"
-                    :image="contrat.picture || undefined"
-                    @view="openViewModal(contrat.id)"
+                <ProCards 
+                    v-for="pro in proStore.professionals" 
+                    :key="pro.id"
+                    :title="`${pro.first_name} ${pro.last_name}`"
+                    :subtitle="pro.title_display"
+                    :image="pro.profile_picture || undefined"
+                    @click="openViewModal(pro.id)"
                 />
             </div>
             
-            <Paginator 
-                :currentPage="contratStore.currentPage"
-                :totalCount="contratStore.totalCount"
-                :pageSize="contratStore.pageSize"
-                @page-change="handlePageChange"
-            />
-
-        </template>
+            </template>
 
         <Teleport to="body">
             
@@ -53,8 +60,8 @@
             />
             
             <viewModale
-                :file="contratStore.contrat?.pdf_preview"
                 v-if="isViewOpen" 
+                :professional="proStore.professional"
                 @close="isViewOpen = false"
             />
 
@@ -64,30 +71,28 @@
 </template>
 
 <script lang="ts">
-import contratCards from '../../cards/contratCards.vue'
+// Composants
+import ProCards from '../../cards/proCards.vue'
 import contractCardSkeleton from '../../cards/contractCardSkeleton.vue'
 import emptyState from '../../tools/emptyState.vue'
-import Basefilter from '../../tools/Basefilter.vue'
-import BaseSelect from '../../input/BaseSelect.vue'
-import BaseCountrySelect from '../../input/BaseCountrySelect.vue'
 import baseProFilter from '../../tools/baseProFilter.vue'
-import Paginator from '../../tools/Paginator.vue'
+import BaseCountrySelect from '../../input/BaseCountrySelect.vue'
 import BaseSearchInput from '../../input/BaseSearchInput.vue'
+import Paginator from '../../tools/Paginator.vue'
 import cartModale from '../../modale/cartModale.vue'
 import viewModale from '../../modale/viewModale.vue'
 
+// Outils
 import { ref, onMounted } from 'vue'
-import {useContratStore} from '../../../stores/contratStore'
 import { useRouter } from 'vue-router'
+import { useProStore } from '../../../stores/proStore'
 
 export default {
     
     components: {
-        contratCards,
-        Basefilter,
+        ProCards,
         Paginator,
         BaseSearchInput,
-        BaseSelect,
         BaseCountrySelect,
         contractCardSkeleton,
         emptyState,
@@ -97,56 +102,64 @@ export default {
     },
     
     setup() {
-
         const router = useRouter();
+        const proStore = useProStore();
 
-        const contratStore = useContratStore();
+        // 1. Variables pour les filtres
+        const activeDomainSlug = ref('');
+        const activeCountryCode = ref('');
+        const searchQuery = ref('');
 
-        const activeCategoryId = ref('');
-
-        const handlePageChange = (page: number) => {
-            contratStore.getContracts(page, activeCategoryId.value);
+        // 2. Gestionnaires de filtres
+        // Chaque changement relance la recherche avec les 3 paramètres à jour
+        const handleSearch = (query: string) => {
+            searchQuery.value = query;
+            proStore.getProfessionals(activeDomainSlug.value, activeCountryCode.value, searchQuery.value);
         };
 
-        // About cart view
+        const handleDomainFilter = (slug: string) => {
+            activeDomainSlug.value = slug;
+            proStore.getProfessionals(activeDomainSlug.value, activeCountryCode.value, searchQuery.value);
+        };
+
+        const handleCountryFilter = (code: string) => {
+            activeCountryCode.value = code;
+            proStore.getProfessionals(activeDomainSlug.value, activeCountryCode.value, searchQuery.value);
+        };
+
+        // 3. Modales
         const isOpen = ref<boolean>(false);
-        
         const openModal = () => {
             isOpen.value = true;
         }
 
-        // About modalView
-        const isViewOpen = ref<boolean>(false) // Votre deuxième booléen
-        
-        const openViewModal = async(contratId:string) => {
-            await contratStore.getSpecificContract(contratId)
-            isViewOpen.value = true; // On ouvre la deuxième modale
-            console.log('The item selected', contratId)
+        const isViewOpen = ref<boolean>(false);
+        const openViewModal = (proId: number) => {
+            // On charge les détails depuis la liste existante dans le store
+            proStore.getSpecificProfessional(proId);
+            isViewOpen.value = true;
+            console.log('Professionnel sélectionné ID:', proId);
         }
 
-        const ohadaCountries = ref([
-            {name: "Bénin"},
-            {name: "Burkina Faso"},
-            {name: "Côte d'Ivoire"},
-            {name: "Guinée-Bissau"},
-            {name: "Mali"},
-            {name: "Niger"},
-            {name: "Sénégal"},
-            {name: "Togo"}
-        ]);
-
-        onMounted(()=>{
-            contratStore.getContracts(1);
-        })
+        // 4. Chargement initial
+        onMounted(async () => {
+            // Charge les données pour les selects (Pays et Domaines)
+            await proStore.getFilters();
+            // Charge la liste des experts
+            await proStore.getProfessionals();
+        });
 
         return {
             router,
-            activeCategoryId,
-            handlePageChange,
-            contratStore,
-            ohadaCountries,
+            proStore,
+            searchQuery,
+            
+            // Filtres
+            handleSearch,
+            handleDomainFilter,
+            handleCountryFilter,
 
-            // modale
+            // Modales
             isOpen,
             openModal,
             isViewOpen,
@@ -157,6 +170,7 @@ export default {
 </script>
 
 <style scoped>
+/* J'ai gardé exactement ton style d'origine intact */
 .contrat-card-section {
     width: 100%;
     max-width: 1400px;
@@ -199,19 +213,15 @@ header p{
     padding: 0.5rem;
 }
 
-/* Sur mobile : le select prend sa place naturelle (auto),
-   la loupe est un bouton rond fixe → rien ne disparaît */
 .toolbar__filter {
-    min-width: 0;     /* évite le débordement flex */
-    margin: 0;        /* retire le margin: 1rem 0 du composant */
+    min-width: 0; 
+    margin: 0; 
 }
 
 .toolbar__search {
-    flex: 0 0 auto;   /* taille naturelle (bouton rond) par défaut */
+    flex: 0 0 auto; 
 }
 
-/* Quand la recherche s'étend sur mobile, elle ne chasse pas le filtre :
-   on lui donne une largeur fixe max plutôt que 100% */
 :deep(.search-container.is-mobile.is-expanded) {
     width: auto;
     flex: 1 1 auto;
@@ -219,7 +229,7 @@ header p{
 }
 
 /* ==========================================
-   TABLETTE (>= 768px) : recherche toujours visible
+   TABLETTE (>= 768px)
 ========================================== */
 @media (min-width: 768px) {
     .toolbar__filter {
@@ -228,7 +238,7 @@ header p{
 
     .toolbar__search {
         max-width: 360px;
-        margin-left: auto; /* pousse la recherche à droite */
+        margin-left: auto; 
     }
 }
 
