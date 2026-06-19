@@ -27,6 +27,7 @@ urlpatterns = [
     # Support both route forms to avoid provider URL mismatches.
     path('payment/', include('payments.urls')),
     path('payments/', include('payments.urls')),
+    path('pro/', include('pro.urls'))
 ]
 
 if settings.DEBUG:
