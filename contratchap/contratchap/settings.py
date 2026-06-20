@@ -35,6 +35,9 @@ ALLOWED_HOSTS = [
     'localhost'
 ]
 
+CORS_EXPOSE_HEADERS = [
+    'Content-Disposition',
+]
 
 # Application definition
 
