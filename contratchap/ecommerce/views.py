@@ -12,10 +12,12 @@ from .serializers import (
     CartSerializer,
     CartItemSerializer,
     OrderSerializer,
+    AddToCartSerializer,
     CheckoutSerializer,
 )
 from .helpers import (get_or_create_cart, set_cart_cookie_if_needed)
 from contrat.models import Contrat
+from pro.models import LegalProfessional
 
 stripe.api_key = settings.STRIPE_SECRET_KEY
 
@@ -41,12 +43,12 @@ class CartDetailView(APIView):
 class CartAddItemView(APIView):
     """
     POST /cart/add/
-    Ajoute un contrat au panier.
+    Ajoute un contrat ou un professionnel au panier.
     """
     permission_classes = [AllowAny]
 
     def post(self, request):
-        serializer = CartItemSerializer(data=request.data)
+        serializer = AddToCartSerializer(data=request.data)
         if not serializer.is_valid():
             return Response(
                 {'errors': serializer.errors},
@@ -54,32 +56,59 @@ class CartAddItemView(APIView):
             )
 
         cart       = get_or_create_cart(request)
-        contrat_id = serializer.validated_data['contrat_id']
+        
+        # 🚨 CORRECTION ICI : On utilise .get() pour éviter le KeyError
+        contrat_id = serializer.validated_data.get('contrat_id')
+        pro_id     = serializer.validated_data.get('pro_id')
         quantity   = serializer.validated_data.get('quantity', 1)
-        contrat    = get_object_or_404(Contrat, id=contrat_id)
 
-        item, created = CartItem.objects.get_or_create(
-            cart=cart,
-            contrat=contrat,
-            defaults={
-                'quantity'  : quantity,
-                'unit_price': contrat.prix,
-            }
-        )
+        # Vérification de sécurité
+        if not contrat_id and not pro_id:
+             return Response(
+                {'errors': 'Vous devez fournir soit un contrat_id, soit un pro_id.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
-        if not created:
-            item.quantity += quantity
-            item.save()
+        # ⚖️ LOGIQUE HYBRIDE : CONTRAT OU PRO
+        if contrat_id:
+            contrat = get_object_or_404(Contrat, id=contrat_id)
+            item, created = CartItem.objects.get_or_create(
+                cart=cart,
+                contrat=contrat,
+                defaults={
+                    'quantity'  : quantity,
+                    'unit_price': contrat.prix,
+                }
+            )
+            if not created:
+                item.quantity += quantity
+                item.save()
+                
+        elif pro_id:
+            pro = get_object_or_404(LegalProfessional, id=pro_id)
+            item, created = CartItem.objects.get_or_create(
+                cart=cart,
+                pro=pro,
+                defaults={
+                    'quantity'  : quantity,
+                    'unit_price': pro.prix,
+                }
+            )
+            if not created:
+                item.quantity += quantity
+                item.save()
 
+        # Construction de la réponse identique à ton code
         response = Response(
             {
                 'data'   : CartSerializer(cart).data,
-                'message': 'Contrat ajouté au panier.'
+                'message': 'Élément ajouté au panier.'
             },
             status=status.HTTP_200_OK
         )
+        
+        # On conserve ta logique de cookies hyper importante !
         return set_cart_cookie_if_needed(request, response)
-
 
 class CartItemUpdateView(APIView):
     """

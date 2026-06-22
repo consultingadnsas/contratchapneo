@@ -32,7 +32,8 @@ ALLOWED_HOSTS = [
     '.ngrok-free.dev', 
     'kettle-diploma-lifter.ngrok-free.dev', 
     '127.0.0.1',
-    'localhost'
+    'localhost',
+    '172.30.144.1'
 ]
 
 CORS_EXPOSE_HEADERS = [
