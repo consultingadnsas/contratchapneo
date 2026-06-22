@@ -5,7 +5,7 @@
 
         <div class="study-header">
             <h1>Faites analyser votre contrat</h1>
-            <p>Confiez vos documents à nos experts juridiques OHADA pour une révision complète, confidentielle et sécurisée.</p>
+            <p>Confiez vos documents à nos experts juridiques en vue d'une révision complète, confidentielle et sécurisée pour la protection de vos intérêts</p>
         </div>
 
         <div class="form-wrapper">

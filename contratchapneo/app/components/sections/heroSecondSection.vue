@@ -4,13 +4,13 @@
         <div class="bg-shape shape-top-left"></div>
 
         <div class="flex flex-col gap-4 content-wrapper">
-            <span>
-                {{ displayText }}<span class="cursor">|</span>
-            </span>
+
+            <base-research-input/>
+            
             <h1>
                 Téléchargez facilement tous vos contrats
             </h1>
-            <base-research-input/>
+            
             <div class="revision-cta desktop-cta" @click="router.push('/etudeContrat')">
                 <div class="cta-texts">
                     <p>Besoin d'une révision de contrat ?</p>
@@ -26,7 +26,7 @@
         </div>
         <div class="pic-wrapper">
             <div class="pic-container">
-                <img src="/Accueil_madame SANS FOND.png" alt="Contrats OHADA">
+                <img src="/Accueil 2.png" alt="Contrats OHADA">
 
                 <stat-cards class="floating-card card-top-left"    title="Banque de contrats" @click="router.push('/contractBank')" />
                 <stat-cards class="floating-card card-top-right"   title="Outil de Calcul" @click="router.push('/lawCalcul')" />
@@ -146,6 +146,7 @@ export default defineComponent({
     color: var(--my-white);
     line-height: 1.2;
     margin: 0;
+    padding-top: 5rem
 }
 
 .hero-section span {

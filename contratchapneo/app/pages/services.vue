@@ -98,7 +98,7 @@ export default {
             },
             {
                 id:'domicile',
-                title:'Domiciliation d\'entreprise',
+                title:'Domiciliation d\'entreprises',
                 shortTitle: 'Domiciliation',
                 description:'prise en charge pour la création de votre entreprise, on met en place tous les documents nécessaire à celà- et on vous accompagne tout au long du processus juridique',
                 longDescription:'Nous prenons en charge, sur la base des pièces fournies, de rediger entièrement tous les documents nécessaires aux formalités administratives et dont certains aussi font partie des livrables en termes de documents légaux de votre entreprise (statuts; déclaration de souscription et versement; liste de dirigeants etc.)',
@@ -109,7 +109,7 @@ export default {
             },
             {
                 id:'crea',
-                title:'Création d\'entreprise',
+                title:'Créations d\'entreprises',
                 shortTitle: 'Création',
                 description:'prise en charge pour la création de votre entreprise, on met en place tous les documents nécessaire à celà- et on vous accompagne tout au long du processus juridique',
                 longDescription:'Nous prenons en charge, sur la base des pièces fournies, de rediger entièrement tous les documents nécessaires aux formalités administratives et dont certains aussi font partie des livrables en termes de documents légaux de votre entreprise (statuts; déclaration de souscription et versement; liste de dirigeants etc.)',
@@ -153,7 +153,7 @@ export default {
             },
             {
                 id: 'marques',
-                title: 'Dépôt de Marque',
+                title: 'Dépôt de Marques',
                 shortTitle: 'Marques',
                 description: 'Sécurisation de votre identité visuelle, logos et signes distinctifs auprès des instances compétentes (OAPI).',
                 longDescription:'Nous vous accompagnons dans le processus, en fonction de votre dossier. le dépôt demarque reste une démarche juridique qui consiste à enregistrer officiellement une marque(nom, logo, slogan, etc.) auprès d’un office de propriété intellectuelle O.A.P.I. pour en obtenir l’exclusivité d’utilisation.',
@@ -164,7 +164,7 @@ export default {
             },
             {
                 id: 'brevets',
-                title: 'Brevet d\'Invention',
+                title: 'Brevets d\'Invention',
                 shortTitle: 'Brevets',
                 description: 'Démarches complètes pour protéger vos innovations technologiques, industrielles et scientifiques à l\'échelle nationale et internationale.',
                 longDescription:'Nous vous accompagnons dans le processus, en fonction de votre égibilité et des conditions de brevetabilité. le dépôt d\'un brevet invention reste un titre de propriété industrielle qui confère à son titulaire le droit exclusif d’exploiter une invention pendant une durée déterminée (en général 20 ans), sous certaines conditions Nous constituons tout le dossier comportant: un formulaire de demande, une description de l’invention, tous les dessins techniques, un résumé des travaux d’invention, un justificatif du paiement des taxes, etc..',

@@ -64,7 +64,7 @@
             </transition>
         </li>
 
-        <li><NuxtLink to="/etudeContrat">Etude de contrats</NuxtLink></li>
+        <li><NuxtLink to="/etudeContrat">Révision de contrats</NuxtLink></li>
         <li><NuxtLink to="/about"> À propos</NuxtLink></li>
     </ul>
 </template>
