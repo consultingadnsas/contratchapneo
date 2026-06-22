@@ -86,6 +86,40 @@ export default {
 
         const services = ref([
             {
+                id:'diag',
+                title:'Diagnostic juridique',
+                shortTitle: 'Diagnostic',
+                description:'prise en charge pour la création de votre entreprise, on met en place tous les documents nécessaire à celà- et on vous accompagne tout au long du processus juridique',
+                longDescription:'Nous prenons en charge, sur la base des pièces fournies, de rediger entièrement tous les documents nécessaires aux formalités administratives et dont certains aussi font partie des livrables en termes de documents légaux de votre entreprise (statuts; déclaration de souscription et versement; liste de dirigeants etc.)',
+                icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>',
+                image:'/services/1.jpg',
+                features: ['Diagnostic juridique', 'Création clé en main de société','Création basique de société'],
+                price: '1 250 000 FCFA'
+            },
+            {
+                id:'domicile',
+                title:'Domiciliation d\'entreprise',
+                shortTitle: 'Domiciliation',
+                description:'prise en charge pour la création de votre entreprise, on met en place tous les documents nécessaire à celà- et on vous accompagne tout au long du processus juridique',
+                longDescription:'Nous prenons en charge, sur la base des pièces fournies, de rediger entièrement tous les documents nécessaires aux formalités administratives et dont certains aussi font partie des livrables en termes de documents légaux de votre entreprise (statuts; déclaration de souscription et versement; liste de dirigeants etc.)',
+                icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>',
+                image:'/services/1.jpg',
+                features: ['Diagnostic juridique', 'Création clé en main de société','Création basique de société'],
+                price: '1 250 000 FCFA'
+            },
+            {
+                id:'crea',
+                title:'Création d\'entreprise',
+                shortTitle: 'Création',
+                description:'prise en charge pour la création de votre entreprise, on met en place tous les documents nécessaire à celà- et on vous accompagne tout au long du processus juridique',
+                longDescription:'Nous prenons en charge, sur la base des pièces fournies, de rediger entièrement tous les documents nécessaires aux formalités administratives et dont certains aussi font partie des livrables en termes de documents légaux de votre entreprise (statuts; déclaration de souscription et versement; liste de dirigeants etc.)',
+                icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>',
+                image:'/services/1.jpg',
+                features: ['Diagnostic juridique', 'Création clé en main de société','Création basique de société'],
+                price: '1 250 000 FCFA'
+            },
+
+            {
                 id: 'assistance',
                 title: 'Assistance Juridique et Fiscale',
                 shortTitle: 'Assistance', // Titre court pour l'onglet réduit
@@ -108,15 +142,14 @@ export default {
                 price:'250 000 FCFA'
             },
             {
-                id: 'brevets',
-                title: 'Brevet d\'Invention',
-                shortTitle: 'Brevets',
-                description: 'Démarches complètes pour protéger vos innovations technologiques, industrielles et scientifiques à l\'échelle nationale et internationale.',
-                longDescription:'Nous vous accompagnons dans le processus, en fonction de votre égibilité et des conditions de brevetabilité. le dépôt d\'un brevet invention reste un titre de propriété industrielle qui confère à son titulaire le droit exclusif d’exploiter une invention pendant une durée déterminée (en général 20 ans), sous certaines conditions Nous constituons tout le dossier comportant: un formulaire de demande, une description de l’invention, tous les dessins techniques, un résumé des travaux d’invention, un justificatif du paiement des taxes, etc..',
-                icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18h6"></path><path d="M10 22h4"></path><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1.5.5 2.5 1.5 3.5.76.76 1.23 1.52 1.41 2.5"></path></svg>',
-                image:'/services/3.jpg',
-                features:['droit exclusive d’exploitation', 'Possibiliter de licencier ou vendre le brevet','Valorisation de la technologie aupres d’investisseurs'],
-                price:'1 000 000 FCFA'
+                id: 'noms',
+                title: 'Enregistrement Noms',
+                shortTitle: 'Noms Commerciaux',
+                description: 'Prise en charge de vos démarches administratives pour réserver et protéger juridiquement le nom de votre structure.',
+                icon: '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m3.75 9v7.5m2.25-6.466a9.016 9.016 0 0 0-3.461-.203c-.536.072-.974.478-1.021 1.017a4.559 4.559 0 0 0-.018.402c0 .464.336.844.775.994l2.95 1.012c.44.15.775.53.775.994 0 .136-.006.27-.018.402-.047.539-.485.945-1.021 1.017a9.077 9.077 0 0 1-3.461-.203M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" /></svg>',
+                image:'/services/2.jpg',
+                features: ['formalisation commerciale'],
+                price: '250 000 FCFA'
             },
             {
                 id: 'marques',
@@ -130,37 +163,27 @@ export default {
                 price:'300 000 FCFA'
             },
             {
+                id: 'brevets',
+                title: 'Brevet d\'Invention',
+                shortTitle: 'Brevets',
+                description: 'Démarches complètes pour protéger vos innovations technologiques, industrielles et scientifiques à l\'échelle nationale et internationale.',
+                longDescription:'Nous vous accompagnons dans le processus, en fonction de votre égibilité et des conditions de brevetabilité. le dépôt d\'un brevet invention reste un titre de propriété industrielle qui confère à son titulaire le droit exclusif d’exploiter une invention pendant une durée déterminée (en général 20 ans), sous certaines conditions Nous constituons tout le dossier comportant: un formulaire de demande, une description de l’invention, tous les dessins techniques, un résumé des travaux d’invention, un justificatif du paiement des taxes, etc..',
+                icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18h6"></path><path d="M10 22h4"></path><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1.5.5 2.5 1.5 3.5.76.76 1.23 1.52 1.41 2.5"></path></svg>',
+                image:'/services/3.jpg',
+                features:['droit exclusive d’exploitation', 'Possibiliter de licencier ou vendre le brevet','Valorisation de la technologie aupres d’investisseurs'],
+                price:'1 000 000 FCFA'
+            },
+            {
                 id:'tech',
                 title: 'Legaltech',
                 shortTitle: 'Legaltech',
-                description: 'Développement de solutions technologiques innovantes (à l\'image de ContratChapNeo) pour dématérialiser et automatiser le droit.',
+                description: 'Développement de solutions technologiques innovantes (à l\'image de ContratChap) pour dématérialiser et automatiser le droit.',
                 longDescription:'Nous rédigeons la mise en conformité, qui constitue dansl’ensemble es actions nécessaires pour s’assurer qu’un site respecte les lois et réglementations en vigueur. Il s’agit d’une formule appliquée à un site web ou une application mobile qui consiste en:',
                 icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>',
                 image:'/services/2.jpg',
                 features: ['la rédaction des conditions générales d’utilisation et/ou de vente', 'Accessibilité numérique (RGAA – Référentiel Général d\'Amélioration de l\'Accessibilité)', 'Sécurité du site et Conformité E-commerce', 'Propriété Intellectuelle'],
                 price: '250 000 FCFA'
             },
-            {
-                id: 'noms',
-                title: 'Enregistrement Noms',
-                shortTitle: 'Noms Commerciaux',
-                description: 'Prise en charge de vos démarches administratives pour réserver et protéger juridiquement le nom de votre structure.',
-                icon: '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m3.75 9v7.5m2.25-6.466a9.016 9.016 0 0 0-3.461-.203c-.536.072-.974.478-1.021 1.017a4.559 4.559 0 0 0-.018.402c0 .464.336.844.775.994l2.95 1.012c.44.15.775.53.775.994 0 .136-.006.27-.018.402-.047.539-.485.945-1.021 1.017a9.077 9.077 0 0 1-3.461-.203M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" /></svg>',
-                image:'/services/2.jpg',
-                features: ['formalisation commerciale'],
-                price: '250 000 FCFA'
-            },
-            {
-                id:'créa',
-                title:'Création d\'entreprise',
-                shortTitle: 'Création',
-                description:'prise en charge pour la création de votre entreprise, on met en place tous les documents nécessaire à celà- et on vous accompagne tout au long du processus juridique',
-                longDescription:'Nous prenons en charge, sur la base des pièces fournies, de rediger entièrement tous les documents nécessaires aux formalités administratives et dont certains aussi font partie des livrables en termes de documents légaux de votre entreprise (statuts; déclaration de souscription et versement; liste de dirigeants etc.)',
-                icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>',
-                image:'/services/1.jpg',
-                features: ['Diagnostic juridique', 'Création clé en main de société','Création basique de société'],
-                price: '1 250 000 FCFA'
-            }
         ]);
 
         // Fonction de défilement fluide vers la section contact

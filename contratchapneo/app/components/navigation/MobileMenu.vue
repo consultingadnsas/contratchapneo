@@ -49,9 +49,9 @@
                     </div>
                     <transition name="accordion">
                         <ul v-if="isMobileServicesDropdownOpen" class="mobile-accordion__list">
-                            <li><NuxtLink to="/services#assistance" @click="close">Diagnostic juridique</NuxtLink></li>
-                            <li><NuxtLink to="/services#programmes" @click="close">Domiciliation d'entreprise</NuxtLink></li>
-                            <li><NuxtLink to="/services#créa" @click="close">Créations d'entreprises</NuxtLink></li>
+                            <li><NuxtLink to="/services#diag" @click="close">Diagnostic juridique</NuxtLink></li>
+                            <li><NuxtLink to="/services#domicile" @click="close">Domiciliation d'entreprise</NuxtLink></li>
+                            <li><NuxtLink to="/services#crea" @click="close">Créations d'entreprises</NuxtLink></li>
                             <li><NuxtLink to="/services#assistance" @click="close">Assistance juridique</NuxtLink></li>
                             <li><NuxtLink to="/services#noms" @click="close">Enregistrement Noms Commerciaux</NuxtLink></li>
                             <li><NuxtLink to="/services#marques" @click="close">Dépôt de Marque</NuxtLink></li>
@@ -60,6 +60,7 @@
                         </ul>
                     </transition>
                 </li>
+                <li><NuxtLink to="/etudeContrat" @click="close">Etude de contrats</NuxtLink></li>
                 <li><NuxtLink to="/about" @click="close">À propos</NuxtLink></li>
             </ul>
             <a href="#" class="cta-mobile" @click="close">Connexion</a>

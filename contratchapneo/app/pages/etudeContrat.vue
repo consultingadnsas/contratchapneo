@@ -28,6 +28,29 @@
                     required
                 />
 
+              <!-- Champ Téléphone (Préfixe + Numéro) -->
+                <div class="custom-input-group">
+                    <label class="custom-label">Numéro de téléphone <span class="required-mark">*</span></label>
+                    <div class="phone-inputs">
+                        <!-- Le sélecteur d'indicatif -->
+                        <BaseSelect
+                            v-model="formData.phonePrefix"
+                            id="phonePrefix"
+                            :options="ohadaCountries"
+                            placeholder="Ind."
+                            class="prefix-select"
+                        />
+                        <!-- Le champ du numéro -->
+                        <BaseInput
+                            v-model="formData.phoneNumber"
+                            id="phoneNumber"
+                            type="tel"
+                            placeholder="01 23 45 67 89"
+                            required
+                            class="number-input"
+                        />
+                    </div>
+                </div>
                 <BaseSelect
                     v-model="formData.type"
                     id="type"
@@ -111,6 +134,17 @@ export default {
             description: ''
         });
 
+        const ohadaCountries = [
+            { name: "🇨🇮 (+225)", value: "+225" },
+            { name: "🇸🇳 (+221)", value: "+221" },
+            { name: "🇲🇱 (+223)", value: "+223" },
+            { name: "🇧🇫 (+226)", value: "+226" },
+            { name: "🇹🇬 (+228)", value: "+228" },
+            { name: "🇧🇯 (+229)", value: "+229" },
+            { name: "🇳🇪 (+227)", value: "+227" },
+            { name: "🇬🇼 (+245)", value: "+245" }
+        ];
+
         const selectedFile = ref<File | null>(null);
         
         const isSubmitting = ref<boolean>(false);
@@ -174,6 +208,7 @@ export default {
 
         return {
             formData,
+            ohadaCountries,
             selectedFile,
             isSubmitting,
             successMessage,
@@ -432,6 +467,38 @@ export default {
     background: radial-gradient(circle, #068cec 0%, transparent 70%);
 }
 
+/* ── Champs Téléphone (Alignement) ── */
+.custom-input-group {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 0.5rem;
+    width: 100%;
+}
+
+.phone-inputs {
+    display: flex;
+    gap: 0.8rem;
+    align-items: flex-start;
+}
+
+/* Le sélecteur prend 35% de la largeur */
+.prefix-select {
+    flex: 0 0 35%;
+    margin-bottom: 0 !important;
+}
+
+/* Le champ numéro prend le reste (65%) */
+.number-input {
+    flex: 1;
+    margin-bottom: 0 !important;
+}
+
+/* Surcharge spécifique pour le select du téléphone afin d'afficher les emojis correctement */
+:deep(.prefix-select .form-select) {
+    padding-left: 1rem !important;
+    padding-right: 2rem !important;
+}
+
 /* ── Reponsive Mobile ── */
 @media (max-width: 768px) {
     .study-section {
@@ -442,6 +509,9 @@ export default {
     }
     .file-upload-label {
         padding: 1.5rem 1rem;
+    }
+    .custom-input-group {
+        width:100%
     }
 }
 </style>

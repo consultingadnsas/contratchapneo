@@ -11,16 +11,15 @@
                 Téléchargez facilement tous vos contrats
             </h1>
             <base-research-input/>
-            <div class="revision-cta desktop-cta" @click="router.push('/etude-contrats')">
+            <div class="revision-cta desktop-cta" @click="router.push('/etudeContrat')">
                 <div class="cta-texts">
                     <p>Besoin d'une révision de contrat ?</p>
                     <span>Faites analyser vos documents par nos experts</span>
                 </div>
                 <!-- Bouton flèche flottant -->
                 <div class="cta-arrow floating-arrow">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                        <line x1="5" y1="12" x2="19" y2="12"></line>
-                        <polyline points="12 5 19 12 12 19"></polyline>
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="size-4">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 19.5 15-15m0 0H8.25m11.25 0v11.25" />
                     </svg>
             </div>
         </div>
@@ -42,12 +41,12 @@
                 <span>Faites analyser vos documents par nos experts</span>
             </div>
             <div class="cta-arrow floating-arrow">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                    <line x1="5" y1="12" x2="19" y2="12"></line>
-                    <polyline points="12 5 19 12 12 19"></polyline>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="size-4">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 19.5 15-15m0 0H8.25m11.25 0v11.25" />
                 </svg>
             </div>
         </div>
+        <caroussel-countries/>
     </section>
 </template>
 
@@ -57,6 +56,7 @@ import mainButton from '../buttons/mainButton.vue'
 import BaseResearchInput from '../input/BaseResearchInput.vue'
 import statCards from '../cards/statCards.vue'
 import { useRouter } from 'vue-router'
+import carousselCountries from '../carousselCountries.vue'
 
 export default defineComponent({
     name: 'HeroSecondSection',
@@ -64,6 +64,7 @@ export default defineComponent({
         mainButton, 
         BaseResearchInput, 
         statCards,
+        carousselCountries
     },
 
     setup() {
@@ -74,6 +75,7 @@ export default defineComponent({
             'Sécurisez juridiquement vos business en un clic.',
             'Accédez à des modèles conformes aux droits OHADA.'
         ]
+       // --- Liste des pays de l'OHADA avec leurs codes ISO ---
 
         const displayText = ref<string>('');
         const phraseIndex = ref<number>(0);
@@ -112,7 +114,7 @@ export default defineComponent({
 
         return {
             displayText,
-            router
+            router,
         }
     }
 })
@@ -133,6 +135,7 @@ export default defineComponent({
     align-items: center;
     gap: 1rem;
     padding: 4rem 1rem 1rem 1rem;
+    padding-bottom: 4rem;
     background: radial-gradient(circle, #202b4a 30%, #0f0f0f 100%);
 }
 

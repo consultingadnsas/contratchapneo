@@ -51,11 +51,11 @@
             </NuxtLink>
             <transition name="dropdown-fade">
                 <ul v-if="isServicesDropdownOpen" class="dropdown-menu">
-                    <li><NuxtLink to="/services#assistance">Diagnostic juridique</NuxtLink></li>
-                    <li><NuxtLink to="/services#programmes">Domiciliation d'entreprise</NuxtLink></li>
-                    <li><NuxtLink to="/services#créa">Créations d'entreprises</NuxtLink></li>
+                    <li><NuxtLink to="/services#diag">Diagnostic juridique</NuxtLink></li>
+                    <li><NuxtLink to="/services#domicile">Domiciliation d'entreprise</NuxtLink></li>
+                    <li><NuxtLink to="/services#crea">Créations d'entreprises</NuxtLink></li>
                     <li><NuxtLink to="/services#assistance">Assistance juridique</NuxtLink></li>
-                    <li><NuxtLink to="/services#assistance">Programmes juridiques</NuxtLink></li>
+                    <li><NuxtLink to="/services#programmes">Programmes juridiques</NuxtLink></li>
                     <li><NuxtLink to="/services#noms">Enregistrement Noms Commerciaux</NuxtLink></li>
                     <li><NuxtLink to="/services#marques">Dépôt de Marque</NuxtLink></li>
                     <li><NuxtLink to="/services#brevets">Brevet d'Invention</NuxtLink></li>
@@ -64,7 +64,7 @@
             </transition>
         </li>
 
-        <li><NuxtLink to="/">Etude de contrats</NuxtLink></li>
+        <li><NuxtLink to="/etudeContrat">Etude de contrats</NuxtLink></li>
         <li><NuxtLink to="/about"> À propos</NuxtLink></li>
     </ul>
 </template>
