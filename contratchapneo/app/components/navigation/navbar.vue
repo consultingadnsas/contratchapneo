@@ -1,92 +1,11 @@
 <template>
-    <header :class="['main-header', `theme-${theme}`]">
+    <header :class="['main-header', `theme-${theme}`, { 'is-scrolled': isScrolled }]">
         <nav class="nav-container">
             <NuxtLink to="/" class="pic__container" @click="closeMenu">
                 <img src="/CONTRATCHAP.png" alt="ContratchapNeo">
             </NuxtLink>
 
-            <ul class="nav-links-desktop">
-                <li><NuxtLink to="/">Accueil</NuxtLink></li>
-
-                <li 
-                    class="dropdown-item"
-                    @mouseenter="isDropdownOpen = true"
-                    @mouseleave="isDropdownOpen = false"
-                >
-                    <NuxtLink to="/contractbank" class="dropdown-trigger">
-                        Banque de contrats
-                        <svg :class="['chevron', { 'is-open': isDropdownOpen }]" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                            <polyline points="6 9 12 15 18 9"/>
-                        </svg>
-                    </NuxtLink>
-                    <transition name="dropdown-fade">
-                        <ul v-if="isDropdownOpen" class="dropdown-menu">
-                            <li v-for="category in contratStore.categories" :key="category.id">
-                                <NuxtLink :to="{ path: '/contractbank', query: { category: category.id } }">
-                                    {{ category.title }}
-                                </NuxtLink>
-                            </li>
-                            <li v-if="contratStore.isLoading">
-                                <span class="muted-text pl-3 text-sm">Chargement...</span>
-                            </li>
-                        </ul>
-                    </transition>
-                </li>
-
-                <li 
-                    class="dropdown-item"
-                    @mouseenter="isProDropdownOpen = true"
-                    @mouseleave="isProDropdownOpen = false"
-                >
-                    <NuxtLink to="/pro" class="dropdown-trigger">
-                        Experts
-                        <svg :class="['chevron', { 'is-open': isProDropdownOpen }]" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                            <polyline points="6 9 12 15 18 9"/>
-                        </svg>
-                    </NuxtLink>
-
-                    <transition name="dropdown-fade">
-                        <ul v-if="isProDropdownOpen" class="dropdown-menu simple-menu">
-                            <li><NuxtLink to="/commissaire-justice">Commissaire de justice (Huissier)</NuxtLink></li>
-                            <li><NuxtLink to="/avocat">Avocat</NuxtLink></li>
-                            <li><NuxtLink to="/notaire">Notaire</NuxtLink></li>
-                            <li><NuxtLink to="/comptable">Comptable</NuxtLink></li>
-                            <li><NuxtLink to="/conseil-juridique">Conseil juridique</NuxtLink></li>
-                        </ul>
-                    </transition>
-                </li>
-                <li><NuxtLink to="/lawCalcul">Calcul de droits</NuxtLink></li>
-
-                <li 
-                    class="dropdown-item"
-                    @mouseenter="isServicesDropdownOpen = true"
-                    @mouseleave="isServicesDropdownOpen = false"
-                >
-                    <NuxtLink to="/services" class="dropdown-trigger">
-                        Services juridiques
-                        <svg :class="['chevron', { 'is-open': isServicesDropdownOpen }]" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                            <polyline points="6 9 12 15 18 9"/>
-                        </svg>
-                    </NuxtLink>
-                    <transition name="dropdown-fade">
-                        <ul v-if="isServicesDropdownOpen" class="dropdown-menu">
-                            <li><NuxtLink to="/services#assistance">Diagnostic juridique</NuxtLink></li>
-                            <li><NuxtLink to="/services#programmes">Domiciliation d'entreprise</NuxtLink></li>
-                            <li><NuxtLink to="/services#créa">Créations d'entreprises</NuxtLink></li>
-                            <li><NuxtLink to="/services#assistance">Assistance juridique</NuxtLink></li>
-                            <li><NuxtLink to="/services#assistance">Programmes juridiques</NuxtLink></li>
-                            <li><NuxtLink to="/services#noms">Enregistrement Noms Commerciaux</NuxtLink></li>
-                            <li><NuxtLink to="/services#marques">Dépôt de Marque</NuxtLink></li>
-                            <li><NuxtLink to="/services#brevets">Brevet d'Invention</NuxtLink></li>
-                            <li><NuxtLink to="/services#tech">Legaltech</NuxtLink></li>
-                        </ul>
-                    </transition>
-                </li>
-
-                <li><NuxtLink to="/">Etude de contrats</NuxtLink></li>
-
-                <li><NuxtLink to="/about"> À propos</NuxtLink></li>
-            </ul>
+            <DesktopMenu :theme="theme" :isScrolled="isScrolled" />
 
             <div class="cta-container desktop-only">
                 <a href="#" class="cta-desktop">Connexion</a>
@@ -99,168 +18,48 @@
             />
         </nav>
 
-        <transition name="slide-down">
-            <div v-if="isMenuOpen" class="nav-mobile-menu">
-                <ul class="nav-links-mobile">
-                    <li><NuxtLink to="/" @click="toggleMenu">Accueil</NuxtLink></li>
+        <MobileMenu :isOpen="isMenuOpen" @close="closeMenu" />
 
-                    <li class="mobile-accordion">
-                        <div class="mobile-accordion__trigger-wrapper">
-                            <NuxtLink to="/contractbank" class="mobile-accordion__main-link" @click="toggleMenu">
-                                Banque de contrats
-                            </NuxtLink>
-                            <button 
-                                class="mobile-accordion__icon-btn"
-                                @click="isMobileDropdownOpen = !isMobileDropdownOpen"
-                            >
-                                <svg :class="['chevron', { 'is-open': isMobileDropdownOpen }]" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                                    <polyline points="6 9 12 15 18 9"/>
-                                </svg>
-                            </button>
-                        </div>
-
-                        <transition name="accordion">
-                            <ul v-if="isMobileDropdownOpen" class="mobile-accordion__list">
-                                <li v-for="category in contratStore.categories" :key="category.id">
-                                    <NuxtLink 
-                                        :to="{ path: '/contractbank', query: { category: category.id } }" 
-                                        @click="toggleMenu"
-                                    >
-                                        {{ category.title }}
-                                    </NuxtLink>
-                                </li>
-                                <li v-if="contratStore.isLoading" class="pl-2 opacity-50 text-sm">Chargement...</li>
-                            </ul>
-                        </transition>
-                    </li>
-
-                    <li class="mobile-accordion">
-                        <div class="mobile-accordion__trigger-wrapper">
-                            <NuxtLink to="/pro" class="mobile-accordion__main-link" @click="toggleMenu">
-                                Experts
-                            </NuxtLink>
-                            <button 
-                                class="mobile-accordion__icon-btn"
-                                @click="isMobileProDropdownOpen = !isMobileProDropdownOpen"
-                            >
-                                <svg :class="['chevron', { 'is-open': isMobileProDropdownOpen }]" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                                    <polyline points="6 9 12 15 18 9"/>
-                                </svg>
-                            </button>
-                        </div>
-
-                        <transition name="accordion">
-                            <ul v-if="isMobileProDropdownOpen" class="mobile-accordion__list">
-                                <li><NuxtLink to="/commissaire-justice" @click="toggleMenu">Commissaire de justice (Huissier)</NuxtLink></li>
-                                <li><NuxtLink to="/avocat" @click="toggleMenu">Avocat</NuxtLink></li>
-                                <li><NuxtLink to="/notaire" @click="toggleMenu">Notaire</NuxtLink></li>
-                                <li><NuxtLink to="/comptable" @click="toggleMenu">Comptable</NuxtLink></li>
-                                <li><NuxtLink to="/conseil-juridique" @click="toggleMenu">Conseil juridique</NuxtLink></li>
-                            </ul>
-                        </transition>
-                    </li>
-
-                    <li><NuxtLink to="/lawCalcul" @click="toggleMenu">Calcul de droit</NuxtLink></li>
-
-                    <li class="mobile-accordion">
-                        <div class="mobile-accordion__trigger-wrapper">
-                            <NuxtLink to="/services" class="mobile-accordion__main-link" @click="toggleMenu">
-                                Services juridiques
-                            </NuxtLink>
-                            <button 
-                                class="mobile-accordion__icon-btn"
-                                @click="isMobileServicesDropdownOpen = !isMobileServicesDropdownOpen"
-                            >
-                                <svg :class="['chevron', { 'is-open': isMobileServicesDropdownOpen }]" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                                    <polyline points="6 9 12 15 18 9"/>
-                                </svg>
-                            </button>
-                        </div>
-
-                        <transition name="accordion">
-                            <ul v-if="isMobileServicesDropdownOpen" class="mobile-accordion__list">
-                                <li><NuxtLink to="/services#assistance" @click="toggleMenu">Diagnostic juridique</NuxtLink></li>
-                                <li><NuxtLink to="/services#programmes" @click="toggleMenu">Domiciliation d'entreprise</NuxtLink></li>
-                                <li><NuxtLink to="/services#créa" @click="toggleMenu">Créations d'entreprises</NuxtLink></li>
-                                <li><NuxtLink to="/services#assistance" @click="toggleMenu">Assistance juridique</NuxtLink></li>
-                                <li><NuxtLink to="/services#assistance" @click="toggleMenu">Programmes juridiques</NuxtLink></li>
-                                <li><NuxtLink to="/services#noms" @click="toggleMenu">Enregistrement Noms Commerciaux</NuxtLink></li>
-                                <li><NuxtLink to="/services#marques" @click="toggleMenu">Dépôt de Marque</NuxtLink></li>
-                                <li><NuxtLink to="/services#brevets" @click="toggleMenu">Brevet d'Invention</NuxtLink></li>
-                                <li><NuxtLink to="/services#tech" @click="toggleMenu">Legaltech</NuxtLink></li>
-                            </ul>
-                        </transition>
-                    </li>
-
-                    <li><NuxtLink to="/about" @click="toggleMenu"> À propos</NuxtLink></li>
-                </ul>
-                <a href="#" class="cta-mobile" @click="toggleMenu">Connexion</a>
-            </div>
-        </transition>
     </header>
 </template>
 
 <script lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue';
 import Hamburger from '../buttons/hamburger.vue';
+import DesktopMenu from './DesktopMenu.vue';  // <-- Import du nouveau composant
+import MobileMenu from './MobileMenu.vue';    // <-- Import du nouveau composant
+
 import { useContratStore } from '../../stores/contratStore'; 
+import { useProStore } from '../../stores/proStore';
 
 export default {
     name: 'MainHeader',
-    components: { Hamburger },
+    components: { Hamburger, DesktopMenu, MobileMenu },
     props: {
-        theme: {
-            type: String,
-            default: 'dark'
-        }
+        theme: { type: String, default: 'dark' }
     },
 
-    setup(props) {
-        // Initialisation du store Pinia
+    setup() {
         const contratStore = useContratStore();
+        const proStore = useProStore();
 
         const isMenuOpen = ref<boolean>(false);
         const isScrolled = ref<boolean>(false);
-        
-        // États des Dropdowns Desktop
-        const isDropdownOpen = ref<boolean>(false);
-        const isServicesDropdownOpen = ref<boolean>(false);
-        const isProDropdownOpen = ref<boolean>(false);
-        
-        // États des Dropdowns Mobile
-        const isMobileDropdownOpen = ref<boolean>(false);
-        const isMobileServicesDropdownOpen = ref<boolean>(false);
-        const isMobileProDropdownOpen = ref<boolean>(false);
 
-        const toggleMenu = () => {
-            isMenuOpen.value = !isMenuOpen.value;
-            // Réinitialise les accordéons quand on ferme le menu principal
-            if (!isMenuOpen.value) {
-                isMobileDropdownOpen.value = false;
-                isMobileServicesDropdownOpen.value = false;
-                isMobileProDropdownOpen.value = false;
-            }
-        };
-        
-        // Force la fermeture de tous les menus (utile quand on clique sur le logo)
-        const closeMenu = () => {
-            isMenuOpen.value = false;
-            isMobileDropdownOpen.value = false;
-            isMobileServicesDropdownOpen.value = false;
-            isMobileProDropdownOpen.value = false;
-        };
-
-        const handleScroll = () => {
-            isScrolled.value = window.scrollY > 20;
-        };
+        const toggleMenu = () => { isMenuOpen.value = !isMenuOpen.value; };
+        const closeMenu = () => { isMenuOpen.value = false; };
+        const handleScroll = () => { isScrolled.value = window.scrollY > 20; };
 
         onMounted(async () => {
             window.addEventListener('scroll', handleScroll);
             handleScroll();
 
-            // Appel dynamique des catégories au chargement de la navbar
+            // On charge les listes pour toute la Navbar en une seule fois
             if (contratStore.categories.length === 0) {
                 await contratStore.getCategories();
+            }
+            if (proStore.domains.length === 0) {
+                await proStore.getFilters(); // Filtres (Domaines) pour les Experts
             }
         });
 
@@ -268,513 +67,45 @@ export default {
             window.removeEventListener('scroll', handleScroll);
         });
 
-        return { 
-            isMenuOpen, 
-            isScrolled, 
-            isDropdownOpen, 
-            isServicesDropdownOpen,
-            isProDropdownOpen, 
-            isMobileDropdownOpen, 
-            isMobileServicesDropdownOpen,
-            isMobileProDropdownOpen, 
-            toggleMenu,
-            closeMenu,
-            contratStore // N'oubliez pas d'exposer le store pour le template
-        };
+        return { isMenuOpen, isScrolled, toggleMenu, closeMenu };
     },
 };
 </script>
 
 <style scoped>
-/* =============================================
-   BASE — Mobile first
-   ============================================= */
+/* Il ne reste ici QUE le style global de la Navbar (la barre blanche/bleue, le logo et le bouton connexion) */
 .main-header {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    z-index: 100;
-    background: #068cec;
-    backdrop-filter: blur(0px);
-    -webkit-backdrop-filter: blur(0px);
-    border-bottom: 1px solid rgba(255, 255, 255, 0);
-    box-shadow: 0 4px 30px rgba(0, 0, 0, 0);
-    transition: background 0.3s ease, backdrop-filter 0.3s ease,
-                border 0.3s ease, box-shadow 0.3s ease, top 0.3s ease;
+    position: fixed; top: 0; left: 0; width: 100%; z-index: 100; background: #068cec; backdrop-filter: blur(0px); -webkit-backdrop-filter: blur(0px); border-bottom: 1px solid rgba(255, 255, 255, 0); box-shadow: 0 4px 30px rgba(0, 0, 0, 0); transition: background 0.3s ease, backdrop-filter 0.3s ease, border 0.3s ease, box-shadow 0.3s ease, top 0.3s ease;
 }
 
 .main-header.is-scrolled {
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.80);
-    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.03);
+    background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-bottom: 1px solid rgba(255, 255, 255, 0.80); box-shadow: 0 4px 30px rgba(0, 0, 0, 0.03);
 }
 
-.nav-container {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    height: 70px;
-    padding: 0 1.5rem;
-}
+.nav-container { display: flex; justify-content: space-between; align-items: center; height: 70px; padding: 0 1.5rem; }
+.pic__container img { width: 70px; height: 60px; }
+.cta-desktop { display: none; }
+.mobile-only { display: flex; }
 
-.pic__container img {
-    width: 70px;
-    height: 60px;
-}
+/* Thèmes de base pour le logo */
+.theme-dark .logo { color: white; }
+.theme-light .logo, .main-header.is-scrolled .logo { color: var(--primary-color) !important; }
 
-.logo-accent {
-    background: var(--primary-color);
-    color: white;
-    padding: 0.2rem 0.5rem;
-    border-radius: 6px;
-    margin-right: 2px;
-}
-
-.nav-links-desktop {
-    display: none;
-}
-
-.cta-desktop {
-    display: none;
-}
-
-.mobile-only {
-    display: flex;
-}
-
-/* =============================================
-   MENU MOBILE
-   ============================================= */
-.nav-mobile-menu {
-    position: absolute;
-    top: 70px;
-    left: 0;
-    width: 100%;
-    background: rgba(255, 255, 255);
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
-    padding: 1.5rem 1.5rem 2rem;
-    border-top: 1px solid rgba(0, 0, 0, 0.06);
-    /* Ajout d'un max-height et scroll pour les petits écrans avec beaucoup de menus */
-    max-height: calc(100vh - 70px);
-    overflow-y: auto;
-}
-
-.nav-links-mobile li a {
-    display: block;
-    font-size: 1.1rem;
-    font-weight: 500;
-    padding: 1rem 0;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.04);
-    color: var(--primary-color);
-    text-decoration: none;
-    transition: opacity 0.2s;
-}
-
-.nav-links-mobile li:last-child a {
-    border-bottom: none;
-}
-
-.nav-links-mobile li a:hover {
-    opacity: 0.6;
-}
-
-/* Accordion mobile */
-.mobile-accordion {
-    border-bottom: 1px solid rgba(0, 0, 0, 0.04);
-}
-
-.mobile-accordion__trigger-wrapper {
-    width: 100%;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 1rem 0;
-}
-
-.mobile-accordion__list {
-    list-style: none;
-    padding: 0 0 0.5rem 1rem;
-    margin: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
-}
-.mobile-accordion__main-link {
-    /* On utilise clamp pour réduire très légèrement la police sur les tout petits écrans, 
-       tout en gardant 1.1rem sur les téléphones standards */
-    font-size: clamp(0.95rem, 4vw, 1.1rem); 
-    font-weight: 500;
-    color: var(--primary-color);
-    text-decoration: none;
-    flex-grow: 1; 
-    text-align: left;
-    padding: 0 !important; 
-    border: none !important;
-    white-space: nowrap; /* Interdit formellement le retour à la ligne */    
-}
-.mobile-accordion__icon-btn {
-    background: none;
-    border: none;
-    color: var(--primary-color);
-    margin-right: -7rem; /* Aligne visuellement la flèche avec le bord droit */
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.mobile-accordion__list li a {
-    font-size: 0.95rem !important;
-    font-weight: 400 !important;
-    padding: 0.6rem 0 !important;
-    border-bottom: none !important;
-    opacity: 0.8;
-    color: var(--primary-color);
-    text-decoration: none;
-    display: block;
-    transition: opacity 0.2s;
-}
-
-.mobile-accordion__list li a:hover {
-    opacity: 1;
-}
-
-/* Chevron animé */
-.chevron {
-    transition: transform 0.25s ease;
-    flex-shrink: 0;
-}
-
-.chevron.is-open {
-    transform: rotate(180deg);
-}
-
-/* Animation accordion mobile */
-.accordion-enter-active,
-.accordion-leave-active {
-    transition: all 0.25s ease;
-    overflow: hidden;
-    /* Ajusté à 400px pour les menus avec beaucoup d'éléments comme Services */
-    max-height: 400px;
-}
-
-.accordion-enter-from,
-.accordion-leave-to {
-    max-height: 0;
-    opacity: 0;
-}
-
-.nav-mobile-menu .cta-mobile {
-    align-self: center;
-}
-
-.cta-mobile {
-    display: block;
-    text-align: center;
-    background: var(--primary-color);
-    width: 70%;
-    color: white;
-    padding: 0.8rem 1.5rem;
-    border-radius: 50px;
-    font-weight: 600;
-    font-size: 0.95rem;
-    text-decoration: none;
-    transition: opacity 0.2s;
-}
-
-.cta-mobile:hover {
-    opacity: 0.85;
-}
-
-/* Animation menu mobile */
-.slide-down-enter-active,
-.slide-down-leave-active {
-    transition: all 0.28s ease-out;
-}
-
-.slide-down-enter-from,
-.slide-down-leave-to {
-    transform: translateY(-12px);
-    opacity: 0;
-}
-
-/* =============================================
-   DESKTOP — ≥ 1024px
-   ============================================= */
-@media (min-width: 1024px) {
+@media (min-width: 1180px) {
     .main-header {
-        top: 16px;
-        left: 50%;
-        transform: translateX(-50%);
-        width: 100%;
-        max-width: 1200px;
-        border-radius: 50px;
-        background: #068cec;
-        backdrop-filter: blur(0px);
-        -webkit-backdrop-filter: blur(0px);
-        border: 1px solid rgba(255, 255, 255, 0);
-        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0);
+        top: 16px; left: 50%; transform: translateX(-50%); width: 100%; max-width: 1200px; border-radius: 50px; background: #068cec; border: 1px solid rgba(255, 255, 255, 0); box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0);
     }
-
     .main-header.is-scrolled {
-        top: 8px;
-        background: rgba(255, 255, 255, 0.65);
-        backdrop-filter: blur(14px);
-        -webkit-backdrop-filter: blur(14px);
-        border: 1px solid rgba(255, 255, 255, 0.45);
-        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.06);
+        top: 8px; background: rgba(255, 255, 255, 0.65); border: 1px solid rgba(255, 255, 255, 0.45); box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.06);
     }
-    .pic__container img {
-        width: 70px;
-        height: 50px;
-    }
-
-    .nav-container {
-        padding: 0 2rem;
-        width: 100%;
-        gap: 1rem;
-        flex: 1;
-        justify-content: space-between;
-        align-items: center;
-    }
-
-    .nav-links-desktop {
-        display: flex;
-        list-style: none;
-        padding: 0;
-        margin: 0;
-        gap: 0.2rem;
-        flex: 1;
-        justify-content: center;
-    }
-
-    .nav-links-desktop li a,
-    .nav-links-desktop li .dropdown-trigger {
-        position: relative;
-        display: flex;
-        align-items: center;
-        white-space: nowrap;
-        font-size: clamp(0.85rem, 0.9vw, 0.9rem);
-        gap: 0.3rem;
-        font-weight: 500;
-        padding: 0.5rem 0.6rem;
-        border-radius: 50px;
-        color: var(--tertiary-color);
-        text-decoration: none;
-        transition: background 0.2s, opacity 0.2s;
-        cursor: pointer;
-    }
-
-    /* Étape B : Création du trait de soulignement avec ::after */
-    .nav-links-desktop li a::after,
-    .nav-links-desktop li .dropdown-trigger::after {
-        content: '';
-        position: absolute;
-        bottom: 2px; /* Ajustez selon l'espacement désiré */
-        left: 50%;
-        transform: translateX(-50%);
-        width: 0; /* Invisible par défaut */
-        height: 2px;
-        background-color: currentColor; /* S'adapte automatiquement au thème (blanc ou bleu) */
-        border-radius: 2px;
-        transition: width 0.3s ease;
-    }
-
-    /* Étape C : Afficher le trait UNIQUEMENT pour les liens principaux actifs */
-    .nav-links-desktop > li > a.router-link-active::after,
-    .nav-links-desktop > li > a.router-link-exact-active::after,
-    .nav-links-desktop > li > .dropdown-trigger.router-link-active::after {
-        width: 60%; 
-    }
-
-    /* Animation au survol pour les liens principaux actifs */
-    .nav-links-desktop > li > a.router-link-active:hover::after,
-    .nav-links-desktop > li > .dropdown-trigger.router-link-active:hover::after {
-        width: 75%;
-    }
-
-    /* GARANTIE : On force l'absence de soulignement dans les sous-menus */
-    .dropdown-menu li a::after {
-        display: none !important;
-    }
-
-    .nav-links-desktop li a:hover,
-    .nav-links-desktop li .dropdown-trigger:hover {
-        background: rgba(255, 255, 255, 0.15) !important;
-        backdrop-filter: blur(12px) !important;
-        -webkit-backdrop-filter: blur(12px) !important;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08) !important;
-        transform: translateY(-1px); /* Léger soulèvement */
-    }
-
-    /* Ajustement du glassmorphisme pour le thème clair (pour garantir le contraste) */
-    .theme-light .nav-links-desktop li a:hover,
-    .theme-light .nav-links-desktop li .dropdown-trigger:hover {
-        background: rgba(0, 0, 0, 0.04) !important;
-        border: 1px solid rgba(0, 0, 0, 0.08) !important;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04) !important;
-    }
+    .pic__container img { width: 70px; height: 50px; }
+    .nav-container { padding: 0 2rem; width: 100%; gap: 1rem; flex: 1; }
     
-    .cta-container.desktop-only {
-        display: block;
-        /* Empêche le bouton d'être écrasé par les liens s'il manque de place */
-        flex-shrink: 0; 
-    }
-
-    /* Dropdown desktop */
-    .dropdown-item {
-        position: relative;
-    }
-
-    .dropdown-menu {
-        position: absolute;
-        top: calc(100% + 12px);
-        left: 50%;
-        transform: translateX(-50%);
-        width: 260px;
-        background: rgba(255, 255, 255, 0.95);
-        backdrop-filter: blur(16px);
-        -webkit-backdrop-filter: blur(16px);
-        border: 1px solid rgba(255, 255, 255, 0.6);
-        border-radius: 16px;
-        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.1);
-        padding: 0.5rem;
-        list-style: none;
-        margin: 0;
-        z-index: 200;
-    }
-
-    /* Petit pont invisible pour ne pas perdre le hover entre trigger et menu */
-    .dropdown-menu::before {
-        content: '';
-        position: absolute;
-        top: -12px;
-        left: 0;
-        width: 100%;
-        height: 12px;
-    }
-
-    .dropdown-menu li a {
-        display: flex !important;
-        align-items: center !important;
-        gap: 0.75rem !important;
-        padding: 0.75rem 1rem !important;
-        border-radius: 10px !important;
-        font-size: 0.875rem !important;
-        color: var(--primary-color) !important;
-        text-decoration: none;
-        transition: background 0.15s !important;
-        white-space: normal !important;
-    }
-
-    .dropdown-menu li a:hover {
-        background: rgba(0, 0, 0, 0.04) !important;
-        box-shadow: none !important;
-    }
-
-    .dropdown-icon {
-        font-size: 1.2rem;
-        flex-shrink: 0;
-    }
-
-    .dropdown-menu li a span:last-child {
-        display: flex;
-        flex-direction: column;
-        gap: 0.1rem;
-    }
-
-    .dropdown-menu li a strong {
-        font-weight: 600;
-        font-size: 0.875rem;
-        line-height: 1.2;
-    }
-
-    .dropdown-menu li a small {
-        font-size: 0.75rem;
-        opacity: 0.55;
-        font-weight: 400;
-    }
-
-    /* Animation dropdown desktop */
-    .dropdown-fade-enter-active,
-    .dropdown-fade-leave-active {
-        transition: all 0.2s ease;
-    }
-
-    .dropdown-fade-enter-from,
-    .dropdown-fade-leave-to {
-        opacity: 0;
-        transform: translateX(-50%) translateY(-6px);
-    }
-
+    .desktop-only { display: block; flex-shrink: 0; }
     .cta-desktop {
-        display: block;
-        white-space: nowrap;
-        background: var(--primary-color-dark);
-        color: white;
-        padding: 0.55rem 1.15rem;
-        border-radius: 50px;
-        font-weight: 800;
-        font-size: 0.85rem;
-        text-decoration: none;
-        transition: opacity 0.2s, transform 0.2s;
+        display: block; white-space: nowrap; background: var(--primary-color-dark); color: white; padding: 0.55rem 1.15rem; border-radius: 50px; font-weight: 800; font-size: 0.85rem; text-decoration: none; transition: opacity 0.2s, transform 0.2s;
     }
-
-    .cta-desktop:hover {
-        opacity: 0.85;
-        transform: scale(1.02);
-    }
-
-    .mobile-only {
-        display: none !important;
-    }
-
-    .nav-mobile-menu {
-        display: none !important;
-    }
-    
-    /* Classe pour les menus avec un texte simple (sans description sous le titre) */
-    .dropdown-menu.simple-menu {
-        width: 260px; /* Aligné avec les autres menus pour une meilleure cohérence */
-    }
-
-    .dropdown-menu.simple-menu li a {
-        font-weight: 500 !important;
-        font-size: 0.9rem !important;
-        padding: 0.6rem 1rem !important;
-    }
+    .cta-desktop:hover { opacity: 0.85; transform: scale(1.02); }
+    .mobile-only { display: none !important; }
 }
-
-.main-header.is-scrolled .nav-links-desktop li a,
-.main-header.is-scrolled .nav-links-desktop li .dropdown-trigger {
-    color: var(--primary-color);
-}
-
-/* ── THÈME SOMBRE (Fond bleu/noir -> Texte blanc) ── */
-    .theme-dark .logo { color: white; }
-    .theme-dark .nav-links-desktop li a { color: white; }
-    .theme-dark .nav-links-desktop li .dropdown-trigger { color: white; }
-
-    /* ── THÈME CLAIR (Fond blanc -> Texte bleu) ── */
-    .theme-light .logo { color: var(--primary-color); }
-    .theme-light .nav-links-desktop li a { color: var(--primary-color); }
-    .theme-light .nav-links-desktop li .dropdown-trigger { color: var(--primary-color); }
-    .theme-light .nav-links-desktop li a:hover,
-    .nav-links-desktop li .dropdown-trigger:hover {
-        background: rgba(97, 96, 96, 0.4);
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
-    }
-
-    /* ── AU SCROLL (Le fond devient blanc opaque -> On force le texte en bleu) ── */
-    .main-header.is-scrolled .logo,
-    .main-header.is-scrolled .nav-links-desktop li a,
-    .main-header.is-scrolled .nav-links-desktop li .dropdown-trigger {
-        color: var(--primary-color) !important;
-    }
 </style>

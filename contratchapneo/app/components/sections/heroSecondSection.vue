@@ -11,6 +11,19 @@
                 Téléchargez facilement tous vos contrats
             </h1>
             <base-research-input/>
+            <div class="revision-cta desktop-cta" @click="router.push('/etude-contrats')">
+                <div class="cta-texts">
+                    <p>Besoin d'une révision de contrat ?</p>
+                    <span>Faites analyser vos documents par nos experts</span>
+                </div>
+                <!-- Bouton flèche flottant -->
+                <div class="cta-arrow floating-arrow">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                        <polyline points="12 5 19 12 12 19"></polyline>
+                    </svg>
+            </div>
+        </div>
         </div>
         <div class="pic-wrapper">
             <div class="pic-container">
@@ -21,6 +34,18 @@
                 
                 <stat-cards class="floating-card card-bottom-left"  title="Services juridiques" @click="router.push('/services')" />
                 <stat-cards class="floating-card card-bottom-right" title="Nos professionnels" @click="router.push('/pro')" />
+            </div>
+        </div>
+        <div class="revision-cta mobile-cta" @click="router.push('/etude-contrats')">
+            <div class="cta-texts">
+                <p>Besoin d'une révision de contrat ?</p>
+                <span>Faites analyser vos documents par nos experts</span>
+            </div>
+            <div class="cta-arrow floating-arrow">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                    <polyline points="12 5 19 12 12 19"></polyline>
+                </svg>
             </div>
         </div>
     </section>
@@ -216,11 +241,106 @@ export default defineComponent({
 .card-bottom-left { animation-delay: 1.6s; }
 .card-bottom-right { animation-delay: 2.4s; }
 
+/* ── CTA Révision de Contrats (Glassmorphism & Flottement) ───── */
+.revision-cta {
+    margin-top: 3.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.5rem;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 12px 16px 12px 20px;
+    border-radius: 16px;
+    cursor: pointer;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    width: fit-content;
+    transition: all 0.3s ease;
+}
+
+/* Effet au survol de la bannière */
+.revision-cta:hover {
+    background: rgba(255, 255, 255, 0.08);
+    /* On reprend la couleur verte de ton cercle en fond */
+    border-color: rgba(50, 244, 89, 0.4); 
+    transform: translateY(-3px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+.revision-cta .cta-texts {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+}
+
+.revision-cta .cta-texts p {
+    color: var(--my-white, #ffffff);
+    font-weight: 600;
+    font-size: clamp(0.9rem, 2vw, 1rem);
+}
+
+.revision-cta .cta-texts span {
+    /* Le vert fluo de ton animation */
+    color: #4db562; 
+    font-size: clamp(0.75rem, 1.5vw, 0.85rem);
+    font-weight: 500;
+    opacity: 0.9;
+}
+
+/* Le bouton flèche animé comme les cartes */
+.cta-arrow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: rgba(50, 244, 89, 0.15);
+    color: #32f459;
+    flex-shrink: 0;
+    transition: all 0.3s ease;
+}
+
+.revision-cta:hover .cta-arrow {
+    background: #32f459;
+    color: #0f0f0f;
+}
+
+/* On réutilise l'esprit de ton animation 'float' */
+.floating-arrow {
+    animation: float-btn 3s ease-in-out infinite;
+}
+
+@keyframes float-btn {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-4px); }
+}
+
+.desktop-cta {
+    display: none !important;
+}
+
+.mobile-cta {
+    display: flex !important;
+    width: 100%;
+    z-index: 10;
+}
+
+@media (max-width: 480px) {
+    .revision-cta {
+        margin-top: -2rem; /* <-- On passe de 1rem à 2.5rem ici */
+    }
+}
+
 /* ── 📐 Phablettes (Écrans larges ou téléphones en paysage) ──── */
 @media (min-width: 480px) {
     .pic-container, .pic-container img {
         width: 230px;
         min-width: 230px;
+    }
+    .revision-cta{
+        width: 100%; 
     }
     .pic-container::before {
     content: '';
@@ -299,7 +419,16 @@ export default defineComponent({
     .card-bottom-left, .card-bottom-right { --ty-base: 80px; }
     .card-top-left, .card-mid-left, .card-bottom-left   { --tx: -65%; }
     .card-top-right, .card-mid-right, .card-bottom-right { --tx: 65%; }
+    /* 👇 ON PLACE L'INVERSION ICI, AVANT L'ACCOLADE FINALE 👇 */
+    .desktop-cta {
+        display: flex !important;
+        margin-top: 3.5rem; 
+    }
+    .mobile-cta {
+        display: none !important;
+    }
 }
+
 
 /* ── 💻 Desktop (A partir de 1200px) ─────────────────────────── */
 @media (min-width: 1200px) {
