@@ -134,7 +134,7 @@ export const useProStore = defineStore('proStore', () => {
         } else {
             console.error(`Le professionnel avec l'ID ${id} est introuvable.`);
             professional.value = null;
-        }
+        } 
     };
 
     return {
