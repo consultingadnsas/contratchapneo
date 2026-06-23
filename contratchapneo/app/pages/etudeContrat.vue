@@ -1,8 +1,6 @@
 <template>
     <section class="study-section">
-        <div class="bg-shape shape-bottom-right"></div>
-        <div class="bg-shape shape-top-left"></div>
-
+        <navbar/>
         <div class="study-header">
             <h1>Faites analyser votre contrat</h1>
             <p>Confiez vos documents à nos experts juridiques en vue d'une révision complète, confidentielle et sécurisée pour la protection de vos intérêts</p>
@@ -51,13 +49,6 @@
                         />
                     </div>
                 </div>
-                <BaseSelect
-                    v-model="formData.type"
-                    id="type"
-                    label="Catégorie du contrat"
-                    placeholder="Sélectionnez le type de contrat"
-                    required
-                />
 
                 <BaseArea
                     v-model="formData.description"
@@ -104,10 +95,12 @@
                 <div v-if="successMessage" class="alert success">{{ successMessage }}</div>
                 <div v-if="errorMessage" class="alert error">{{ errorMessage }}</div>
 
-                <button type="submit" class="submit-btn" :disabled="isSubmitting">
-                    <span v-if="!isSubmitting">Envoyer la demande</span>
-                    <span v-else>Envoi en cours...</span>
-                </button>
+                <form-button
+                    label="Envoyer la demande"
+                    :isLoading="isSubmitting"
+                    type="submit"
+                    class="submit-btn"
+                />
             </form>
         </div>
     </section>
@@ -118,13 +111,17 @@ import { ref } from 'vue';
 import BaseInput from '../components/input/BaseInput.vue';
 import BaseSelect from '../components/input/BaseSelect.vue';
 import BaseArea from '../components/input/BaseArea.vue';
+import navbar from '../components/navigation/navbar.vue';
+import formButton from '../components/buttons/formButton.vue';
 
 export default {
     name: 'EtudeContratPage',
     components: {
         BaseInput,
         BaseSelect,
-        BaseArea
+        BaseArea,
+        navbar,
+        formButton
     },
     setup() {
         const formData = ref({
@@ -414,57 +411,9 @@ export default {
     border: 1px solid rgba(50, 244, 89, 0.3);
 }
 
-/* ── Bouton Soumettre ── */
-.submit-btn {
-    width: 100%;
-    padding: 1.1rem;
-    background: #32f459;
-    color: #0f0f0f;
-    border: none;
-    border-radius: 12px;
-    font-size: 1.05rem;
-    font-weight: 700;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    margin-top: 1rem;
-}
-
 .submit-btn:hover:not(:disabled) {
     transform: translateY(-2px);
-    box-shadow: 0 10px 20px rgba(50, 244, 89, 0.2);
-}
-
-.submit-btn:disabled {
-    background: #4a5568;
-    color: #a0aec0;
-    cursor: not-allowed;
-    transform: none;
-    box-shadow: none;
-}
-
-/* ── Décorations de fond ── */
-.bg-shape {
-    position: absolute;
-    border-radius: 50%;
-    filter: blur(80px);
-    z-index: 1;
-    opacity: 0.5;
-}
-
-.shape-top-left {
-    top: -10%;
-    left: -10%;
-    width: 400px;
-    height: 400px;
-    background: radial-gradient(circle, #32f459 0%, transparent 70%);
-}
-
-.shape-bottom-right {
-    bottom: -10%;
-    right: -10%;
-    width: 500px;
-    height: 500px;
-    background: radial-gradient(circle, #068cec 0%, transparent 70%);
+    box-shadow: 0 10px 20px rgba(56, 57, 96, 0.2);
 }
 
 /* ── Champs Téléphone (Alignement) ── */
