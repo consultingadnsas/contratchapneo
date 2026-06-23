@@ -4,37 +4,44 @@
         <div class="bg-shape shape-top-left"></div>
 
         <div class="flex flex-col gap-4 content-wrapper">
-
-            <base-research-input/>
-            
-            <h1>
-                Téléchargez facilement tous vos contrats
-            </h1>
-            
+            <div class="research-desktop">
+               <base-research-input/>
+                <h1>
+                    Téléchargez facilement tous vos contrats
+                </h1> 
+            </div>
+    
             <div class="revision-cta desktop-cta" @click="router.push('/etudeContrat')">
                 <div class="cta-texts">
                     <p>Besoin d'une révision de contrat ?</p>
-                    <span>Faites analyser vos documents par nos experts</span>
+                    <span>Faites les analyser par nos experts</span>
                 </div>
                 <!-- Bouton flèche flottant -->
                 <div class="cta-arrow floating-arrow">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="size-4">
                         <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 19.5 15-15m0 0H8.25m11.25 0v11.25" />
                     </svg>
+                 </div>
             </div>
-        </div>
+             <div class="research-mobile">
+                <h1>
+                    Téléchargez facilement tous vos contrats
+                </h1> 
+                <base-research-input/>
+            </div>
         </div>
         <div class="pic-wrapper">
             <div class="pic-container">
                 <img src="/Accueil 2.png" alt="Contrats OHADA">
 
                 <stat-cards class="floating-card card-top-left"    title="Banque de contrats" @click="router.push('/contractBank')" />
-                <stat-cards class="floating-card card-top-right"   title="Outil de Calcul" @click="router.push('/lawCalcul')" />
+                <stat-cards class="floating-card card-top-right"   title="Calcul de droits" @click="router.push('/lawCalcul')" />
                 
                 <stat-cards class="floating-card card-bottom-left"  title="Services juridiques" @click="router.push('/services')" />
-                <stat-cards class="floating-card card-bottom-right" title="Nos professionnels" @click="router.push('/pro')" />
+                <stat-cards class="floating-card card-bottom-right" title="Experts" @click="router.push('/pro')" />
             </div>
         </div>
+
         <div class="revision-cta mobile-cta" @click="router.push('/etude-contrats')">
             <div class="cta-texts">
                 <p>Besoin d'une révision de contrat ?</p>
@@ -134,7 +141,7 @@ export default defineComponent({
     flex-direction: column; 
     align-items: center;
     gap: 1rem;
-    padding: 4rem 1rem 1rem 1rem;
+    padding: 1rem 1rem 1rem 1rem;
     padding-bottom: 4rem;
     background: radial-gradient(circle, #202b4a 30%, #0f0f0f 100%);
 }
@@ -252,10 +259,10 @@ export default defineComponent({
     align-items: center;
     justify-content: space-between;
     gap: 1.5rem;
-    background: rgba(255, 255, 255, 0.04);
+    background: rgba(240, 240, 240, 0.11);
     border: 1px solid rgba(255, 255, 255, 0.1);
     padding: 12px 16px 12px 20px;
-    border-radius: 16px;
+    border-radius: 50px;
     cursor: pointer;
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
@@ -267,7 +274,6 @@ export default defineComponent({
 .revision-cta:hover {
     background: rgba(255, 255, 255, 0.08);
     /* On reprend la couleur verte de ton cercle en fond */
-    border-color: rgba(50, 244, 89, 0.4); 
     transform: translateY(-3px);
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
 }
@@ -286,7 +292,7 @@ export default defineComponent({
 
 .revision-cta .cta-texts span {
     /* Le vert fluo de ton animation */
-    color: #4db562; 
+    color: var(--primary-color); 
     font-size: clamp(0.75rem, 1.5vw, 0.85rem);
     font-weight: 500;
     opacity: 0.9;
@@ -300,8 +306,8 @@ export default defineComponent({
     width: 40px;
     height: 40px;
     border-radius: 50%;
-    background: rgba(50, 244, 89, 0.15);
-    color: #32f459;
+    background: #32f459;
+    color: white;
     flex-shrink: 0;
     transition: all 0.3s ease;
 }
@@ -311,25 +317,22 @@ export default defineComponent({
     color: #0f0f0f;
 }
 
-/* On réutilise l'esprit de ton animation 'float' */
-.floating-arrow {
-    animation: float-btn 3s ease-in-out infinite;
-}
-
-@keyframes float-btn {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-4px); }
-}
-
 .desktop-cta {
     display: none !important;
 }
+.research-desktop{
+    display: none !important;
+}
 
+.research-mobile{
+    display: grid !important;
+}
 .mobile-cta {
     display: flex !important;
     width: 100%;
     z-index: 10;
 }
+
 
 @media (max-width: 480px) {
     .revision-cta {
@@ -428,6 +431,12 @@ export default defineComponent({
         display: flex !important;
         margin-top: 3.5rem; 
     }
+    .research-desktop{
+        display: grid !important;
+    }
+    .research-mobile{
+        display:none !important;
+    }
     .mobile-cta {
         display: none !important;
     }
@@ -450,7 +459,8 @@ export default defineComponent({
 
     .hero-section > .content-wrapper {
         width: 50%;
-        top: 0; 
+        top: 0;
+        gap: 0rem
     }
 
     .pic-wrapper {

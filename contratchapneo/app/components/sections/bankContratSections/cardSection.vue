@@ -4,7 +4,7 @@
         <header class="w-full flex flex-col justify-center items-center gap-4">
             <h2>Découvrez tous nos contrats</h2>
             <p>Nos contrats sont conformes aux lois en vigueur dans l'espace OHADA.</p>
-            <mainButton label="contrat sur mesure"/>
+            <mainButton label="contrat sur mesure" @click="router.push('/contractBank/customContrat')"/>
         </header>
 
         

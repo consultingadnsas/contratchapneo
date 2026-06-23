@@ -1,7 +1,7 @@
 <template>
     <div class="page-wrapper">
         <main class="law-calcul-page">
-            <Navbar />
+            <Navbar theme="light" />
             
             <section class="hero-section">
                 <h1 class="main-title">

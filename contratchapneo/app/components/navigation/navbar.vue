@@ -75,7 +75,7 @@ export default {
 <style scoped>
 /* Il ne reste ici QUE le style global de la Navbar (la barre blanche/bleue, le logo et le bouton connexion) */
 .main-header {
-    position: fixed; top: 0; left: 0; width: 100%; z-index: 100; background: #4db562; backdrop-filter: blur(0px); -webkit-backdrop-filter: blur(0px); border-bottom: 1px solid rgba(255, 255, 255, 0); box-shadow: 0 4px 30px rgba(0, 0, 0, 0); transition: background 0.3s ease, backdrop-filter 0.3s ease, border 0.3s ease, box-shadow 0.3s ease, top 0.3s ease;
+    position: fixed; top: 0; left: 0; width: 100%; z-index: 100; background:white; backdrop-filter: blur(0px); -webkit-backdrop-filter: blur(0px); border-bottom: 1px solid rgba(255, 255, 255, 0); box-shadow: 0 4px 30px rgba(0, 0, 0, 0); transition: background 0.3s ease, backdrop-filter 0.3s ease, border 0.3s ease, box-shadow 0.3s ease, top 0.3s ease;
 }
 
 .main-header.is-scrolled {
@@ -93,7 +93,7 @@ export default {
 
 @media (min-width: 1180px) {
     .main-header {
-        top: 16px; left: 50%; transform: translateX(-50%); width: 100%; max-width: 1200px; border-radius: 50px ; background: #4db562; border: 1px solid rgba(255, 255, 255, 0); box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0);
+        top: 16px; left: 50%; transform: translateX(-50%); width: 100%; max-width: 1200px; border-radius: 50px ; background: rgba(210, 215, 245, 0.632); border: 1px solid rgba(255, 255, 255, 0); box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0);
     }
     .main-header.is-scrolled {
         top: 8px; background: rgba(255, 255, 255, 0.65); border: 1px solid rgba(255, 255, 255, 0.45); box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.06);

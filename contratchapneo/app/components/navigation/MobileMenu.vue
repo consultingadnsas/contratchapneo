@@ -38,7 +38,7 @@
                     </transition>
                 </li>
 
-                <li><NuxtLink to="/lawCalcul" @click="close">Calcul de droit</NuxtLink></li>
+                <li><NuxtLink to="/lawCalcul" @click="close">Calcul de droits</NuxtLink></li>
 
                 <li class="mobile-accordion">
                     <div class="mobile-accordion__trigger-wrapper">
