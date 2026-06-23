@@ -280,8 +280,8 @@ class CheckoutView(APIView):
         if not request.user.is_authenticated:
             guest_data = validated_data['guest']
             guest = GuestInfo.objects.create(
-                email    =guest_data['email'],
-                full_name=guest_data['full_name'],
+                email       =guest_data['email'],
+                full_name   =guest_data['full_name'],
                 phone_number=guest_data['phone_number']
             )
 
@@ -296,20 +296,34 @@ class CheckoutView(APIView):
         )
 
         # Création des lignes de commande depuis les lignes du panier
-        order_items = [
-            OrderItem(
-                order        =order,
-                contrat      =item.contrat,
-                contrat_title=item.contrat.title,
-                unit_price   =item.unit_price,
-                quantity     =item.quantity,
+        order_items = []
+        
+        # 💡 CORRECTION : On fetch 'contrat' ET 'pro' pour éviter les requêtes N+1
+        for item in cart.items.select_related('contrat', 'pro'):
+            
+            # On détermine le titre à sauvegarder selon si c'est un contrat ou un pro
+            if item.contrat:
+                title = item.contrat.title
+            elif item.pro:
+                title = f"{item.pro.first_name} {item.pro.last_name} - {item.pro.title_display}"
+            else:
+                title = "Article inconnu"
+
+            order_items.append(
+                OrderItem(
+                    order        =order,
+                    contrat      =item.contrat,
+                    pro          =item.pro,  # 🚨 Ajoute bien le professionnel ici !
+                    contrat_title=title,     # Contient soit le nom du contrat, soit le nom du pro
+                    unit_price   =item.unit_price,
+                    quantity     =item.quantity,
+                )
             )
-            for item in cart.items.select_related('contrat')
-        ]
+            
         OrderItem.objects.bulk_create(order_items)
 
-        # Vidage du panier
-        # cart.clear(); on va vider le panier après le paiement
+        # Vidage du panier (commenté comme dans ton code, géré plus tard)
+        # cart.clear()
 
         return order
 

@@ -34,7 +34,7 @@ class AddToCartSerializer(serializers.Serializer):
     Valide qu'on ajoute soit un contrat, soit un pro.
     """
     contrat_id = serializers.UUIDField(required=False, allow_null=True)
-    pro_id = serializers.IntegerField(required=False, allow_null=True) # IntegerField car l'ID du Pro n'est pas un UUID
+    pro_id = serializers.UUIDField(required=False, allow_null=True) # IntegerField car l'ID du Pro n'est pas un UUID
     quantity = serializers.IntegerField(default=1, min_value=1)
 
     def validate(self, data):

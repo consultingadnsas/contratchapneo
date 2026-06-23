@@ -1,5 +1,6 @@
 import { defineStore } from "pinia";
 import { ref } from "vue";
+import {useCartStore} from './cartStore'
 // Note : Dans Nuxt 3, useNuxtApp et useRuntimeConfig sont auto-importés, 
 // mais tu peux les importer si ton linter le demande.
 
@@ -21,7 +22,7 @@ export interface LegalDomain {
 }
 
 export interface LegalProfessional {
-    id: number;
+    id: string;
     first_name: string;
     last_name: string;
     title: string;
@@ -49,6 +50,7 @@ export const useProStore = defineStore('proStore', () => {
     // --- NUXT CONTEXT & HELPERS ---
     const { $api } = useNuxtApp();
     const config = useRuntimeConfig();
+    const cartStore = useCartStore();
 
     const resolveMediaUrl = (path?: string | null) => {
         if (!path) return path;
@@ -127,7 +129,7 @@ export const useProStore = defineStore('proStore', () => {
     /**
      * 3. Récupérer un professionnel spécifique par ID (pour la modale)
      */
-    const getSpecificProfessional = (id: number) => {
+    const getSpecificProfessional = (id: string) => {
         const found = professionals.value.find(p => p.id === id);
         if (found) {
             professional.value = found;
@@ -138,6 +140,7 @@ export const useProStore = defineStore('proStore', () => {
     };
 
     return {
+        cartStore,
         isLoading,
         error,
         professionals,

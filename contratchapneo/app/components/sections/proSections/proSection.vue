@@ -46,7 +46,9 @@
                     :title="`${pro.first_name} ${pro.last_name}`"
                     :subtitle="pro.title_display"
                     :image="pro.profile_picture || undefined"
+                    :isloading="cartStore.isLoading"
                     @view="openViewModal(pro.id)"
+                    @pro-checkout="addToCart(pro.id)"
                 />
             </div>
             
@@ -141,15 +143,16 @@ export default {
 
         const isViewOpen = ref<boolean>(false);
         
-        const openViewModal = async (proId: number) => {
+        const openViewModal = async (proId: string) => {
             proStore.getSpecificProfessional(proId);  // on attend la donnée
-            isViewOpen.value = true;  
-            console.log("Ouverture de la modale", isViewOpen.value)                       // puis on ouvre
+            isViewOpen.value = true;
+            console.log("On va voir l'id", proId)                     // puis on ouvre
         }
 
         const addToCart = async (proId:string) => {
             try{
-                await cartStore.addToCart(proId);
+                await cartStore.addProToCart(proId);
+                router.push('/order/procheckout/');
             } catch (error: any) {
                 console.error("Erreur lors de l'ajout du pro pour la consultation", error)
             }
@@ -181,7 +184,7 @@ export default {
             openViewModal,
 
             //Actions
-            addToCart
+            addToCart,
         }
     }
 }

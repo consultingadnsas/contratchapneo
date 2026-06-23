@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth import get_user_model
+import uuid
 
 User = get_user_model()
 
@@ -43,7 +44,8 @@ class LegalProfessional(models.Model):
         ('EXPERT_COMPTABLE', 'Expert-Comptable / Commissaire aux comptes'), # Souvent sollicités pour la création de SARL/SA
         ('AUTRE', 'Autre professionnel du droit'),
     )
-    
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+
     # Relation utilisateur
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='professional_profile', null=True, blank=True)
     
