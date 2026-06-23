@@ -37,13 +37,34 @@ export default {
     const cartStore = useCartStore();
 
     const cartItems = computed(() => (
-      (cartStore.cart?.items ?? []).map(i => ({
-        id: i.id,
-        name: i.contrat?.title ?? 'Contrat',
-        price: Number(i.contrat?.prix ?? 0),
-        quantity: i.quantity,
-        image: i.contrat?.picture
-      }))
+      (cartStore.cart?.items ?? []).map(i => {
+        
+        // On prépare des variables par défaut
+        let itemName = 'Article';
+        let itemImage = null;
+
+        // Si c'est un contrat
+        if (i.contrat) {
+          itemName = i.contrat.title;
+          itemImage = i.contrat.picture;
+        } 
+        // Si c'est un professionnel
+        else if (i.pro) {
+          itemName = `${i.pro.first_name} ${i.pro.last_name}`; // ou i.pro.title_display
+          itemImage = i.pro.profile_picture;
+        }
+
+        return {
+          id: i.id,
+          name: itemName,
+          // 💡 On utilise directement unit_price fourni par le backend !
+          price: Number(i.unit_price || 0), 
+          // 💡 Pareil pour le sous-total
+          subtotal: Number(i.subtotal || 0), 
+          quantity: i.quantity,
+          image: itemImage
+        };
+      })
     ));
 
     const formattedTotalPrice = computed(() => cartStore.formattedTotalPrice);

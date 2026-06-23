@@ -275,14 +275,14 @@ class CheckoutView(APIView):
     def _create_order(self, request, cart, validated_data):
         """Logique de création isolée — appelée dans la transaction atomique."""
 
-        # Création du GuestInfo si invité
+        # 1️⃣ Création du GuestInfo si invité
         guest = None
         if not request.user.is_authenticated:
             guest_data = validated_data['guest']
             guest = GuestInfo.objects.create(
-                email       =guest_data['email'],
-                full_name   =guest_data['full_name'],
-                phone_number=guest_data['phone_number']
+                email       =guest_data.get('email'),
+                full_name   =guest_data.get('full_name'),
+                phone_number=guest_data.get('phone_number', '') 
             )
 
         # Snapshot du total depuis le panier
@@ -295,35 +295,42 @@ class CheckoutView(APIView):
             total_amount=total,
         )
 
-        # Création des lignes de commande depuis les lignes du panier
+        # Création des lignes de commande
         order_items = []
         
-        # 💡 CORRECTION : On fetch 'contrat' ET 'pro' pour éviter les requêtes N+1
         for item in cart.items.select_related('contrat', 'pro'):
             
-            # On détermine le titre à sauvegarder selon si c'est un contrat ou un pro
+            # 2️⃣ On prépare les deux variables séparément
+            c_title = None
+            p_name = None
+            
             if item.contrat:
-                title = item.contrat.title
+                # CORRECTION : Le champ s'appelle 'titre' et non 'title'
+                c_title = item.contrat.titre
             elif item.pro:
-                title = f"{item.pro.first_name} {item.pro.last_name} - {item.pro.title_display}"
-            else:
-                title = "Article inconnu"
+                # CORRECTION : Utilisation de get_title_display() si c'est un champ choices, 
+                # sinon on récupère simplement l'attribut 'title'.
+                pro_title = item.pro.get_title_display() if hasattr(item.pro, 'get_title_display') else getattr(item.pro, 'title', '')
+                p_name = f"{item.pro.first_name} {item.pro.last_name} - {pro_title}"
 
+            # 3️⃣ On insère chaque info dans SA propre colonne
             order_items.append(
                 OrderItem(
                     order        =order,
                     contrat      =item.contrat,
-                    pro          =item.pro,  # 🚨 Ajoute bien le professionnel ici !
-                    contrat_title=title,     # Contient soit le nom du contrat, soit le nom du pro
+                    pro          =item.pro,  
+                    contrat_title=c_title,  
+                    pro_name     =p_name,   
                     unit_price   =item.unit_price,
                     quantity     =item.quantity,
                 )
             )
             
+        # Enregistrement en masse
         OrderItem.objects.bulk_create(order_items)
 
-        # Vidage du panier (commenté comme dans ton code, géré plus tard)
-        # cart.clear()
+        # 4️⃣ CORRECTION : On vide le panier une fois la commande passée !
+        cart.clear()
 
         return order
 

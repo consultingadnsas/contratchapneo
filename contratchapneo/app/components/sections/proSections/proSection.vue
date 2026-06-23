@@ -152,7 +152,7 @@ export default {
         const addToCart = async (proId:string) => {
             try{
                 await cartStore.addProToCart(proId);
-                router.push('/order/procheckout/');
+                router.push('/order/checkout/');
             } catch (error: any) {
                 console.error("Erreur lors de l'ajout du pro pour la consultation", error)
             }
