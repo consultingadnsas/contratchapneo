@@ -6,7 +6,6 @@ from .views import (
     PaymentWebhookView, 
     DownloadContractView,
     payment_webhook_view,
-    PaymentVerifyView
 )
 from django.views.decorators.csrf import csrf_exempt
 
@@ -16,5 +15,4 @@ urlpatterns = [
     path('webhook/', payment_webhook_view, name='payment-webhook'),
     # 👇 Nouvelle route pour le téléchargement
     path('download/<str:order_id>/', DownloadContractView.as_view(), name='download-contract'),
-    path('verify/<str:reference>/', PaymentVerifyView.as_view(), name='payment-verify'),
 ]

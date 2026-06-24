@@ -387,50 +387,6 @@ class PaymentWebhookView(APIView):
                 return Response({'error': 'Commande introuvable'}, status=status.HTTP_404_NOT_FOUND)
         else:
             return Response({'message': 'Le paiement a échoué'}, status=status.HTTP_400_BAD_REQUEST)
-
-# ─────────────────────────────────────────
-# VERIFY  —  GET /payment/verify/<reference>/
-# ─────────────────────────────────────────
-
-class PaymentVerifyView(APIView):
-    """
-    Sert à répondre au Frontend (Vue.js) qui demande si le paiement a réussi
-    lorsque l'utilisateur revient sur la page /paymentCallback.
-    """
-    permission_classes = [AllowAny]
-    authentication_classes = []
-
-    def get(self, request, reference):
-        try:
-            # On cherche la transaction grâce à la référence
-            transaction = Transaction.objects.get(provider_reference=reference)
-        except Transaction.DoesNotExist:
-            return Response(
-                {'status': 'failed', 'is_paid': False, 'message': 'Transaction introuvable.'},
-                status=status.HTTP_404_NOT_FOUND
-            )
-
-        # On vérifie le statut de la transaction
-        if transaction.status == Transaction.TransactionStatus.SUCCESSFUL:
-            return Response(
-                {'status': 'success', 'is_paid': True}, 
-                status=status.HTTP_200_OK
-            )
-            
-        elif transaction.status == Transaction.TransactionStatus.FAILED:
-            return Response(
-                {'status': 'failed', 'is_paid': False}, 
-                status=status.HTTP_200_OK
-            )
-            
-        else:
-            # Si le statut est encore PENDING (en attente)
-            # Ça arrive si le Webhook de Xpaye met du temps à arriver
-            return Response(
-                {'status': 'pending', 'is_paid': False}, 
-                status=status.HTTP_200_OK
-            )
-
 # ─────────────────────────────────────────
 # DOWNLOAD  —  GET /payment/download/<order_id>/
 # ─────────────────────────────────────────
