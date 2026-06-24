@@ -306,7 +306,7 @@ class CheckoutView(APIView):
             
             if item.contrat:
                 # CORRECTION : Le champ s'appelle 'titre' et non 'title'
-                c_title = item.contrat.titre
+                c_title = item.contrat.title
             elif item.pro:
                 # CORRECTION : Utilisation de get_title_display() si c'est un champ choices, 
                 # sinon on récupère simplement l'attribut 'title'.

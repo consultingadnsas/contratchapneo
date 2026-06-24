@@ -228,7 +228,7 @@ def payment_webhook_view(request):
     except json.JSONDecodeError:
         return Response({'message': 'Payload JSON invalide.'}, status=status.HTTP_200_OK)
 
-    print("Webhook reçu :", data)
+    #print("Webhook reçu :", data)
 
     reference      = data.get('referenceNumber')
     response_code  = data.get('responsecode')

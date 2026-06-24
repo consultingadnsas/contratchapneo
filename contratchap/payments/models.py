@@ -15,6 +15,23 @@ class Transaction(models.Model):
         STRIPE = 'STRIPE', 'Stripe'
         CINETPAY = 'CINETPAY', 'CinetPay'
         WAVE = 'WAVE', 'Wave'
+        ORANGE_CI='OMCIV2'
+        MOOV_CI='FLOOZ'
+        MTN_CI='MOMOCI'
+        ORANGE_BF='OMBF'
+        ORANGE_MALI='OMML'
+        MTN_BENIN='MOMOBJ'
+        VISA_MASTERCARD='CARD'
+        MOOV_BENIN='FLOOZBJ'
+        AIRTEL_NIGER='AIRTELNG'
+        WAVE_CI='WAVECI'
+        ORANGE_SENEGAL='OMSN'
+        ORANGE_GUINEE_BISSAU='OMGN'
+        ORANGE_CAMEROUN='OMCM'
+        WAVE_SENEGAL='WAVESN'
+        FLOOZ_TOGO='MOOTG'
+        TOGO_CEL='TOGOCEL'
+        MTN_CAMEROUN='MOMOCM'
         PAYPAL = 'PAYPAL', 'PayPal',
         SIMULATION = 'SIMULATED', 'Simulation'  # Pour les tests en dev
         # N'hésite pas à adapter cette liste selon tes prestataires africains ou internationaux
