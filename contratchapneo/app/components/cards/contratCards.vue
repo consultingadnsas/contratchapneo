@@ -107,7 +107,7 @@ export default defineComponent({
                 { transform: 'translate(-50%, -50%) scale(1)', opacity: 1 },
                 { transform: `translate(calc(-50% + ${endX - startX}px), calc(-50% + ${endY - startY}px)) scale(0.2)`, opacity: 0.5 }
             ], {
-                duration: 1000, // 0.6 secondes de vol
+                duration: 700, // 0.6 secondes de vol
                 easing: 'cubic-bezier(0.25, 1, 0.5, 1)' 
             });
 

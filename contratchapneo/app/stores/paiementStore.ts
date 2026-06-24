@@ -4,24 +4,6 @@ import { defineStore } from 'pinia';
 import { useCartStore } from './cartStore'
 import type { Order } from '../stores/orderStore'
 
-/*
-{
-  "merchantId": "PP-F324",
-  "amount": 1000,
-  "description": "Abonnement Premium",
-  "channel": "CARD",
-  "countryCurrencyCode": "952",
-  "referenceNumber": "REF-772105",
-  "customerEmail": "test@gmail.com",
-  "customerFirstName": "Ishola",
-  "customerLastname": "Lamine",
-  "customerPhoneNumber": "01234567",
-  "notificationURL": "https://votre-site.com/webhook",
-  "returnURL": "https://votre-site.com/retour",
-  "returnContext": "{\"order_id\":\"123\", \"user\":\"88\"}"
-}
-*/
-
 export interface Paiement {
     amount: number,
     channel: string,
@@ -44,21 +26,73 @@ export const usePaiementStore = defineStore('paiement', () => {
     const isLoading = ref(false);
     const error = ref<string | null>(null);
 
-    //
     const order = ref<Order | null>(null)
-
     const paiement = ref<Paiement | null>(null)
-
     const sandboxMode = ref(true)
 
     const setSandboxMode = (enabled: boolean) => {
         sandboxMode.value = enabled
     }
 
-    // State
+   // ── NOUVEAU : Fonction de vérification avec "Polling" (Patience) ──
+    const verifyPayment = async (reference: string, maxRetries = 5): Promise<boolean> => {
+        isLoading.value = true;
+        error.value = null;
 
+        // On va essayer jusqu'à 5 fois (avec 2.5s de pause = 12 secondes d'attente max)
+        for (let i = 0; i < maxRetries; i++) {
+            try {
+                const response: any = await $api(`/payment/verify/${reference}/`, {
+                    method: 'GET'
+                });
+
+                // Si Django confirme que le webhook a mis la transaction à SUCCESSFUL
+                if (response && (response.status === 'success' || response.is_paid === true)) {
+                    isLoading.value = false;
+                    return true;
+                } 
+                // Si Django confirme un échec explicite (FAILED)
+                else if (response && response.status === 'failed') {
+                    isLoading.value = false;
+                    return false; 
+                } 
+                // Si c'est toujours PENDING, on attend un peu que le Webhook arrive
+                else {
+                    console.log(`⏳ Webhook non reçu, transaction PENDING. Essai ${i+1}/${maxRetries}`);
+                    await new Promise(resolve => setTimeout(resolve, 2500)); // Pause de 2.5 secondes
+                }
+
+            } catch (err: any) {
+                console.error("Erreur réseau, nouvelle tentative...", err);
+                await new Promise(resolve => setTimeout(resolve, 2500));
+            }
+        }
+
+        // Si après 12 secondes, Xpay n'a toujours rien envoyé, on bloque (sécurité)
+        isLoading.value = false;
+        return false;
+    }
+
+    // ── MAGIE DE PRÉSENTATION : Simuler la réponse du Webhook ──
+    const simulatePayment = async (transactionId: string, outcome: 'SUCCESS' | 'FAILED') => {
+        try {
+            await $api('/payment/simulate/', {
+                method: 'POST',
+                body: {
+                    transaction_id: transactionId,
+                    outcome: outcome
+                }
+            });
+            console.log(`[Simulation Sandbox] Transaction marquée comme ${outcome} !`);
+            return true;
+        } catch (err) {
+            console.error("Erreur lors de la simulation automatique :", err);
+            return false;
+        }
+    }
+
+    // ── Fonction de téléchargement (inchangée) ──
     const downloadContracts = async (orderId: string) => {
-
         isLoading.value = true;
         error.value = null;
 
@@ -70,13 +104,10 @@ export const usePaiementStore = defineStore('paiement', () => {
                 console.warn('Impossible de vider le panier avant téléchargement:', cartError);
             }
 
-            // Use the persisted order details to recover the guest email when needed.
             const { useOrderStore } = await import('./orderStore');
             const orderStore = useOrderStore();
-            //const email = orderStore.currentOrder?.guest?.email || '';
             const email = 'consultingadnsas@gmail.com';
 
-            // Use $api.raw to access both the Blob data and the headers (for filename)
             const response = await $api.raw(`/payment/download/${orderId}/?email=${email}`, {
                 method: 'GET',
                 responseType: 'blob',
@@ -97,7 +128,7 @@ export const usePaiementStore = defineStore('paiement', () => {
             document.body.removeChild(anchor)
             URL.revokeObjectURL(url)
 
-            console.log("Email pour le téléchargement")
+            console.log("Téléchargement réussi")
 
             return true
         } catch (err: any) {
@@ -107,7 +138,6 @@ export const usePaiementStore = defineStore('paiement', () => {
         } finally {
             isLoading.value = false
         }
-
     }
 
     return {
@@ -117,6 +147,8 @@ export const usePaiementStore = defineStore('paiement', () => {
         paiement,
         sandboxMode,
         setSandboxMode,
+        verifyPayment, // <-- N'oublie pas qu'il a été ajouté ici
+        simulatePayment,
         downloadContracts
     }
 })
