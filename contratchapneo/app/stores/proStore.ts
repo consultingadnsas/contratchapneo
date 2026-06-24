@@ -1,8 +1,6 @@
 import { defineStore } from "pinia";
 import { ref } from "vue";
-import {useCartStore} from './cartStore'
-// Note : Dans Nuxt 3, useNuxtApp et useRuntimeConfig sont auto-importés, 
-// mais tu peux les importer si ton linter le demande.
+import { useCartStore } from './cartStore'
 
 // ==========================================
 // INTERFACES
@@ -50,6 +48,8 @@ export const useProStore = defineStore('proStore', () => {
     // --- NUXT CONTEXT & HELPERS ---
     const { $api } = useNuxtApp();
     const config = useRuntimeConfig();
+    
+    // ✅ On instancie le cartStore pour l'utiliser en interne
     const cartStore = useCartStore();
 
     const resolveMediaUrl = (path?: string | null) => {
@@ -78,7 +78,6 @@ export const useProStore = defineStore('proStore', () => {
         error.value = null;
         
         try {
-            // Utilisation de l'objet params (comme dans getContracts)
             const params: Record<string, any> = {};
             if (domainSlug) params.domain = domainSlug;
             if (countryCode) params.country = countryCode;
@@ -90,7 +89,6 @@ export const useProStore = defineStore('proStore', () => {
             });
 
             if (response) {
-                // On map pour résoudre l'URL de la photo de profil (comme pour picture dans contratStore)
                 professionals.value = response.map(pro => ({
                     ...pro,
                     profile_picture: resolveMediaUrl(pro.profile_picture)
@@ -140,7 +138,7 @@ export const useProStore = defineStore('proStore', () => {
     };
 
     return {
-        cartStore,
+        // 🚨 CRITIQUE : J'AI SUPPRIMÉ `cartStore` D'ICI !
         isLoading,
         error,
         professionals,
