@@ -1,11 +1,5 @@
 <template>
-  <div v-if="isVerifying" class="verify__screen">
-    <div class="spinner"></div>
-    <h3 class="verify__title">Vérification en cours...</h3>
-    <p class="verify__subtitle">Veuillez patienter, nous confirmons la transaction avec la banque.</p>
-  </div>
-
-  <div v-else class="success__screen">
+  <div class="success__screen">
     <div class="success__icon">
         <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
             <circle cx="12" cy="12" r="11" stroke="currentColor" stroke-width="1.5"/>
@@ -24,7 +18,7 @@
         {{ downloading ? 'Téléchargement en cours...' : 'Télécharger le contrat' }}
     </button>
     <mainButton 
-        label="Aller page d'accueil" 
+        label="aller page d'accueil" 
         @click="()=>router.push('/')"
     />
   </div>
@@ -58,13 +52,7 @@ export default {
         const countdown = ref(3)
         let countdownTimer: any = null
 
-        // 1. IDENTIFIANT DE TRANSACTION (Pour demander à Django si c'est payé)
-        // On récupère "ref" que Xpay place dans l'URL à son retour
-        const transactionRef = computed(() => route.query.ref || route.query.referenceNumber || paiementStore.paiement?.referenceNumber);
-
-        // 2. IDENTIFIANT DE COMMANDE (Pour déclencher le téléchargement du PDF)
-        const activeOrderId = computed(() => orderStore.currentOrder?.id || route.query.order_id);
-
+        const activeOrderId = computed(() => orderStore.currentOrder?.id || route.query.order_id || route.query.id);
         const canDownload = computed(() => !!activeOrderId.value)
         const downloading = computed(() => paiementStore.isLoading)
 
@@ -76,31 +64,29 @@ export default {
         onMounted(async () => {
             const status = (route.query.status || '').toString().toLowerCase();
 
-            // 1. Coupe-circuit (Fast-Fail) si annulé chez Xpay
-            if (status === 'failed' || status === 'canceled' || status === 'cancelled' || status === 'error') {
+            // 1. Coupe-circuit (Fast-Fail) : On bloque immédiatement les annulations
+            if (['failed', 'canceled', 'cancelled', 'error'].includes(status)) {
                 router.replace('/order/orderFails');
                 return;
             }
 
-            if (!transactionRef.value) {
-                console.error("❌ Impossible de vérifier : Aucune référence de transaction trouvée.");
+            if (!activeOrderId.value) {
                 router.replace('/order/orderFails');
                 return;
             }
 
-            // 2. Le Gardien interroge Django avec la RÉFÉRENCE DE LA TRANSACTION
-            console.log("⏳ Vérification de la transaction :", transactionRef.value);
-            const isSuccess = await paiementStore.verifyPayment(transactionRef.value as string);
+            // 2. Le Gardien tente de télécharger. 
+            // Si le webhook est en retard, la fonction va patienter toute seule en arrière-plan.
+            const isSuccess = await paiementStore.downloadContracts(activeOrderId.value as string);
 
             if (isSuccess) {
-                // Le paiement est VALIDÉ !
-                // On nettoie l'URL pour la rendre propre
+                // Le PDF a été téléchargé, ce qui prouve que Django a reçu le Webhook !
                 router.replace({ path: route.path, query: {} })
-                isVerifying.value = false;
                 
-                // On télécharge le document avec l'ID de la commande
-                downloadContract();
+                // On affiche le message de succès
+                isVerifying.value = false;
 
+                // On lance la redirection vers l'accueil
                 countdownTimer = setInterval(() => {
                     countdown.value--;
                     if (countdown.value <= 0) {
@@ -109,7 +95,7 @@ export default {
                     }
                 }, 1000);
             } else {
-                console.warn("❌ Django a refusé la transaction (Statut non-payé ou inconnu).");
+                // Si après 15s le webhook n'est pas arrivé, ou que Django refuse formellement
                 router.replace('/order/orderFails');
             }
         });
@@ -131,44 +117,7 @@ export default {
 </script>
 
 <style scoped>
-/* ── Écran de vérification (Gatekeeper) ── */
-.verify__screen {
-    height: 60vh;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    text-align: center;
-}
-
-.spinner {
-    width: 50px;
-    height: 50px;
-    border: 4px solid rgba(50, 244, 89, 0.2);
-    border-top: 4px solid #32f459;
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-    margin-bottom: 1.5rem;
-}
-
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-}
-
-.verify__title {
-    color: #202b4a;
-    font-size: 1.4rem;
-    font-weight: 700;
-    margin-bottom: 0.5rem;
-}
-
-.verify__subtitle {
-    color: #4a5568;
-    font-size: 0.95rem;
-}
-
-/* ── Écran de succès (Ton design) ── */
+/* ── Écran de succès ── */
 .success__screen {
     height: 100vh;
     display: flex;
@@ -189,7 +138,7 @@ export default {
 .success__icon {
     width: 72px;
     height: 72px;
-    color: #32f459; /* J'ai mis ton vert fluo ici pour la validation ! */
+    color: #202b4a;
     animation: popIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both;
 }
 

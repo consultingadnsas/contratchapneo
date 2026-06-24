@@ -34,116 +34,81 @@ export const usePaiementStore = defineStore('paiement', () => {
         sandboxMode.value = enabled
     }
 
-   // ── NOUVEAU : Fonction de vérification avec "Polling" (Patience) ──
-    const verifyPayment = async (reference: string, maxRetries = 5): Promise<boolean> => {
-        isLoading.value = true;
-        error.value = null;
-
-        // On va essayer jusqu'à 5 fois (avec 2.5s de pause = 12 secondes d'attente max)
-        for (let i = 0; i < maxRetries; i++) {
-            try {
-                const response: any = await $api(`/payment/verify/${reference}/`, {
-                    method: 'GET'
-                });
-
-                // Si Django confirme que le webhook a mis la transaction à SUCCESSFUL
-                if (response && (response.status === 'success' || response.is_paid === true)) {
-                    isLoading.value = false;
-                    return true;
-                } 
-                // Si Django confirme un échec explicite (FAILED)
-                else if (response && response.status === 'failed') {
-                    isLoading.value = false;
-                    return false; 
-                } 
-                // Si c'est toujours PENDING, on attend un peu que le Webhook arrive
-                else {
-                    console.log(`⏳ Webhook non reçu, transaction PENDING. Essai ${i+1}/${maxRetries}`);
-                    await new Promise(resolve => setTimeout(resolve, 2500)); // Pause de 2.5 secondes
-                }
-
-            } catch (err: any) {
-                console.error("Erreur réseau, nouvelle tentative...", err);
-                await new Promise(resolve => setTimeout(resolve, 2500));
-            }
-        }
-
-        // Si après 12 secondes, Xpay n'a toujours rien envoyé, on bloque (sécurité)
-        isLoading.value = false;
-        return false;
-    }
-
-    // ── MAGIE DE PRÉSENTATION : Simuler la réponse du Webhook ──
-    const simulatePayment = async (transactionId: string, outcome: 'SUCCESS' | 'FAILED') => {
-        try {
-            await $api('/payment/simulate/', {
-                method: 'POST',
-                body: {
-                    transaction_id: transactionId,
-                    outcome: outcome
-                }
-            });
-            console.log(`[Simulation Sandbox] Transaction marquée comme ${outcome} !`);
-            return true;
-        } catch (err) {
-            console.error("Erreur lors de la simulation automatique :", err);
-            return false;
-        }
-    }
-
-    // ── Fonction de téléchargement (inchangée) ──
-    const downloadContracts = async (orderId: string) => {
+    // ── TÉLÉCHARGEMENT & GARDIEN INTÉGRÉ ──
+    // On ajoute un paramètre maxRetries (par défaut 5 essais = 15 secondes max)
+    const downloadContracts = async (orderId: string, maxRetries = 5) => {
         isLoading.value = true;
         error.value = null;
 
         try {
             const cartStore = useCartStore();
-
             const { useOrderStore } = await import('./orderStore');
             const orderStore = useOrderStore();
             
-            // ⚠️ Remets la ligne dynamique pour la production !
             const email = orderStore.currentOrder?.guest?.email || 'consultingadnsas@gmail.com';
 
-            // 1. On laisse l'objet "query" construire les paramètres d'URL proprement
-            const response = await $api.raw(`/payment/download/${orderId}/`, {
-                method: 'GET',
-                responseType: 'blob',
-                query: email ? { email } : undefined,
-            })
+            // Boucle d'essais pour attendre le Webhook de Ngrok
+            for (let i = 0; i < maxRetries; i++) {
+                try {
+                    const response = await $api.raw(`/payment/download/${orderId}/`, {
+                        method: 'GET',
+                        responseType: 'blob',
+                        query: email ? { email } : undefined,
+                    });
 
-            const blob = response._data as Blob
-            const disposition = response.headers.get('Content-Disposition') || ''
-            
-            // Regex un peu plus robuste pour attraper le nom du fichier
-            const filenameMatch = disposition.match(/filename="?([^"]+)"?/)
-            
-            let filename = filenameMatch?.[1]
+                    // Si on arrive ici, Django a autorisé le téléchargement (Commande = PAID)
+                    const blob = response._data as Blob
+                    const disposition = response.headers.get('Content-Disposition') || ''
+                    
+                    const filenameMatch = disposition.match(/filename="?([^"]+)"?/)
+                    let filename = filenameMatch?.[1]
 
-            // 2. Fallback intelligent basé sur le type MIME si le header est vide
-            if (!filename) {
-                const isZip = blob.type === 'application/zip'
-                filename = isZip ? `commande-${orderId.slice(0,8)}.zip` : `contrat-${orderId.slice(0,8)}.pdf`
+                    if (!filename) {
+                        const isZip = blob.type === 'application/zip'
+                        filename = isZip ? `commande-${orderId.slice(0,8)}.zip` : `contrat-${orderId.slice(0,8)}.pdf`
+                    }
+
+                    const url = window.URL.createObjectURL(blob)
+                    const anchor = document.createElement('a')
+                    anchor.href = url
+                    anchor.download = filename
+                    document.body.appendChild(anchor)
+                    anchor.click()
+                    document.body.removeChild(anchor)
+                    window.URL.revokeObjectURL(url)
+
+                    console.log("✅ Téléchargement validé et réussi pour :", filename)
+
+                    try {
+                        await cartStore.clearCart();
+                    } catch (cartError) {
+                        console.warn('Impossible de vider le panier:', cartError);
+                    }
+
+                    isLoading.value = false;
+                    return true; // Le PDF est téléchargé avec succès !
+
+                } catch (err: any) {
+                    const statusCode = err.response?.status;
+                    
+                    // Si Django renvoie 403, ça veut dire que la commande est encore PENDING
+                    if (statusCode === 403 && i < maxRetries - 1) {
+                        console.log(`⏳ Webhook Ngrok en attente... tentative ${i + 1}/${maxRetries}`);
+                        // On attend 3 secondes avant de retenter
+                        await new Promise(resolve => setTimeout(resolve, 3000));
+                        continue; 
+                    }
+                    
+                    // Si c'est une autre erreur (404) ou qu'on a épuisé les essais, on déclenche l'erreur
+                    throw err;
+                }
             }
 
-            const url = window.URL.createObjectURL(blob)
-            const anchor = document.createElement('a')
-            anchor.href = url
-            anchor.download = filename
-            document.body.appendChild(anchor)
-            anchor.click()
-            document.body.removeChild(anchor)
-            window.URL.revokeObjectURL(url)
-
-            console.log("Téléchargement réussi pour :", filename)
-
-            return true
         } catch (err: any) {
             error.value = err.message ?? String(err)
-            console.error("Erreur interceptée lors du téléchargement :", error.value)
-            return false
-        } finally {
+            console.error("❌ Échec de la vérification/téléchargement :", error.value)
             isLoading.value = false
+            return false
         }
     }
 
@@ -154,8 +119,6 @@ export const usePaiementStore = defineStore('paiement', () => {
         paiement,
         sandboxMode,
         setSandboxMode,
-        verifyPayment, // <-- N'oublie pas qu'il a été ajouté ici
-        simulatePayment,
         downloadContracts
     }
 })
