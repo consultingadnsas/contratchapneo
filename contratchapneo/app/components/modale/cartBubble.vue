@@ -115,4 +115,30 @@ export default {
   border: 2px solid rgba(255, 255, 255, 0.8);
   box-shadow: 0 2px 5px rgba(0,0,0,0.2);
 }
+/* 🔥 L'animation du "Bump" 🔥 */
+.bump {
+  animation: bump-animation 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes bump-animation {
+  0% {
+    transform: scale(1);
+  }
+  20% {
+    /* Écrasement (anticipation) */
+    transform: scale(0.85) translateY(4px);
+  }
+  50% {
+    /* Rebond exageré (overshoot) */
+    transform: scale(1.15) translateY(-8px);
+  }
+  80% {
+    /* Retour partiel */
+    transform: scale(0.95) translateY(2px);
+  }
+  100% {
+    /* Retour normal */
+    transform: scale(1) translateY(0);
+  }
+}
 </style>

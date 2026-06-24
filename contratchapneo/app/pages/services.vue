@@ -1,7 +1,7 @@
 <template>
     <div class="page-wrapper">
         <main class="legal-services-page">
-            <Navbar/>
+            <Navbar theme="light"/>
             <section class="hero-section">
                 <div class="hero-content">
                     <h1 class="main-title">
@@ -86,6 +86,40 @@ export default {
 
         const services = ref([
             {
+                id:'diag',
+                title:'Diagnostic juridique',
+                shortTitle: 'Diagnostic',
+                description:'prise en charge pour la création de votre entreprise, on met en place tous les documents nécessaire à celà- et on vous accompagne tout au long du processus juridique',
+                longDescription:'Nous prenons en charge, sur la base des pièces fournies, de rediger entièrement tous les documents nécessaires aux formalités administratives et dont certains aussi font partie des livrables en termes de documents légaux de votre entreprise (statuts; déclaration de souscription et versement; liste de dirigeants etc.)',
+                icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>',
+                image:'/services/1.jpg',
+                features: ['Diagnostic juridique', 'Création clé en main de société','Création basique de société'],
+                price: '1 250 000 FCFA'
+            },
+            {
+                id:'domicile',
+                title:'Domiciliation d\'entreprises',
+                shortTitle: 'Domiciliation',
+                description:'prise en charge pour la création de votre entreprise, on met en place tous les documents nécessaire à celà- et on vous accompagne tout au long du processus juridique',
+                longDescription:'Nous prenons en charge, sur la base des pièces fournies, de rediger entièrement tous les documents nécessaires aux formalités administratives et dont certains aussi font partie des livrables en termes de documents légaux de votre entreprise (statuts; déclaration de souscription et versement; liste de dirigeants etc.)',
+                icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>',
+                image:'/services/1.jpg',
+                features: ['Diagnostic juridique', 'Création clé en main de société','Création basique de société'],
+                price: '1 250 000 FCFA'
+            },
+            {
+                id:'crea',
+                title:'Créations d\'entreprises',
+                shortTitle: 'Création',
+                description:'prise en charge pour la création de votre entreprise, on met en place tous les documents nécessaire à celà- et on vous accompagne tout au long du processus juridique',
+                longDescription:'Nous prenons en charge, sur la base des pièces fournies, de rediger entièrement tous les documents nécessaires aux formalités administratives et dont certains aussi font partie des livrables en termes de documents légaux de votre entreprise (statuts; déclaration de souscription et versement; liste de dirigeants etc.)',
+                icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>',
+                image:'/services/1.jpg',
+                features: ['Diagnostic juridique', 'Création clé en main de société','Création basique de société'],
+                price: '1 250 000 FCFA'
+            },
+
+            {
                 id: 'assistance',
                 title: 'Assistance Juridique et Fiscale',
                 shortTitle: 'Assistance', // Titre court pour l'onglet réduit
@@ -108,39 +142,6 @@ export default {
                 price:'250 000 FCFA'
             },
             {
-                id: 'brevets',
-                title: 'Brevet d\'Invention',
-                shortTitle: 'Brevets',
-                description: 'Démarches complètes pour protéger vos innovations technologiques, industrielles et scientifiques à l\'échelle nationale et internationale.',
-                longDescription:'Nous vous accompagnons dans le processus, en fonction de votre égibilité et des conditions de brevetabilité. le dépôt d\'un brevet invention reste un titre de propriété industrielle qui confère à son titulaire le droit exclusif d’exploiter une invention pendant une durée déterminée (en général 20 ans), sous certaines conditions Nous constituons tout le dossier comportant: un formulaire de demande, une description de l’invention, tous les dessins techniques, un résumé des travaux d’invention, un justificatif du paiement des taxes, etc..',
-                icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18h6"></path><path d="M10 22h4"></path><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1.5.5 2.5 1.5 3.5.76.76 1.23 1.52 1.41 2.5"></path></svg>',
-                image:'/services/3.jpg',
-                features:['droit exclusive d’exploitation', 'Possibiliter de licencier ou vendre le brevet','Valorisation de la technologie aupres d’investisseurs'],
-                price:'1 000 000 FCFA'
-            },
-            {
-                id: 'marques',
-                title: 'Dépôt de Marque',
-                shortTitle: 'Marques',
-                description: 'Sécurisation de votre identité visuelle, logos et signes distinctifs auprès des instances compétentes (OAPI).',
-                longDescription:'Nous vous accompagnons dans le processus, en fonction de votre dossier. le dépôt demarque reste une démarche juridique qui consiste à enregistrer officiellement une marque(nom, logo, slogan, etc.) auprès d’un office de propriété intellectuelle O.A.P.I. pour en obtenir l’exclusivité d’utilisation.',
-                icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line></svg>',
-                image:'/services/5.jpg',
-                features:['Protéger votre nom, logo ou slogan contre l’utilisation non autorisée par d’autres.','Obtenir un droit exclusif d’exploitation sur un territoire donné.','Valoriser vos produits ou services, renforcer votre image de marque.','Faciliter des actions juridiques en cas de contrefaçon'],
-                price:'300 000 FCFA'
-            },
-            {
-                id:'tech',
-                title: 'Legaltech',
-                shortTitle: 'Legaltech',
-                description: 'Développement de solutions technologiques innovantes (à l\'image de ContratChapNeo) pour dématérialiser et automatiser le droit.',
-                longDescription:'Nous rédigeons la mise en conformité, qui constitue dansl’ensemble es actions nécessaires pour s’assurer qu’un site respecte les lois et réglementations en vigueur. Il s’agit d’une formule appliquée à un site web ou une application mobile qui consiste en:',
-                icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>',
-                image:'/services/2.jpg',
-                features: ['la rédaction des conditions générales d’utilisation et/ou de vente', 'Accessibilité numérique (RGAA – Référentiel Général d\'Amélioration de l\'Accessibilité)', 'Sécurité du site et Conformité E-commerce', 'Propriété Intellectuelle'],
-                price: '250 000 FCFA'
-            },
-            {
                 id: 'noms',
                 title: 'Enregistrement Noms',
                 shortTitle: 'Noms Commerciaux',
@@ -151,16 +152,38 @@ export default {
                 price: '250 000 FCFA'
             },
             {
-                id:'créa',
-                title:'Création d\'entreprise',
-                shortTitle: 'Création',
-                description:'prise en charge pour la création de votre entreprise, on met en place tous les documents nécessaire à celà- et on vous accompagne tout au long du processus juridique',
-                longDescription:'Nous prenons en charge, sur la base des pièces fournies, de rediger entièrement tous les documents nécessaires aux formalités administratives et dont certains aussi font partie des livrables en termes de documents légaux de votre entreprise (statuts; déclaration de souscription et versement; liste de dirigeants etc.)',
-                icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>',
-                image:'/services/1.jpg',
-                features: ['Diagnostic juridique', 'Création clé en main de société','Création basique de société'],
-                price: '1 250 000 FCFA'
-            }
+                id: 'marques',
+                title: 'Dépôt de Marques',
+                shortTitle: 'Marques',
+                description: 'Sécurisation de votre identité visuelle, logos et signes distinctifs auprès des instances compétentes (OAPI).',
+                longDescription:'Nous vous accompagnons dans le processus, en fonction de votre dossier. le dépôt demarque reste une démarche juridique qui consiste à enregistrer officiellement une marque(nom, logo, slogan, etc.) auprès d’un office de propriété intellectuelle O.A.P.I. pour en obtenir l’exclusivité d’utilisation.',
+                icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line></svg>',
+                image:'/services/5.jpg',
+                features:['Protéger votre nom, logo ou slogan contre l’utilisation non autorisée par d’autres.','Obtenir un droit exclusif d’exploitation sur un territoire donné.','Valoriser vos produits ou services, renforcer votre image de marque.','Faciliter des actions juridiques en cas de contrefaçon'],
+                price:'300 000 FCFA'
+            },
+            {
+                id: 'brevets',
+                title: 'Brevets d\'Invention',
+                shortTitle: 'Brevets',
+                description: 'Démarches complètes pour protéger vos innovations technologiques, industrielles et scientifiques à l\'échelle nationale et internationale.',
+                longDescription:'Nous vous accompagnons dans le processus, en fonction de votre égibilité et des conditions de brevetabilité. le dépôt d\'un brevet invention reste un titre de propriété industrielle qui confère à son titulaire le droit exclusif d’exploiter une invention pendant une durée déterminée (en général 20 ans), sous certaines conditions Nous constituons tout le dossier comportant: un formulaire de demande, une description de l’invention, tous les dessins techniques, un résumé des travaux d’invention, un justificatif du paiement des taxes, etc..',
+                icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18h6"></path><path d="M10 22h4"></path><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1.5.5 2.5 1.5 3.5.76.76 1.23 1.52 1.41 2.5"></path></svg>',
+                image:'/services/3.jpg',
+                features:['droit exclusive d’exploitation', 'Possibiliter de licencier ou vendre le brevet','Valorisation de la technologie aupres d’investisseurs'],
+                price:'1 000 000 FCFA'
+            },
+            {
+                id:'tech',
+                title: 'Legaltech',
+                shortTitle: 'Legaltech',
+                description: 'Développement de solutions technologiques innovantes (à l\'image de ContratChap) pour dématérialiser et automatiser le droit.',
+                longDescription:'Nous rédigeons la mise en conformité, qui constitue dansl’ensemble es actions nécessaires pour s’assurer qu’un site respecte les lois et réglementations en vigueur. Il s’agit d’une formule appliquée à un site web ou une application mobile qui consiste en:',
+                icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>',
+                image:'/services/2.jpg',
+                features: ['la rédaction des conditions générales d’utilisation et/ou de vente', 'Accessibilité numérique (RGAA – Référentiel Général d\'Amélioration de l\'Accessibilité)', 'Sécurité du site et Conformité E-commerce', 'Propriété Intellectuelle'],
+                price: '250 000 FCFA'
+            },
         ]);
 
         // Fonction de défilement fluide vers la section contact

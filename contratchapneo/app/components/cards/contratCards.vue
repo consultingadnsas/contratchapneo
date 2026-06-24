@@ -14,7 +14,7 @@
         </div>
 
         <div class="btn-container">
-            <button @click.stop="()=>{$emit('buy')}">
+            <button @click.stop="handleFlyToCart($event)">
                 <span>
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6.5">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 10.5V6a3.75 3.75 0 1 0-7.5 0v4.5m11.356-1.993 1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 0 1-1.12-1.243l1.264-12A1.125 1.125 0 0 1 5.513 7.5h12.974c.576 0 1.059.435 1.119 1.007ZM8.625 10.5a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm7.5 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z" />
@@ -65,19 +65,72 @@ export default defineComponent({
     },
     emits: ['buy', 'view'],
     setup(props, { emit }) {
-        function buyContrat() {
-            console.log('vous avez cliqué')
-        }
+        
+        // La fonction qui gère l'animation du "vol" vers le panier
+        const handleFlyToCart = (event: MouseEvent) => {
+            // 1. On cherche la bulle du panier sur l'écran
+            const cartBubble = document.querySelector('.glass-bubble');
+            
+            // Sécurité : si la bulle n'est pas trouvée, on émet l'achat direct sans animation
+            if (!cartBubble) {
+                emit('buy'); 
+                return;
+            }
+
+            // 2. Coordonnées de départ (là où l'utilisateur a cliqué)
+            const startX = event.clientX;
+            const startY = event.clientY;
+
+            // 3. Coordonnées d'arrivée (le centre exact de la bulle panier)
+            const cartRect = cartBubble.getBoundingClientRect();
+            const endX = cartRect.left + (cartRect.width / 2);
+            const endY = cartRect.top + (cartRect.height / 2);
+
+            // 4. Création de la petite boule bleue
+            const ghost = document.createElement('div');
+            ghost.style.position = 'fixed';
+            ghost.style.left = `${startX}px`;
+            ghost.style.top = `${startY}px`;
+            ghost.style.width = '20px';
+            ghost.style.height = '20px';
+            ghost.style.backgroundColor = '#007bff'; // Le bleu de ton thème
+            ghost.style.borderRadius = '50%';
+            ghost.style.zIndex = '9999';
+            ghost.style.pointerEvents = 'none'; 
+            ghost.style.transform = 'translate(-50%, -50%)'; 
+            ghost.style.boxShadow = '0 4px 12px rgba(0, 123, 255, 0.4)';
+            
+            document.body.appendChild(ghost);
+
+            // 5. Lancement de l'animation
+            const animation = ghost.animate([
+                { transform: 'translate(-50%, -50%) scale(1)', opacity: 1 },
+                { transform: `translate(calc(-50% + ${endX - startX}px), calc(-50% + ${endY - startY}px)) scale(0.2)`, opacity: 0.5 }
+            ], {
+                duration: 1000, // 0.6 secondes de vol
+                easing: 'cubic-bezier(0.25, 1, 0.5, 1)' 
+            });
+
+            // 6. Quand le vol est terminé...
+            animation.onfinish = () => {
+                ghost.remove(); // On supprime la boule
+                emit('buy');    // On prévient le parent pour qu'il ajoute au store !
+            };
+        };
+
         function viewContrat() {
-            console.log('vous avez cliqué pour voir')
+            console.log('vous avez cliqué pour voir');
+            emit('view'); // C'est mieux d'émettre l'événement ici aussi !
         }
+
         return {
-            buyContrat,
+            handleFlyToCart,
             viewContrat
-        }
+        };
     }
 });
 </script>
+
 
 <style scoped>
 .pro-card {

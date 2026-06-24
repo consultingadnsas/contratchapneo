@@ -38,7 +38,7 @@
 import { computed } from 'vue'
 
 export default {
-  name: 'Paginator', // J'ai renommé en Paginator pour correspondre à l'import de ton parent
+  name: 'Paginator',
   props: {
     currentPage: {
       type: Number,
@@ -56,25 +56,24 @@ export default {
   emits: ['page-change'],
   setup(props, { emit }) {
     
-    // 1. On calcule le nombre total de pages dynamiquement
     const totalPages = computed(() => {
-      // S'il n'y a pas d'éléments, on retourne au moins 1 page
       if (props.totalCount === 0) return 1;
-      
-      // Math.ceil arrondit à l'entier supérieur (ex: 21 items / 10 = 2.1 => 3 pages)
       return Math.ceil(props.totalCount / props.pageSize);
     });
 
-    // 2. On change de page en s'assurant qu'on ne dépasse pas les limites
     const changePage = (page: number) => {
       if (page >= 1 && page <= totalPages.value && page !== props.currentPage) {
         emit('page-change', page);
+        
+        // Remonte tout en haut de l'écran en douceur
+        window.scrollTo({
+          top: 0,
+          behavior: 'smooth'
+        });
       }
     }
 
     return {
-      // Inutile de retourner currentPage ici, Vue expose automatiquement 
-      // les props dans le template !
       totalPages,
       changePage
     }
