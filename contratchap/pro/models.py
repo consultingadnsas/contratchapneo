@@ -65,6 +65,8 @@ class LegalProfessional(models.Model):
     
     # Présentation
     profile_picture = models.ImageField(upload_to='professionals/profiles/', null=True, blank=True, verbose_name="Photo de profil")
+    # Carte de visite
+    visiting_card = models.FileField(upload_to='professionals/visiting_cards', null=True, blank=True)
     bio = models.TextField(verbose_name="Biographie / Présentation")
     years_of_experience = models.PositiveIntegerField(default=0, verbose_name="Années d'expérience")
     prix = models.DecimalField(max_digits=10, decimal_places=2, default=0.0)
