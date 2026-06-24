@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth import get_user_model
+import uuid
 
 User = get_user_model()
 
@@ -16,19 +17,21 @@ class Country(models.Model):
     def __str__(self):
         return self.name
 
+
 class LegalDomain(models.Model):
     # Idéal pour lister les Actes Uniformes : Droit des Sociétés (AUSCGIE), Droit Commercial Général (AUDCG), Sûretés, etc.
     name = models.CharField(max_length=150, unique=True, verbose_name="Domaine d'expertise")
     slug = models.SlugField(max_length=150, unique=True, blank=True)
     description = models.TextField(blank=True, null=True)
 
-    class Meta:
+    class Meta: 
         verbose_name = "Domaine du droit (ou Acte Uniforme)"
         verbose_name_plural = "Domaines du droit"
         ordering = ['name']
 
     def __str__(self):
         return self.name
+
 
 class LegalProfessional(models.Model):
     TITLE_CHOICES = (
@@ -41,8 +44,12 @@ class LegalProfessional(models.Model):
         ('EXPERT_COMPTABLE', 'Expert-Comptable / Commissaire aux comptes'), # Souvent sollicités pour la création de SARL/SA
         ('AUTRE', 'Autre professionnel du droit'),
     )
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
 
+    # Relation utilisateur
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='professional_profile', null=True, blank=True)
+    
+    # Identité
     first_name = models.CharField(max_length=100, verbose_name="Prénom")
     last_name = models.CharField(max_length=100, verbose_name="Nom de famille")
     title = models.CharField(max_length=50, choices=TITLE_CHOICES, verbose_name="Titre professionnel")
@@ -60,12 +67,15 @@ class LegalProfessional(models.Model):
     profile_picture = models.ImageField(upload_to='professionals/profiles/', null=True, blank=True, verbose_name="Photo de profil")
     bio = models.TextField(verbose_name="Biographie / Présentation")
     years_of_experience = models.PositiveIntegerField(default=0, verbose_name="Années d'expérience")
+    prix = models.DecimalField(max_digits=10, decimal_places=2, default=0.0)
     
     # Localisation et Spécialités
-    country = models.ForeignKey(Country, on_delete=models.PROTECT, related_name='professionals', verbose_name="Pays d'exercice")
+    # ⚠️ Remis sur PROTECT pour la sécurité de tes données
+    country = models.ForeignKey(Country, on_delete=models.PROTECT, related_name='professionals', verbose_name="Pays d'exercice", null=True, blank=True)
     city = models.CharField(max_length=100, verbose_name="Ville d'exercice (ex: Abidjan, Dakar, Douala)")
     domains = models.ManyToManyField(LegalDomain, related_name='professionals', verbose_name="Domaines d'expertise (Actes Uniformes, etc.)")
     
+    # Statuts de modération
     is_active = models.BooleanField(default=True, verbose_name="Profil actif")
     is_verified = models.BooleanField(default=False, help_text="Cocher si Contratchap a vérifié l'identité et l'inscription à l'ordre de ce professionnel.")
     

@@ -98,17 +98,15 @@ export const usePaiementStore = defineStore('paiement', () => {
 
         try {
             const cartStore = useCartStore();
-            try {
-                await cartStore.clearCart();
-            } catch (cartError) {
-                console.warn('Impossible de vider le panier avant téléchargement:', cartError);
-            }
 
             const { useOrderStore } = await import('./orderStore');
             const orderStore = useOrderStore();
-            const email = 'consultingadnsas@gmail.com';
+            
+            // ⚠️ Remets la ligne dynamique pour la production !
+            const email = orderStore.currentOrder?.guest?.email || 'consultingadnsas@gmail.com';
 
-            const response = await $api.raw(`/payment/download/${orderId}/?email=${email}`, {
+            // 1. On laisse l'objet "query" construire les paramètres d'URL proprement
+            const response = await $api.raw(`/payment/download/${orderId}/`, {
                 method: 'GET',
                 responseType: 'blob',
                 query: email ? { email } : undefined,
@@ -116,24 +114,33 @@ export const usePaiementStore = defineStore('paiement', () => {
 
             const blob = response._data as Blob
             const disposition = response.headers.get('Content-Disposition') || ''
-            const filenameMatch = disposition.match(/filename="?(.*?)"?$/)
-            const filename = filenameMatch?.[1] || `contrat-${orderId}.pdf`
+            
+            // Regex un peu plus robuste pour attraper le nom du fichier
+            const filenameMatch = disposition.match(/filename="?([^"]+)"?/)
+            
+            let filename = filenameMatch?.[1]
 
-            const url = URL.createObjectURL(blob)
+            // 2. Fallback intelligent basé sur le type MIME si le header est vide
+            if (!filename) {
+                const isZip = blob.type === 'application/zip'
+                filename = isZip ? `commande-${orderId.slice(0,8)}.zip` : `contrat-${orderId.slice(0,8)}.pdf`
+            }
+
+            const url = window.URL.createObjectURL(blob)
             const anchor = document.createElement('a')
             anchor.href = url
             anchor.download = filename
             document.body.appendChild(anchor)
             anchor.click()
             document.body.removeChild(anchor)
-            URL.revokeObjectURL(url)
+            window.URL.revokeObjectURL(url)
 
-            console.log("Téléchargement réussi")
+            console.log("Téléchargement réussi pour :", filename)
 
             return true
         } catch (err: any) {
             error.value = err.message ?? String(err)
-            console.error("erreur interceptée", error.value)
+            console.error("Erreur interceptée lors du téléchargement :", error.value)
             return false
         } finally {
             isLoading.value = false

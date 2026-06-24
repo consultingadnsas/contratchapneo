@@ -55,6 +55,7 @@ import BaseSelect   from '../input/BaseSelect.vue'
 
 import { useCartStore }  from '../../stores/cartStore'
 import { useOrderStore } from '../../stores/orderStore'
+import {useProStore} from '../../stores/proStore'
 
 export default {
     name: 'CheckoutForm',
@@ -78,6 +79,7 @@ export default {
         console.log('📋 [CheckoutForm] Montage du composant CheckoutForm')
         const cartStore  = useCartStore()
         const orderStore = useOrderStore()
+        const proStore = useProStore()
         console.log('🛒 [CheckoutForm] CartStore:', { totalPrice: cartStore.totalPrice, totalItems: cartStore.totalItems })
         console.log('🛍️ [CheckoutForm] OrderStore:', { hasOrder: !!orderStore.currentOrder })
 
@@ -170,23 +172,12 @@ export default {
         return {
             cartStore,
             orderStore,
+            proStore,
             paymentOptions: [
-                { value: 'WAVE',         name: 'Wave' },
-                { value: 'WAVESN',       name: 'Wave Sénégal' },
-                { value: 'OMCIV2',       name: 'Orange Money' },
-                { value: 'FLOOZ',        name: 'Moov Money' },
-                { value: 'MOOTG',        name: 'Moov Money Togo'},
-                { value: 'MOMOCM',       name: 'Mtn Money Cameroun' },
-                { value: 'MOMOCI',       name: 'Mtn Money Ci'},
-                { value: 'OMBF',         name: 'Orange money BF'},
-                { value: 'OMML',         name: 'Orange money Mali'},
-                { value: 'OMSN',         name: 'Orange money Sénégal'},
-                { value: 'OMGN',         name: 'Orange money Guinée Bissau'},
-                { value: 'OMCM',         name: 'Orange money Cameroun' },
-                { value: 'MOMOBJ',       name: 'Mtn Money Benin'},
-                { value: 'CARD',         name: 'Visa/MasterCard'},
-                { value: 'FLOOZBJ',      name: 'Moov Benin'},
-                { value: 'AIRTELNG',     name: 'Airtel Niger'},
+                { value: 'wave',         name: 'Wave' },
+                { value: 'orange_money', name: 'Orange Money' },
+                { value: 'moov_money',   name: 'Moov Money' },
+                { value: 'stripe',       name: 'Carte Bancaire (Stripe)' },
             ],
             checkoutform,
             submitForm,

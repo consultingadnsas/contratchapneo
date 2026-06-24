@@ -1,42 +1,77 @@
 from rest_framework import serializers
 from .models import Cart, CartItem, GuestInfo, Order, OrderItem
 from contrat.models import Contrat
-
+from pro.models import LegalProfessional # N'oublie pas cet import !
 
 # ─────────────────────────────────────────
-# CONTRAT (lecture seule — cross-app)
+# MINI SERIALIZERS (lecture seule — affichage panier)
 # ─────────────────────────────────────────
 
 class ContratMiniSerializer(serializers.ModelSerializer):
-    """
-    Représentation légère du Contrat pour l'affichage dans le panier.
-    On n'importe que ce dont le frontend a besoin.
-    """
+    """ Représentation légère du Contrat """
     class Meta:
         model = Contrat
-        fields = [
-            'id', 
-            'title', 
-            'prix', 
-            'picture'
-        ]
+        fields = ['id', 'title', 'prix', 'picture']
+
+
+class ProMiniSerializer(serializers.ModelSerializer):
+    """ Représentation légère du Pro pour l'affichage dans le panier """
+    title_display = serializers.CharField(source='get_title_display', read_only=True)
+    
+    class Meta:
+        model = LegalProfessional
+        # On renvoie l'essentiel pour afficher la "carte" dans le panier Nuxt
+        fields = ['id', 'first_name', 'last_name', 'title_display', 'prix', 'profile_picture']
 
 
 # ─────────────────────────────────────────
-# CART
+# GESTION DE L'AJOUT AU PANIER (Écriture)
+# ─────────────────────────────────────────
+
+class AddToCartSerializer(serializers.Serializer):
+    """
+    Sérialiseur dédié UNIQUEMENT à l'action POST /cart/add/.
+    Valide qu'on ajoute soit un contrat, soit un pro.
+    """
+    contrat_id = serializers.UUIDField(required=False, allow_null=True)
+    pro_id = serializers.UUIDField(required=False, allow_null=True) # IntegerField car l'ID du Pro n'est pas un UUID
+    quantity = serializers.IntegerField(default=1, min_value=1)
+
+    def validate(self, data):
+        contrat_id = data.get('contrat_id')
+        pro_id = data.get('pro_id')
+
+        # Vérification stricte : l'un ou l'autre, pas les deux, ni aucun
+        if contrat_id and pro_id:
+            raise serializers.ValidationError("Vous ne pouvez pas ajouter un contrat et un professionnel en même temps.")
+        if not contrat_id and not pro_id:
+            raise serializers.ValidationError("Vous devez fournir soit un contrat_id, soit un pro_id.")
+
+        # Vérification de l'existence
+        if contrat_id and not Contrat.objects.filter(id=contrat_id).exists():
+            raise serializers.ValidationError({"contrat_id": "Ce contrat n'existe pas."})
+        if pro_id and not LegalProfessional.objects.filter(id=pro_id).exists():
+            raise serializers.ValidationError({"pro_id": "Ce professionnel n'existe pas."})
+
+        return data
+
+
+# ─────────────────────────────────────────
+# CART (Lecture)
 # ─────────────────────────────────────────
 
 class CartItemSerializer(serializers.ModelSerializer):
-    contrat         = ContratMiniSerializer(read_only=True)
-    contrat_id      = serializers.UUIDField(write_only=True)
-    subtotal        = serializers.SerializerMethodField()
+    """ Sérialiseur d'affichage d'une ligne du panier """
+    contrat = ContratMiniSerializer(read_only=True)
+    pro = ProMiniSerializer(read_only=True)
+    subtotal = serializers.SerializerMethodField()
 
     class Meta:
-        model  = CartItem
+        model = CartItem
         fields = [
             'id',
-            'contrat',       # lecture — objet complet
-            'contrat_id',    # écriture — UUID uniquement
+            'contrat',       # Nullable
+            'pro',           # Nullable
             'quantity',
             'unit_price',
             'subtotal',
@@ -47,26 +82,14 @@ class CartItemSerializer(serializers.ModelSerializer):
     def get_subtotal(self, obj):
         return obj.get_subtotal()
 
-    def validate_contrat_id(self, value):
-        try:
-            Contrat.objects.get(id=value)
-        except Contrat.DoesNotExist:
-            raise serializers.ValidationError("Ce contrat n'existe pas.")
-        return value
-
-    def validate_quantity(self, value):
-        if value < 1:
-            raise serializers.ValidationError("La quantité doit être au moins 1.")
-        return value
-
 
 class CartSerializer(serializers.ModelSerializer):
-    items    = CartItemSerializer(many=True, read_only=True)
-    total    = serializers.SerializerMethodField()
+    items = CartItemSerializer(many=True, read_only=True)
+    total = serializers.SerializerMethodField()
     is_guest = serializers.BooleanField(read_only=True)
 
     class Meta:
-        model  = Cart
+        model = Cart
         fields = [
             'id',
             'is_guest',
@@ -86,7 +109,7 @@ class CartSerializer(serializers.ModelSerializer):
 # ─────────────────────────────────────────
 
 class GuestInfoSerializer(serializers.ModelSerializer):
-
+    # (Garde ton code existant ici, il était parfait)
     class Meta:
         model  = GuestInfo
         fields = ['id', 'email', 'full_name', 'phone_number']
@@ -103,7 +126,6 @@ class GuestInfoSerializer(serializers.ModelSerializer):
     def validate_phone_number(self, value):
         import re
         cleaned = re.sub(r'\s+', '', value.strip())
-        # Accepte les formats : +2250101010101, 0101010101, 01 01 01 01 01
         if not re.match(r'^\+?\d{8,15}$', cleaned):
             raise serializers.ValidationError(
                 "Numéro de téléphone invalide. Formats acceptés : +2250701234567 ou 0701234567."
@@ -122,8 +144,10 @@ class OrderItemSerializer(serializers.ModelSerializer):
         model  = OrderItem
         fields = [
             'id',
-            'contrat',        # FK (peut être null si contrat supprimé)
-            'contrat_title',  # snapshot — toujours présent
+            'contrat',        # FK
+            'contrat_title',  # snapshot 
+            'pro',            # FK
+            'pro_name',       # snapshot 
             'unit_price',
             'quantity',
             'subtotal',
@@ -158,16 +182,10 @@ class OrderSerializer(serializers.ModelSerializer):
 
 
 class CheckoutSerializer(serializers.Serializer):
-    """
-    Serializer dédié au checkout.
-    Valide les infos guest si l'utilisateur n'est pas connecté.
-    """
     guest = GuestInfoSerializer(required=False)
 
     def validate(self, data):
         request = self.context.get('request')
-
-        # Si l'utilisateur n'est pas connecté, les infos guest sont obligatoires
         if not request.user.is_authenticated:
             if not data.get('guest'):
                 raise serializers.ValidationError({

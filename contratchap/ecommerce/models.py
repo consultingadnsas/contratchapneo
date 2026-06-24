@@ -4,11 +4,12 @@ import uuid
 
 # About relation
 from contrat.models import Contrat
+from pro.models import LegalProfessional
 
 class Cart(models.Model):
     """
-    Panier hybride : lié à un user connecté OU à une session invité.
-    Un seul des deux champs est renseigné à la fois.
+        Panier hybride : lié à un user connecté OU à une session invité.
+        Un seul des deux champs est renseigné à la fois.
     """
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
 
@@ -79,8 +80,7 @@ class Cart(models.Model):
 
 class CartItem(models.Model):
     """
-    Ligne du panier — identique pour user et invité.
-    unit_price est un snapshot du prix au moment de l'ajout.
+    Ligne du panier — hybride : peut contenir un Contrat OU un Professionnel.
     """
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     cart = models.ForeignKey(
@@ -88,10 +88,21 @@ class CartItem(models.Model):
         on_delete=models.CASCADE,
         related_name='items'
     )
+    # Contrat devient optionnel
     contrat = models.ForeignKey(
         Contrat,
         on_delete=models.CASCADE,
-        related_name='cart_items'
+        related_name='cart_items',
+        null=True, 
+        blank=True
+    )
+    # Pro devient optionnel
+    pro = models.ForeignKey(
+        LegalProfessional,
+        on_delete=models.CASCADE,
+        related_name='cart_items', # J'ai changé 'pro_items' en 'cart_items' pour la cohérence
+        null=True, 
+        blank=True
     )
     quantity = models.PositiveIntegerField(default=1)
     unit_price = models.DecimalField(
@@ -100,24 +111,37 @@ class CartItem(models.Model):
         help_text="Snapshot du prix au moment de l'ajout"
     )
 
-    # Timestamps
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        unique_together = ('cart', 'contrat')
+        # On remplace unique_together par une contrainte de validation stricte : 
+        # Un item doit avoir SOIT un contrat, SOIT un pro (mais pas les deux, ni aucun)
+        constraints = [
+            models.CheckConstraint(
+                condition=(
+                    models.Q(contrat__isnull=False, pro__isnull=True) |
+                    models.Q(contrat__isnull=True, pro__isnull=False)
+                ),
+                name='cartitem_contrat_or_pro_exclusive'
+            )
+        ]
 
     def __str__(self):
-        return f'{self.quantity}x {self.contrat.title}'
+        if self.contrat:
+            return f'{self.quantity}x {self.contrat.title}'
+        return f'{self.quantity}x Carte de visite - {self.pro.first_name} {self.pro.last_name}'
 
     def get_subtotal(self):
         return self.unit_price * self.quantity
 
     def save(self, *args, **kwargs):
         if not self.unit_price:
-            self.unit_price = self.contrat.prix
+            if self.contrat:
+                self.unit_price = self.contrat.prix
+            elif self.pro:
+                self.unit_price = self.pro.prix # Correspond à ton champ prix
         super().save(*args, **kwargs)
-
 
 class GuestInfo(models.Model):
     """
@@ -214,7 +238,6 @@ class Order(models.Model):
 class OrderItem(models.Model):
     """
     Ligne de commande — snapshot complet au moment du checkout.
-    Même logique que CartItem mais immuable une fois créé.
     """
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     order = models.ForeignKey(
@@ -224,29 +247,48 @@ class OrderItem(models.Model):
     )
     contrat = models.ForeignKey(
         'contrat.Contrat',
-        on_delete=models.SET_NULL,   # Si le contrat est supprimé,
-        null=True,                   # la commande reste intacte
+        on_delete=models.SET_NULL,
+        null=True, blank=True,
+        related_name='order_items'
+    )
+    pro = models.ForeignKey(
+        'pro.LegalProfessional',
+        on_delete=models.SET_NULL,
+        null=True, blank=True,
         related_name='order_items'
     )
 
     # Snapshots — figés définitivement au moment du checkout
-    contrat_title = models.CharField(max_length=255)   # garde le titre même si contrat supprimé
-    unit_price    = models.DecimalField(max_digits=10, decimal_places=2)
-    quantity      = models.PositiveIntegerField(default=1)
+    # Rendu optionnel selon ce qu'on achète
+    contrat_title = models.CharField(max_length=255, null=True, blank=True)
+    pro_name = models.CharField(max_length=255, null=True, blank=True) 
+
+    unit_price = models.DecimalField(max_digits=10, decimal_places=2)
+    quantity = models.PositiveIntegerField(default=1)
 
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        unique_together = ('order', 'contrat')
+        constraints = [
+            models.CheckConstraint(
+                condition=(
+                    models.Q(contrat__isnull=False, pro__isnull=True) |
+                    models.Q(contrat__isnull=True, pro__isnull=False)
+                ),
+                name='orderitem_contrat_or_pro_exclusive'
+            )
+        ]
 
     def __str__(self):
-        return f'{self.quantity}x {self.contrat_title} — commande {str(self.order.id)[:8]}…'
+        name = self.contrat_title if self.contrat_title else f"Carte - {self.pro_name}"
+        return f'{self.quantity}x {name} — commande {str(self.order.id)[:8]}…'
 
     def get_subtotal(self):
         return self.unit_price * self.quantity
 
     def save(self, *args, **kwargs):
-        # Snapshot automatique du titre si pas encore défini
         if not self.contrat_title and self.contrat:
             self.contrat_title = self.contrat.title
+        if not self.pro_name and self.pro:
+            self.pro_name = f"{self.pro.first_name} {self.pro.last_name}" # Correspond à tes champs
         super().save(*args, **kwargs)

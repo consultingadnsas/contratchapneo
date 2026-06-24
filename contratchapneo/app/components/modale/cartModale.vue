@@ -27,32 +27,66 @@
           <div class="cart-items">
             <div class="items-list">
               <div v-for="item in cartStore.cart.items" :key="item.id" class="cart-item">
-                <img
-                  :src="item.contrat.picture || picture"
-                  :alt="item.contrat.title"
-                  class="item-image"
-                >
-                <div class="item-details">
-                  <h4 class="item-name">{{ item.contrat?.title }}</h4>
-                  <p class="item-price">{{ item.contrat?.prix }} FCFA</p>
-                  <div class="quantity-controls">
-                    <button
-                      class="qty-btn"
-                      :disabled="item.quantity <= 1 || cartStore.isLoading"
-                      @click="handleUpdateQuantity(item.contrat?.id!, item.quantity - 1)"
-                    >-</button>
-                    <span class="quantity">{{ item.quantity }}</span>
-                    <button
-                      class="qty-btn"
-                      :disabled="cartStore.isLoading"
-                      @click="handleUpdateQuantity(item.contrat?.id!, item.quantity + 1)"
-                    >+</button>
+                
+                <template v-if="item.contrat">
+                  <img
+                    :src="item.contrat.picture || picture"
+                    :alt="item.contrat.title"
+                    class="item-image"
+                  >
+                  <div class="item-details">
+                    <h4 class="item-name">{{ item.contrat.title }}</h4>
+                    <p class="item-price">{{ Number(item.unit_price).toLocaleString('fr-FR') }} FCFA</p>
+                    
+                    <div class="quantity-controls">
+                      <button
+                        class="qty-btn"
+                        :disabled="item.quantity <= 1 || cartStore.isLoading"
+                        @click="handleUpdateQuantity(item.id, item.quantity - 1)"
+                      >-</button>
+                      <span class="quantity">{{ item.quantity }}</span>
+                      <button
+                        class="qty-btn"
+                        :disabled="cartStore.isLoading"
+                        @click="handleUpdateQuantity(item.id, item.quantity + 1)"
+                      >+</button>
+                    </div>
                   </div>
-                </div>
+                </template>
+
+                <template v-else-if="item.pro">
+                  <img
+                    :src="item.pro.profile_picture || picture"
+                    :alt="item.pro.first_name"
+                    class="item-image"
+                    style="border-radius: 50%; object-fit: cover;" 
+                  >
+                  <div class="item-details">
+                    <h4 class="item-name">{{ item.pro.first_name }} {{ item.pro.last_name }}</h4>
+                    <p style="font-size: 0.85em; color: gray;">{{ item.pro.title_display }}</p>
+                    <p class="item-price">{{ Number(item.unit_price).toLocaleString('fr-FR') }} FCFA</p>
+                    
+                    <div class="quantity-controls">
+                      <button
+                        class="qty-btn"
+                        :disabled="item.quantity <= 1 || cartStore.isLoading"
+                        @click="handleUpdateQuantity(item.id, item.quantity - 1)"
+                      >-</button>
+                      <span class="quantity">{{ item.quantity }}</span>
+                      <button
+                        class="qty-btn"
+                        :disabled="cartStore.isLoading"
+                        @click="handleUpdateQuantity(item.id, item.quantity + 1)"
+                      >+</button>
+                    </div>
+                  </div>
+                </template>
+
                 <div class="item-total">
-                  <span class="total-price">{{ (Number(item.contrat?.prix) * item.quantity).toLocaleString('fr-FR') }} FCFA</span>
+                  <span class="total-price">{{ Number(item.subtotal).toLocaleString('fr-FR') }} FCFA</span>
                   <button class="remove-btn" :disabled="cartStore.isLoading" @click="handleRemove(item.id)">🗑️</button>
                 </div>
+                
               </div>
             </div>
           </div>

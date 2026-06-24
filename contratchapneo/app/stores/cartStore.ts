@@ -9,11 +9,23 @@ import { useHead } from '#imports';
 export interface CartItem {
   id: string;
   quantity: number;
-  contrat: Contrat;
+  unit_price: string;
+  subtotal: number;
+  contrat?: Contrat | null; // Peut désormais être nul
+  pro?: ProItem | null;     // Nouvel élément !
 }
 
 export interface Cart {
   items: CartItem[];
+}
+
+export interface ProItem {
+  id: string;
+  first_name: string;
+  last_name: string;
+  title_display: string;
+  prix: string;
+  profile_picture: string | null;
 }
 
 export const useCartStore = defineStore('cart', () => {
@@ -39,15 +51,34 @@ export const useCartStore = defineStore('cart', () => {
     let stripeElements: any = null;
     let stripeClientSecret: string | null = null;
 
-        const normalizeCart = (data: any): Cart => {
-            const payload = data?.data ?? data;
-            const rawItems = Array.isArray(payload?.items) ? payload.items : [];
-            const items = rawItems.map((it: any) => ({
-                ...it,
-                contrat: it.contrat ? { ...it.contrat, picture: resolveMediaUrl(it.contrat.picture) } : it.contrat
-            }));
-            return { items };
-        };
+    const normalizeCart = (data: any): Cart => {
+        const payload = data?.data ?? data;
+        const rawItems = Array.isArray(payload?.items) ? payload.items : [];
+        
+        const items = rawItems.map((it: any) => {
+            // On copie l'item de base
+            const normalizedItem = { ...it };
+
+            // S'il y a un contrat, on résout son image
+            if (it.contrat) {
+                normalizedItem.contrat = { 
+                    ...it.contrat, 
+                    picture: resolveMediaUrl(it.contrat.picture) 
+                };
+            }
+
+            // S'il y a un pro, on résout sa photo de profil
+            if (it.pro) {
+                normalizedItem.pro = { 
+                    ...it.pro, 
+                    profile_picture: resolveMediaUrl(it.pro.profile_picture) 
+                };
+            }
+
+            return normalizedItem;
+        });
+        return { items };
+    };
 
     // Computed
     const cartItems = computed(() => cart.value?.items ?? []);
@@ -57,7 +88,7 @@ export const useCartStore = defineStore('cart', () => {
     );
 
     const totalPrice = computed(() =>
-      cartItems.value.reduce((acc, item) => acc + (Number(item.contrat.prix) * item.quantity), 0)
+      cartItems.value.reduce((acc, item) => acc + (Number(item.unit_price) * item.quantity), 0)
     );
 
     const formattedTotalPrice = computed(() =>
@@ -99,6 +130,28 @@ export const useCartStore = defineStore('cart', () => {
             }
         } catch (err: any) {
             error.value = err.message;
+            throw err;
+        } finally {
+            isLoading.value = false;
+        }
+    };
+
+    const addProToCart = async (prodId: string) => {
+        isLoading.value = true;
+        error.value = null;
+        try {
+            const response = await $api('/ecommerce/cart/add/', {
+                method: 'POST',
+                body: {pro_id: prodId}
+            });
+
+            if (response) {
+                cart.value = normalizeCart(response);
+            }
+            isLoading.value = false;
+        } catch (err: any) {
+            error.value = err.message;
+            console.error("l'erreur rencontrée", error);
             throw err;
         } finally {
             isLoading.value = false;
@@ -326,6 +379,7 @@ export const useCartStore = defineStore('cart', () => {
         // Actions
         fetchCart,
         addToCart,
+        addProToCart,
         removeFromCart,
         updateQuantity,
         clearCart,

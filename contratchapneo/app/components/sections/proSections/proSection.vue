@@ -46,11 +46,13 @@
                     :title="`${pro.first_name} ${pro.last_name}`"
                     :subtitle="pro.title_display"
                     :image="pro.profile_picture || undefined"
-                    @click="openViewModal(pro.id)"
+                    :isloading="cartStore.isLoading"
+                    @view="openViewModal(pro.id)"
+                    @pro-checkout="addToCart(pro.id)"
                 />
             </div>
             
-            </template>
+        </template>
 
         <Teleport to="body">
             
@@ -59,10 +61,12 @@
                 @close="isOpen = false"
             />
             
-            <viewModale
-                v-if="isViewOpen" 
+            <proModale
+                v-if="isViewOpen"
+                :isOpen="isViewOpen"
                 :professional="proStore.professional"
                 @close="isViewOpen = false"
+                @pay-consultation="()=>{addToCart}"
             />
 
         </Teleport>
@@ -81,11 +85,13 @@ import BaseSearchInput from '../../input/BaseSearchInput.vue'
 import Paginator from '../../tools/Paginator.vue'
 import cartModale from '../../modale/cartModale.vue'
 import viewModale from '../../modale/viewModale.vue'
+import proModale from '../../modale/proModale.vue'
 
 // Outils
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useProStore } from '../../../stores/proStore'
+import {useCartStore} from '../../../stores/cartStore'
 
 export default {
     
@@ -98,12 +104,14 @@ export default {
         emptyState,
         cartModale,
         viewModale,
-        baseProFilter
+        baseProFilter,
+        proModale
     },
     
     setup() {
         const router = useRouter();
         const proStore = useProStore();
+        const cartStore = useCartStore();
 
         // 1. Variables pour les filtres
         const activeDomainSlug = ref('');
@@ -134,11 +142,20 @@ export default {
         }
 
         const isViewOpen = ref<boolean>(false);
-        const openViewModal = (proId: number) => {
-            // On charge les détails depuis la liste existante dans le store
-            proStore.getSpecificProfessional(proId);
+        
+        const openViewModal = async (proId: string) => {
+            proStore.getSpecificProfessional(proId);  // on attend la donnée
             isViewOpen.value = true;
-            console.log('Professionnel sélectionné ID:', proId);
+            console.log("On va voir l'id", proId)                     // puis on ouvre
+        }
+
+        const addToCart = async (proId:string) => {
+            try{
+                await cartStore.addProToCart(proId);
+                router.push('/order/checkout/');
+            } catch (error: any) {
+                console.error("Erreur lors de l'ajout du pro pour la consultation", error)
+            }
         }
 
         // 4. Chargement initial
@@ -151,6 +168,7 @@ export default {
 
         return {
             router,
+            cartStore,
             proStore,
             searchQuery,
             
@@ -163,7 +181,10 @@ export default {
             isOpen,
             openModal,
             isViewOpen,
-            openViewModal
+            openViewModal,
+
+            //Actions
+            addToCart,
         }
     }
 }

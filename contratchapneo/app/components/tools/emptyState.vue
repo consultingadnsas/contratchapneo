@@ -72,7 +72,7 @@ export default{
   padding: 1rem;
   text-align: center;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  background-color: #ffffff;
+  background-color: #FFFBF4;
   width: 100%;
   box-sizing: border-box;
 }

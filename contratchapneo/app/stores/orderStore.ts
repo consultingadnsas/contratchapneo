@@ -69,21 +69,27 @@ export const useOrderStore = defineStore('order', () => {
     const checkout = async (payload: any = {}) => {
         isLoading.value = true;
         error.value = null;
+        
+        // 💡 1. On vérifie CE QUE le composant Vue a envoyé au store
+        console.log("📦 Payload envoyé au store :", JSON.stringify(payload, null, 2));
+
         try {
             const response = await $api('/ecommerce/cart/checkout/', {
                 method: 'POST',
                 body: payload,
             });
 
-            // backend returns { data: Order, message }
             const order = response?.data ?? response ?? null;
             currentOrder.value = order;
-            //Debug my function
-            console.log("La reponse du backend", currentOrder.value)
+            console.log("✅ Réponse du backend :", currentOrder.value);
             return order;
+            
         } catch (err: any) {
+            // 💡 2. On capture la VRAIE erreur renvoyée par Django
+            const backendError = err.response?._data || err.data || err.message;
+            console.error("🚨 CRASH du Checkout. Erreur détaillée :", backendError);
+            
             error.value = err.message ?? String(err);
-            console.error("erreur rencontrée", err)
             throw err;
         } finally {
             isLoading.value = false;
