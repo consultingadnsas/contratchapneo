@@ -1,26 +1,26 @@
 <template>
-  <div class="success__screen">
-    <div class="success__icon">
-        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <circle cx="12" cy="12" r="11" stroke="currentColor" stroke-width="1.5"/>
-            <path d="M7 12.5L10.5 16L17 9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-    </div>
-    <h3 class="success__title">{{ message }}</h3>
-    <p class="success__subtitle">
-        Vous serez redirigé dans <span>{{ countdown }}s</span>.
-    </p>
-    <button
-        class="success__download"
-        :disabled="downloading || !canDownload"
-        @click="downloadContract"
-    >
-        {{ downloading ? 'Téléchargement en cours...' : 'Télécharger le contrat' }}
-    </button>
-    <mainButton 
-        label="aller page d'accueil" 
-        @click="()=>router.push('/')"
-    />
+    <div class="success__screen">
+        <div class="success__icon">
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="12" cy="12" r="11" stroke="currentColor" stroke-width="1.5"/>
+                <path d="M7 12.5L10.5 16L17 9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+        </div>
+        <h3 class="success__title">{{ message }}</h3>
+        <p class="success__subtitle">
+            Vous serez redirigé dans <span>{{ countdown }}s</span>.
+        </p>
+        <button
+            class="success__download"
+            :disabled="downloading || !canDownload"
+            @click="downloadContract"
+        >
+            {{ downloading ? 'Téléchargement en cours...' : 'Télécharger le contrat' }}
+        </button>
+        <mainButton 
+            label="aller page d'accueil" 
+            @click="()=>router.push('/')"
+        />
   </div>
 </template>
 
