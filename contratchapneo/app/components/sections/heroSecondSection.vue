@@ -32,7 +32,7 @@
         </div>
         <div class="pic-wrapper">
             <div class="pic-container">
-                <img src="/Accueil 2.png" alt="Contrats OHADA">
+                <img src="/Accueil 2.jpeg" alt="Contrats OHADA">
 
                 <stat-cards class="floating-card card-top-left"    title="Banque de contrats" @click="router.push('/contractBank')" />
                 <stat-cards class="floating-card card-top-right"   title="Calcul de droits" @click="router.push('/lawCalcul')" />

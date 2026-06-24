@@ -27,6 +27,7 @@ from .serializers     import (
     PaymentSimulateSerializer,
 )
 
+from .utils import stream_single_pdf, stream_zip, _increment_downloads, _send_download_email # ou ton import habituel
 
 # ─────────────────────────────────────────
 # INITIATE  —  POST /payment/initiate/
@@ -392,29 +393,22 @@ class PaymentWebhookView(APIView):
 # ─────────────────────────────────────────
 
 class DownloadContractView(APIView):
-    """
-    Accès :
-    - User connecté  → doit être le propriétaire (order.user == request.user)
-    - Invité         → ?email=  (order.guest.email — même logique que OrderDetailView)
-
-    Condition : order.status == 'paid'
-    """
+    
     permission_classes = [AllowAny]
     authentication_classes = []
 
     def get(self, request, order_id):
+        # 💡 On précharge aussi le 'pro' et son 'user' !
         order = get_object_or_404(
-            Order.objects.prefetch_related('order_items__contrat')
-                         .select_related('guest', 'user'),
+            Order.objects.prefetch_related(
+                'order_items__contrat',
+                'order_items__pro__user'
+            ).select_related('guest', 'user'),
             id=order_id
         )
 
-        # Même vérification que OrderDetailView._can_access et OrderCancelView._can_access
         if not self._can_access(request, order):
-            return Response(
-                {'message': 'Accès non autorisé à cette commande.'},
-                status=status.HTTP_403_FORBIDDEN
-            )
+            return Response({'message': 'Accès non autorisé à cette commande.'}, status=status.HTTP_403_FORBIDDEN)
 
         if order.status != Order.Status.PAID:
             return Response(
@@ -422,38 +416,41 @@ class DownloadContractView(APIView):
                 status=status.HTTP_403_FORBIDDEN
             )
 
-        # Contrats dont fichier_modele est encore disponible
-        # (contrat peut être null — on_delete=SET_NULL sur OrderItem.contrat)
+        # 1. Lister les contrats valides avec un fichier
         contrats = [
-            item.contrat
-            for item in order.order_items.all()
+            item.contrat for item in order.order_items.all()
             if item.contrat is not None and item.contrat.fichier_modele
         ]
+        
+        # 2. Lister les professionnels valides avec une carte de visite
+        pros = [
+            item.pro for item in order.order_items.all()
+            # Remplace "carte_visite" par le vrai nom de ton champ FileField si c'est différent
+            if getattr(item, 'pro_id', None) and item.pro and item.pro.visiting_card 
+        ]
 
-        if not contrats:
-            return Response(
-                {'message': 'Aucun fichier disponible pour cette commande.'},
-                status=status.HTTP_404_NOT_FOUND
-            )
+        if not contrats and not pros:
+            return Response({'message': 'Aucun fichier disponible pour cette commande.'}, status=status.HTTP_404_NOT_FOUND)
 
-        if len(contrats) == 1:
-            return _stream_pdf(contrats[0])
+        # 👇 Logique de téléchargement intelligente
 
-        return _stream_zip(contrats, order_id)
+        # Cas 1 : EXACTEMENT 1 contrat, AUCUN pro -> Streame le contrat PDF
+        if len(contrats) == 1 and len(pros) == 0:
+            return stream_single_pdf(contrats[0].fichier_modele, contrats[0].title)
+            
+        # Cas 2 : AUCUN contrat, EXACTEMENT 1 pro -> Streame la carte de visite PDF
+        if len(pros) == 1 and len(contrats) == 0:
+            nom_pro = f"Carte_visite_{pros[0].user.first_name}_{pros[0].user.last_name}" if pros[0].user else "Carte_visite_Pro"
+            return stream_single_pdf(pros[0].visiting_card, nom_pro)
+
+        # Cas 3 : Mixte (Plusieurs éléments) -> On ZIPPE tous les PDFs ensemble
+        return stream_zip(contrats, pros, order_id)
 
     def _can_access(self, request, order) -> bool:
-        """
-        Copie exacte de OrderDetailView._can_access / OrderCancelView._can_access.
-        """
         if request.user.is_authenticated:
             return order.user == request.user
-        # Invité : GET /payment/download/<id>/?email=john@example.com
         email = request.query_params.get('email', '').lower().strip()
-        return (
-            order.guest is not None and
-            order.guest.email == email
-        )
-
+        return (order.guest is not None and order.guest.email == email)
 
 # ─────────────────────────────────────────
 # HELPERS PRIVÉS
@@ -510,31 +507,4 @@ def _send_download_email(order: Order):
     )
 
 
-def _stream_pdf(contrat: Contrat) -> FileResponse:
-    """
-    Streame contrat.fichier_modele directement en PDF.
-    """
-    response = FileResponse(
-        contrat.fichier_modele.open('rb'),
-        content_type='application/pdf',
-    )
-    response['Content-Disposition'] = f'attachment; filename="{contrat.title}.pdf"'
-    return response
 
-
-def _stream_zip(contrats: list, order_id) -> FileResponse:
-    """
-    Zippe plusieurs contrat.fichier_modele et streame le ZIP.
-    Utilisé quand le panier contenait plusieurs contrats.
-    """
-    buffer = io.BytesIO()
-    with zipfile.ZipFile(buffer, 'w', zipfile.ZIP_DEFLATED) as zf:
-        for contrat in contrats:
-            zf.writestr(f'{contrat.title}.pdf', contrat.fichier_modele.read())
-    buffer.seek(0)
-
-    response = FileResponse(buffer, content_type='application/zip')
-    response['Content-Disposition'] = (
-        f'attachment; filename="commande-{str(order_id)[:8]}.zip"'
-    )
-    return response
