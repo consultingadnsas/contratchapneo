@@ -239,9 +239,6 @@ header p{
    TABLETTE (>= 768px)
 ========================================== */
 @media (min-width: 768px) {
-    .toolbar__filter {
-        
-    }
 
     .toolbar__search {
         max-width: 360px;
