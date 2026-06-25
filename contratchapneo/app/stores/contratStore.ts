@@ -53,12 +53,21 @@ export const useContratStore = defineStore('contrat', ()=> {
     const categories = ref<Category[]>([]);
     const tags = ref([]);
 
+    const currentContratId = ref<string | null>(null)
+
     /* Tools */
     const currentPage = ref(1);
     const totalCount = ref(0);
     const nextPage = ref<string | null>(null);
     const previousPage = ref<string | null>(null);
     const pageSize = ref(10);
+
+    /* computed */
+
+    const toCurrentId = async(id:string)=>{
+        currentContratId.value = id;
+        console.log('contrat attribué', id);
+    }
 
     // Actions
 
@@ -248,6 +257,10 @@ export const useContratStore = defineStore('contrat', ()=> {
         nextPage,
         previousPage,
         pageSize,
+        currentContratId,
+
+        // Guetters
+        toCurrentId,
 
         // Actions
         getCategories,

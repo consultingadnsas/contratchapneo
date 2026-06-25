@@ -101,9 +101,10 @@ export default {
 
         const editContract = async (contratId:string) => {
             try {
-                addTocart(contratId);
-                console.log("Contrat sélectionné", contratId)
-                //router.push("/contractWritter")
+                await addTocart(contratId);
+                await contratStore.toCurrentId(contratId);
+                console.log("Contrat sélectionné", contratId);
+                router.push("/contractWritter");
             } catch (error: any) {
                 console.error("Erreur lors de l'ajout au panier", error)
             }

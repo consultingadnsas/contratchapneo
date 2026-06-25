@@ -3,32 +3,32 @@
     <form @submit.prevent="submitForm" class="contrat-form">
     
         <div v-if="store.isLoading" class="loading-state">
-        <p>Analyse du document et extraction des balises en cours...</p>
+          <p>Analyse du document et extraction des balises en cours...</p>
         </div>
 
         <div v-else-if="store.error" class="error-state">
             <p>🚨 Erreur : {{ store.error }}</p>
         </div>
 
-        <div v-else-if="store.tags && store.tags.length > 0">
+        <div v-else-if="store.tags && store.tags.length > 0" class="contract-prev-form">
         
-            <BaseInput
-                v-for="tag in store.tags"
-                :key="tag"
-                v-model="formData[tag]"
-                :label="formatLabel(tag)"
-                :type="getInputType(tag)"
-                :placeholder="'Entrez : ' + formatLabel(tag).toLowerCase()"
-                :disabled="store.isLoading"
-            />
+          <BaseInputContract
+            v-for="tag in store.tags"
+            :key="tag"
+            v-model="formData[tag]"
+            :label="formatLabel(tag)"
+            :type="getInputType(tag)"
+            :placeholder="'Entrez : ' + formatLabel(tag).toLowerCase()"
+            :disabled="store.isLoading"
+          />
 
-            <button type="submit" class="submit-btn" :disabled="store.isLoading">
-                Valider les informations
-            </button>
+          <button type="submit" class="submit-btn" :disabled="store.isLoading">
+            Valider les informations
+          </button>
         </div>
 
         <div v-else>
-            <p>Ce contrat ne nécessite aucune information à remplir.</p>
+          <p>Ce contrat ne nécessite aucune information à remplir.</p>
         </div>
     
     </form>
@@ -39,6 +39,7 @@ import { ref, onMounted } from 'vue'
 import BaseInput from '../input/BaseInput.vue'
 import { useContratStore } from '../../stores/contratStore' // Correction du nom d'import
 import {useRoute} from 'vue-router'
+import BaseInputContract from '../input/BaseInputContract.vue'
 
 // 1. Définition des Props (on a besoin de l'ID du contrat pour chercher ses tags)
 
@@ -52,19 +53,24 @@ const formData = ref({}) // Va contenir les valeurs tapées par l'utilisateur (e
 const route = useRoute() // On initialise le routeur pour lire l'URL
 // 4. Initialisation : Récupérer les tags au montage du composant
 onMounted(async () => {
-    try {
-        // On appelle l'action de ton store Pinia
-        await store.fetchContractTags()
+  try {
 
-        // On pré-remplit l'objet formData avec des chaînes vides pour chaque tag
-        if (store.tags && store.tags.length > 0) {
-            store.tags.forEach(tag => {
-            formData.value[tag] = ''
-            })
-        }
-    } catch {
-        console.log("Erreur lors du montage du composant")
+    if (!store.currentContratId){
+      console.log('Id déterminé au montage', store.currentContratId)
+      return
     }
+    // On appelle l'action de ton store Pinia
+    await store.fetchContractTags(store.currentContratId)
+
+    // On pré-remplit l'objet formData avec des chaînes vides pour chaque tag
+    if (store.tags && store.tags.length > 0) {
+      store.tags.forEach(tag => {
+      formData.value[tag] = ''
+      })
+    }
+  } catch {
+    console.log("Erreur lors du montage du composant")
+  }
 })
 
 // --- FONCTIONS UTILITAIRES (L'astuce UX de Contratchap !) ---
@@ -99,6 +105,11 @@ const submitForm = () => {
   max-width: 600px;
   margin: 0 auto;
 }
+
+.contract-prev-form{
+  width: 100%;
+}
+
 .loading-state, .error-state {
   padding: 1rem;
   border-radius: 8px;

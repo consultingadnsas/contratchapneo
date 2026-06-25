@@ -1,138 +1,36 @@
 <template>
-    <div class="main-wrapper">
-        
-        <!-- 
-        <aside class="form-section">
-            <h2 class="form-title">📝 Remplir le contrat</h2>
-            <p class="form-subtitle">Vos modifications s'affichent en temps réel sur le document.</p>
+  <div class="main-wrapper">
+    
+    <aside class="form-section">
+        <h2 class="form-title flex gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
+            </svg>
+            Remplir le contrat
+        </h2>
+        <p class="form-subtitle">Vos modifications s'affichent en temps réel sur le document.</p>
 
-            <div class="input-group">
-                <label for="clientName">Nom Complet / Raison sociale</label>
-                <input 
-                    id="clientName" 
-                    v-model="contractData.nom_client" 
-                    type="text" 
-                    placeholder="Ex: Jean Dupont" 
-                />
-            </div>
+        <contract-generator-form 
+            @update-data="syncData"
+            @submit-data="submitToBackend"
+        />
+    </aside>
 
-            <div class="input-group">
-                <label for="clientAddress">Adresse complète</label>
-                <input 
-                    id="clientAddress" 
-                    v-model="contractData.adresse" 
-                    type="text" 
-                    placeholder="Ex: Abidjan, Cocody Riviera 2" 
-                />
-            </div>
+    <contratPreviewPage/>
 
-            <div class="input-group">
-                <label for="contractDate">Date d'effet</label>
-                <input 
-                    id="contractDate" 
-                    v-model="contractData.date_contrat" 
-                    type="date" 
-                />
-            </div>
-
-            <div class="input-group">
-                <label for="amount">Montant de la prestation (FCFA)</label>
-                <input 
-                    id="amount" 
-                    v-model="contractData.montant" 
-                    type="number" 
-                    placeholder="Ex: 500000" 
-                />
-            </div>
-
-            <button class="submit-btn" @click="submitToBackend">
-                ✅ Valider et Payer
-            </button>
-        </aside>
-        -->
-
-        <contract-generator-form/>
-        
-
-        <main class="preview-section">
-            <div class="a4-document">
-                <h1 class="doc-title">CONTRAT DE PRESTATION DE SERVICES</h1>
-                
-                <p class="doc-paragraph">Entre les soussignés :</p>
-                
-                <p class="doc-paragraph">
-                    La société <strong>Contratchap SAS</strong>, représentée par son gérant, d'une part,
-                </p>
-                
-                <p class="doc-paragraph">
-                    Et M./Mme/La société <span class="dynamic-data">{{ contractData.nom_client || '[Nom du client]' }}</span>, 
-                    résidant à <span class="dynamic-data">{{ contractData.adresse || '[Adresse du client]' }}</span>, 
-                    ci-après dénommé(e) "Le Client", d'autre part.
-                </p>
-
-                <p class="doc-paragraph">
-                    Il a été convenu ce qui suit, à compter du <span class="dynamic-data">{{ formattedDate || '[Date de début]' }}</span> :
-                </p>
-
-                <h3 class="doc-subtitle">Article 1 : Objet</h3>
-                <p class="doc-paragraph">
-                    Le présent contrat a pour objet la fourniture de services juridiques. 
-                    Le client s'engage à verser la somme de <span class="dynamic-data">{{ contractData.montant ? contractData.montant + ' FCFA' : '[Montant]' }}</span> 
-                    pour l'exécution de cette prestation.
-                </p>
-
-                <div class="signatures">
-                    <div class="sign-box">
-                        <p>Pour le Prestataire</p>
-                        <div class="sign-space"></div>
-                    </div>
-                    <div class="sign-box">
-                        <p>Pour le Client</p>
-                        <div class="sign-space"></div>
-                    </div>
-                </div>
-            </div>
-        </main>
-
-    </div>
+  </div>
 </template>
 
 <script setup lang="ts">
-import { reactive, computed } from 'vue';
-import contractGeneratorForm from '../../components/forms/contractGeneratorForm.vue'
+import { useRoute } from 'vue-router';
+import contractGeneratorForm from '../../components/forms/contractGeneratorForm.vue';
+import contratPreviewPage from '../../components/tools/contratPreviewPage.vue'
 
-// 1. Définition des données réactives (Ce qui sera envoyé au format JSON)
-const contractData = reactive({
-    nom_client: '',
-    adresse: '',
-    date_contrat: '',
-    montant: ''
-});
+const route = useRoute();
 
-// 2. Computed property pour formater joliment la date sur le faux document
-const formattedDate = computed(() => {
-    if (!contractData.date_contrat) return '';
-    const dateObj = new Date(contractData.date_contrat);
-    return dateObj.toLocaleDateString('fr-FR', { 
-        year: 'numeric', 
-        month: 'long', 
-        day: 'numeric' 
-    });
-});
+// 1. Définition des données réactives qui alimentent le faux document
+// On utilise `ref({})` pour pouvoir y injecter toutes les variables dynamiques
 
-// 3. Fonction soumission au backend
-const submitToBackend = () => {
-    // C'est ce payload JSON propre que ton backend Django va recevoir pour utiliser docxtpl !
-    const payload = {
-        contrat_id: "id-du-modele-en-base", // À récupérer dynamiquement (ex: via props ou store)
-        data: { ...contractData }
-    };
-    
-    console.log("🚀 Envoi au backend (JSON pur) :", payload);
-    
-    // Ici, tu appelleras ton API, ex :
-    // await $api.post('/payment/initiate/', payload);
-};
 </script>
 
 <style scoped>
