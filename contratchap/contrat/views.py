@@ -1,11 +1,13 @@
 import io
 import base64
+
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status, permissions
 from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.pagination import PageNumberPagination
+
 from django.db import transaction
-from pypdf import PdfReader, PdfWriter
 from django.shortcuts import get_object_or_404
 from django.db.models import Q, F
 from .models import Category, Contrat
@@ -14,7 +16,9 @@ from .serializers import (
     ContratSerializer, 
     CategoryWithContractsSerializer
 )
-from rest_framework.pagination import PageNumberPagination
+
+from pypdf import PdfReader, PdfWriter
+from .utils import extract_tags_from_docx
 
 class ContratPagination(PageNumberPagination):
     page_size = 10  # 10 éléments par page
@@ -211,3 +215,21 @@ class ContratOperationsView(APIView):
                 },
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
+        
+class ContractTagsView(APIView):
+
+    permission_classes = [AllowAny]
+    permission_classes = []
+
+    def get(self, request, contrat_id):
+
+        # Récupère le contrat
+        contrat = Contrat.objects.get(id=contrat_id)
+
+        # Le chemin physique du fichier docx
+        file_path = contrat.fichier_modele.path
+
+        # Extraire les balises
+        tags = extract_tags_from_docx(file_path=file_path)
+
+        return Response({"tags": tags})

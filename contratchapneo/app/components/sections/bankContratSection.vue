@@ -24,7 +24,7 @@
                         :price="contrat.prix"
                         :image="contrat.picture || undefined"
                         @view="openViewModal(contrat.id)"
-                        @buy="()=>{addTocart(contrat.id)}"
+                        @buy="()=>{editContract(contrat.id)}"
                     />
                 </div>
 
@@ -99,6 +99,16 @@ export default {
             }
         }
 
+        const editContract = async (contratId:string) => {
+            try {
+                addTocart(contratId);
+                console.log("Contrat sélectionné", contratId)
+                //router.push("/contractWritter")
+            } catch (error: any) {
+                console.error("Erreur lors de l'ajout au panier", error)
+            }
+        }
+
         const isViewOpen = ref<boolean>(false);
         const openViewModal = () => {
             isViewOpen.value = true;
@@ -143,7 +153,8 @@ export default {
             isViewOpen,
             addTocart,
             openViewModal,
-            router
+            router,
+            editContract
         };
     }
 }

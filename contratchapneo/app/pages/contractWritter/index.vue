@@ -1,6 +1,7 @@
 <template>
     <div class="main-wrapper">
         
+        <!-- 
         <aside class="form-section">
             <h2 class="form-title">📝 Remplir le contrat</h2>
             <p class="form-subtitle">Vos modifications s'affichent en temps réel sur le document.</p>
@@ -48,6 +49,10 @@
                 ✅ Valider et Payer
             </button>
         </aside>
+        -->
+
+        <contract-generator-form/>
+        
 
         <main class="preview-section">
             <div class="a4-document">
@@ -94,6 +99,7 @@
 
 <script setup lang="ts">
 import { reactive, computed } from 'vue';
+import contractGeneratorForm from '../../components/forms/contractGeneratorForm.vue'
 
 // 1. Définition des données réactives (Ce qui sera envoyé au format JSON)
 const contractData = reactive({
