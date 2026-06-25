@@ -70,7 +70,7 @@
 </template>
 
 <script lang="ts">
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 import { useContratStore } from '../../stores/contratStore'; 
 import { useProStore } from '../../stores/proStore';
 
@@ -87,6 +87,15 @@ export default {
         const isDropdownOpen = ref<boolean>(false);
         const isServicesDropdownOpen = ref<boolean>(false);
         const isProDropdownOpen = ref<boolean>(false);
+
+        onMounted(() => {
+            if (proStore.domains.length === 0) {
+                proStore.getFilters();
+            }
+            if (contratStore.categories.length === 0) {
+                contratStore.fetchContracts();
+            }
+        });
 
         return { 
             contratStore, proStore, 

@@ -1,5 +1,14 @@
 <template>
-  <div class="success__screen">
+  <div v-if="isVerifying" class="verify__screen">
+    <div class="spinner"></div>
+    <h3 class="verify__title">Vérification de votre paiement...</h3>
+    <p class="verify__subtitle">
+        Veuillez patienter pendant que nous confirmons la transaction avec la banque.<br>
+        <strong>Ne fermez pas cette page.</strong>
+    </p>
+  </div>
+
+  <div v-else class="success__screen">
     <div class="success__icon">
         <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
             <circle cx="12" cy="12" r="11" stroke="currentColor" stroke-width="1.5"/>
@@ -18,7 +27,7 @@
         {{ downloading ? 'Téléchargement en cours...' : 'Télécharger le contrat' }}
     </button>
     <mainButton 
-        label="aller page d'accueil" 
+        label="Aller à la page d'accueil" 
         @click="()=>router.push('/')"
     />
   </div>
@@ -48,7 +57,9 @@ export default {
         const orderStore = useOrderStore()
         const paiementStore = usePaiementStore()
 
+        // C'EST ICI LA CLÉ : La page commence TOUJOURS en mode "Vérification" (Spinner)
         const isVerifying = ref(true) 
+        
         const countdown = ref(3)
         let countdownTimer: any = null
 
@@ -64,7 +75,7 @@ export default {
         onMounted(async () => {
             const status = (route.query.status || '').toString().toLowerCase();
 
-            // 1. Coupe-circuit (Fast-Fail) : On bloque immédiatement les annulations
+            // 1. Coupe-circuit (Fast-Fail) : On bloque immédiatement les annulations de Xpay
             if (['failed', 'canceled', 'cancelled', 'error'].includes(status)) {
                 router.replace('/order/orderFails');
                 return;
@@ -75,18 +86,18 @@ export default {
                 return;
             }
 
-            // 2. Le Gardien tente de télécharger. 
-            // Si le webhook est en retard, la fonction va patienter toute seule en arrière-plan.
+            // 2. Le Gardien tente de télécharger.
+            // Le spinner tourne pendant que le store patiente pour le Webhook Ngrok
             const isSuccess = await paiementStore.downloadContracts(activeOrderId.value as string);
 
             if (isSuccess) {
-                // Le PDF a été téléchargé, ce qui prouve que Django a reçu le Webhook !
+                // Le PDF a été téléchargé, preuve que c'est payé !
                 router.replace({ path: route.path, query: {} })
                 
-                // On affiche le message de succès
+                // On fait disparaître le spinner et on affiche le succès
                 isVerifying.value = false;
 
-                // On lance la redirection vers l'accueil
+                // On lance le compte à rebours vers l'accueil
                 countdownTimer = setInterval(() => {
                     countdown.value--;
                     if (countdown.value <= 0) {
@@ -95,7 +106,7 @@ export default {
                     }
                 }, 1000);
             } else {
-                // Si après 15s le webhook n'est pas arrivé, ou que Django refuse formellement
+                // Si après 15s le webhook n'est pas arrivé (ou paiement vraiment échoué)
                 router.replace('/order/orderFails');
             }
         });
@@ -117,7 +128,50 @@ export default {
 </script>
 
 <style scoped>
-/* ── Écran de succès ── */
+/* ── 1. Écran de vérification (Le fameux Spinner) ── */
+.verify__screen {
+    height: 60vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    animation: fadeIn 0.3s ease;
+}
+
+.spinner {
+    width: 60px;
+    height: 60px;
+    border: 4px solid rgba(50, 244, 89, 0.2);
+    border-top: 4px solid #32f459;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-bottom: 1.5rem;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.verify__title {
+    color: #202b4a;
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+}
+
+.verify__subtitle {
+    color: #4a5568;
+    font-size: 1rem;
+    line-height: 1.6;
+}
+
+.verify__subtitle strong {
+    color: #ef4444;
+}
+
+/* ── 2. Écran de succès (Ton design) ── */
 .success__screen {
     height: 100vh;
     display: flex;
@@ -138,7 +192,7 @@ export default {
 .success__icon {
     width: 72px;
     height: 72px;
-    color: #202b4a;
+    color: #32f459;
     animation: popIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both;
 }
 

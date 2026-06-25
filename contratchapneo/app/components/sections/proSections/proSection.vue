@@ -6,11 +6,11 @@
             <p>Pour un suivi plus personnalisé concernant vos besoins.</p>
         </header>
 
-        <div class="toolbar">
+       <div class="toolbar">
             <baseProFilter 
                 class="toolbar__filter" 
                 :domains="proStore.domains"
-                @filter="handleDomainFilter"
+                :activeDomain="activeDomainSlug" @filter="handleDomainFilter"
             />
             
             <BaseCountrySelect 
@@ -75,7 +75,6 @@
 </template>
 
 <script lang="ts">
-// Composants
 import ProCards from '../../cards/proCards.vue'
 import contractCardSkeleton from '../../cards/contractCardSkeleton.vue'
 import emptyState from '../../tools/emptyState.vue'
@@ -87,66 +86,69 @@ import cartModale from '../../modale/cartModale.vue'
 import viewModale from '../../modale/viewModale.vue'
 import proModale from '../../modale/proModale.vue'
 
-// Outils
-import { ref, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, onMounted, watch } from 'vue' // 👈 Ajout de "watch"
+import { useRouter, useRoute } from 'vue-router' // 👈 Ajout de "useRoute"
 import { useProStore } from '../../../stores/proStore'
-import {useCartStore} from '../../../stores/cartStore'
+import { useCartStore } from '../../../stores/cartStore'
 
 export default {
-    
     components: {
-        ProCards,
-        Paginator,
-        BaseSearchInput,
-        BaseCountrySelect,
-        contractCardSkeleton,
-        emptyState,
-        cartModale,
-        viewModale,
-        baseProFilter,
-        proModale
+        ProCards, Paginator, BaseSearchInput, BaseCountrySelect,
+        contractCardSkeleton, emptyState, cartModale, viewModale,
+        baseProFilter, proModale
     },
     
     setup() {
         const router = useRouter();
+        const route = useRoute(); // 👈 Accès à l'URL
         const proStore = useProStore();
         const cartStore = useCartStore();
 
-        // 1. Variables pour les filtres
-        const activeDomainSlug = ref('');
+        // 1. Initialiser avec ce qui se trouve dans l'URL (si présent)
+        const activeDomainSlug = ref((route.query.domaine as string) || '');
         const activeCountryCode = ref('');
         const searchQuery = ref('');
 
+        // Fonction centralisée pour la recherche
+        const fetchPros = () => {
+            proStore.getProfessionals(activeDomainSlug.value, activeCountryCode.value, searchQuery.value);
+        }
+
         // 2. Gestionnaires de filtres
-        // Chaque changement relance la recherche avec les 3 paramètres à jour
         const handleSearch = (query: string) => {
             searchQuery.value = query;
-            proStore.getProfessionals(activeDomainSlug.value, activeCountryCode.value, searchQuery.value);
+            fetchPros();
         };
 
         const handleDomainFilter = (slug: string) => {
             activeDomainSlug.value = slug;
-            proStore.getProfessionals(activeDomainSlug.value, activeCountryCode.value, searchQuery.value);
+            // 🪄 Met à jour l'URL dynamiquement quand on clique sur un bouton de baseProFilter
+            router.push({ path: '/pro', query: { ...route.query, domaine: slug || undefined } });
+            fetchPros();
         };
 
         const handleCountryFilter = (code: string) => {
             activeCountryCode.value = code;
-            proStore.getProfessionals(activeDomainSlug.value, activeCountryCode.value, searchQuery.value);
+            fetchPros();
         };
 
-        // 3. Modales
+        // 3. 🪄 SURVEILLANCE : Si l'utilisateur clique sur la NavBox depuis CETTE page
+        watch(() => route.query.domaine, (newDomain) => {
+            const newSlug = (newDomain as string) || '';
+            if (activeDomainSlug.value !== newSlug) {
+                activeDomainSlug.value = newSlug;
+                fetchPros(); // On relance la recherche instantanément
+            }
+        });
+
+        // 4. Modales (inchangées)
         const isOpen = ref<boolean>(false);
-        const openModal = () => {
-            isOpen.value = true;
-        }
+        const openModal = () => { isOpen.value = true; }
 
         const isViewOpen = ref<boolean>(false);
-        
         const openViewModal = async (proId: string) => {
-            proStore.getSpecificProfessional(proId);  // on attend la donnée
+            proStore.getSpecificProfessional(proId);  
             isViewOpen.value = true;
-            console.log("On va voir l'id", proId)                     // puis on ouvre
         }
 
         const addToCart = async (proId:string) => {
@@ -154,37 +156,21 @@ export default {
                 await cartStore.addProToCart(proId);
                 router.push('/order/checkout/');
             } catch (error: any) {
-                console.error("Erreur lors de l'ajout du pro pour la consultation", error)
+                console.error("Erreur lors de l'ajout", error)
             }
         }
 
-        // 4. Chargement initial
+        // 5. Chargement initial
         onMounted(async () => {
-            // Charge les données pour les selects (Pays et Domaines)
             await proStore.getFilters();
-            // Charge la liste des experts
-            await proStore.getProfessionals();
+            // On lance la recherche initiale en prenant en compte l'URL
+            fetchPros(); 
         });
 
         return {
-            router,
-            cartStore,
-            proStore,
-            searchQuery,
-            
-            // Filtres
-            handleSearch,
-            handleDomainFilter,
-            handleCountryFilter,
-
-            // Modales
-            isOpen,
-            openModal,
-            isViewOpen,
-            openViewModal,
-
-            //Actions
-            addToCart,
+            router, cartStore, proStore, searchQuery, activeDomainSlug,
+            handleSearch, handleDomainFilter, handleCountryFilter,
+            isOpen, openModal, isViewOpen, openViewModal, addToCart
         }
     }
 }

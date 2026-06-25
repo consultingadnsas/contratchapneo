@@ -26,8 +26,8 @@
 <script lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue';
 import Hamburger from '../buttons/hamburger.vue';
-import DesktopMenu from './DesktopMenu.vue';  // <-- Import du nouveau composant
-import MobileMenu from './MobileMenu.vue';    // <-- Import du nouveau composant
+import DesktopMenu from './navDesktop.vue';  // <-- Import du nouveau composant
+import MobileMenu from './navMobile.vue';    // <-- Import du nouveau composant
 
 import { useContratStore } from '../../stores/contratStore'; 
 import { useProStore } from '../../stores/proStore';
