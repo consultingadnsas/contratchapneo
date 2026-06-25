@@ -23,6 +23,7 @@
           <adminHome v-if="activePageId === 'overview'" />
           <adminContrats v-if="activePageId === 'contracts'"/>
           <adminHistory v-if="activePageId === 'history'"/>
+          <adminInbox v-if="activePageId === 'inbox'"/>
           
           <!-- Exemple d'espace vide pour les autres pages en attendant -->
           <div v-else class="placeholder-page">
@@ -40,7 +41,8 @@ import AdminSidebar, { MenuItem } from '../../components/navigation/adminSidebar
 import AdminHeader from '../../components/heroSection/adminHeader.vue';
 import adminHome from '../../components/sections/adminSection/adminHome.vue';
 import adminContrats from '../../components/sections/adminSection/adminContrats.vue';
-import adminHistory from '../../components/sections/adminSection/adminHistory.vue'
+import adminHistory from '../../components/sections/adminSection/adminHistory.vue';
+import adminInbox from '../../components/sections/adminSection/adminInbox.vue';
 import { 
   HomeIcon, 
   BookOpenIcon, 
@@ -52,7 +54,7 @@ import {
 
 export default {
   name: 'AdminLayout',
-  components: { AdminSidebar, AdminHeader, adminHome, adminContrats, adminHistory },
+  components: { AdminSidebar, AdminHeader, adminHome, adminContrats, adminHistory, adminInbox },
   setup() {
     // La liste stricte des rubriques demandées
    // La liste stricte des rubriques demandées
