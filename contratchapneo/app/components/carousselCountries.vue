@@ -68,10 +68,6 @@ export default {
     animation: scroll-marquee 35s linear infinite;
 }
 
-.ohada-marquee:hover .marquee-track {
-    animation-play-state: paused;
-}
-
 .marquee-item {
     display: flex;
     align-items: center;
@@ -93,10 +89,6 @@ export default {
     font-weight: 600;
     letter-spacing: 0.5px;
     transition: color 0.3s ease;
-}
-
-.marquee-item:hover .country-name {
-    color: #32f459; /* Vert fluo au survol */
 }
 
 @keyframes scroll-marquee {

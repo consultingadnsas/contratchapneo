@@ -9,14 +9,24 @@
             </div>
 
             <div class="green-dark-section w-full flex justify-center items-center flex-col">
-                <div class="cards-container">
+                
+                <!-- Un petit texte de chargement le temps que l'API réponde -->
+                <p v-if="proStore.isLoading && selectedPros.length === 0" class="text-sm opacity-50 my-4">
+                    Chargement des professionnels...
+                </p>
+
+                <div v-else class="cards-container">
                     <prodCards 
-                        v-for="(card, index) in legalPro" 
-                        :key="index"
+                        v-for="(pro, index) in selectedPros" 
+                        :key="pro.id"
                         :ref="el => setCardRef(el)"
                         :data-index="index"
-                        :title="card.title"
-                        :image="card.visuel"
+                        :title="`${pro.first_name} ${pro.last_name}`"
+                        :subtitle="pro.title_display"
+                        :image="pro.profile_picture || undefined"
+                        @view="goToProDirectory(pro)"
+                        @pro-checkout="goToProDirectory(pro)"
+                        class="clickable-card"
                         :class="[
                             'card-item',
                             { 'card-animate': animatedCards[index] },
@@ -26,46 +36,84 @@
                 </div>
             </div>
 
-            <mainButton label="consulter un pro" @click="router.push('/pro')" />
+            <mainButton label="Voir tous les professionnels" @click="router.push('/pro')" />
         </div>
     </section>
 </template>
 
 <script lang="ts">
-import { ref, onMounted, onBeforeUnmount } from 'vue';
-import mainButton from '../buttons/mainButton.vue';
-import prodCards from '../cards/proCards.vue';
-import proCardSecond from '../cards/proCardSecond.vue';
+import { ref, onMounted, onBeforeUpdate, onBeforeUnmount, computed, nextTick } from 'vue';
 import { useRouter } from 'vue-router';
+import mainButton from '../buttons/mainButton.vue';
+import prodCards from '../cards/proCards.vue'; // Ton vrai composant de carte Pro
+import { useProStore } from '../../stores/proStore'; 
 
 export default {
     name: 'OrdinarySection',
-    components: { mainButton, prodCards, proCardSecond },
+    components: { mainButton, prodCards },
     setup() {
         const router = useRouter();
-        const legalPro = ref([
-            { title: 'Avocat', visuel: '/avocat.jpg' },
-            { title: 'Commissaire de justice', visuel: '/commissaire.jpg' },
-            { title: 'Notaire', visuel: '/notaire.jpg' },
-            { title: 'Juriste droit des affaires', visuel: '/affaire.jpg' },
-        ]);
+        const proStore = useProStore();
 
-        // Références DOM des cartes
+        // 🪄 L'algorithme de "Pêche" aux professionnels
+        const selectedPros = computed(() => {
+            const allPros = proStore.professionals;
+            if (!allPros || allPros.length === 0) return [];
+
+            const targets = ['avocat', 'notaire', 'juriste', 'conseill'];
+            const result: typeof allPros = [];
+            const usedIds = new Set(); // Pour ne pas afficher deux fois la même personne
+
+            // 1. On cherche 1 profil pour chaque mot-clé
+            for (const target of targets) {
+                const found = allPros.find(pro => 
+                    !usedIds.has(pro.id) && 
+                    pro.domains.some(d => d.slug.toLowerCase().includes(target) || d.name.toLowerCase().includes(target))
+                );
+                
+                if (found) {
+                    result.push(found);
+                    usedIds.add(found.id);
+                }
+            }
+
+            // 2. Si jamais on n'en a pas trouvé 4 (ex: pas de notaire en base), 
+            // on comble les trous avec les autres pros disponibles pour garder un beau design.
+            for (const pro of allPros) {
+                if (result.length >= 4) break;
+                if (!usedIds.has(pro.id)) {
+                    result.push(pro);
+                    usedIds.add(pro.id);
+                }
+            }
+
+            return result;
+        });
+
+        // 🚀 Si on clique sur la carte depuis l'accueil, on l'envoie vers l'annuaire filtré
+        const goToProDirectory = (pro: any) => {
+            const primaryDomain = pro.domains?.[0]?.slug || '';
+            router.push({ path: '/pro', query: { domaine: primaryDomain } });
+        };
+
+        // --- Gestion des Animations (inchangé) ---
         const cardRefs = ref<HTMLElement[]>([]);
+        const animatedCards = ref<boolean[]>([false, false, false, false]);
+        let observer: IntersectionObserver | null = null;
+
+        onBeforeUpdate(() => {
+            cardRefs.value = [];
+        });
+
         const setCardRef = (el: any) => {
             if (el && el.$el) {
                 cardRefs.value.push(el.$el);
             }
         };
 
-        const animatedCards = ref<boolean[]>([]);
-        let observer: IntersectionObserver | null = null;
-
-        onMounted(() => {
-            // Initialiser le tableau des animations à false
-            animatedCards.value = new Array(legalPro.value.length).fill(false);
-
-            // Créer l'observateur d'intersection
+        const initObserver = () => {
+            if (observer) observer.disconnect();
+            
             observer = new IntersectionObserver((entries) => {
                 entries.forEach(entry => {
                     if (entry.isIntersecting) {
@@ -80,12 +128,23 @@ export default {
                 });
             }, { threshold: 0.2, rootMargin: '0px 0px -20px 0px' });
 
-            // Observer chaque carte après un court délai pour laisser le DOM se stabiliser
-            setTimeout(() => {
-                cardRefs.value.forEach((cardEl) => {
-                    if (cardEl) observer?.observe(cardEl);
-                });
-            }, 100);
+            cardRefs.value.forEach((cardEl) => {
+                if (cardEl) observer?.observe(cardEl);
+            });
+        };
+
+        onMounted(async () => {
+            // Demander au store de charger les professionnels s'ils ne sont pas encore là
+            if (proStore.professionals.length === 0) {
+                await proStore.getProfessionals();
+            }
+
+            // Attendre que le DOM affiche les cartes, puis lancer les animations
+            nextTick(() => {
+                setTimeout(() => {
+                    initObserver();
+                }, 150); // Léger délai supplémentaire pour la fluidité
+            });
         });
 
         onBeforeUnmount(() => {
@@ -93,10 +152,12 @@ export default {
         });
 
         return { 
-            legalPro,
+            proStore,
+            selectedPros,
             animatedCards,
             setCardRef,
-            router
+            router,
+            goToProDirectory
         };
     }
 }
@@ -114,6 +175,15 @@ export default {
     align-items: center;
     gap: 1rem;
     width: 100%;
+}
+
+/* Rendre toute la carte cliquable */
+.clickable-card {
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.clickable-card:hover {
+    transform: translateY(-5px);
 }
 
 /* --- Carrousel mobile (par défaut) --- */
@@ -162,7 +232,7 @@ export default {
 }
 
 .card-item {
-  opacity: 0; /* caché par défaut */
+  opacity: 0; 
   transition: opacity 0.2s;
 }
 
@@ -174,6 +244,4 @@ export default {
 .card-animate-2 { animation-delay: 0.2s; }
 .card-animate-3 { animation-delay: 0.3s; }
 .card-animate-4 { animation-delay: 0.4s; }
-.card-animate-5 { animation-delay: 0.5s; }
-.card-animate-6 { animation-delay: 0.6s; }
 </style>
