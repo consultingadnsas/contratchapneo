@@ -1,35 +1,63 @@
 <template>
     <form @submit.prevent="submitForm" class="contrat-form">
-    
         <div v-if="store.isLoading" class="loading-state">
           <p>Analyse du document et extraction des balises en cours...</p>
         </div>
 
         <div v-else-if="store.error" class="error-state">
-            <p>🚨 Erreur : {{ store.error }}</p>
+            <p>🚨 Erreur : {{ store.error }} </p>
         </div>
 
         <div v-else-if="uniqueTags.length > 0" class="contract-prev-form">
-        
-          <div v-for="tagName in uniqueTags" :key="tagName" class="input-group">
+          <!-- 🔹 Affichage séquentiel -->
+          <transition name="fade" mode="out-in">
+            <div v-if="currentTagIndex < uniqueTags.length" :key="currentTag" class="input-group">
               <BaseInputContract
-                v-model="formData[tagName]"
-                :label="formatLabel(tagName)"
-                :type="getInputType(tagName)"
-                :placeholder="'Entrez : ' + formatLabel(tagName).toLowerCase()"
+                v-model="formData[currentTag]"
+                :label="formatLabel(currentTag)"
+                :type="getInputType(currentTag)"
+                :placeholder="'Entrez : ' + formatLabel(currentTag).toLowerCase()"
                 :disabled="store.isLoading"
+                @focus="scrollToField(currentTag)"
               />
-          </div>
+              <div class="progress-indicator">
+                {{ currentTagIndex + 1 }} / {{ uniqueTags.length }}
+              </div>
+            </div>
+          </transition>
 
-          <button type="submit" class="submit-btn" :disabled="store.isLoading">
-            Valider les informations
-          </button>
+          <!-- 🔹 Boutons de navigation -->
+          <div class="navigation-buttons">
+            <button
+              type="button"
+              @click="prevTag"
+              :disabled="currentTagIndex === 0"
+              class="nav-btn prev-btn"
+            >
+              Précédent
+            </button>
+            <button
+              v-if="currentTagIndex < uniqueTags.length - 1"
+              type="button"
+              @click="nextTag"
+              class="nav-btn next-btn"
+            >
+              Suivant
+            </button>
+            <button
+              v-else
+              type="submit"
+              class="nav-btn submit-btn"
+              :disabled="store.isLoading"
+            >
+              Valider
+            </button>
+          </div>
         </div>
 
         <div v-else>
           <p>Ce contrat ne nécessite aucune information à remplir.</p>
         </div>
-    
     </form>
 </template>
 
@@ -39,56 +67,64 @@ import { useContratStore } from '../../stores/contratStore'
 import { useRoute } from 'vue-router'
 import BaseInputContract from '../input/BaseInputContract.vue'
 
-const emit = defineEmits(['submit-data', 'update-data'])
-
+const emit = defineEmits(['submit-data', 'update-data', 'scroll-to-field'])
 const store = useContratStore()
-const formData = ref<Record<string, string>>({}) 
-const route = useRoute() 
+const formData = ref<Record<string, string>>({})
+const route = useRoute()
+const currentTagIndex = ref(0) // Index du champ actuel
 
-// 🪄 L'ASTUCE CONTRATCHAP : Aplatir les tags et retirer les doublons
 const uniqueTags = computed(() => {
   if (!store.tags || store.tags.length === 0) return [];
-  
-  // Le Set permet de stocker des valeurs uniques (pas de doublons)
   const allTags = new Set<string>();
-  
-  // On parcourt chaque bloc renvoyé par Django
   store.tags.forEach((block: any) => {
-    // Si le bloc contient des variables, on les ajoute au Set
     if (block.tags && Array.isArray(block.tags)) {
       block.tags.forEach((tag: string) => allTags.add(tag));
     }
   });
-  
-  // On re-transforme le Set en tableau classique pour le v-for
   return Array.from(allTags);
-})
+});
+
+const currentTag = computed(() => uniqueTags.value[currentTagIndex.value])
 
 onMounted(async () => {
   if (!store.currentContratId) return;
-  
   await store.fetchContractTags(store.currentContratId)
-
-  // On initialise formData avec nos tags UNIQUES
   if (uniqueTags.value.length > 0) {
-    uniqueTags.value.forEach(tagName => {
-      formData.value[tagName] = ''
-    })
+    uniqueTags.value.forEach(tagName => { formData.value[tagName] = '' })
   }
-})
+});
 
-// Déclenche la mise à jour en temps réel vers le parent
+// 🔹 Navigation
+const nextTag = () => {
+  if (currentTagIndex.value < uniqueTags.value.length - 1) {
+    currentTagIndex.value++
+  }
+}
+
+const prevTag = () => {
+  if (currentTagIndex.value > 0) {
+    currentTagIndex.value--
+  }
+}
+
+// 🔹 Scroll vers le champ dans le document
+const scrollToField = (tagName: string) => {
+  emit('scroll-to-field', tagName)
+}
+
+// 🔹 Mise à jour en temps réel
 watch(formData, (newValues) => {
   emit('update-data', newValues)
 }, { deep: true })
 
-const formatLabel = (tagName: string) => tagName.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
+const formatLabel = (tagName: string) =>
+  tagName.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
 
 const getInputType = (tagName: string) => {
   if (tagName.startsWith('date_')) return 'date'
   if (tagName.startsWith('num_')) return 'number'
   if (tagName.startsWith('email_')) return 'email'
-  return 'text' 
+  return 'text'
 }
 
 const submitForm = () => {
@@ -130,5 +166,65 @@ const submitForm = () => {
 .submit-btn:disabled {
   background-color: #9e9e9e;
   cursor: not-allowed;
+}
+.input-group {
+  position: relative;
+  margin-bottom: 2rem;
+}
+
+.progress-indicator {
+  position: absolute;
+  right: 0;
+  top: -1.5rem;
+  color: #666;
+  font-size: 0.8rem;
+}
+
+.navigation-buttons {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.nav-btn {
+  flex: 1;
+  padding: 0.75rem;
+  border: none;
+  border-radius: 8px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.nav-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.prev-btn {
+  background-color: #f0f0f0;
+  color: #333;
+}
+
+.next-btn, .submit-btn {
+  background-color: #202b4a;
+  color: white;
+}
+
+.submit-btn {
+  background-color: #1a56db;
+}
+
+/* 🎬 Animation de transition */
+.fade-enter-active, .fade-leave-active {
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+.fade-enter-from {
+  opacity: 0;
+  transform: translateX(20px);
+}
+.fade-leave-to {
+  opacity: 0;
+  transform: translateX(-20px);
 }
 </style>

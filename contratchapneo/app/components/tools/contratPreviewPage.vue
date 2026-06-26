@@ -1,22 +1,32 @@
 <template>
   <main class="preview-section">
     <div class="a4-document">
-      
+
       <h1 class="doc-title reveal-text" style="animation-delay: 0.1s">
         APERÇU DU DOCUMENT
       </h1>
 
-      <template v-if="store.tags && store.tags.length > 0">
-        <p 
-          v-for="(block, index) in store.tags" 
+      <template v-if="formattedBlocks.length > 0">
+        <p
+          v-for="(block, index) in formattedBlocks"
           :key="'block-' + index"
           class="doc-paragraph reveal-text"
           :style="{ animationDelay: `${0.2 + (index * 0.1)}s` }"
-          v-html="formatContext(block.context, block.tags)"
         >
+          <!-- 🔹 Affichage des nœuds (texte ou tag) -->
+          <template v-for="(node, nodeIndex) in block.nodes" :key="'node-' + index + '-' + nodeIndex">
+            <span v-if="node.type === 'text'">{{ node.content }}</span>
+            <span
+              v-else
+              class="dynamic-data"
+              :data-tag-anchor="node.tagName"
+            >
+              {{ node.content }}
+            </span>
+          </template>
         </p>
       </template>
-      
+
       <div v-else class="text-center" style="margin-top: 5rem; color: #6c757d;">
          <p>En attente de l'analyse du document...</p>
       </div>
@@ -31,13 +41,13 @@
           <div class="sign-space"></div>
         </div>
       </div>
-      
+
     </div>
   </main>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 import { useContratStore } from '../../stores/contratStore';
 
 // On appelle le store pour avoir accès aux blocs de contextes (store.tags)
@@ -53,26 +63,88 @@ const syncData = (newData: Record<string, any>) => {
 
 // 🪄 L'ASTUCE CONTRATCHAP : Remplacement dynamique MULTIPLE
 // contextStr est le paragraphe, tagsInBlock est le tableau des variables (ex: ['nom_societe', 'capital'])
-const formatContext = (contextStr: string, tagsInBlock: string[]) => {
-  if (!contextStr) return '';
-  
-  let finalHtml = contextStr;
+// On ajoute un data-tag-anchor sur chaque span généré : c'est ce qui permet
+// de retrouver précisément le bon passage du document depuis le formulaire.
+// (Un data-attribute plutôt qu'un id classique : si jamais le même tag est
+// utilisé dans deux paragraphes différents, on évite des id HTML dupliqués.)
+// 🔹 NOUVELLE LOGIQUE : Découpage du texte en nœuds réactifs
+const formattedBlocks = computed(() => {
+  if (!store.tags || store.tags.length === 0) return [];
 
-  // On boucle sur chaque variable présente dans ce paragraphe
-  tagsInBlock.forEach(tagName => {
-    // 1. On récupère la valeur tapée, ou on met un nom générique s'il n'a rien tapé
-    const typedValue = contractData.value[tagName];
-    const displayValue = typedValue ? typedValue : `[ ${tagName.replace(/_/g, ' ')} ]`;
+  return store.tags.map((block) => {
+    const nodes: Array<{ type: 'text' | 'tag'; content: string; tagName?: string }> = [];
+    let remainingText = block.context;
 
-    // 2. On crée le bloc HTML stylisé en bleu
-    const highlightedHtml = `<span class="dynamic-data" style="color: #1a56db; background-color: rgba(26, 86, 219, 0.05); padding: 0 4px; border-radius: 2px;">${displayValue}</span>`;
+    // 1. Trouver toutes les positions des tags dans ce bloc
+    const tagMatches: Array<{ tag: string; start: number; end: number }> = [];
+    block.tags.forEach((tagName: string) => {
+      const regex = new RegExp(`\\{\\{\\s*${tagName}\\s*\\}\\}`, 'g');
+      let match;
+      while ((match = regex.exec(block.context)) !== null) {
+        tagMatches.push({
+          tag: tagName,
+          start: match.index,
+          end: match.index + match[0].length,
+        });
+      }
+    });
 
-    // 3. On remplace {{ variable }} dans la phrase par le bloc HTML
-    const regex = new RegExp(`\\{\\{\\s*${tagName}\\s*\\}\\}`, 'g');
-    finalHtml = finalHtml.replace(regex, highlightedHtml);
+    // 2. Trier les matches par position dans le texte
+    tagMatches.sort((a, b) => a.start - b.start);
+
+    // 3. Découper le texte en morceaux (texte normal + tags)
+    let lastIndex = 0;
+    tagMatches.forEach((match) => {
+      // Ajouter le texte avant le tag
+      if (match.start > lastIndex) {
+        nodes.push({
+          type: 'text',
+          content: block.context.slice(lastIndex, match.start),
+        });
+      }
+
+      // Ajouter le tag (avec sa valeur dynamique)
+      const typedValue = contractData.value[match.tag];
+      nodes.push({
+        type: 'tag',
+        content: typedValue || `[ ${match.tag.replace(/_/g, ' ')} ]`,
+        tagName: match.tag,
+      });
+
+      lastIndex = match.end;
+    });
+
+    // Ajouter le texte restant après le dernier tag
+    if (lastIndex < block.context.length) {
+      nodes.push({
+        type: 'text',
+        content: block.context.slice(lastIndex),
+      });
+    }
+
+    return { ...block, nodes };
   });
+});
 
-  return finalHtml;
+// Appelée depuis index.vue quand un champ du formulaire reçoit le focus (desktop uniquement).
+// Elle scrolle jusqu'au passage correspondant dans le document et le fait
+// "flasher" brièvement pour bien montrer l'endroit désigné.
+const scrollToField = (tagName: string) => {
+  const elements = document.querySelectorAll<HTMLElement>(`[data-tag-anchor="${tagName}"]`);
+  if (elements.length === 0) return;
+
+  // Scroll vers le premier élément
+  elements[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+  // Faire pulser TOUTES les occurrences
+  elements.forEach(el => {
+    el.classList.add('tag-highlight-pulse');
+  });
+  setTimeout(() => {
+    elements.forEach(el => {
+      el.classList.remove('tag-highlight-pulse');
+    });
+  }, 1600);
 };
 
 // Fonction optionnelle si tu veux déclencher l'envoi depuis ici
@@ -83,7 +155,8 @@ const submitToBackend = (finalData: Record<string, any>) => {
 // Très important : Exposer les fonctions pour que le Parent puisse les appeler via sa ref="previewRef"
 defineExpose({
   syncData,
-  submitToBackend
+  submitToBackend,
+  scrollToField
 });
 </script>
 
@@ -105,6 +178,20 @@ defineExpose({
 .reveal-text {
   opacity: 0; /* caché avant l'animation */
   animation: fadeInUp 0.6s ease forwards;
+}
+
+/* =========================================
+   MISE EN ÉVIDENCE AU CLIC SUR UN CHAMP
+   ========================================= */
+@keyframes tagPulse {
+  0%   { box-shadow: 0 0 0 0 rgba(26, 86, 219, 0.45); background-color: rgba(26, 86, 219, 0.35); }
+  70%  { box-shadow: 0 0 0 8px rgba(26, 86, 219, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(26, 86, 219, 0); background-color: rgba(26, 86, 219, 0.05); }
+}
+
+:deep(.tag-highlight-pulse) {
+  animation: tagPulse 1.4s ease-out;
+  border-radius: 3px;
 }
 
 /* =========================================
