@@ -16,21 +16,41 @@
         />
     </aside>
 
-    <contratPreviewPage/>
+    <contratPreviewPage ref="previewRef" />
 
   </div>
 </template>
 
 <script setup lang="ts">
+import { ref } from 'vue';
 import { useRoute } from 'vue-router';
 import contractGeneratorForm from '../../components/forms/contractGeneratorForm.vue';
-import contratPreviewPage from '../../components/tools/contratPreviewPage.vue'
+import contratPreviewPage from '../../components/tools/contratPreviewPage.vue';
 
 const route = useRoute();
 
-// 1. Définition des données réactives qui alimentent le faux document
-// On utilise `ref({})` pour pouvoir y injecter toutes les variables dynamiques
+// 1. Référence vers le composant enfant (le document A4)
+const previewRef = ref<InstanceType<typeof contratPreviewPage> | null>(null);
 
+// 2. Fonction déclenchée à chaque frappe dans le formulaire (Temps Réel)
+const syncData = (newData: Record<string, any>) => {
+  // On vérifie que le composant A4 est bien chargé
+  if (previewRef.value) {
+    // On appelle la fonction `syncData` qui est à l'intérieur de contratPreviewPage.vue
+    previewRef.value.syncData(newData);
+  }
+};
+
+// 3. Fonction déclenchée au clic sur "Valider les informations"
+const submitToBackend = (finalData: Record<string, any>) => {
+  console.log("Les données finales prêtes pour l'API :", finalData);
+  
+  // Tu peux soit appeler ton API ici (ce qui est recommandé),
+  // soit appeler la fonction submitToBackend de ton A4 comme ceci :
+  if (previewRef.value && previewRef.value.submitToBackend) {
+     previewRef.value.submitToBackend(finalData);
+  }
+};
 </script>
 
 <style scoped>

@@ -30,6 +30,11 @@ export interface PaginatedResponse<T> {
     results: T[];
 }
 
+export interface Tags{
+    name: string;
+    context: string;
+}
+
 export const useContratStore = defineStore('contrat', ()=> {
 
     const {$api} = useNuxtApp();
@@ -51,7 +56,7 @@ export const useContratStore = defineStore('contrat', ()=> {
     const category = ref<Category | null>(null)
     const contracts =  ref<Contrat[]>([]);
     const categories = ref<Category[]>([]);
-    const tags = ref([]);
+    const tags = ref<Tags[] | null>(null);
 
     const currentContratId = ref<string | null>(null)
 

@@ -1,76 +1,27 @@
 <template>
   <main class="preview-section">
     <div class="a4-document">
+      
       <h1 class="doc-title reveal-text" style="animation-delay: 0.1s">
-        CONTRAT DE PRESTATION DE SERVICES
+        APERÇU DU DOCUMENT
       </h1>
 
-      <p class="doc-paragraph reveal-text" style="animation-delay: 0.2s">
-        Entre les soussignés :
-      </p>
-
-      <p class="doc-paragraph reveal-text" style="animation-delay: 0.3s">
-        La société <strong>Contratchap SAS</strong>, dont le siège social est
-        situé à
-        <span class="dynamic-data">{{
-          contractData.local || '[Local du client]'
-        }}</span>
-        , immatriculé RCCM
-        <span class="dynamic-data">{{
-          contractData.RCCM || '[RCCM du client]'
-        }}</span>
-        , représentée par 
-        <span class="dynamic-data">{{
-          contractData.name || "[Nom de l'entreprise / Votre nom]"
-        }}</span>
-      </p>
-
-      <p class="doc-paragraph-end reveal-text" style="animation-delay: 0.4s">
-        D'une part
-      </p>
-
-        <p class="doc-paragraph reveal-text" style="animation-delay: 0.5s">
-            Et M./Mme/La société
-            <span class="dynamic-data">{{
-                contractData.nom_client || '[Nom du client]'
-            }}</span>
-            , de nationalité <span class="dynamic-data">{{ contractData.nationalité || '[Nationalité du client]'}}</span>
-
-            résident à <span class="dynamic-data">{{
-                contractData.adresse || '[Adresse du client]'
-            }}</span>
-            , né(e) le <span class="dynamic-data">{{ contractData.birthday || '[Date naissance]'}}</span>
-            à <span class="dynamic-data">{{ contractData.birthday || '[Lieu naissance]'}}</span> ci-après dénommé(e) "Le Client".
+      <template v-if="store.tags && store.tags.length > 0">
+        <p 
+          v-for="(block, index) in store.tags" 
+          :key="'block-' + index"
+          class="doc-paragraph reveal-text"
+          :style="{ animationDelay: `${0.2 + (index * 0.1)}s` }"
+          v-html="formatContext(block.context, block.tags)"
+        >
         </p>
+      </template>
+      
+      <div v-else class="text-center" style="margin-top: 5rem; color: #6c757d;">
+         <p>En attente de l'analyse du document...</p>
+      </div>
 
-      <p class="doc-paragraph-end reveal-text" style="animation-delay: 0.4s">
-        D'autre part,
-      </p>
-
-      <p class="doc-paragraph reveal-text" style="animation-delay: 0.6s">
-        Il a été convenu ce qui suit, à compter du
-        <span class="dynamic-data">{{ formattedDate || '[Date de début]' }}</span>
-        :
-      </p>
-
-      <h3 class="doc-subtitle reveal-text" style="animation-delay: 0.7s">
-        Article 1 : Objet
-      </h3>
-      <p class="doc-paragraph reveal-text" style="animation-delay: 0.8s">
-        Le présent contrat a pour objet la fourniture de services juridiques.
-        Le client s'engage à verser la somme de
-        <span class="dynamic-data">{{
-          contractData.montant
-            ? contractData.montant + ' FCFA'
-            : '[Montant]'
-        }}</span>
-        pour l'exécution de cette prestation.
-      </p>
-
-      <div
-        class="signatures reveal-text"
-        style="animation-delay: 0.9s"
-      >
+      <div class="signatures reveal-text" style="animation-delay: 1s">
         <div class="sign-box">
           <p>Pour le Prestataire</p>
           <div class="sign-space"></div>
@@ -80,48 +31,60 @@
           <div class="sign-space"></div>
         </div>
       </div>
+      
     </div>
   </main>
 </template>
 
-<script lang="ts">
-import { ref, computed } from 'vue';
+<script setup lang="ts">
+import { ref } from 'vue';
+import { useContratStore } from '../../stores/contratStore';
 
-export default {
-  name: 'ContractPreview',
-  setup() {
-    const contractData = ref<Record<string, any>>({});
+// On appelle le store pour avoir accès aux blocs de contextes (store.tags)
+const store = useContratStore();
 
-    const syncData = (newData: Record<string, any>) => {
-      contractData.value = { ...newData };
-    };
+// Données tapées par l'utilisateur reçues via syncData
+const contractData = ref<Record<string, any>>({});
 
-    const formattedDate = computed(() => {
-      if (!contractData.value.date_contrat) return '';
-      const dateObj = new Date(contractData.value.date_contrat);
-      return dateObj.toLocaleDateString('fr-FR', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric'
-      });
-    });
-
-    const submitToBackend = (finalData: Record<string, any>) => {
-      const payload = {
-        contrat_id: 'someId',
-        data: { ...finalData }
-      };
-      console.log('🚀 Envoi au backend (JSON pur) :', payload);
-    };
-
-    return {
-      contractData,
-      syncData,
-      formattedDate,
-      submitToBackend
-    };
-  }
+// Fonction appelée par le parent pour mettre à jour les frappes
+const syncData = (newData: Record<string, any>) => {
+  contractData.value = { ...newData };
 };
+
+// 🪄 L'ASTUCE CONTRATCHAP : Remplacement dynamique MULTIPLE
+// contextStr est le paragraphe, tagsInBlock est le tableau des variables (ex: ['nom_societe', 'capital'])
+const formatContext = (contextStr: string, tagsInBlock: string[]) => {
+  if (!contextStr) return '';
+  
+  let finalHtml = contextStr;
+
+  // On boucle sur chaque variable présente dans ce paragraphe
+  tagsInBlock.forEach(tagName => {
+    // 1. On récupère la valeur tapée, ou on met un nom générique s'il n'a rien tapé
+    const typedValue = contractData.value[tagName];
+    const displayValue = typedValue ? typedValue : `[ ${tagName.replace(/_/g, ' ')} ]`;
+
+    // 2. On crée le bloc HTML stylisé en bleu
+    const highlightedHtml = `<span class="dynamic-data" style="color: #1a56db; background-color: rgba(26, 86, 219, 0.05); padding: 0 4px; border-radius: 2px;">${displayValue}</span>`;
+
+    // 3. On remplace {{ variable }} dans la phrase par le bloc HTML
+    const regex = new RegExp(`\\{\\{\\s*${tagName}\\s*\\}\\}`, 'g');
+    finalHtml = finalHtml.replace(regex, highlightedHtml);
+  });
+
+  return finalHtml;
+};
+
+// Fonction optionnelle si tu veux déclencher l'envoi depuis ici
+const submitToBackend = (finalData: Record<string, any>) => {
+  console.log('🚀 Envoi au backend depuis preview :', finalData);
+};
+
+// Très important : Exposer les fonctions pour que le Parent puisse les appeler via sa ref="previewRef"
+defineExpose({
+  syncData,
+  submitToBackend
+});
 </script>
 
 <style scoped>

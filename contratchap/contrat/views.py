@@ -18,7 +18,7 @@ from .serializers import (
 )
 
 from pypdf import PdfReader, PdfWriter
-from .utils import extract_tags_from_docx
+from .utils import extract_tags_grouped_by_paragraph
 
 class ContratPagination(PageNumberPagination):
     page_size = 10  # 10 éléments par page
@@ -230,6 +230,6 @@ class ContractTagsView(APIView):
         file_path = contrat.fichier_modele.path
 
         # Extraire les balises
-        tags = extract_tags_from_docx(file_path=file_path)
+        tags = extract_tags_grouped_by_paragraph(file_path=file_path)
 
         return Response({"tags": tags})

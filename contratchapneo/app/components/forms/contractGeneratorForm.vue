@@ -1,5 +1,4 @@
 <template>
-    
     <form @submit.prevent="submitForm" class="contrat-form">
     
         <div v-if="store.isLoading" class="loading-state">
@@ -10,17 +9,17 @@
             <p>🚨 Erreur : {{ store.error }}</p>
         </div>
 
-        <div v-else-if="store.tags && store.tags.length > 0" class="contract-prev-form">
+        <div v-else-if="uniqueTags.length > 0" class="contract-prev-form">
         
-          <BaseInputContract
-            v-for="tag in store.tags"
-            :key="tag"
-            v-model="formData[tag]"
-            :label="formatLabel(tag)"
-            :type="getInputType(tag)"
-            :placeholder="'Entrez : ' + formatLabel(tag).toLowerCase()"
-            :disabled="store.isLoading"
-          />
+          <div v-for="tagName in uniqueTags" :key="tagName" class="input-group">
+              <BaseInputContract
+                v-model="formData[tagName]"
+                :label="formatLabel(tagName)"
+                :type="getInputType(tagName)"
+                :placeholder="'Entrez : ' + formatLabel(tagName).toLowerCase()"
+                :disabled="store.isLoading"
+              />
+          </div>
 
           <button type="submit" class="submit-btn" :disabled="store.isLoading">
             Valider les informations
@@ -35,64 +34,64 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
-import BaseInput from '../input/BaseInput.vue'
-import { useContratStore } from '../../stores/contratStore' // Correction du nom d'import
-import {useRoute} from 'vue-router'
+import { ref, computed, onMounted, watch } from 'vue'
+import { useContratStore } from '../../stores/contratStore'
+import { useRoute } from 'vue-router'
 import BaseInputContract from '../input/BaseInputContract.vue'
 
-// 1. Définition des Props (on a besoin de l'ID du contrat pour chercher ses tags)
+const emit = defineEmits(['submit-data', 'update-data'])
 
-
-// 2. Définition des événements (pour envoyer les réponses au parent)
-const emit = defineEmits(['submit-data'])
-
-// 3. Initialisation du store et de l'objet de données
 const store = useContratStore()
-const formData = ref({}) // Va contenir les valeurs tapées par l'utilisateur (ex: { nom_client: "Jean", montant: 5000 })
-const route = useRoute() // On initialise le routeur pour lire l'URL
-// 4. Initialisation : Récupérer les tags au montage du composant
+const formData = ref<Record<string, string>>({}) 
+const route = useRoute() 
+
+// 🪄 L'ASTUCE CONTRATCHAP : Aplatir les tags et retirer les doublons
+const uniqueTags = computed(() => {
+  if (!store.tags || store.tags.length === 0) return [];
+  
+  // Le Set permet de stocker des valeurs uniques (pas de doublons)
+  const allTags = new Set<string>();
+  
+  // On parcourt chaque bloc renvoyé par Django
+  store.tags.forEach((block: any) => {
+    // Si le bloc contient des variables, on les ajoute au Set
+    if (block.tags && Array.isArray(block.tags)) {
+      block.tags.forEach((tag: string) => allTags.add(tag));
+    }
+  });
+  
+  // On re-transforme le Set en tableau classique pour le v-for
+  return Array.from(allTags);
+})
+
 onMounted(async () => {
-  try {
+  if (!store.currentContratId) return;
+  
+  await store.fetchContractTags(store.currentContratId)
 
-    if (!store.currentContratId){
-      console.log('Id déterminé au montage', store.currentContratId)
-      return
-    }
-    // On appelle l'action de ton store Pinia
-    await store.fetchContractTags(store.currentContratId)
-
-    // On pré-remplit l'objet formData avec des chaînes vides pour chaque tag
-    if (store.tags && store.tags.length > 0) {
-      store.tags.forEach(tag => {
-      formData.value[tag] = ''
-      })
-    }
-  } catch {
-    console.log("Erreur lors du montage du composant")
+  // On initialise formData avec nos tags UNIQUES
+  if (uniqueTags.value.length > 0) {
+    uniqueTags.value.forEach(tagName => {
+      formData.value[tagName] = ''
+    })
   }
 })
 
-// --- FONCTIONS UTILITAIRES (L'astuce UX de Contratchap !) ---
+// Déclenche la mise à jour en temps réel vers le parent
+watch(formData, (newValues) => {
+  emit('update-data', newValues)
+}, { deep: true })
 
-// Rend le nom de la balise propre pour l'affichage (ex: "nom_client" -> "Nom client")
-const formatLabel = (tag) => {
-  return tag.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
+const formatLabel = (tagName: string) => tagName.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
+
+const getInputType = (tagName: string) => {
+  if (tagName.startsWith('date_')) return 'date'
+  if (tagName.startsWith('num_')) return 'number'
+  if (tagName.startsWith('email_')) return 'email'
+  return 'text' 
 }
 
-// Détermine le type de champ HTML en fonction du préfixe de la balise
-const getInputType = (tag) => {
-  if (tag.startsWith('date_')) return 'date'
-  if (tag.startsWith('num_')) return 'number'
-  if (tag.startsWith('email_')) return 'email'
-  return 'text' // Par défaut, c'est du texte
-}
-
-// --- SOUMISSION ---
 const submitForm = () => {
-  console.log("Données prêtes à être envoyées :", formData.value)
-  // On envoie le dictionnaire rempli au composant parent (la page)
-  // pour qu'il lance l'appel API de génération du PDF final !
   emit('submit-data', formData.value)
 }
 </script>
