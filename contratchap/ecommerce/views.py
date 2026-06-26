@@ -31,6 +31,7 @@ class CartDetailView(APIView):
     Retourne le panier courant avec ses lignes.
     """
     permission_classes = [AllowAny]
+    authentication_classes = []
 
     def get(self, request):
         cart = get_or_create_cart(request)
