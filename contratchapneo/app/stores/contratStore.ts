@@ -30,6 +30,11 @@ export interface PaginatedResponse<T> {
     results: T[];
 }
 
+export interface Tags{
+    name: string;
+    context: string;
+}
+
 export const useContratStore = defineStore('contrat', ()=> {
 
     const {$api} = useNuxtApp();
@@ -51,12 +56,23 @@ export const useContratStore = defineStore('contrat', ()=> {
     const category = ref<Category | null>(null)
     const contracts =  ref<Contrat[]>([]);
     const categories = ref<Category[]>([]);
-    // Ajouter dans le state :
+    const tags = ref<Tags[] | null>(null);
+
+    const currentContratId = ref<string | null>(null)
+
+    /* Tools */
     const currentPage = ref(1);
     const totalCount = ref(0);
     const nextPage = ref<string | null>(null);
     const previousPage = ref<string | null>(null);
     const pageSize = ref(10);
+
+    /* computed */
+
+    const toCurrentId = async(id:string)=>{
+        currentContratId.value = id;
+        console.log('contrat attribué', id);
+    }
 
     // Actions
 
@@ -206,6 +222,33 @@ export const useContratStore = defineStore('contrat', ()=> {
         }
     };
 
+    const fetchContractTags = async (contrat_id: string) => {
+        isLoading.value = true;
+        error.value = "";
+
+        try {
+            const response = await $api(`/contrat/tags/${contrat_id}/`, {
+                method: 'GET'
+            });
+            
+            console.log("Votre réponse brute :", response);
+
+            // CORRECTION ICI 👇
+            // On vérifie si response existe et si response.tags est un tableau.
+            // Si oui on le prend, sinon on met un tableau vide par défaut.
+            tags.value = response?.tags || [];
+
+            console.log("Tags extraits avec succès :", tags.value);
+
+            return tags.value;
+        } catch (err: any) {
+            error.value = err.message ?? String(err);
+            console.error('Erreur lors de la récupération des tags :', error.value);
+        } finally {
+            isLoading.value = false;
+        }
+    }
+
     return{
         isLoading,
         error,
@@ -213,17 +256,23 @@ export const useContratStore = defineStore('contrat', ()=> {
         category,
         contracts,
         categories,
+        tags,
         currentPage,
         totalCount,
         nextPage,
         previousPage,
         pageSize,
+        currentContratId,
+
+        // Guetters
+        toCurrentId,
 
         // Actions
         getCategories,
         getCategoriesWithContrats,
         getContracts,
         getSpecificContract,
-        fetchContracts
+        fetchContracts,
+        fetchContractTags
     }
-})
+}, {persist: true})
