@@ -45,33 +45,40 @@
       <div class="folders-section">
         <div class="section-header">
           <h3 class="section-title">Catalogue</h3>
-          <span class="text-muted text-sm">4 Catégories</span>
         </div>
+        <!-- Grille de dossiers -->
         <div class="folders-grid">
           
-          <div class="folder pastel-purple">
-            <div class="folder-tab"></div>
-            <h4>Modèles OHADA</h4>
-            <span>Modifié le 2 Oct</span>
-          </div>
-          
-          <div class="folder pastel-orange">
-            <div class="folder-tab"></div>
-            <h4>Packs Création</h4>
-            <span>Modifié le 14 Jul</span>
-          </div>
+          <!-- 1. Dossier Rempli (Bleu) -->
+          <folderCards 
+            title="Sur-Mesure" 
+            subtitle="12 demandes" 
+            color="blue"
+            :hasItems="true"
+          />
 
-          <div class="folder pastel-blue">
-            <div class="folder-tab"></div>
-            <h4>Sur-Mesure</h4>
-            <span>12 demandes</span>
-          </div>
+          <!-- 2. Dossier Rempli (Orange) -->
+          <folderCards
+            title="Packs Création" 
+            subtitle="Modifié le 14 Jul" 
+            color="blue"
+          />
 
-          <div class="folder pastel-gray">
-            <div class="folder-tab"></div>
-            <h4>Révisions</h4>
-            <span>4 révisions en cours</span>
-          </div>
+          <!-- 3. Dossier Rempli (Violet) -->
+          <folderCards 
+            title="Modèles OHADA" 
+            subtitle="Modifié le 2 Oct" 
+            color="blue"
+          />
+
+          <!-- 4. L'ÉTAT VIDE (Bouton d'ajout) -->
+          <folderCards 
+            title="Voir plus..." 
+            subtitle="Gérer les catégories" 
+            color="gray" 
+            :hasItems="true" 
+            @action="$emit('open-catalogue')"
+          />
 
         </div>
       </div>
@@ -81,7 +88,6 @@
     <div class="activities-section">
       <div class="section-header">
         <h3 class="section-title">Dernières Activités</h3>
-        <button class="pill-btn">Voir tout</button>
       </div>
 
       <div class="clean-list-container">
@@ -124,6 +130,7 @@
 <script lang="ts">
 // 1. On importe markRaw ET les vraies icônes de Heroicons
 import { ref, markRaw } from 'vue';
+import folderCards from '../../cards/folderCards.vue';
 import { 
   ArrowDownTrayIcon, 
   ArrowUpTrayIcon, 
@@ -132,6 +139,10 @@ import {
 
 export default {
   name: 'AdminOverview',
+  components:{
+    folderCards
+  },
+  emits: ['open-catalogue'],
   setup() {
     // 2. On utilise les vraies icônes enveloppées de markRaw()
     const recentActivities = ref([
@@ -231,7 +242,7 @@ export default {
   display: flex; flex-direction: column; justify-content: space-between;
   box-shadow: 0 10px 40px rgba(0,0,0,0.03); border: 1px solid #f1f5f9; min-height: 180px;
 }
-.icon-purple { background: #f3e8ff; color: #a855f7; padding: 0.5rem; border-radius: 12px; display: inline-flex; }
+.icon-purple { background: #f3e8ff; color: #156ca9; padding: 0.5rem; border-radius: 12px; display: inline-flex; }
 .dark-text { color: black; }
 .gray-text { color: var(--text-gray); font-size: 0.85rem; }
 .stat-block-dark { display: flex; flex-direction: column; }
@@ -239,25 +250,12 @@ export default {
 .stat-block-dark strong { font-size: 1.2rem; color: black; }
 
 /* DOSSIERS (Documents) */
-.folders-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
-.folder {
-  position: relative; border-radius: 16px; padding: 1.5rem 1rem 1rem 1rem;
-  display: flex; flex-direction: column; justify-content: flex-end; min-height: 110px;
-  border-top-left-radius: 0; /* Pour l'effet dossier */
+.folders-grid { 
+  display: grid; 
+  /* minmax(140px) au lieu de 200px permet aux dossiers de s'afficher sur 2 colonnes même sur un petit écran iPhone ! */
+  grid-template-columns: repeat(2, 1fr); 
+  gap: 1rem; 
 }
-/* Le petit onglet du dossier au dessus */
-.folder-tab {
-  position: absolute; top: -10px; left: 0; width: 40%; height: 20px;
-  background: inherit; border-top-left-radius: 8px; border-top-right-radius: 8px;
-}
-.folder h4 { margin: 0; font-size: 0.95rem; color: #ffffff; font-weight: 700; z-index: 2; }
-.folder span { font-size: 0.7rem; color: #e2e2e2; margin-top: 0.2rem; z-index: 2; }
-
-/* Couleurs pastel de la maquette */
-.pastel-purple { background-color: #2563eb; }
-.pastel-orange { background-color: #2563eb; }
-.pastel-blue { background-color: #2563eb; }
-.pastel-gray { background-color: #2563eb; }
 
 /* LIGNE DU BAS : TABLEAU ÉPURÉ (Last Activities) */
 .clean-list-container {
@@ -287,5 +285,10 @@ export default {
   background: white; border: 1px solid #e2e8f0; color: var(--text-dark);
   padding: 0.4rem 1rem; border-radius: 50px; font-size: 0.8rem; font-weight: 600; cursor: pointer;
   box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+}
+@media (min-width: 1200px){
+  .gradient-card {
+  min-height: 300px;
+}
 }
 </style>

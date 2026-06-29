@@ -1,10 +1,12 @@
 <template>
   <div class="contracts-wrapper">
     
-    <!-- EN-TÊTE -->
     <div class="header-section">
       <div class="title-and-search">
         <h3 class="section-title">Gestion du Catalogue</h3>
+        <button v-if="activeTab === 'contracts'" class="btn-primary" @click="openModal()">
+          <component :is="PlusIcon" class="icon-sm" /> Ajouter un modèle
+        </button>
       </div>
 
       <div class="tabs-group">
@@ -17,15 +19,9 @@
       </div>
     </div>
 
-    <!-- =========================================
-         ONGLET 1 : GRILLE DE CARTES (CONTRATS)
-         ========================================= -->
     <div v-if="activeTab === 'contracts'" class="contracts-grid">
       
-      <!-- Carte Contrat -->
       <div class="contract-card" v-for="contract in contracts" :key="contract.id" :class="{'card-offline': !contract.isActive}">
-        
-        <!-- Haut de la carte : Icône pastel & Badge -->
         <div class="card-header">
           <div class="icon-box-light" :class="getCategoryColor(contract.category)">
             <component :is="DocumentTextIcon" class="icon-md" />
@@ -35,15 +31,12 @@
           </span>
         </div>
 
-        <!-- Corps : Titre et Catégorie -->
         <div class="card-body">
           <h4 class="dark-text">{{ contract.title }}</h4>
           <span class="gray-text text-sm">{{ contract.category }}</span>
         </div>
 
-        <!-- Bas : Prix et Actions -->
         <div class="card-footer">
-          <!-- Bloc Prix -->
           <div class="price-block">
             <template v-if="contract.isPromoActive">
               <span class="text-strikethrough">{{ contract.price }} F</span>
@@ -53,8 +46,6 @@
               <strong class="dark-text">{{ contract.price }} FCFA</strong>
             </template>
           </div>
-
-          <!-- Actions -->
           <div class="actions-block">
             <label class="switch" title="Mettre en ligne / Hors ligne">
               <input type="checkbox" v-model="contract.isActive" @change="toggleStatus(contract)">
@@ -70,7 +61,6 @@
         </div>
       </div>
 
-      <!-- Carte "Ajouter" vide -->
       <div class="contract-card add-card" @click="openModal()">
         <div class="add-circle">
           <component :is="PlusIcon" class="icon-lg" />
@@ -78,57 +68,49 @@
         <h4 class="dark-text mt-3">Créer un nouveau modèle</h4>
         <span class="gray-text text-sm">Ajouter au catalogue</span>
       </div>
-
     </div>
 
-    <!-- =========================================
-         ONGLET 2 : CATÉGORIES (Façon Dossiers)
-         ========================================= -->
     <div v-if="activeTab === 'categories'" class="categories-wrapper">
       
       <div class="folders-section">
         <h3 class="section-title text-md mb-3">Modèles de Contrats (Boutique)</h3>
         <div class="add-input-group">
-          <input type="text" v-model="newStdCat" placeholder="Nouvelle catégorie boutique..." @keyup.enter="addStdCategory" />
+          <input type="text" v-model="newStdCat" placeholder="Ajouter une catégorie..." @keyup.enter="addStdCategory" />
           <button class="btn-primary-small" @click="addStdCategory"><component :is="PlusIcon" class="icon-sm"/></button>
         </div>
         
         <div class="folders-grid">
-          <div class="folder pastel-blue" v-for="(cat, index) in standardCategories" :key="'std'+index">
-            <div class="folder-tab"></div>
-            <div class="folder-content">
-              <h4 class="dark-text">{{ cat }}</h4>
-              <button class="action-icon-btn delete-btn-folder" @click="standardCategories.splice(index, 1)">
-                <component :is="TrashIcon" class="icon-sm" />
-              </button>
-            </div>
-          </div>
+          <folderCards 
+            v-for="(cat, index) in standardCategories" 
+            :key="'std'+index"
+            :title="cat"
+            subtitle="Modèles OHADA"
+            color="blue"
+            :hasItems="true"
+          />
         </div>
       </div>
 
       <div class="folders-section mt-4">
-        <h3 class="section-title text-md mb-3">Services Sur-Mesure (Devis)</h3>
+        <h3 class="section-title text-md mb-3">Services Sur-Mesure</h3>
         <div class="add-input-group">
-          <input type="text" v-model="newCustomCat" placeholder="Nouvelle catégorie sur-mesure..." @keyup.enter="addCustomCategory" />
+          <input type="text" v-model="newCustomCat" placeholder="Ajouter une catégorie..." @keyup.enter="addCustomCategory" />
           <button class="btn-primary-small" @click="addCustomCategory"><component :is="PlusIcon" class="icon-sm"/></button>
         </div>
         
         <div class="folders-grid">
-          <div class="folder pastel-purple" v-for="(cat, index) in customCategories" :key="'cus'+index">
-            <div class="folder-tab"></div>
-            <div class="folder-content">
-              <h4 class="dark-text">{{ cat }}</h4>
-              <button class="action-icon-btn delete-btn-folder" @click="customCategories.splice(index, 1)">
-                <component :is="TrashIcon" class="icon-sm" />
-              </button>
-            </div>
-          </div>
+          <folderCards 
+            v-for="(cat, index) in customCategories" 
+            :key="'cus'+index"
+            :title="cat"
+            subtitle="Expertise juridique"
+            color="purple"
+            :hasItems="true"
+          />
         </div>
       </div>
-
     </div>
 
-    <!-- MODALE IMPORTÉE -->
     <adminContratsModal 
       v-if="isModalOpen" 
       :contract="selectedContract" 
@@ -143,15 +125,15 @@
 <script lang="ts">
 import { ref } from 'vue';
 import { PlusIcon, TrashIcon, PencilSquareIcon, DocumentTextIcon } from '@heroicons/vue/24/outline';
-import adminContratsModal from '../../modale/adminContratModale.vue'; // Vérifie ton chemin
+import adminContratsModal from '../../modale/adminContratModale.vue';
+import folderCards from '../../cards/folderCards.vue'; // Ton nouveau composant
 
 export default {
   name: 'AdminContracts',
-  components: {
-    adminContratsModal
-  },
-  setup() {
-    const activeTab = ref('contracts');
+  components: { adminContratsModal, folderCards },
+  props: { targetTab: { type: String, default: 'contracts' } },
+  setup(props) {
+    const activeTab = ref(props.targetTab || 'contracts');
     const newStdCat = ref('');
     const newCustomCat = ref('');
     
@@ -164,16 +146,13 @@ export default {
     const contracts = ref([
       { id: 1, title: 'Statuts SARL OHADA', category: 'Création d\'entreprise', price: 15000, isPromoActive: false, promoPrice: null, isActive: true },
       { id: 2, title: 'Contrat de Travail CDD', category: 'Ressources Humaines', price: 10000, isPromoActive: true, promoPrice: 7500, isActive: true },
-      { id: 3, title: 'Contrat de Bail Commercial', category: 'Immobilier', price: 15000, isPromoActive: false, promoPrice: null, isActive: false },
-      { id: 4, title: 'Pacte d\'associés', category: 'Création d\'entreprise', price: 25000, isPromoActive: false, promoPrice: null, isActive: true },
     ]);
 
-    const deleteContract = (id: number) => { if(confirm('Êtes-vous sûr de vouloir supprimer ce contrat ?')) { contracts.value = contracts.value.filter(c => c.id !== id); } };
-    const toggleStatus = (contract: any) => { console.log(`Contrat ${contract.id} modifié.`); };
+    const deleteContract = (id: number) => { if(confirm('Supprimer ?')) { contracts.value = contracts.value.filter(c => c.id !== id); } };
+    const toggleStatus = (contract: any) => { console.log(`Statut changé`); };
 
     const isModalOpen = ref(false);
     const selectedContract = ref<any>(null);
-
     const openModal = (contract: any = null) => { selectedContract.value = contract; isModalOpen.value = true; };
     const closeModal = () => { isModalOpen.value = false; selectedContract.value = null; };
 
@@ -296,12 +275,7 @@ input:checked + .slider:before { transform: translateX(16px); }
 .add-input-group input:focus { border-color: var(--accent-blue); }
 
 .folders-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1rem; }
-.folder { position: relative; border-radius: 16px; padding: 1.5rem 1rem 1rem 1rem; min-height: 100px; display: flex; flex-direction: column; justify-content: flex-end; border-top-left-radius: 0; }
-.folder-tab { position: absolute; top: -12px; left: 0; width: 45%; height: 20px; background: inherit; border-top-left-radius: 12px; border-top-right-radius: 12px; }
-.folder-content { display: flex; justify-content: space-between; align-items: flex-end; z-index: 2; }
-.folder h4 { margin: 0; font-size: 0.95rem; font-weight: 700; color: var(--text-dark); }
-.delete-btn-folder { width: 28px; height: 28px; background: rgba(255,255,255,0.5); border: none; }
-.delete-btn-folder:hover { background: white; color: #ef4444; }
+
 
 .pastel-blue { background-color: #e0f2fe; }
 .pastel-purple { background-color: #f3e8ff; }

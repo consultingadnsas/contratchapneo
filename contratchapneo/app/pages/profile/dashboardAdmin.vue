@@ -16,7 +16,8 @@
 
         <div class="workspace-content">
           <adminHome v-if="activePageId === 'overview'" />
-          <adminContrats v-if="activePageId === 'contracts'"/>
+          <adminContrats v-if="activePageId === 'contracts'" 
+          :targetTab="requestedTab"/>
           <adminHistory v-if="activePageId === 'history'"/>
           <adminInbox v-if="activePageId === 'inbox'"/>
           
@@ -44,7 +45,8 @@ import {
   DocumentTextIcon, 
   TrashIcon,
   Cog8ToothIcon,
-  UsersIcon
+  UsersIcon,
+  BanknotesIcon
 } from '@heroicons/vue/24/outline';
 
 export default {
@@ -55,6 +57,7 @@ export default {
     const adminMenu = ref<MenuItem[]>([
       { id: 'overview', label: "Dashboard", isActive: true, icon: markRaw(HomeIcon), category: 'General' },
       { id: 'history', label: 'Historiques', isActive: false, icon: markRaw(BookOpenIcon), category: 'General' },
+      { id: 'finance', label: 'Finances', isActive: false, icon: markRaw(BanknotesIcon), category: 'General' },
       { id: 'inbox', label: 'Demandes clients', isActive: false, icon: markRaw(InboxIcon), category: 'General' },
       { id: 'contracts', label: 'Catalogue Contrats', isActive: false, icon: markRaw(DocumentTextIcon), category: 'Catalogue' },
       { id: 'experts', label: 'Experts Juridiques', isActive: false, icon: markRaw(UsersIcon), category: 'Catalogue' },
@@ -63,6 +66,7 @@ export default {
     ]);
 
     const activePageId = ref('overview');
+    const requestedTab = ref('contracts'); // Par défaut, onglet normal
 
     const currentPageTitle = computed(() => adminMenu.value.find(m => m.id === activePageId.value)?.label || '');
     const currentPageSubtitle = computed(() => {
@@ -74,13 +78,20 @@ export default {
 
     const changePage = (id: string) => {
       activePageId.value = id;
+      requestedTab.value = 'contracts';
       adminMenu.value.forEach(item => item.isActive = (item.id === id));
+    };
+
+    const goToCatalogueTab = () => {
+      activePageId.value = 'contracts';
+      requestedTab.value = 'categories'; // On cible spécifiquement les dossiers
+      adminMenu.value.forEach(item => item.isActive = (item.id === 'contracts'));
     };
 
     const handleLogout = () => console.log("Fermeture de la session Admin");
     const openAddContractModal = () => console.log("Ouverture de la modale d'ajout de contrat !");
 
-    return { adminMenu, activePageId, currentPageTitle, currentPageSubtitle, changePage, handleLogout, openAddContractModal };
+    return { adminMenu, activePageId, requestedTab, currentPageTitle, currentPageSubtitle, goToCatalogueTab, changePage, handleLogout, openAddContractModal };
   }
 }
 </script>

@@ -9,7 +9,7 @@
 
     <nav class="nav-menu">
       <template v-for="(group, category) in groupedMenu" :key="category">
-        <div class="menu-category" v-if="!isReduced">{{ category }}</div>
+        <div class="menu-category hidden-mobile" v-if="!isReduced">{{ category }}</div>
         
         <button 
           v-for="item in group" 

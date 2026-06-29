@@ -8,19 +8,20 @@
       </div>
       
       <form @submit.prevent="submitForm" class="modal-form">
-        <!-- Titre -->
-        <div class="form-group">
-          <label>Titre du document</label>
-          <input type="text" v-model="localData.title" placeholder="Ex: Statuts SARL OHADA" required />
-        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Titre du document</label>
+            <input type="text" v-model="localData.title" placeholder="Ex: Statuts SARL OHADA" required />
+          </div>
 
-        <!-- Catégorie -->
-        <div class="form-group">
-          <label>Catégorie</label>
-          <select v-model="localData.category" required>
-            <option value="" disabled>Choisir une catégorie</option>
-            <option v-for="cat in categories" :key="cat" :value="cat">{{ cat }}</option>
-          </select>
+          <!-- Catégorie -->
+          <div class="form-group">
+            <label>Catégorie</label>
+            <select v-model="localData.category" required>
+              <option value="" disabled>Choisir une catégorie</option>
+              <option v-for="cat in categories" :key="cat" :value="cat">{{ cat }}</option>
+            </select>
+          </div>
         </div>
 
         <!-- Prix et Promo -->
