@@ -20,6 +20,7 @@
           :targetTab="requestedTab"/>
           <adminHistory v-if="activePageId === 'history'"/>
           <adminInbox v-if="activePageId === 'inbox'"/>
+          <adminFinance v-if="activePageId === 'finance'"/>
           
           <div v-else class="placeholder-page">
             <h2>Module "{{ currentPageTitle }}" en cours de développement...</h2>
@@ -38,6 +39,7 @@ import adminHome from '../../components/sections/adminSection/adminHome.vue';
 import adminContrats from '../../components/sections/adminSection/adminContrats.vue';
 import adminHistory from '../../components/sections/adminSection/adminHistory.vue';
 import adminInbox from '../../components/sections/adminSection/adminInbox.vue';
+import adminFinance from '../../components/sections/adminSection/adminFinance.vue';
 import { 
   HomeIcon, 
   BookOpenIcon, 
@@ -51,7 +53,7 @@ import {
 
 export default {
   name: 'AdminLayout',
-  components: { AdminSidebar, AdminHeader, adminHome, adminContrats, adminHistory, adminInbox },
+  components: { AdminSidebar, AdminHeader, adminHome, adminContrats, adminHistory, adminInbox, adminFinance },
   setup() {
     // Ajout de la propriété 'category' pour reproduire le style de l'image
     const adminMenu = ref<MenuItem[]>([
