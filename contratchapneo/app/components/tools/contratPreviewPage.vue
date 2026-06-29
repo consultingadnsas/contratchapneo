@@ -3,7 +3,7 @@
     <div class="a4-document">
 
       <h1 class="doc-title reveal-text" style="animation-delay: 0.1s">
-        APERÇU DU DOCUMENT
+        {{ store.contrat?.title || "Votre contrat" }}
       </h1>
 
       <template v-if="formattedBlocks.length > 0">

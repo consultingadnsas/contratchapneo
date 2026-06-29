@@ -111,6 +111,13 @@ class CartItem(models.Model):
         help_text="Snapshot du prix au moment de l'ajout"
     )
 
+    user_inputs = models.JSONField(
+        default=dict,
+        blank=True, 
+        null = True,
+        help_text='Stock les variables saisies par le client pour générer le contrat'
+    )
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -262,6 +269,13 @@ class OrderItem(models.Model):
     # Rendu optionnel selon ce qu'on achète
     contrat_title = models.CharField(max_length=255, null=True, blank=True)
     pro_name = models.CharField(max_length=255, null=True, blank=True) 
+
+    user_inputs = models.JSONField(
+        default=dict,
+        blank=True, 
+        null = True,
+        help_text='Stock les variables saisies par le client pour générer le contrat'
+    )
 
     unit_price = models.DecimalField(max_digits=10, decimal_places=2)
     quantity = models.PositiveIntegerField(default=1)

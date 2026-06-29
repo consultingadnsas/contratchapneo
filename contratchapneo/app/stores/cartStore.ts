@@ -116,6 +116,7 @@ export const useCartStore = defineStore('cart', () => {
       }
     };
 
+    // Ici c'est pour l'ajout des contrats dans le panier!
     const addToCart = async (contrat: string) => {
         isLoading.value = true;
         error.value = null;

@@ -233,3 +233,5 @@ class ContractTagsView(APIView):
         tags = extract_tags_grouped_by_paragraph(file_path=file_path)
 
         return Response({"tags": tags})
+
+    
