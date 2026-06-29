@@ -101,7 +101,7 @@ export default {
 
         const editContract = async (contratId:string) => {
             try {
-                await addTocart(contratId);
+                // await addTocart(contratId);
                 await contratStore.toCurrentId(contratId);
                 console.log("Contrat sélectionné", contratId);
                 router.push("/contractWritter");
