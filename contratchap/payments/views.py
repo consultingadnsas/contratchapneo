@@ -27,7 +27,14 @@ from .serializers     import (
     PaymentSimulateSerializer,
 )
 
-from .utils import stream_single_pdf, stream_zip, _increment_downloads, _send_download_email # ou ton import habituel
+from .utils import (
+    stream_single_pdf, 
+    stream_zip, 
+    _increment_downloads, 
+    _send_download_email
+)
+
+from contrat.utils import convert_docx_to_pdf
 
 # ─────────────────────────────────────────
 # INITIATE  —  POST /payment/initiate/
@@ -438,6 +445,7 @@ class DownloadContractView(APIView):
 
         # Cas 1 : EXACTEMENT 1 contrat, AUCUN pro -> Streame le contrat PDF
         if len(contrats) == 1 and len(pros) == 0:
+            
             return stream_single_pdf(contrats[0].fichier_modele, contrats[0].title)
             
         # Cas 2 : AUCUN contrat, EXACTEMENT 1 pro -> Streame la carte de visite PDF
