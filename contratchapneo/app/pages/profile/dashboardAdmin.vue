@@ -18,6 +18,7 @@
           <adminHome v-if="activePageId === 'overview'" />
           <adminContrats v-if="activePageId === 'contracts'" 
           :targetTab="requestedTab"/>
+          <adminpacks v-if="activePageId === 'packs'"/>
           <adminHistory v-if="activePageId === 'history'"/>
           <adminInbox v-if="activePageId === 'inbox'"/>
           <adminFinance v-if="activePageId === 'finance'"/>
@@ -44,6 +45,7 @@ import adminInbox from '../../components/sections/adminSection/adminInbox.vue';
 import adminFinance from '../../components/sections/adminSection/adminFinance.vue';
 import adminExperts from '../../components/sections/adminSection/adminExperts.vue';
 import admintestimonial from '../../components/sections/adminSection/admintestimonial.vue';
+import adminpacks from '../../components/sections/adminSection/adminpacks.vue';
 import { 
   HomeIcon, 
   BookOpenIcon, 
@@ -54,12 +56,12 @@ import {
   UsersIcon,
   BanknotesIcon,
   ChatBubbleBottomCenterTextIcon,
+  SwatchIcon
 } from '@heroicons/vue/24/outline';
-import Admintestimonial from '../../components/sections/adminSection/admintestimonial.vue';
 
 export default {
   name: 'AdminLayout',
-  components: { AdminSidebar, AdminHeader, adminHome, adminContrats, adminHistory, adminInbox, adminFinance, adminExperts, admintestimonial },
+  components: { AdminSidebar, AdminHeader, adminHome, adminContrats, adminHistory, adminInbox, adminFinance, adminExperts, admintestimonial, adminpacks },
   setup() {
     // Ajout de la propriété 'category' pour reproduire le style de l'image
     const adminMenu = ref<MenuItem[]>([
@@ -67,11 +69,12 @@ export default {
       { id: 'history', label: 'Historiques', isActive: false, icon: markRaw(BookOpenIcon), category: 'General' },
       { id: 'finance', label: 'Finances', isActive: false, icon: markRaw(BanknotesIcon), category: 'General' },
       { id: 'inbox', label: 'Demandes clients', isActive: false, icon: markRaw(InboxIcon), category: 'General' },
-      { id: 'contracts', label: 'Catalogue Contrats', isActive: false, icon: markRaw(DocumentTextIcon), category: 'Catalogue' },
+      { id: 'contracts', label: 'Banque de Contrats', isActive: false, icon: markRaw(DocumentTextIcon), category: 'Catalogue' },
       { id: 'experts', label: 'Experts Juridiques', isActive: false, icon: markRaw(UsersIcon), category: 'Catalogue' },
       { id: 'settings', label: 'Paramètres', isActive:false, icon: markRaw(Cog8ToothIcon), category: 'Tools' },
       { id: 'trash', label: 'Corbeille', isActive: false, icon: markRaw(TrashIcon), category: 'Tools' },
-      { id: 'temoin', label: 'temoignage', isActive: false, icon: markRaw(ChatBubbleBottomCenterTextIcon), category: 'Catalogue' },
+      { id: 'temoin', label: 'Témoignages', isActive: false, icon: markRaw(ChatBubbleBottomCenterTextIcon), category: 'Catalogue' },
+      { id: 'packs', label: 'Packs de contrat', isActive: false, icon : markRaw(SwatchIcon), category: 'Catalogue' }
     ]);
 
     const activePageId = ref('overview');
