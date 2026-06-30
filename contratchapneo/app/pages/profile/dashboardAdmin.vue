@@ -21,6 +21,8 @@
           <adminHistory v-if="activePageId === 'history'"/>
           <adminInbox v-if="activePageId === 'inbox'"/>
           <adminFinance v-if="activePageId === 'finance'"/>
+          <adminExperts v-if="activePageId === 'experts' "/>
+          <admintestimonial v-if="activePageId === 'temoin'"/>
           
           <div v-else class="placeholder-page">
             <h2>Module "{{ currentPageTitle }}" en cours de développement...</h2>
@@ -40,6 +42,8 @@ import adminContrats from '../../components/sections/adminSection/adminContrats.
 import adminHistory from '../../components/sections/adminSection/adminHistory.vue';
 import adminInbox from '../../components/sections/adminSection/adminInbox.vue';
 import adminFinance from '../../components/sections/adminSection/adminFinance.vue';
+import adminExperts from '../../components/sections/adminSection/adminExperts.vue';
+import admintestimonial from '../../components/sections/adminSection/admintestimonial.vue';
 import { 
   HomeIcon, 
   BookOpenIcon, 
@@ -48,12 +52,14 @@ import {
   TrashIcon,
   Cog8ToothIcon,
   UsersIcon,
-  BanknotesIcon
+  BanknotesIcon,
+  ChatBubbleBottomCenterTextIcon,
 } from '@heroicons/vue/24/outline';
+import Admintestimonial from '../../components/sections/adminSection/admintestimonial.vue';
 
 export default {
   name: 'AdminLayout',
-  components: { AdminSidebar, AdminHeader, adminHome, adminContrats, adminHistory, adminInbox, adminFinance },
+  components: { AdminSidebar, AdminHeader, adminHome, adminContrats, adminHistory, adminInbox, adminFinance, adminExperts, admintestimonial },
   setup() {
     // Ajout de la propriété 'category' pour reproduire le style de l'image
     const adminMenu = ref<MenuItem[]>([
@@ -65,6 +71,7 @@ export default {
       { id: 'experts', label: 'Experts Juridiques', isActive: false, icon: markRaw(UsersIcon), category: 'Catalogue' },
       { id: 'settings', label: 'Paramètres', isActive:false, icon: markRaw(Cog8ToothIcon), category: 'Tools' },
       { id: 'trash', label: 'Corbeille', isActive: false, icon: markRaw(TrashIcon), category: 'Tools' },
+      { id: 'temoin', label: 'temoignage', isActive: false, icon: markRaw(ChatBubbleBottomCenterTextIcon), category: 'Catalogue' },
     ]);
 
     const activePageId = ref('overview');
