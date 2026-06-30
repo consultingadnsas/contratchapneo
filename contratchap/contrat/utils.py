@@ -9,46 +9,33 @@ def extract_tags_grouped_by_paragraph(file_path):
     pattern = re.compile(r'\{\{\s*(.*?)\s*\}\}')
     
     blocks_data = []
-    seen_tags = set() # Pour s'assurer qu'on ne demande jamais deux fois la même variable
     
-    # Taille maximale pour éviter d'envoyer un paragraphe d'une page entière
-    MAX_PARAGRAPH_LENGTH = 400 
-
     def process_blocks(blocks):
         for block in blocks:
             text = block.text.strip()
+            
+            # Si le paragraphe est vide, on l'ajoute quand même pour conserver 
+            # les sauts de ligne et la mise en page sur le frontend
             if not text:
+                blocks_data.append({
+                    "tags": [],
+                    "context": ""
+                })
                 continue
             
             # 1. On cherche toutes les balises dans ce paragraphe
             matches = pattern.findall(text)
             
-            if matches:
-                tags_in_this_block = []
-                
-                # 2. On filtre pour ne garder que les NOUVELLES balises
-                for match in matches:
-                    tag_name = match.strip()
-                    if tag_name not in seen_tags:
-                        tags_in_this_block.append(tag_name)
-                        seen_tags.add(tag_name)
-                
-                # 3. Si on a trouvé de nouvelles balises, on crée le bloc
-                if tags_in_this_block:
-                    context_text = text
-                    
-                    # On tronque si le paragraphe est vraiment trop long
-                    if len(context_text) > MAX_PARAGRAPH_LENGTH:
-                        # (On pourrait affiner pour ne pas couper au milieu d'une balise, 
-                        # mais pour l'instant une simple coupure suffit)
-                        context_text = context_text[:MAX_PARAGRAPH_LENGTH] + "..."
-                        
-                    blocks_data.append({
-                        "tags": tags_in_this_block, # Attention, c'est devenu une LISTE !
-                        "context": context_text
-                    })
+            # On nettoie les espaces autour des balises
+            tags_in_this_block = [match.strip() for match in matches] if matches else []
+            
+            # 2. On ajoute TOUT le paragraphe à la liste, sans aucune troncature
+            blocks_data.append({
+                "tags": tags_in_this_block,
+                "context": text
+            })
 
-    # Parcourir les paragraphes normaux
+    # Parcourir les paragraphes normaux du document
     process_blocks(doc.paragraphs)
 
     # Parcourir les tableaux (très fréquents dans les contrats)
@@ -58,7 +45,6 @@ def extract_tags_grouped_by_paragraph(file_path):
                 process_blocks(cell.paragraphs)
 
     return blocks_data
-
 
 def convert_docx_to_pdf(docx_path, output_dir=None):
     """

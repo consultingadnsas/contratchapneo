@@ -44,14 +44,7 @@
             >
               Suivant
             </button>
-            <button
-              v-else
-              type="submit"
-              class="nav-btn submit-btn"
-              :disabled="store.isLoading"
-            >
-              Valider
-            </button>
+            <generatorButton label="Générer" v-else/>
           </div>
         </div>
 
@@ -66,6 +59,7 @@ import { ref, computed, onMounted, watch } from 'vue'
 import { useContratStore } from '../../stores/contratStore'
 import { useRoute } from 'vue-router'
 import BaseInputContract from '../input/BaseInputContract.vue'
+import generatorButton from '.././buttons/generatorButton.vue'
 
 const emit = defineEmits(['submit-data', 'update-data', 'scroll-to-field'])
 const store = useContratStore()
@@ -181,6 +175,7 @@ const submitForm = () => {
 }
 
 .navigation-buttons {
+  width: 100%;
   display: flex;
   gap: 1rem;
   margin-top: 1rem;

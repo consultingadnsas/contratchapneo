@@ -1,14 +1,17 @@
 <template>
-    <div class="main-wrapper flex">
-        <aside class="form-section w-1/3 p-4">
+    <div class="main-wrapper flex h-screen w-full overflow-hidden bg-gray-200">
+        
+        <aside class="form-section w-1/3 h-full p-6 overflow-y-auto bg-white shadow-2xl z-10 relative">
             <contract-generator-form 
                 @update-data="syncData"
                 @submit-data="handleModale" 
             />
         </aside>
 
-        <div class="preview-section w-2/3">
+        <div class="preview-section w-2/3 h-full p-8 overflow-y-auto flex justify-center items-start">
+            
             <contratPreviewPage ref="previewRef" />
+            
         </div>
 
         <confirmModale 
