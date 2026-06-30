@@ -18,6 +18,7 @@ export interface Contrat{
     fichier_modele: string,
     picture: string,
     views: number | string,
+    document_preview?: string,
     downloads: number,
     created_at: string,
     updated_at: string

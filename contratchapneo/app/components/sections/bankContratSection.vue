@@ -19,12 +19,14 @@
                     <ContratCards 
                         v-for="(contrat, index) in contratStore.contracts.slice(0, 4)" 
                         :key="contrat.id || index"
+                        :ref="setCardRef"
                         :title="contrat.title"
                         :description="contrat.description"
                         :price="contrat.prix"
                         :image="contrat.picture || undefined"
-                        @view="openViewModal(contrat.id)"
-                        @buy="()=>{editContract(contrat.id)}"
+                        :data-index="index"
+                        @view="openViewModal(contrat.id)" 
+                        @buy="()=>{addTocart(contrat.id)}"
                     />
                 </div>
 
@@ -40,7 +42,8 @@
             />
             <ViewModale 
                 v-if="isViewOpen" 
-                @close="isViewOpen = false"
+                :previewText="selectedPreviewText" 
+                @close="isViewOpen = false" 
             />
         </Teleport>
 
@@ -58,7 +61,7 @@ import ContratCategoryCards from '../cards/contratCategoryCards.vue';
 import CartModale from '../modale/cartModale.vue';
 import ViewModale from '../modale/viewModale.vue';
 import { useContratStore } from '../../stores/contratStore';
-import {useCartStore} from '../../stores/cartStore'
+import { useCartStore } from '../../stores/cartStore';
 
 export default {
     name: 'OrdinarySection',
@@ -70,7 +73,7 @@ export default {
         ViewModale,
     },
     setup() {
-        const router= useRouter();
+        const router = useRouter();
         const contratStore = useContratStore();
         const cartStore = useCartStore();
 
@@ -78,7 +81,7 @@ export default {
         const cardRefs = ref<HTMLElement[]>([]);
         const setCardRef = (el: any) => {
             if (el && el.$el) {
-                cardRefs.value.push(el.$el); // Récupère le nœud HTML du composant
+                cardRefs.value.push(el.$el);
             }
         };
 
@@ -88,7 +91,6 @@ export default {
         const isOpen = ref<boolean>(false);
         const openModal = () => {
             isOpen.value = true;
-            console.log('Événement achat émis !!!');
         }
 
         const addTocart = async (contratId: string) => {
@@ -99,9 +101,8 @@ export default {
             }
         }
 
-        const editContract = async (contratId:string) => {
+        const editContract = async (contratId: string) => {
             try {
-                // await addTocart(contratId);
                 await contratStore.toCurrentId(contratId);
                 console.log("Contrat sélectionné", contratId);
                 router.push("/contractWritter");
@@ -110,10 +111,17 @@ export default {
             }
         }
 
+        // --- CORRECTION DE LA VISUALISATION ---
         const isViewOpen = ref<boolean>(false);
-        const openViewModal = () => {
-            isViewOpen.value = true;
-            console.log('Événement visualisation émis !!!');
+        const selectedPreviewText = ref<string>(''); // Stocke le texte du contrat sélectionné
+
+        // On passe directement le texte du contrat lors du clic
+        const openViewModal = async(contratId:string) => {
+            await contratStore.getSpecificContract(contratId);
+            console.log('Contrat reçu complet :', contratStore.contrat);
+            selectedPreviewText.value = contratStore.contrat?.document_preview
+            isViewOpen.value = true; // On ouvre la deuxième modale
+            console.log('The item selected', contratId)
         }
 
         onMounted(() => {            
@@ -131,12 +139,12 @@ export default {
                 });
             }, { threshold: 0.2, rootMargin: '0px 0px -20px 0px' });
 
-            // On utilise les refs Vue au lieu de document.querySelectorAll
             setTimeout(() => {
                 cardRefs.value.forEach((cardEl) => {
                     if (cardEl) observer?.observe(cardEl);
                 });
             }, 100);
+            
             contratStore.getContracts();
         });
 
@@ -148,10 +156,11 @@ export default {
             contratStore,
             cartStore,
             animatedCards,
-            setCardRef, // Exposé au template
+            setCardRef, 
             isOpen,
             openModal,
             isViewOpen,
+            selectedPreviewText, // Ajouté au return
             addTocart,
             openViewModal,
             router,

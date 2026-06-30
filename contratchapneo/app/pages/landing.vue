@@ -2,6 +2,7 @@
     <div class="main-wrapper">
         <navbar/>
         <heroSecondSection/>
+        <bankContratSection />
         <companieSection/>
     </div>
 </template>
@@ -11,11 +12,13 @@ import categorySection from '../components/heroSection/categorySection.vue'
 import navbar from '../components/navigation/navbar.vue'
 import companieSection from '../components/sections/companieSection.vue'
 import heroSecondSection from '../components/sections/heroSecondSection.vue'
+import bankContratSection from '../components/sections/bankContratSection.vue'
 
 export default {
     components:{
         navbar,
         heroSecondSection,
+        bankContratSection,
         companieSection,
         categorySection
     }
