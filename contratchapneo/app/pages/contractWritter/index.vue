@@ -4,7 +4,7 @@
         <aside class="form-section w-1/3 h-full p-6 overflow-y-auto bg-white shadow-2xl z-10 relative">
             <contract-generator-form 
                 @update-data="syncData"
-                @submit-data="handleModale" 
+                @submit-data="submitToBackend" 
             />
         </aside>
 
@@ -24,17 +24,15 @@
 
 <script setup lang="ts">
 import { ref } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
 import contractGeneratorForm from '../../components/forms/contractGeneratorForm.vue';
 import contratPreviewPage from '../../components/tools/contratPreviewPage.vue';
 import confirmModale from '../../components/modale/confirmModale.vue';
 
-import { useCartStore } from '../../stores/cartStore';
 import { useContratStore } from '../../stores/contratStore';
+import { usePaiementStore } from '../../stores/paiementStore';
 
 const contratStore = useContratStore();
-const cartStore = useCartStore();
-const router = useRouter();
+const paiementStore = usePaiementStore();
 
 const previewRef = ref<InstanceType<typeof contratPreviewPage> | null>(null);
 
@@ -59,24 +57,18 @@ const submitToBackend = async () => {
     console.log("Données transmises au Store :", formDataToSubmit.value);
 
     try {
-        if(!contratStore.currentContratId){
-            console.error("Aucun id de contrat trouvé")
-            return
+        const result = await paiementStore.generateContract(
+            formDataToSubmit.value,
+            contratStore.currentContratId || undefined
+        );
+
+        if (!result?.ok) {
+            throw new Error(result?.error || 'La génération du contrat a échoué.');
         }
 
-        // 💡 LE SECRET EST ICI : On envoie l'ID ET le dictionnaire JSON des réponses !
-        await cartStore.addToCart(
-            contratStore.currentContratId, 
-            formDataToSubmit.value
-        );
-        
         isOpen.value = false;
-        
-        // Redirection vers le paiement
-        router.push('/order/checkout/');
-
-    } catch(err:any){
-        console.error("Une erreur est survenue lors de l'ajout au panier", err)
+    } catch (err: any) {
+        console.error('Une erreur est survenue lors de la génération du contrat', err);
     }
 };
 </script>

@@ -358,9 +358,9 @@ class OrderListView(APIView):
 
 class OrderDetailView(APIView):
     """
-    GET /orders/<order_id>/
-    Détail d'une commande.
-    Accessible au user connecté propriétaire OU à l'invité via son email.
+        GET /orders/<order_id>/
+        Détail d'une commande.
+        Accessible au user connecté propriétaire OU à l'invité via son email.
     """
     permission_classes = [AllowAny]
 
@@ -378,6 +378,34 @@ class OrderDetailView(APIView):
             )
 
         serializer = OrderSerializer(order)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def put(self, request, order_id):
+        """"
+        PUT /orders/<order_id>/
+        Met à jour une commande (ex: statut, infos invité).
+        Accessible au user connecté propriétaire OU à l'invité via son email.
+        """
+        order = get_object_or_404(
+            Order.objects.prefetch_related('order_items'),
+            id=order_id
+        )
+
+        # Vérification d'accès
+        if not self._can_access(request, order):
+            return Response(
+                {'message': 'Accès non autorisé à cette commande.'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        serializer = OrderSerializer(order, data=request.data, partial=True)
+        if not serializer.is_valid():
+            return Response(
+                {'errors': serializer.errors},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        serializer.save()
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def _can_access(self, request, order):

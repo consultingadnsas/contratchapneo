@@ -177,16 +177,62 @@ export const usePaiementStore = defineStore('paiement', () => {
         }
     }
 
-    /*  
-    const generateContract = async (payload: any) => {
+      
+    const generateContract = async (userInputs: Record<string, any>, contratId?: string) => {
         isLoading.value = true;
         error.value = null;
 
         try {
+            const { useOrderStore } = await import('./orderStore');
+            const orderStore = useOrderStore();
 
+            const purchasedItem =
+                orderStore.currentOrder?.order_items?.[0] ??
+                orderStore.currentOrder?.items?.[0];
+
+            const resolvedContractId =
+                contratId ||
+                purchasedItem?.contrat_id ||
+                purchasedItem?.contrat?.id ||
+                purchasedItem?.contrat ||
+                localStorage.getItem('backup_contrat_id');
+
+            if (!resolvedContractId) {
+                throw new Error("Impossible de trouver l'ID du contrat à générer.");
+            }
+
+            const response = await $api.raw(`/contrat/tags/${resolvedContractId}/`, {
+                method: 'POST',
+                responseType: 'blob',
+                body: {
+                    user_inputs: userInputs ?? {},
+                },
+            });
+
+            const blob = response._data as Blob;
+            const disposition = response.headers.get('Content-Disposition') || '';
+            const filenameMatch = disposition.match(/filename="?([^";]+)"?/i);
+            const filename = filenameMatch?.[1] || `contrat-${String(resolvedContractId).slice(0, 8)}.pdf`;
+
+            const url = window.URL.createObjectURL(blob);
+            const anchor = document.createElement('a');
+            anchor.href = url;
+            anchor.download = filename;
+            document.body.appendChild(anchor);
+            anchor.click();
+            document.body.removeChild(anchor);
+            window.URL.revokeObjectURL(url);
+
+            console.log('Contrat généré et téléchargé :', filename);
+            return { ok: true, filename };
+        } catch (err: any) {
+            error.value = err.message ?? String(err);
+            console.error('Erreur lors de la génération du contrat', error.value);
+            return { ok: false, error: error.value };
+        } finally {
+            isLoading.value = false;
         }
     }
-    */
 
     return {
         isLoading,
@@ -197,6 +243,7 @@ export const usePaiementStore = defineStore('paiement', () => {
         sandboxMode,
         setSandboxMode,
         downloadContracts,
-        editContract
+        editContract,
+        generateContract
     }
 })

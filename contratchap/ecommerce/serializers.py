@@ -150,6 +150,7 @@ class OrderItemSerializer(serializers.ModelSerializer):
             'pro',            # FK
             'pro_name',       # snapshot 
             'unit_price',
+            'user_inputs',
             'quantity',
             'subtotal',
         ]

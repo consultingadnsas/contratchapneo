@@ -44,7 +44,7 @@
             >
               Suivant
             </button>
-            <generatorButton label="Générer" v-else/>
+            <generatorButton label="Générer" @click="submitForm" v-else/>
           </div>
         </div>
 

@@ -1,8 +1,8 @@
 # payment/views.py
 import json
+import requests  # pip install requests
 import zipfile
 import io
-import requests  # pip install requests
 
 from django.http    import FileResponse
 from django.conf    import settings
@@ -293,8 +293,41 @@ def payment_webhook_view(request):
     )
 
 # ─────────────────────────────────────────
-# EDIT CONTRACT  —  GET /payment/download/<order_id>/
+# Générer CONTRACT  —  GET /payment/download/<order_id>/
 # ─────────────────────────────────────────
+
+class GenerateContractView(APIView):
+
+    permission_classes = [AllowAny]
+    authentication_classes = []
+
+    def post(self, request, order_id):
+        # On va précharger le pro et le user
+        order = get_object_or_404(
+            Order.objects.prefetch_related(
+                'order_items__contrat'
+            ).select_related('guest', 'user'),
+            id=order_id
+        )
+
+        if not self._can_access(request, order):
+            return Response({'message': 'Accès non autorisé'})
+        
+        if order.status != Order.Status.PAID:
+            return Response(
+                {'message': f'Commande non payée (statut : {order.get_status_display()})'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+        
+        contracts = []
+        
+    def _can_access(self, request, order) -> bool:
+        if request.user.is_authenticated:
+            return order.user == request.user
+        email = request.query_params.get('email', '').lower().strip()
+        return (order.guest is not None and order.guest.email == email)
+
+
 
 # ─────────────────────────────────────────
 # DOWNLOAD  —  GET /payment/download/<order_id>/
