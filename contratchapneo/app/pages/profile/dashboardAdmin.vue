@@ -39,7 +39,7 @@ import { ref, computed, markRaw } from 'vue';
 import AdminSidebar, { MenuItem } from '../../components/navigation/adminSidebar.vue';
 import AdminHeader from '../../components/heroSection/adminHeader.vue';
 import adminHome from '../../components/sections/adminSection/adminHome.vue';
-import adminContrats from '../../components/sections/adminSection/adminContrats.vue';
+import adminContrats from '../../components/sections/adminSection/admincontrat/adminContrats.vue';
 import adminHistory from '../../components/sections/adminSection/adminHistory.vue';
 import adminInbox from '../../components/sections/adminSection/adminInbox.vue';
 import adminFinance from '../../components/sections/adminSection/adminFinance.vue';
