@@ -2,9 +2,11 @@
   <main class="preview-section">
     <div class="a4-document">
 
-      <h1 class="doc-title reveal-text" style="animation-delay: 0.1s">
-        {{ store.contrat?.title || "Votre contrat" }}
-      </h1>
+      <!-- 
+        <h1 class="doc-title reveal-text" style="animation-delay: 0.1s">
+          {{ store.contrat?.title || "Votre contrat" }}
+        </h1>
+      -->
 
       <template v-if="formattedBlocks.length > 0">
         <p
@@ -31,6 +33,7 @@
          <p>En attente de l'analyse du document...</p>
       </div>
 
+      <!-- 
       <div class="signatures reveal-text" style="animation-delay: 1s">
         <div class="sign-box">
           <p>Pour le Prestataire</p>
@@ -41,7 +44,7 @@
           <div class="sign-space"></div>
         </div>
       </div>
-
+      -->
     </div>
   </main>
 </template>
@@ -49,9 +52,9 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
 import { useContratStore } from '../../stores/contratStore';
-
+import { usePaiementStore } from '../../stores/paiementStore'
 // On appelle le store pour avoir accès aux blocs de contextes (store.tags)
-const store = useContratStore();
+const store = usePaiementStore();
 
 // Données tapées par l'utilisateur reçues via syncData
 const contractData = ref<Record<string, any>>({});

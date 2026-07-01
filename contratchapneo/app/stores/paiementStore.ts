@@ -4,6 +4,8 @@ import { defineStore } from 'pinia';
 import { useCartStore } from './cartStore'
 import type { Order } from '../stores/orderStore'
 
+import type { Tags } from './contratStore'
+
 /*
 {
   "merchantId": "PP-F324",
@@ -42,6 +44,7 @@ export const usePaiementStore = defineStore('paiement', () => {
     const { $api } = useNuxtApp();
 
     const isLoading = ref(false);
+
     const error = ref<string | null>(null);
 
     //
@@ -56,6 +59,10 @@ export const usePaiementStore = defineStore('paiement', () => {
     }
 
     // State
+
+    const tags = ref<Tags[] | null>(null);
+
+    // Actions
 
     const downloadContracts = async (orderId: string) => {
 
@@ -113,13 +120,83 @@ export const usePaiementStore = defineStore('paiement', () => {
         }
     }
 
+    const editContract = async (optionalContractId?: string) => {
+        isLoading.value = true;
+        error.value = null;
+
+        const { useOrderStore } = await import('./orderStore');
+        const orderStore = useOrderStore();
+
+        try {
+            // 1. Détermination de l'ID du contrat
+            let targetId = optionalContractId;
+
+            // Si on ne lui passe pas d'ID explicitement, on fouille dans la commande !
+            if (!targetId) {
+                const purchasedItem =
+                    orderStore.currentOrder?.order_items?.[0] ??
+                    orderStore.currentOrder?.items?.[0];
+
+                targetId = purchasedItem?.contrat_id || purchasedItem?.contrat?.id || purchasedItem?.contrat || null;
+            }
+
+            // PLAN C (Le fameux parachute au cas où !)
+            if (targetId) {
+                localStorage.setItem('backup_contrat_id', targetId);
+            } else {
+                targetId = localStorage.getItem('backup_contrat_id');
+            }
+
+            // Si on n'a vraiment rien trouvé, on bloque tout
+            if (!targetId) {
+                throw new Error("Impossible de trouver l'ID du contrat pour extraire les balises.");
+            }
+
+            console.log("ID du contrat trouvé pour extraction :", targetId);
+
+            // 2. Appel à l'API
+            // ⚠️ J'ai corrigé "contract" par "contrat" dans l'URL pour être cohérent avec ton backend
+            const response = await $api(`/contrat/tags/${targetId}/`, {
+                method: 'GET'
+            });
+
+            console.log("Réponse de l'API pour l'édition", response);
+
+            // 3. Stockage des tags extraits
+            tags.value = response?.tags || [];
+
+            console.log("Tags extraits avec succès pour l'édition :", tags.value);
+
+            return tags.value;
+        } catch (err: any) {
+            error.value = err.message ?? String(err);
+            console.error("Erreur lors de l'extraction des balises du contrat", error.value);
+            return null;
+        } finally {
+            isLoading.value = false;
+        }
+    }
+
+    /*  
+    const generateContract = async (payload: any) => {
+        isLoading.value = true;
+        error.value = null;
+
+        try {
+
+        }
+    }
+    */
+
     return {
         isLoading,
         error,
         order,
+        tags,
         paiement,
         sandboxMode,
         setSandboxMode,
-        downloadContracts
+        downloadContracts,
+        editContract
     }
 })

@@ -14,6 +14,8 @@ export interface Order {
     guest?: GuestInfo | null;
     status?: string;
     total_amount: number;
+    order_items?: OrderItem[];
+    items?: OrderItem[];
     created_at?: string;
 }
 
@@ -21,6 +23,7 @@ export interface OrderItem {
     id: string;
     order_id?: string;
     contrat?: any;
+    contrat_id?: string;
     unit_price?: number;
     quantity?: number;
     created_at?: string;

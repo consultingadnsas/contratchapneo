@@ -6,7 +6,6 @@ import requests  # pip install requests
 
 from django.http    import FileResponse
 from django.conf    import settings
-from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404
 from django.db.models import F
 from django.utils.decorators import method_decorator
@@ -293,109 +292,9 @@ def payment_webhook_view(request):
         status=status.HTTP_200_OK
     )
 
-class PaymentWebhookView(APIView):
-    """
-    Reçoit la notification xpaye après paiement (notificationURL).
-
-    xpaye renvoie le referenceNumber qu'on lui a envoyé = str(transaction.id)
-    → on retrouve directement la Transaction.
-
-    On répond TOUJOURS 200 pour éviter les réessais xpaye.
-    """
-    permission_classes     = [AllowAny]
-    authentication_classes = []   # Webhook externe, pas de session Django 
-
-    def post(self, request):
-        try:
-            data = json.loads(request.body)
-        except json.JSONDecodeError:
-            return Response({'message': 'Payload JSON invalide.'}, status=status.HTTP_200_OK)
-
-        reference      = data.get('referenceNumber')
-        response_code  = data.get('responsecode')
-        pay_status     = data.get('status')
-        success_flag   = data.get('success')
-        error_msg      = data.get('message', '')
-
-        is_success = (
-            str(response_code) == '0'
-            or str(pay_status).upper() in {'SUCCESS', 'SUCCEEDED', 'PAID', 'OK'}
-            or str(success_flag).upper() in {'TRUE', '1', 'SUCCESS', 'SUCCEEDED'}
-        )
-
-        if not reference:
-            return Response({'message': 'referenceNumber manquant.'}, status=status.HTTP_200_OK)
-
-        try:
-            transaction = Transaction.objects.select_related(
-                'order__guest', 'order__user'
-            ).get(provider_reference=reference)
-        except Transaction.DoesNotExist:
-            return Response({'message': 'Transaction inconnue.'}, status=status.HTTP_200_OK)
-
-        if transaction.status != Transaction.TransactionStatus.PENDING:
-            return Response({'message': 'Déjà traité.'}, status=status.HTTP_200_OK)
-
-        if is_success:
-            transaction.status = Transaction.TransactionStatus.SUCCESSFUL
-            transaction.error_message = None
-            transaction.save(update_fields=['status', 'error_message'])
-
-            order = transaction.order
-            order.status = Order.Status.PAID
-            order.save(update_fields=['status'])
-
-            #_increment_downloads(order)
-            #_send_download_email(order)
-            return Response(
-                {'message': 'Paiement confirmé — téléchargement prêt.'},
-                status=status.HTTP_200_OK
-            )
-
-        transaction.status = Transaction.TransactionStatus.FAILED
-        transaction.error_message = error_msg or (
-            f"Échec du paiement (responsecode={response_code})."
-        )
-        transaction.save(update_fields=['status', 'error_message'])
-
-        return Response({'message': 'Paiement échoué.'}, status=status.HTTP_200_OK)
-    
-    # 2. 👇 NOUVELLE MÉTHODE GET POUR LA SANDBOX 👇
-    def get(self, request):
-        # Avec une requête GET, les données ne sont pas dans request.data
-        # Elles sont dans request.query_params !
-        
-        # On récupère la référence que tu avais générée dans ton payload Vue.js
-        reference_number = request.query_params.get('referenceNumber')
-        
-        # On récupère le code de statut (ex: '0' signifie souvent 'Succès' chez les agrégateurs)
-        response_code = request.query_params.get('responsecode')
-        
-        # On récupère l'ID de transaction du prestataire
-        pay_id = request.query_params.get('payId')
-
-        print(f"🚀 Webhook GET reçu ! Réf: {reference_number}, Statut: {response_code}")
-
-        if response_code == '0':  # Adapte selon la documentation de ton prestataire
-            try:
-                # Retrouver la transaction associée (si tu as créé une PENDING au moment du clic)
-                # ou retrouver directement la commande via le 'returnContext'
-                
-                # Exemple générique de mise à jour si tu as le bon numéro de référence :
-                order = Order.objects.get(transaction_ref=reference_number)
-                order.status = Order.Status.PAID
-                order.save()
-
-                print(f"l'ordre est mis sur paid {order}")
-                
-                return Response({'message': 'Paiement Sandbox validé !'}, status=status.HTTP_200_OK)
-
-            except Exception as e:
-                print(f"❌ Erreur lors de la mise à jour de la commande : {e}")
-                return Response({'error': 'Commande introuvable'}, status=status.HTTP_404_NOT_FOUND)
-        else:
-            return Response({'message': 'Le paiement a échoué'}, status=status.HTTP_400_BAD_REQUEST)
-
+# ─────────────────────────────────────────
+# EDIT CONTRACT  —  GET /payment/download/<order_id>/
+# ─────────────────────────────────────────
 
 # ─────────────────────────────────────────
 # DOWNLOAD  —  GET /payment/download/<order_id>/
@@ -481,40 +380,6 @@ def _increment_downloads(order: Order):
             downloads=F('downloads') + 1
         )
 
-
-def _send_download_email(order: Order):
-    """
-    Envoie le lien de téléchargement après paiement confirmé.
-
-    - User connecté → lien simple (il s'auth lui-même)
-    - Invité        → lien avec ?email= (order.guest.email via order.buyer_email)
-    """
-    buyer_email   = order.buyer_email          # property sur Order — user ou guest
-    base_url      = settings.FRONTEND_URL.rstrip('/')
-    download_path = f'/payment/download/{order.id}/'
-
-    if order.guest:
-        download_url = f'{base_url}{download_path}?email={buyer_email}'
-    else:
-        download_url = f'{base_url}{download_path}'
-
-    # contrat_title est un snapshot — toujours présent même si le contrat est supprimé
-    titres     = [item.contrat_title for item in order.order_items.all()]
-    titres_str = '\n'.join(f'  • {t}' for t in titres)
-
-    send_mail(
-        subject   = '✅ Paiement confirmé — Vos contrats sont disponibles',
-        message   = (
-            f'Bonjour,\n\n'
-            f'Votre paiement de {order.total_amount} FCFA a été validé.\n\n'
-            f'Contrat(s) acheté(s) :\n{titres_str}\n\n'
-            f'Téléchargez-les ici :\n{download_url}\n\n'
-            f'Merci pour votre confiance.'
-        ),
-        from_email    = settings.DEFAULT_FROM_EMAIL,
-        recipient_list= [buyer_email],
-        fail_silently = False,
-    )
 
 
 

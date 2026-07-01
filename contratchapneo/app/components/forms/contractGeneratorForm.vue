@@ -60,9 +60,10 @@ import { useContratStore } from '../../stores/contratStore'
 import { useRoute } from 'vue-router'
 import BaseInputContract from '../input/BaseInputContract.vue'
 import generatorButton from '.././buttons/generatorButton.vue'
+import { usePaiementStore } from '../../stores/paiementStore'
 
 const emit = defineEmits(['submit-data', 'update-data', 'scroll-to-field'])
-const store = useContratStore()
+const store = usePaiementStore()
 const formData = ref<Record<string, string>>({})
 const route = useRoute()
 const currentTagIndex = ref(0) // Index du champ actuel
@@ -81,8 +82,7 @@ const uniqueTags = computed(() => {
 const currentTag = computed(() => uniqueTags.value[currentTagIndex.value])
 
 onMounted(async () => {
-  if (!store.currentContratId) return;
-  await store.fetchContractTags(store.currentContratId)
+  await store.editContract()
   if (uniqueTags.value.length > 0) {
     uniqueTags.value.forEach(tagName => { formData.value[tagName] = '' })
   }
