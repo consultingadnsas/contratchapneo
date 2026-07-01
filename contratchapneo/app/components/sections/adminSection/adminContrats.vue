@@ -257,7 +257,7 @@ input:checked + .slider { background-color: #10b981; }
 input:checked + .slider:before { transform: translateX(16px); }
 
 /* Petits boutons d'action */
-.action-icon-btn { background: #f8fafc; border: 1px solid #e2e8f0; color: #64748b; width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s; }
+.action-icon-btn { background: #f8fafc; border: 1px solid #e2e8f0; color: #64748b; width: 40px; height: 40px; border-radius: 8px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s; }
 .action-icon-btn:hover { background: #e2e8f0; color: var(--text-dark); }
 .delete-btn:hover { background: #fee2e2; border-color: #fecaca; color: #ef4444; }
 
