@@ -381,11 +381,6 @@ class OrderDetailView(APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def put(self, request, order_id):
-        """"
-        PUT /orders/<order_id>/
-        Met à jour une commande (ex: statut, infos invité).
-        Accessible au user connecté propriétaire OU à l'invité via son email.
-        """
         order = get_object_or_404(
             Order.objects.prefetch_related('order_items'),
             id=order_id
@@ -398,15 +393,34 @@ class OrderDetailView(APIView):
                 status=status.HTTP_403_FORBIDDEN
             )
 
+        # 1. Mise à jour de la commande principale (Order)
         serializer = OrderSerializer(order, data=request.data, partial=True)
         if not serializer.is_valid():
             return Response(
                 {'errors': serializer.errors},
                 status=status.HTTP_400_BAD_REQUEST
             )
-
         serializer.save()
-        return Response(serializer.data, status=status.HTTP_200_OK)
+
+        # 2. 🔥 LA CORRECTION EST ICI 🔥
+        # On récupère directement le dictionnaire 'user_inputs' envoyé par ton frontend
+        user_inputs_data = request.data.get('user_inputs') 
+        
+        if user_inputs_data:
+            # Comme le frontend n'envoie pas l'ID de l'item, on prend le premier item de la commande
+            item = order.order_items.first()
+            
+            if item:
+                # /!\ Vérifie le nom exact de ton champ dans models.py !
+                # Si ton champ s'appelle "user_item", utilise item.user_item = user_inputs_data
+                item.user_inputs = user_inputs_data  
+                
+                # On sauvegarde uniquement ce champ pour l'item
+                item.save(update_fields=['user_inputs']) 
+                print("✅ Succès : user_inputs enregistrés sur l'item !")
+
+        # 3. On renvoie la donnée fraîche
+        return Response(OrderSerializer(order).data, status=status.HTTP_200_OK)
 
     def _can_access(self, request, order):
         """

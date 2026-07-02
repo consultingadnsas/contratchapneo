@@ -178,7 +178,7 @@ export const usePaiementStore = defineStore('paiement', () => {
     }
 
       
-    const generateContract = async (userInputs: Record<string, any>, contratId?: string) => {
+    const generateContract = async (userInputs: Record<string, any>, _contratId?: string) => {
         isLoading.value = true;
         error.value = null;
 
@@ -186,49 +186,26 @@ export const usePaiementStore = defineStore('paiement', () => {
             const { useOrderStore } = await import('./orderStore');
             const orderStore = useOrderStore();
 
-            const purchasedItem =
-                orderStore.currentOrder?.order_items?.[0] ??
-                orderStore.currentOrder?.items?.[0];
+            const orderId = orderStore.currentOrder?.id;
 
-            const resolvedContractId =
-                contratId ||
-                purchasedItem?.contrat_id ||
-                purchasedItem?.contrat?.id ||
-                purchasedItem?.contrat ||
-                localStorage.getItem('backup_contrat_id');
-
-            if (!resolvedContractId) {
-                throw new Error("Impossible de trouver l'ID du contrat à générer.");
+            if (!orderId) {
+                throw new Error("Impossible de trouver l'ID de la commande à mettre à jour.");
             }
 
-            const response = await $api.raw(`/contrat/tags/${resolvedContractId}/`, {
-                method: 'POST',
-                responseType: 'blob',
+            const email = orderStore.currentOrder?.guest?.email || 'consultingadnsas@gmail.com';
+            await $api.raw(`/ecommerce/orders/${orderId}/?email=${email}`, {
+                method: 'PUT',
                 body: {
                     user_inputs: userInputs ?? {},
                 },
             });
 
-            const blob = response._data as Blob;
-            const disposition = response.headers.get('Content-Disposition') || '';
-            const filenameMatch = disposition.match(/filename="?([^";]+)"?/i);
-            const filename = filenameMatch?.[1] || `contrat-${String(resolvedContractId).slice(0, 8)}.pdf`;
-
-            const url = window.URL.createObjectURL(blob);
-            const anchor = document.createElement('a');
-            anchor.href = url;
-            anchor.download = filename;
-            document.body.appendChild(anchor);
-            anchor.click();
-            document.body.removeChild(anchor);
-            window.URL.revokeObjectURL(url);
-
-            console.log('Contrat généré et téléchargé :', filename);
-            return { ok: true, filename };
+            console.log('Données utilisateur enregistrées dans user_inputs :', userInputs);
+            return { ok: true, saved: true };
         } catch (err: any) {
             error.value = err.message ?? String(err);
-            console.error('Erreur lors de la génération du contrat', error.value);
-            return { ok: false, error: error.value };
+            console.error('Erreur lors de l’enregistrement des données utilisateur', error.value);
+            return { ok: false, error: error.value, saved: false };
         } finally {
             isLoading.value = false;
         }

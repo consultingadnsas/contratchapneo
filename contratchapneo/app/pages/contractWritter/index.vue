@@ -4,20 +4,18 @@
         <aside class="form-section w-1/3 h-full p-6 overflow-y-auto bg-white shadow-2xl z-10 relative">
             <contract-generator-form 
                 @update-data="syncData"
-                @submit-data="submitToBackend" 
+                @submit-data="handleModale" 
             />
         </aside>
 
         <div class="preview-section w-2/3 h-full p-8 overflow-y-auto flex justify-center items-start">
-            
             <contratPreviewPage ref="previewRef" />
-            
         </div>
 
         <confirmModale 
             :isOpen="isOpen"
             @close="isOpen = false" 
-            @confirm="submitToBackend"
+            @confirm="submitToBackend" 
         />
     </div>
 </template>
@@ -63,12 +61,12 @@ const submitToBackend = async () => {
         );
 
         if (!result?.ok) {
-            throw new Error(result?.error || 'La génération du contrat a échoué.');
+            throw new Error(result?.error || 'L’enregistrement des données a échoué.');
         }
 
         isOpen.value = false;
     } catch (err: any) {
-        console.error('Une erreur est survenue lors de la génération du contrat', err);
+        console.error('Une erreur est survenue lors de l’enregistrement des données', err);
     }
 };
 </script>

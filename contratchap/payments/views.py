@@ -3,6 +3,8 @@ import json
 import requests  # pip install requests
 import zipfile
 import io
+import tempfile
+import os
 
 from django.http    import FileResponse
 from django.conf    import settings
@@ -33,7 +35,7 @@ from .utils import (
     _send_download_email
 )
 
-from contrat.utils import convert_docx_to_pdf
+from contrat.utils import fill_docx_template, convert_docx_to_pdf
 
 # ─────────────────────────────────────────
 # INITIATE  —  POST /payment/initiate/
@@ -334,12 +336,10 @@ class GenerateContractView(APIView):
 # ─────────────────────────────────────────
 
 class DownloadContractView(APIView):
-    
     permission_classes = [AllowAny]
     authentication_classes = []
 
     def get(self, request, order_id):
-        # 💡 On précharge aussi le 'pro' et son 'user' !
         order = get_object_or_404(
             Order.objects.prefetch_related(
                 'order_items__contrat',
@@ -349,44 +349,97 @@ class DownloadContractView(APIView):
         )
 
         if not self._can_access(request, order):
-            return Response({'message': 'Accès non autorisé à cette commande.'}, status=status.HTTP_403_FORBIDDEN)
+            return Response({'message': 'Accès non autorisé.'}, status=status.HTTP_403_FORBIDDEN)
 
         if order.status != Order.Status.PAID:
-            return Response(
-                {'message': f'Téléchargement impossible — statut : « {order.get_status_display()} ».'},
-                status=status.HTTP_403_FORBIDDEN
-            )
+            return Response({'message': 'Commande non payée.'}, status=status.HTTP_403_FORBIDDEN)
 
-        # 1. Lister les contrats valides avec un fichier
-        contrats = [
-            item.contrat for item in order.order_items.all()
-            if item.contrat is not None and item.contrat.fichier_modele
+        # 1. On garde LES ITEMS entiers (pas juste les contrats) pour avoir accès à item.user_inputs !
+        contract_items = [
+            item for item in order.order_items.all()
+            if getattr(item, 'contrat', None) and item.contrat.fichier_modele
         ]
         
-        # 2. Lister les professionnels valides avec une carte de visite
-        pros = [
-            item.pro for item in order.order_items.all()
-            # Remplace "carte_visite" par le vrai nom de ton champ FileField si c'est différent
-            if getattr(item, 'pro_id', None) and item.pro and item.pro.visiting_card 
+        pro_items = [
+            item for item in order.order_items.all()
+            if getattr(item, 'pro_id', None) and getattr(item, 'pro', None) and item.pro.visiting_card 
         ]
 
-        if not contrats and not pros:
-            return Response({'message': 'Aucun fichier disponible pour cette commande.'}, status=status.HTTP_404_NOT_FOUND)
+        if not contract_items and not pro_items:
+            return Response({'message': 'Aucun fichier disponible.'}, status=status.HTTP_404_NOT_FOUND)
 
         # 👇 Logique de téléchargement intelligente
 
-        # Cas 1 : EXACTEMENT 1 contrat, AUCUN pro -> Streame le contrat PDF
-        if len(contrats) == 1 and len(pros) == 0:
-            
-            return stream_single_pdf(contrats[0].fichier_modele, contrats[0].title)
+        # Cas 1 : EXACTEMENT 1 contrat, AUCUN pro -> Génère et streame le contrat PDF
+        if len(contract_items) == 1 and len(pro_items) == 0:
+            return self._stream_single_contract(contract_items[0])
             
         # Cas 2 : AUCUN contrat, EXACTEMENT 1 pro -> Streame la carte de visite PDF
-        if len(pros) == 1 and len(contrats) == 0:
-            nom_pro = f"Carte_visite_{pros[0].user.first_name}_{pros[0].user.last_name}" if pros[0].user else "Carte_visite_Pro"
-            return stream_single_pdf(pros[0].visiting_card, nom_pro)
+        if len(pro_items) == 1 and len(contract_items) == 0:
+            pro = pro_items[0].pro
+            nom_pro = f"Carte_visite_{pro.user.first_name}_{pro.user.last_name}.pdf" if pro.user else "Carte_visite.pdf"
+            response = FileResponse(pro.visiting_card.open('rb'), content_type='application/pdf')
+            response['Content-Disposition'] = f'attachment; filename="{nom_pro}"'
+            return response
 
-        # Cas 3 : Mixte (Plusieurs éléments) -> On ZIPPE tous les PDFs ensemble
-        return stream_zip(contrats, pros, order_id)
+        # Cas 3 : Mixte (Plusieurs éléments) -> On ZIPPE tout ensemble
+        return self._stream_zip(contract_items, pro_items, order_id)
+
+    # -------------------------------------------------------------------------
+    # 🛠️ FONCTIONS UTILITAIRES PRIVÉES (À rajouter dans la classe)
+    # -------------------------------------------------------------------------
+
+    def _generate_pdf_bytes(self, item):
+        """Prend un OrderItem, génère le Word rempli, le convertit en PDF, et renvoie les octets"""
+        template_path = item.contrat.fichier_modele.path
+        user_inputs = item.user_inputs or {}  # Si vide, renvoie au moins un dictionnaire vide
+        
+        with tempfile.TemporaryDirectory() as temp_dir:
+            filled_docx_path = os.path.join(temp_dir, "temp_filled.docx")
+            
+            # 1. Remplissage
+            fill_docx_template(template_path, user_inputs, filled_docx_path)
+            # 2. Conversion
+            pdf_path = convert_docx_to_pdf(filled_docx_path, temp_dir)
+            
+            # 3. Lecture en mémoire (pour que le fichier puisse être supprimé avec temp_dir)
+            with open(pdf_path, 'rb') as f:
+                return f.read()
+
+    def _stream_single_contract(self, item):
+        """Gère le téléchargement d'un unique contrat"""
+        pdf_bytes = self._generate_pdf_bytes(item)
+        
+        # On utilise io.BytesIO pour streamer depuis la RAM au lieu du disque
+        buffer = io.BytesIO(pdf_bytes)
+        response = FileResponse(buffer, content_type='application/pdf')
+        
+        nom_fichier = f"Contrat_{item.contrat.titre}.pdf" # Remplace 'titre' par 'title' si besoin
+        response['Content-Disposition'] = f'attachment; filename="{nom_fichier}"'
+        return response
+
+    def _stream_zip(self, contract_items, pro_items, order_id):
+        """Génère un fichier ZIP contenant les contrats dynamiques et les cartes pros"""
+        zip_buffer = io.BytesIO()
+        
+        with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_file:
+            
+            # Ajout des contrats générés
+            for index, item in enumerate(contract_items):
+                pdf_bytes = self._generate_pdf_bytes(item)
+                nom_fichier = f"Contrat_{item.contrat.titre}_{index+1}.pdf"
+                zip_file.writestr(nom_fichier, pdf_bytes)
+            
+            # Ajout des cartes de visite
+            for index, item in enumerate(pro_items):
+                with item.pro.visiting_card.open('rb') as f:
+                    nom_fichier = f"Carte_visite_{item.pro.user.first_name}_{index+1}.pdf" if item.pro.user else f"Carte_visite_{index+1}.pdf"
+                    zip_file.writestr(nom_fichier, f.read())
+                    
+        zip_buffer.seek(0)
+        response = FileResponse(zip_buffer, content_type='application/zip')
+        response['Content-Disposition'] = f'attachment; filename="Commande_Contratchap_{order_id}.zip"'
+        return response
 
     def _can_access(self, request, order) -> bool:
         if request.user.is_authenticated:

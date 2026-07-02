@@ -3,6 +3,7 @@ import re
 import os
 import subprocess
 import shutil
+from docxtpl import DocxTemplate
 
 def extract_tags_grouped_by_paragraph(file_path):
     doc = docx.Document(file_path)
@@ -103,3 +104,27 @@ def convert_docx_to_pdf(docx_path, output_dir=None):
             "LibreOffice n'est pas installé ou n'est pas accessible dans le PATH du système. "
             "Exécutez 'sudo apt-get install libreoffice' sur votre serveur Linux."
         )
+    
+def fill_docx_template(template_path, user_inputs, output_path):
+    """
+    Injecte les données de l'utilisateur dans le modèle DOCX.
+    
+    :param template_path: Chemin vers le fichier .docx original (le template avec les balises)
+    :param user_inputs: Dictionnaire Python contenant les réponses (ex: {'nom_client': 'Lamine'})
+    :param output_path: Chemin où sauvegarder le nouveau fichier .docx rempli
+    :return: Le chemin vers le fichier rempli
+    """
+    if not os.path.exists(template_path):
+        raise FileNotFoundError(f"Le fichier modèle n'existe pas : {template_path}")
+
+    # 1. On charge le template avec docxtpl
+    doc = DocxTemplate(template_path)
+    
+    # 2. La magie opère : doc.render remplace toutes les balises {{ clé }} par les valeurs
+    # Si une balise n'est pas dans user_inputs, elle sera simplement laissée vide ou effacée.
+    doc.render(user_inputs)
+    
+    # 3. On sauvegarde le nouveau document prêt à être converti en PDF
+    doc.save(output_path)
+    
+    return output_path
