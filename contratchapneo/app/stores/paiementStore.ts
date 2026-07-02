@@ -204,8 +204,73 @@ export const usePaiementStore = defineStore('paiement', () => {
             return { ok: true, saved: true };
         } catch (err: any) {
             error.value = err.message ?? String(err);
-            console.error('Erreur lors de l’enregistrement des données utilisateur', error.value);
+            console.error('Erreur lors de l\'enregistrement des données utilisateur', error.value);
             return { ok: false, error: error.value, saved: false };
+        } finally {
+            isLoading.value = false;
+        }
+    }
+
+    const downloadOrder = async (orderId?: string) => {
+        isLoading.value = true;
+        error.value = null;
+
+        try {
+            const { useOrderStore } = await import('./orderStore');
+            const orderStore = useOrderStore();
+
+            // 1. Récupération de l'ID (soit passé en paramètre, soit pris dans le store)
+            const targetOrderId = orderId || orderStore.currentOrder?.id;
+
+            if (!targetOrderId) {
+                throw new Error("Impossible de trouver l'ID de la commande pour le téléchargement.");
+            }
+
+            // 2. Gestion de l'email pour les invités
+            // ⚠️ Pense à enlever l'email en dur quand tu seras en vraie production !
+            const email = orderStore.currentOrder?.guest?.email || 'consultingadnsas@gmail.com';
+
+            console.log(`Lancement du téléchargement pour la commande ${targetOrderId}...`);
+
+            // 3. Appel API avec `responseType: 'blob'` pour dire à ofetch qu'on attend un fichier physique
+            const response = await $api.raw(`/ecommerce/orders/${targetOrderId}/download/`, {
+                method: 'GET',
+                responseType: 'blob',
+                query: email ? { email } : undefined, // On utilise query plutôt que de le coder en dur dans l'URL
+            });
+
+            const blob = response._data as Blob;
+            
+            // 4. Récupération du nom du fichier envoyé par le backend Django
+            const disposition = response.headers.get('Content-Disposition') || '';
+            const filenameMatch = disposition.match(/filename="?([^"]+)"?/);
+            let filename = filenameMatch?.[1];
+
+            // 5. Plan B : Si le navigateur bloque le header (CORS), on devine l'extension
+            if (!filename) {
+                const isZip = blob.type === 'application/zip';
+                filename = isZip ? `Contrats_Commande_${targetOrderId.slice(0,8)}.zip` : `Contrat_Contratchap_${targetOrderId.slice(0,8)}.pdf`;
+            }
+
+            // 6. Création du lien de téléchargement magique (virtuel)
+            const url = window.URL.createObjectURL(blob);
+            const anchor = document.createElement('a');
+            anchor.href = url;
+            anchor.download = filename;
+            
+            // On l'ajoute au document, on clique dessus, et on nettoie les traces
+            document.body.appendChild(anchor);
+            anchor.click();
+            document.body.removeChild(anchor);
+            window.URL.revokeObjectURL(url);
+
+            console.log("✅ Téléchargement réussi :", filename);
+            return true;
+
+        } catch (err: any) {
+            error.value = err.message ?? String(err);
+            console.error("❌ Erreur lors du téléchargement du document :", error.value);
+            return false;
         } finally {
             isLoading.value = false;
         }
@@ -221,6 +286,7 @@ export const usePaiementStore = defineStore('paiement', () => {
         setSandboxMode,
         downloadContracts,
         editContract,
-        generateContract
+        generateContract,
+        downloadOrder
     }
 })

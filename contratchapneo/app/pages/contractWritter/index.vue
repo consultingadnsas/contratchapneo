@@ -22,12 +22,15 @@
 
 <script setup lang="ts">
 import { ref } from 'vue';
+import { useRouter } from 'vue-router';
 import contractGeneratorForm from '../../components/forms/contractGeneratorForm.vue';
 import contratPreviewPage from '../../components/tools/contratPreviewPage.vue';
 import confirmModale from '../../components/modale/confirmModale.vue';
 
 import { useContratStore } from '../../stores/contratStore';
 import { usePaiementStore } from '../../stores/paiementStore';
+
+const router = useRouter();
 
 const contratStore = useContratStore();
 const paiementStore = usePaiementStore();
@@ -52,6 +55,7 @@ const syncData = (newData: Record<string, any>) => {
 
 // 3. L'utilisateur a cliqué sur "Valider" dans la modale
 const submitToBackend = async () => {
+    
     console.log("Données transmises au Store :", formDataToSubmit.value);
 
     try {
@@ -60,13 +64,17 @@ const submitToBackend = async () => {
             contratStore.currentContratId || undefined
         );
 
+        if(result){
+            router.push('/contractWritter/contractGenerator');
+        }
+
         if (!result?.ok) {
-            throw new Error(result?.error || 'L’enregistrement des données a échoué.');
+            throw new Error(result?.error || 'L\'enregistrement des données a échoué.');
         }
 
         isOpen.value = false;
     } catch (err: any) {
-        console.error('Une erreur est survenue lors de l’enregistrement des données', err);
+        console.error('Une erreur est survenue lors de l\'enregistrement des données', err);
     }
 };
 </script>

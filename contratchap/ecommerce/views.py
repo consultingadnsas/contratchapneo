@@ -1,13 +1,19 @@
-import stripe
+import tempfile
+import zipfile
+import io
+import os
+from django.http import FileResponse
 from django.conf import settings
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.exceptions import PermissionDenied
 from django.shortcuts import get_object_or_404
 from django.db import transaction
+from django.db.models import F
 
-from .models import Cart, CartItem, Order, OrderItem, GuestInfo
+from .models import CartItem, Order, OrderItem, GuestInfo
 from .serializers import (
     CartSerializer,
     CartItemSerializer,
@@ -19,7 +25,7 @@ from .helpers import (get_or_create_cart, set_cart_cookie_if_needed)
 from contrat.models import Contrat
 from pro.models import LegalProfessional
 
-stripe.api_key = settings.STRIPE_SECRET_KEY
+from contrat.utils import fill_docx_template, convert_docx_to_pdf
 
 # ─────────────────────────────────────────
 # CART VIEWS
@@ -431,6 +437,117 @@ class OrderDetailView(APIView):
             return order.user == request.user
 
         # Invité : GET /orders/<id>/?email=john@example.com
+        email = request.query_params.get('email', '').lower().strip()
+        return (
+            order.guest is not None and
+            order.guest.email == email
+        )
+    
+class OrderDownloadView(APIView):
+    """
+    GET /orders/<order_id>/download/
+    Génère et télécharge les contrats d'une commande.
+    Si 1 contrat -> retourne le PDF.
+    Si > 1 contrat -> retourne un ZIP contenant les PDFs.
+    """
+    permission_classes = [AllowAny]
+
+    def get(self, request, order_id):
+        # 1. Récupération de la commande
+        order = get_object_or_404(
+            Order.objects.prefetch_related('order_items__contrat'), 
+            id=order_id
+        )
+
+        # 2. Vérification des accès et du nombre de téléchargement (Utilisateur connecté OU Invité via email)
+        if not self._can_access(request, order):
+            return Response(
+                {'message': 'Accès non autorisé à ce téléchargement.'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        if order.download_count >= 3:
+            raise PermissionDenied("Limite atteinte : Vous avez déjà téléchargé ces documents 3 fois. Veuillez contacter le support si besoin.")
+
+        order.download_count = F('download_count') + 1
+        order.save(update_fields=['download_count'])
+
+        # 3. Récupérer uniquement les items qui sont des contrats
+        contract_items = [item for item in order.order_items.all() if item.contrat]
+
+        if not contract_items:
+            return Response(
+                {'message': 'Aucun contrat à télécharger pour cette commande.'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        # 4. Magie Contratchap : Génération dans un dossier temporaire qui s'efface tout seul !
+        with tempfile.TemporaryDirectory() as temp_dir:
+            generated_files = [] # Liste de tuples (nom_du_fichier.pdf, chemin_absolu)
+
+            for item in contract_items:
+                contrat = item.contrat
+                user_inputs = item.user_inputs or {} # Tes données de formulaire !
+                
+                if not contrat.fichier_modele or not contrat.fichier_modele.path:
+                    continue 
+                    
+                # A. Remplir le DOCX
+                filled_docx_path = os.path.join(temp_dir, f"temp_{item.id}.docx")
+                fill_docx_template(contrat.fichier_modele.path, user_inputs, filled_docx_path)
+                
+                # B. Convertir en PDF
+                pdf_filename = f"{contrat.title.replace(' ', '_')}_{order.id}.pdf"
+                pdf_path = os.path.join(temp_dir, pdf_filename)
+                
+                convert_docx_to_pdf(filled_docx_path, temp_dir)
+                
+                # LibreOffice nomme le fichier généré avec le même nom, mais en .pdf
+                generated_temp_pdf = os.path.join(temp_dir, f"temp_{item.id}.pdf")
+                
+                # On le renomme avec le vrai titre du contrat
+                if os.path.exists(generated_temp_pdf):
+                    os.rename(generated_temp_pdf, pdf_path)
+                    generated_files.append((pdf_filename, pdf_path))
+
+            if not generated_files:
+                return Response({'message': 'Erreur lors de la génération des fichiers.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+            # 5. Renvoyer le fichier (PDF unique ou ZIP en mémoire RAM)
+            if len(generated_files) == 1:
+                # --- PDF UNIQUE ---
+                filename, path = generated_files[0]
+                with open(path, 'rb') as f:
+                    pdf_bytes = f.read()
+                
+                buffer = io.BytesIO(pdf_bytes)
+                buffer.seek(0)
+                
+                response = FileResponse(buffer, as_attachment=True, filename=filename)
+                response['Content-Type'] = 'application/pdf'
+            else:
+                # --- DOSSIER ZIP ---
+                zip_buffer = io.BytesIO()
+                with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_file:
+                    for filename, path in generated_files:
+                        zip_file.write(path, arcname=filename)
+                
+                zip_buffer.seek(0)
+                zip_filename = f"Contrats_Contratchap_Cmd_{order.id}.zip"
+                
+                response = FileResponse(zip_buffer, as_attachment=True, filename=zip_filename)
+                response['Content-Type'] = 'application/zip'
+
+            # 🚨 TRÈS IMPORTANT POUR VUE.JS / NUXT : 
+            # Autorise le front à lire le nom du fichier depuis le header
+            response['Access-Control-Expose-Headers'] = 'Content-Disposition'
+            
+            return response
+
+    def _can_access(self, request, order):
+        """Même logique de sécurité que pour OrderDetailView"""
+        if request.user.is_authenticated:
+            return order.user == request.user
         email = request.query_params.get('email', '').lower().strip()
         return (
             order.guest is not None and

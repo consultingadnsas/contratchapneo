@@ -202,6 +202,8 @@ class Order(models.Model):
     # les prix peuvent avoir changé
     total_amount = models.DecimalField(max_digits=10, decimal_places=2)
 
+    download_count = models.PositiveIntegerField(default=0, help_text="Nombre de fois que l'acheteur a télécharger le contrat")
+
     # Timestamps
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

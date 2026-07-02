@@ -1,6 +1,13 @@
+import io
+import zipfile
+from django.http import FileResponse
 from django.core.mail import send_mail
 from ecommerce.models import Order
 from django.conf    import settings
+from django.db.models import F
+
+from contrat.models import Contrat
+from .models import Order, OrderItem
 
 def _send_download_email(order: Order):
     """
@@ -34,4 +41,17 @@ def _send_download_email(order: Order):
         from_email    = settings.DEFAULT_FROM_EMAIL,
         recipient_list= [buyer_email],
         fail_silently = False,
+    ) 
+
+def stream_single_pdf(file_field, filename:str) -> FileResponse:
+    """"
+        Stream n'import quel fichier (contrat ou carte de visite)
+    """
+    response = FileResponse(
+        file_field.open('rb'),
+        content_type='application/pdf'
     )
+    # Assainir le nom du fichier (retirer les espaces pour éviter les bugs dans le navigateur)
+    safe_filename = filename.replace(" ", "_")
+    response['Content-Disposition'] = f'attachment; filename="{safe_filename}.pdf"'
+    return response
