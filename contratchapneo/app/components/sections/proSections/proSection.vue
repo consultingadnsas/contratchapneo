@@ -192,10 +192,12 @@ export default {
 }
 
 .contrat-card-section h2 {
-    font-size: 2rem;
-    font-weight: 500;
-    line-height: 1.5;
-    color: var(--primary-color);
+    font-size: clamp(2.2rem, 5vw, 3.5rem);
+    font-weight: 700;
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+    color: var(--primary-color-dark);
+    margin-bottom: 1rem;
 }
 
 header{
@@ -204,7 +206,11 @@ header{
 }
 
 header p{
-    font-size: 1.2rem;
+    font-size: 1.15rem;
+    color: var(--primary-color-dark);
+    max-width: 550px;
+    margin: 0 auto;
+    line-height: 1.6;
 }
 
 /* ==========================================

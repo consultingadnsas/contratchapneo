@@ -290,12 +290,17 @@ export default defineComponent({
     font-size: clamp(0.9rem, 2vw, 1rem);
 }
 
+.cta-texts p{
+    margin-left: 25px
+}
+
 .revision-cta .cta-texts span {
     /* Le vert fluo de ton animation */
     color: var(--primary-color); 
     font-size: clamp(0.75rem, 1.5vw, 0.85rem);
     font-weight: 500;
     opacity: 0.9;
+    margin-right: 15px
 }
 
 /* Le bouton flèche animé comme les cartes */

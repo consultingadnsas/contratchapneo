@@ -223,7 +223,7 @@ export default {
   display: flex; flex-direction: column; justify-content: space-between;
   min-height: 180px;
 }
-.icon-white { background: rgba(255,255,255,0.2); color:#32f459; padding: 0.5rem; border-radius: 12px; display: inline-flex; }
+.icon-white { background: var(--secondary-light-color); color:#ffffff; padding: 0.5rem; border-radius: 12px; display: inline-flex; }
 .card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem; }
 .card-body h2 { margin: 0; font-size: 1.1rem; font-weight: 700; }
 .card-body p { margin: 0.2rem 0 0 0; font-size: 0.8rem; opacity: 0.9; }
@@ -239,7 +239,7 @@ export default {
   display: flex; flex-direction: column; justify-content: space-between;
   box-shadow: 0 10px 40px rgba(0,0,0,0.03); border: 1px solid #f1f5f9; min-height: 180px;
 }
-.icon-purple { background:rgba(255,255,255,0.2); color: #32f459; padding: 0.5rem; border-radius: 12px; display: inline-flex; }
+.icon-purple { background:var(--secondary-light-color); color: #ffffff; padding: 0.5rem; border-radius: 12px; display: inline-flex; }
 .dark-text { color: black; }
 .gray-text { color: var(--text-gray); font-size: 0.85rem; }
 .stat-block-dark { display: flex; flex-direction: column; }

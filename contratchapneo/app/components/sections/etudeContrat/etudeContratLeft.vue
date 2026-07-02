@@ -105,10 +105,6 @@ export default {
     flex-shrink: 0;
 }
 
-.info-card:hover .icon-box {
-    color: #32f459;
-}
-
 .info-texts {
     flex: 1;
     display: flex;

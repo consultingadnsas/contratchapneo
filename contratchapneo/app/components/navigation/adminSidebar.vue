@@ -74,20 +74,25 @@ export default {
 <style scoped>
 .sidebar {
   --sb-bg: #ffffff;           
-  --sb-text: #ffffff;         /* Gris doux */
-  --sb-text-active: #ffffff;  /* Blanc sur fond bleu */
-  --sb-accent: var(--secondary-light-color);       /* Bleu roi de la maquette */
+  --sb-text: #ffffff;         
+  --sb-text-active: #ffffff;  
+  --sb-accent: var(--secondary-light-color);       
   --sb-hover: var(--secondary-light-color);
 }
 
 .sidebar {
   position: fixed; bottom: 0; left: 0; width: 100%; height: calc(65px + env(safe-area-inset-bottom));
-  background-color:var(--primary-color);;
+  background-color:var(--primary-color);
   display: flex; justify-content: space-around; align-items: center; z-index: 100;
   box-shadow: 0px -4px 20px rgba(0, 0, 0, 0.02);
 }
 
-.nav-menu { display: flex; width: 100%; justify-content: flex-start; align-items: center; overflow-x: auto; gap: 0.5rem; padding: 0 1rem; scrollbar-width: none; }
+/* Scroll mobile (horizontal) invisible par défaut */
+.nav-menu { 
+  display: flex; width: 100%; justify-content: flex-start; align-items: center; 
+  overflow-x: auto; gap: 0.5rem; padding: 0 1rem; 
+  scrollbar-width: none; 
+}
 .nav-menu::-webkit-scrollbar{ display: none; }
 
 .icon {
@@ -102,7 +107,6 @@ export default {
   transition: all 0.3s ease; border-radius: 14px;
 }
 
-/* L'ÉTAT ACTIF COMME SUR LA MAQUETTE */
 .nav-item.active {
   background-color: var(--sb-accent);
   color: var(--sb-text-active) !important;
@@ -115,26 +119,61 @@ export default {
 
 .hidden-mobile { display: none; }
 
-@media (min-width: 1024px) {
+@media (min-width: 1030px) {
   .hidden-mobile { display: flex; }
   .sidebar { 
-    position: relative; width: 260px; height: 100vh; flex-direction: column; 
+    position: relative; width: 270px; height: 100vh; flex-direction: column; 
     padding: 2rem 1.5rem; box-shadow: 10px 0 30px rgba(0,0,0,0.01);
   }
   .sidebar.is-reduced { width: 90px; padding: 2rem 0.5rem; }
   
-  .logo { display: flex; align-items: center; justify-content: space-between; padding: 0 0.5rem; margin-bottom: 2rem; width: 100%; }
+  .logo { display: flex; align-items: center; justify-content: space-between; padding: 0 0.5rem; margin-bottom: 2rem; width: 100%; flex-shrink: 0; }
   .sidebar.is-reduced .logo { justify-content: center; }
   .logo-text { font-weight: 800; font-size: 1.4rem; color: #ffffff; letter-spacing: -0.5px; }
   
   .toggle-icon { width: 24px; height: 24px; color: var(--sb-text); cursor: pointer; }
   .toggle-icon:hover { color: var(--sb-accent); }
   
-  .nav-menu { flex-direction: column; width: 100%; gap: 0.4rem; align-items: flex-start; padding: 0; }
+  /* --- GESTION DU SCROLL VERTICAL (BUREAU) --- */
+  .nav-menu { 
+    flex-direction: column; width: 100%; gap: 0.4rem; align-items: flex-start; padding: 0; 
+    overflow-y: auto; 
+    overflow-x: hidden;
+    
+    /* Firefox : Scrollbar transparente par défaut */
+    scrollbar-width: thin;
+    scrollbar-color: transparent transparent;
+  }
+
+  /* Firefox : Apparition de la scrollbar au survol de la sidebar */
+  .sidebar:hover .nav-menu {
+    scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+  }
+
+  /* Chrome, Edge, Safari : Annulation du display: none mobile */
+  .nav-menu::-webkit-scrollbar {
+    display: block; 
+    width: 6px;
+  }
+  .nav-menu::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  
+  /* Thumb (barre de défilement) transparente par défaut */
+  .nav-menu::-webkit-scrollbar-thumb {
+    background-color: transparent;
+    border-radius: 10px;
+  }
+  
+  /* Apparition du Thumb au survol de la sidebar */
+  .sidebar:hover .nav-menu::-webkit-scrollbar-thumb {
+    background-color: rgba(255, 255, 255, 0.2);
+  }
+  /* ------------------------------------------- */
   
   .menu-category {
     display: block; width: 100%; padding: 1.5rem 1rem 0.5rem 0.8rem;
-    font-size: 0.75rem; font-weight: 500; color: #cbd5e1;
+    font-size: 0.75rem; font-weight: 500; color: #cbd5e1; flex-shrink: 0;
   }
 
   .nav-item { 
@@ -145,9 +184,9 @@ export default {
   .sidebar.is-reduced .nav-item { justify-content: center; padding: 1rem 0; }
   .nav-label { white-space: nowrap; }
   
-  .logout { margin-top: auto; width: 100%; padding-top: 1rem; }
+  .logout { margin-top: auto; width: 100%; padding-top: 1rem; flex-shrink: 0; }
   .logout .btn-logout { color: #ffffff !important; }
-  .btn-logout :hover{ color: red}
+  .btn-logout:hover { color: red !important; }
   .logout .btn-logout .icon { stroke: rgb(241, 22, 22) !important; }
 }
 </style>
