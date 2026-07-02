@@ -24,10 +24,8 @@
           <adminFinance v-if="activePageId === 'finance'"/>
           <adminExperts v-if="activePageId === 'experts' "/>
           <admintestimonial v-if="activePageId === 'temoin'"/>
+          <adminSettings v-if="activePageId === 'settings'"/>
           
-          <div v-else class="placeholder-page">
-            <h2>Module "{{ currentPageTitle }}" en cours de développement...</h2>
-          </div>
         </div>
     </main>
 
@@ -46,6 +44,7 @@ import adminFinance from '../../components/sections/adminSection/adminFinance.vu
 import adminExperts from '../../components/sections/adminSection/adminExperts.vue';
 import admintestimonial from '../../components/sections/adminSection/admintestimonial.vue';
 import adminpacks from '../../components/sections/adminSection/adminpacks.vue';
+import adminSettings from '../../components/sections/adminSection/adminSettings.vue';
 import { 
   HomeIcon, 
   BookOpenIcon, 
@@ -61,7 +60,7 @@ import {
 
 export default {
   name: 'AdminLayout',
-  components: { AdminSidebar, AdminHeader, adminHome, adminContrats, adminHistory, adminInbox, adminFinance, adminExperts, admintestimonial, adminpacks },
+  components: { AdminSidebar, AdminHeader, adminHome, adminContrats, adminHistory, adminInbox, adminFinance, adminExperts, admintestimonial, adminpacks, adminSettings },
   setup() {
     // Ajout de la propriété 'category' pour reproduire le style de l'image
     const adminMenu = ref<MenuItem[]>([

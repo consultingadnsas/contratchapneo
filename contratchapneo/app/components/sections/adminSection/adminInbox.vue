@@ -216,13 +216,13 @@ export default {
 .icon-gray { width: 18px; height: 18px; color: var(--text-gray); }
 
 /* --- ONGLETS --- */
-.tabs-group { display: flex; background: var(--bg-panel-light); border-radius: 50px; padding: 0.3rem; width: fit-content; }
+.tabs-group { display: flex; background: var(--primary-color); border-radius: 50px; padding: 0.3rem; width: fit-content; }
 .tab-btn { 
-  background: transparent; border: none; color: var(--text-gray); 
+  background: transparent; border: none; color: #ffffff; 
   font-size: 0.85rem; font-weight: 600; padding: 0.6rem 1.2rem; 
   border-radius: 50px; cursor: pointer; transition: all 0.2s ease; 
 }
-.tab-btn.active { background: var(--bg-panel); color: var(--accent-blue); box-shadow: 0px 2px 10px rgba(0,0,0,0.05); }
+.tab-btn.active { background: var(--secondary-light-color); color: #ffffff; box-shadow: 0px 2px 10px rgba(0,0,0,0.05); }
 
 /* --- PANNEAU & TABLEAU --- */
 .clean-list-container {

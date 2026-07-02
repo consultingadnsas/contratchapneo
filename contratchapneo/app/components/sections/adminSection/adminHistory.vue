@@ -14,10 +14,10 @@
 
       <div class="tabs-group">
         <button class="tab-btn" :class="{ active: activeTab === 'models' }" @click="activeTab = 'models'">
-          Modèles à l'unité
+          Contrats vendu
         </button>
         <button class="tab-btn" :class="{ active: activeTab === 'packs' }" @click="activeTab = 'packs'">
-          Packs Premium
+          Packs de contrats
         </button>
         <button class="tab-btn" :class="{ active: activeTab === 'custom' }" @click="activeTab = 'custom'">
           Sur-Mesure
@@ -43,9 +43,6 @@
             <!-- Colonne Produit (Avec la petite icône pastel) -->
             <td>
               <div class="action-cell">
-                <div class="icon-box-light" :class="getIconColor(activeTab)">
-                  <component :is="getIcon(activeTab)" />
-                </div>
                 <span class="dark-text font-bold">{{ item.product }}</span>
               </div>
             </td>
@@ -191,14 +188,14 @@ export default {
 .icon-gray { width: 18px; height: 18px; color: var(--text-gray); }
 
 /* --- ONGLETS (Pillules claires) --- */
-.tabs-group { display: flex; background: var(--bg-panel-light); border-radius: 50px; padding: 0.3rem; width: fit-content; }
+.tabs-group { display: flex; background: var(--primary-color); border-radius: 50px; padding: 0.3rem; width: fit-content; }
 .tab-btn { 
-  background: transparent; border: none; color: var(--text-gray); 
+  background: transparent; border: none; color: #ffffff; 
   font-size: 0.85rem; font-weight: 600; padding: 0.6rem 1.2rem; 
   border-radius: 50px; cursor: pointer; transition: all 0.2s ease; 
 }
 .tab-btn.active { 
-  background: var(--bg-panel); color: var(--accent-blue); 
+  background: var(--secondary-light-color); color: #ffffff; 
   box-shadow: 0px 2px 10px rgba(0,0,0,0.05); 
 }
 

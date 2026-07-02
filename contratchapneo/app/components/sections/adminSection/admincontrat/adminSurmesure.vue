@@ -11,7 +11,7 @@
       <!-- Grille à 4 colonnes pour les dossiers -->
       <div class="grid-4-cols">
         <div class="folder-wrapper" v-for="(cat, index) in filteredCategories" :key="index" @click="openCategory(cat)">
-          <folderCards :title="cat" subtitle="Dossier Boutique" color="blue" :hasItems="true" />
+          <folderCards :title="cat" subtitle="Dossier Boutique" color="purple" :hasItems="true" />
           
           <!-- Bouton de suppression avec alerte -->
           <button class="delete-folder-btn" @click.stop="handleDeleteFolder(index, cat)" title="Supprimer ce dossier et son contenu">

@@ -193,9 +193,9 @@ export default {
 .services-showcase {
     display: flex;
     gap: 1rem;
-    height: 440px; /* Hauteur fixe pour l'effet accordéon */
+    height: 500px; /* Hauteur fixe pour l'effet accordéon */
     width: 100%;
-    margin-top: 2rem;
+    margin-top: 0.5rem;
 }
 
 /* Base de la carte (Blanche avec ombre douces) */

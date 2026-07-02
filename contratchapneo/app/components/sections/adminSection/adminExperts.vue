@@ -253,13 +253,13 @@ export default {
 .search-box:focus-within { border-color: var(--accent-blue); box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); }
 .search-box input { border: none; outline: none; background: transparent; width: 100%; font-size: 0.9rem; color: var(--text-dark); }
 
-.tabs-group { display: flex; background: var(--bg-panel-light); border-radius: 50px; padding: 0.3rem; }
-.tab-btn { background: transparent; border: none; color: var(--text-gray); font-size: 0.85rem; font-weight: 600; padding: 0.5rem 1.2rem; border-radius: 50px; cursor: pointer; transition: all 0.2s ease; }
-.tab-btn.active { background: var(--bg-panel); color: var(--text-dark); box-shadow: 0px 2px 10px rgba(0,0,0,0.05); }
+.tabs-group { display: flex; background: var(--primary-color); border-radius: 50px; padding: 0.3rem; }
+.tab-btn { background: transparent; border: none; color: #ffffff; font-size: 0.85rem; font-weight: 600; padding: 0.5rem 1.2rem; border-radius: 50px; cursor: pointer; transition: all 0.2s ease; }
+.tab-btn.active { background: var(--secondary-light-color); color: #ffffff; box-shadow: 0px 2px 10px rgba(0,0,0,0.05); }
 
 /* Bouton d'ajout d'expert (Style inspiré de mainButton pour inclure l'icône) */
 .btn-primary-custom { 
-  background: #111827; color: #ffffff; font-weight: 600; 
+  background: var(--primary-color-dark); color: #ffffff; font-weight: 600; 
   border-radius: 999px; padding: 12px 24px; font-size: 1rem; 
   border: none; transition: background 0.2s ease; 
   display: flex; align-items: center; gap: 0.5rem; cursor: pointer;

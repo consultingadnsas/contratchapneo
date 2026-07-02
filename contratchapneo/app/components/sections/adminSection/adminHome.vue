@@ -105,9 +105,6 @@
             <tr v-for="item in recentActivities" :key="item.id">
               <td>
                 <div class="action-cell">
-                  <div class="icon-box-light" :class="item.colorClass">
-                    <component :is="item.icon" />
-                  </div>
                   <span class="dark-text font-bold">{{ item.action }}</span>
                 </div>
               </td>

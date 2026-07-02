@@ -76,8 +76,8 @@ export default {
   --sb-bg: #ffffff;           
   --sb-text: #ffffff;         /* Gris doux */
   --sb-text-active: #ffffff;  /* Blanc sur fond bleu */
-  --sb-accent: #2563eb;       /* Bleu roi de la maquette */
-  --sb-hover: #f1f5f9;
+  --sb-accent: var(--secondary-light-color);       /* Bleu roi de la maquette */
+  --sb-hover: var(--secondary-light-color);
 }
 
 .sidebar {
