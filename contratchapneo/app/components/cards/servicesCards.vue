@@ -218,9 +218,9 @@ export default {
 /* État actif (carte élargie) */
 .expanding-card.is-active {
     flex: 3; /* Prend 3 fois plus de place que les autres sur desktop */
-    box-shadow: 0 20px 40px rgba(52, 211, 153, 0.1); /* Ombre douce avec accent vert */
-    border-color: rgba(52, 211, 153, 0.2);
-    cursor: default;
+    box-shadow: 0 20px 40px rgb(52, 211, 153); /* Ombre douce avec accent vert */
+    border-color: rgba(17, 227, 150, 0.174);
+    cursor: pointer;
 }
 
 /* ── CONTENU INACTIF (Carte étroite) ── */
