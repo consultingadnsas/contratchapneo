@@ -7,7 +7,7 @@ from django.conf import settings
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.permissions import AllowAny, IsAuthenticated, IsAdminUser
 from rest_framework.exceptions import PermissionDenied
 from django.shortcuts import get_object_or_404
 from django.db import transaction
@@ -607,3 +607,11 @@ class OrderCancelView(APIView):
             order.guest is not None and
             order.guest.email == email
         )
+
+# ===================================================
+# 1.  Pour la gestion ecommerce, côté administrateurs
+# ===================================================
+
+class AdminOrderListView(APIView):
+
+    permission_classes = [IsAdminUser]
