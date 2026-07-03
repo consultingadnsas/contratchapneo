@@ -44,14 +44,7 @@
             >
               Suivant
             </button>
-            <button
-              v-else
-              type="submit"
-              class="nav-btn submit-btn"
-              :disabled="store.isLoading"
-            >
-              Valider
-            </button>
+            <generatorButton label="Générer" @click="submitForm" v-else/>
           </div>
         </div>
 
@@ -66,9 +59,11 @@ import { ref, computed, onMounted, watch } from 'vue'
 import { useContratStore } from '../../stores/contratStore'
 import { useRoute } from 'vue-router'
 import BaseInputContract from '../input/BaseInputContract.vue'
+import generatorButton from '.././buttons/generatorButton.vue'
+import { usePaiementStore } from '../../stores/paiementStore'
 
 const emit = defineEmits(['submit-data', 'update-data', 'scroll-to-field'])
-const store = useContratStore()
+const store = usePaiementStore()
 const formData = ref<Record<string, string>>({})
 const route = useRoute()
 const currentTagIndex = ref(0) // Index du champ actuel
@@ -87,8 +82,7 @@ const uniqueTags = computed(() => {
 const currentTag = computed(() => uniqueTags.value[currentTagIndex.value])
 
 onMounted(async () => {
-  if (!store.currentContratId) return;
-  await store.fetchContractTags(store.currentContratId)
+  await store.editContract()
   if (uniqueTags.value.length > 0) {
     uniqueTags.value.forEach(tagName => { formData.value[tagName] = '' })
   }
@@ -181,6 +175,7 @@ const submitForm = () => {
 }
 
 .navigation-buttons {
+  width: 100%;
   display: flex;
   gap: 1rem;
   margin-top: 1rem;

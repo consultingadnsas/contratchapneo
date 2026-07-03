@@ -28,6 +28,7 @@ class Contrat(models.Model):
     title = models.CharField(max_length=255)
     description = models.TextField()
     prix = models.DecimalField(max_digits=10, decimal_places=2)
+    promo_price = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
     
     # Media About the contrat
     fichier_modele = models.FileField(upload_to='modeles/')

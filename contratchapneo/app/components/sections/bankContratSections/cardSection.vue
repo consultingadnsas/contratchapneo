@@ -37,7 +37,7 @@
                     :description="contrat.description"
                     :price="contrat.prix"
                     :image="contrat.picture || undefined"
-                    @view="openViewModal(contrat.id)"
+                    @view="openViewModal(contrat.id)" 
                     @buy="()=>{addTocart(contrat.id)}"
                 />
             </div>
@@ -59,7 +59,7 @@
             />
             
             <viewModale
-                :file="contratStore.contrat?.pdf_preview"
+                :previewText="textToShow"
                 v-if="isViewOpen" 
                 @close="isViewOpen = false"
             />
@@ -141,9 +141,11 @@ export default {
 
         // About modalView
         const isViewOpen = ref<boolean>(false) // Votre deuxième booléen
-        
+        const textToShow = ref<string | null>(null)
         const openViewModal = async(contratId:string) => {
-            await contratStore.getSpecificContract(contratId)
+            await contratStore.getSpecificContract(contratId);
+            console.log('Contrat reçu complet :', contratStore.contrat);
+            textToShow.value = contratStore.contrat?.document_preview
             isViewOpen.value = true; // On ouvre la deuxième modale
             console.log('The item selected', contratId)
         }
@@ -183,6 +185,7 @@ export default {
             debounceTimeout,
             contratStore,
             cartStore,
+            textToShow,
 
             // modale
             isOpen,

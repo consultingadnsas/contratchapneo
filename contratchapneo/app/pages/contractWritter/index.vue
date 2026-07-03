@@ -1,55 +1,81 @@
 <template>
-  <div class="main-wrapper">
-    
-    <aside class="form-section">
-        <h2 class="form-title flex gap-2">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
-            </svg>
-            Remplir le contrat
-        </h2>
-        <p class="form-subtitle">Vos modifications s'affichent en temps réel sur le document.</p>
+    <div class="main-wrapper flex h-screen w-full overflow-hidden bg-gray-200">
+        
+        <aside class="form-section w-1/3 h-full p-6 overflow-y-auto bg-white shadow-2xl z-10 relative">
+            <contract-generator-form 
+                @update-data="syncData"
+                @submit-data="handleModale" 
+            />
+        </aside>
 
-        <contract-generator-form 
-            @update-data="syncData"
-            @submit-data="submitToBackend"
+        <div class="preview-section w-2/3 h-full p-8 overflow-y-auto flex justify-center items-start">
+            <contratPreviewPage ref="previewRef" />
+        </div>
+
+        <confirmModale 
+            :isOpen="isOpen"
+            @close="isOpen = false" 
+            @confirm="submitToBackend" 
         />
-    </aside>
-
-    <contratPreviewPage ref="previewRef" />
-
-  </div>
+    </div>
 </template>
 
 <script setup lang="ts">
 import { ref } from 'vue';
-import { useRoute } from 'vue-router';
+import { useRouter } from 'vue-router';
 import contractGeneratorForm from '../../components/forms/contractGeneratorForm.vue';
 import contratPreviewPage from '../../components/tools/contratPreviewPage.vue';
+import confirmModale from '../../components/modale/confirmModale.vue';
 
-const route = useRoute();
+import { useContratStore } from '../../stores/contratStore';
+import { usePaiementStore } from '../../stores/paiementStore';
 
-// 1. Référence vers le composant enfant (le document A4)
+const router = useRouter();
+
+const contratStore = useContratStore();
+const paiementStore = usePaiementStore();
+
 const previewRef = ref<InstanceType<typeof contratPreviewPage> | null>(null);
 
-// 2. Fonction déclenchée à chaque frappe dans le formulaire (Temps Réel)
-const syncData = (newData: Record<string, any>) => {
-  // On vérifie que le composant A4 est bien chargé
-  if (previewRef.value) {
-    // On appelle la fonction `syncData` qui est à l'intérieur de contratPreviewPage.vue
-    previewRef.value.syncData(newData);
-  }
+const isOpen = ref<boolean>(false);
+const formDataToSubmit = ref<Record<string, any>>({}); 
+
+// 2. Le formulaire a émis les données, on les stocke et on ouvre la modale
+const handleModale = (data: Record<string, any>) => {
+    formDataToSubmit.value = data; 
+    isOpen.value = true;           
 };
 
-// 3. Fonction déclenchée au clic sur "Valider les informations"
-const submitToBackend = (finalData: Record<string, any>) => {
-  console.log("Les données finales prêtes pour l'API :", finalData);
-  
-  // Tu peux soit appeler ton API ici (ce qui est recommandé),
-  // soit appeler la fonction submitToBackend de ton A4 comme ceci :
-  if (previewRef.value && previewRef.value.submitToBackend) {
-     previewRef.value.submitToBackend(finalData);
-  }
+// Fonction de mise à jour en temps réel sur le document A4
+const syncData = (newData: Record<string, any>) => {
+    if (previewRef.value) {
+        previewRef.value.syncData(newData);
+    }
+};
+
+// 3. L'utilisateur a cliqué sur "Valider" dans la modale
+const submitToBackend = async () => {
+    
+    console.log("Données transmises au Store :", formDataToSubmit.value);
+
+    try {
+        const result = await paiementStore.generateContract(
+            formDataToSubmit.value,
+            contratStore.currentContratId || undefined
+        );
+
+        if(result){
+            router.push('/contractWritter/contractGenerator');
+        }
+
+        if (!result?.ok) {
+            throw new Error(result?.error || 'L\'enregistrement des données a échoué.');
+        }
+
+        isOpen.value = false;
+    } catch (err: any) {
+        console.error('Une erreur est survenue lors de l\'enregistrement des données', err);
+    }
 };
 </script>
 

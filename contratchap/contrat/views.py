@@ -1,5 +1,7 @@
-import io
-import base64
+from docxtpl import DocxTemplate
+from django.http import FileResponse
+import tempfile
+import os
 
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -17,8 +19,8 @@ from .serializers import (
     CategoryWithContractsSerializer
 )
 
-from pypdf import PdfReader, PdfWriter
-from .utils import extract_tags_grouped_by_paragraph
+from docx import Document
+from .utils import extract_tags_grouped_by_paragraph, convert_docx_to_pdf
 
 class ContratPagination(PageNumberPagination):
     page_size = 10  # 10 éléments par page
@@ -152,33 +154,32 @@ class ContractsView(APIView):
         serializer = ContratSerializer(contrat, context={'request': request})
         data = serializer.data  # On extrait le dictionnaire des données
 
-        # 4. Extraction sécurisée de la première page du PDF
+        # 4. Extraction de l'aperçu du DOCX (Simulation de la première page)
         try:
             if contrat.fichier_modele and hasattr(contrat.fichier_modele, 'path'):
-                reader = PdfReader(contrat.fichier_modele.path)
+                # Ouverture du document Word
+                doc = Document(contrat.fichier_modele.path)
                 
-                if len(reader.pages) > 0:
-                    writer = PdfWriter()
-                    writer.add_page(reader.pages[0])  # Uniquement la page 1
+                # On va stocker les premiers paragraphes pour faire l'aperçu
+                preview_paragraphs = []
+                
+                for para in doc.paragraphs:
+                    text = para.text.strip()
+                    if text: # On ignore les lignes vides
+                        preview_paragraphs.append(text)
                     
-                    # Écriture dans un flux mémoire
-                    buffer = io.BytesIO()
-                    writer.write(buffer)
-                    buffer.seek(0)
-                    
-                    # Transformation en chaîne Base64
-                    encoded_pdf = base64.b64encode(buffer.getvalue()).decode('utf-8')
-                    
-                    # On ajoute le PDF au format Data URI dans le JSON
-                    data['pdf_preview'] = f"data:application/pdf;base64,{encoded_pdf}"
-                else:
-                    data['pdf_preview'] = None
+                    # On s'arrête à 15 paragraphes (tu peux ajuster ce chiffre pour simuler une "page" A4)
+                    if len(preview_paragraphs) >= 10:
+                        break
+                
+                # On joint les paragraphes avec un double saut de ligne
+                data['document_preview'] = "\n\n".join(preview_paragraphs)
             else:
-                data['pdf_preview'] = None
+                data['document_preview'] = None
         except Exception as e:
-            # En cas de pépin avec le fichier, on ne bloque pas l'API, on met juste la preview à None
-            data['pdf_preview'] = None
-            data['pdf_preview_error'] = str(e)
+            # En cas de pépin avec le fichier, on ne bloque pas l'API
+            data['document_preview'] = None
+            data['document_preview_error'] = str(e)
 
         # 5. Envoi de la réponse combinée
         return Response(data, status=status.HTTP_200_OK)
@@ -233,3 +234,40 @@ class ContractTagsView(APIView):
         tags = extract_tags_grouped_by_paragraph(file_path=file_path)
 
         return Response({"tags": tags})
+    
+    def post(self, request, contrat_id):
+        try:
+            # 1. Récupération du contrat
+            contrat = get_object_or_404(Contrat, id=contrat_id)
+            
+            # 2. Récupération des données du formulaire (envoyées par le frontend)
+            user_inputs = request.data.get('user_inputs', {})
+
+            # 3. Remplissage du template Word
+            doc = DocxTemplate(contrat.fichier_modele.path)
+            doc.render(user_inputs)
+
+            # 4. Création d'un dossier temporaire unique
+            # On utilise un contexte pour s'assurer que le fichier est bien créé
+            with tempfile.NamedTemporaryFile(delete=False, suffix=".docx") as tmp_docx:
+                doc.save(tmp_docx.name)
+                tmp_docx_path = tmp_docx.name
+
+            # 5. Conversion en PDF via ta fonction utils
+            pdf_path = convert_docx_to_pdf(tmp_docx_path)
+
+            # 6. Envoi du fichier en réponse
+            pdf_file = open(pdf_path, 'rb')
+            response = FileResponse(pdf_file, content_type='application/pdf')
+            response['Content-Disposition'] = f'attachment; filename="contrat_{contrat.title}.pdf"'
+
+            # 🧹 Nettoyage optionnel (pour éviter de saturer le serveur)
+            # Tu pourrais ajouter un petit thread ici ou un simple cleanup différé
+            # os.remove(tmp_docx_path)
+            # os.remove(pdf_path)
+
+            return response
+
+        except Exception as e:
+            return Response({"error": str(e)}, status=500)
+

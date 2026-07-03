@@ -18,6 +18,7 @@ export interface Contrat{
     fichier_modele: string,
     picture: string,
     views: number | string,
+    document_preview?: string,
     downloads: number,
     created_at: string,
     updated_at: string
@@ -249,6 +250,34 @@ export const useContratStore = defineStore('contrat', ()=> {
         }
     }
 
+    const fillContractTags = async (contrat_id: string,) => {
+        isLoading.value = true;
+        error.value = "";
+
+        try {
+            const response = await $api(`/contrat/tags/${contrat_id}/`, {
+                method: 'POST',
+                body:{}
+            });
+            
+            console.log("Votre réponse brute :", response);
+
+            // CORRECTION ICI 👇
+            // On vérifie si response existe et si response.tags est un tableau.
+            // Si oui on le prend, sinon on met un tableau vide par défaut.
+            tags.value = response?.tags || [];
+
+            console.log("Tags extraits avec succès :", tags.value);
+
+            return tags.value;
+        } catch (err: any) {
+            error.value = err.message ?? String(err);
+            console.error('Erreur lors de la récupération des tags :', error.value);
+        } finally {
+            isLoading.value = false;
+        }
+    }
+
     return{
         isLoading,
         error,
@@ -273,6 +302,7 @@ export const useContratStore = defineStore('contrat', ()=> {
         getContracts,
         getSpecificContract,
         fetchContracts,
-        fetchContractTags
+        fetchContractTags,
+        fillContractTags
     }
 }, {persist: true})

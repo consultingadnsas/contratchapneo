@@ -9,6 +9,7 @@ from .views import (
     OrderListView,
     OrderDetailView,
     OrderCancelView,
+    OrderDownloadView
 )
 
 urlpatterns = [
@@ -23,5 +24,6 @@ urlpatterns = [
     # Commandes
     path('orders/',                        OrderListView.as_view(),   name='order-list'),
     path('orders/<uuid:order_id>/',        OrderDetailView.as_view(), name='order-detail'),
+    path('orders/<uuid:order_id>/download/', OrderDownloadView.as_view(), name='order-download'),
     path('orders/<uuid:order_id>/cancel/', OrderCancelView.as_view(), name='order-cancel'),
 ]

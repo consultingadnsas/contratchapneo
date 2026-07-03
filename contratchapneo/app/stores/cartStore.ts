@@ -116,13 +116,17 @@ export const useCartStore = defineStore('cart', () => {
       }
     };
 
-    const addToCart = async (contrat: string) => {
+    // Ici c'est pour l'ajout des contrats dans le panier!
+    const addToCart = async (contrat: string, userInputs: Record<string, any> = {}) => {
         isLoading.value = true;
         error.value = null;
         try {
             const response = await $api('/ecommerce/cart/add/', {
                 method: 'POST',
-                body: { contrat_id: contrat }
+                body: { 
+                    contrat_id: contrat,
+                    user_inputs: userInputs // 💡 On ajoute le JSON des réponses ici !
+                }
             });
 
             if (response) {

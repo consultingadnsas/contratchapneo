@@ -1,129 +1,118 @@
 <template>
-  <div v-if="isVerifying" class="verify__screen">
-    <div class="spinner"></div>
-    <h3 class="verify__title">Vérification de votre paiement...</h3>
-    <p class="verify__subtitle">
-        Veuillez patienter pendant que nous confirmons la transaction avec la banque.<br>
-        <strong>Ne fermez pas cette page.</strong>
-    </p>
-  </div>
-
-  <div v-else class="success__screen">
+  <div class="success__screen">
     <div class="success__icon">
-        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <circle cx="12" cy="12" r="11" stroke="currentColor" stroke-width="1.5"/>
-            <path d="M7 12.5L10.5 16L17 9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
+      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="12" cy="12" r="11" stroke="currentColor" stroke-width="1.5"/>
+        <path d="M7 12.5L10.5 16L17 9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
     </div>
     <h3 class="success__title">{{ message }}</h3>
+    
     <p class="success__subtitle">
-        Vous serez redirigé dans <span>{{ countdown }}s</span>.
+      <span v-if="isContract">Vous allez être redirigé vers l'éditeur dans <span>{{ countdown }}s</span>.</span>
+      <span v-else>Votre téléchargement va démarrer dans <span>{{ countdown }}s</span>.</span>
     </p>
+
     <button
-        class="success__download"
-        :disabled="downloading || !canDownload"
-        @click="downloadContract"
+      class="success__download"
+      :disabled="paiementStore.isLoading"
+      @click="handleSuccessAction"
     >
-        {{ downloading ? 'Téléchargement en cours...' : 'Télécharger le contrat' }}
+      <span v-if="paiementStore.isLoading">Téléchargement en cours...</span>
+      <span v-else>{{ isContract ? "Aller à l'éditeur maintenant" : "Télécharger ma carte" }}</span>
     </button>
+
     <mainButton 
-        label="Aller à la page d'accueil" 
-        @click="()=>router.push('/')"
+      label="Retour à l'accueil" 
+      @click="()=>router.push('/')"
     />
   </div>
 </template>
 
 <script lang="ts">
-import { useRouter, useRoute } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router';
 import { ref, onMounted, onUnmounted, computed } from 'vue';
-import { useOrderStore } from '../../stores/orderStore'
-import { usePaiementStore } from '../../stores/paiementStore'
 import mainButton from '../buttons/mainButton.vue';
+import { usePaiementStore } from '../../stores/paiementStore';
+import { useOrderStore } from '../../stores/orderStore'; // 👈 Import du store de commande
 
 export default {
-    components: {
-        mainButton
-    },
-    props: {
-        message: {
-            type: String,
-            default: 'Paiement effectué avec succès !'
-        }
-    },
-    emits: ['succes'],
-    setup(props, { emit }) {
-        const router = useRouter()
-        const route = useRoute()
-        const orderStore = useOrderStore()
-        const paiementStore = usePaiementStore()
-
-        // C'EST ICI LA CLÉ : La page commence TOUJOURS en mode "Vérification" (Spinner)
-        const isVerifying = ref(true) 
-        
-        const countdown = ref(3)
-        let countdownTimer: any = null
-
-        const activeOrderId = computed(() => orderStore.currentOrder?.id || route.query.order_id || route.query.id);
-        const canDownload = computed(() => !!activeOrderId.value)
-        const downloading = computed(() => paiementStore.isLoading)
-
-        const downloadContract = async () => {
-            if (!activeOrderId.value) return;
-            await paiementStore.downloadContracts(activeOrderId.value as string);
-        }
-
-        onMounted(async () => {
-            const status = (route.query.status || '').toString().toLowerCase();
-
-            // 1. Coupe-circuit (Fast-Fail) : On bloque immédiatement les annulations de Xpay
-            if (['failed', 'canceled', 'cancelled', 'error'].includes(status)) {
-                router.replace('/order/orderFails');
-                return;
-            }
-
-            if (!activeOrderId.value) {
-                router.replace('/order/orderFails');
-                return;
-            }
-
-            // 2. Le Gardien tente de télécharger.
-            // Le spinner tourne pendant que le store patiente pour le Webhook Ngrok
-            const isSuccess = await paiementStore.downloadContracts(activeOrderId.value as string);
-
-            if (isSuccess) {
-                // Le PDF a été téléchargé, preuve que c'est payé !
-                router.replace({ path: route.path, query: {} })
-                
-                // On fait disparaître le spinner et on affiche le succès
-                isVerifying.value = false;
-
-                // On lance le compte à rebours vers l'accueil
-                countdownTimer = setInterval(() => {
-                    countdown.value--;
-                    if (countdown.value <= 0) {
-                        clearInterval(countdownTimer);
-                        emit('succes');
-                    }
-                }, 1000);
-            } else {
-                // Si après 15s le webhook n'est pas arrivé (ou paiement vraiment échoué)
-                router.replace('/order/orderFails');
-            }
-        });
-
-        onUnmounted(() => {
-            if (countdownTimer) clearInterval(countdownTimer);
-        });
-
-        return {
-            router,
-            countdown,
-            canDownload,
-            downloading,
-            downloadContract,
-            isVerifying
-        }
+  components: {
+    mainButton
+  },
+  props: {
+    message: {
+      type: String,
+      default: 'Paiement effectué avec succès !'
     }
+  },
+  emits: ['succes'],
+  setup(props, { emit }) {
+    
+    const router = useRouter();
+    const route = useRoute();
+    const countdown = ref(3);
+    let countdownTimer: any = null;
+
+    const paiementStore = usePaiementStore();
+    const orderStore = useOrderStore(); // 👈 Initialisation du store
+
+    // 💡 Déterminer intelligemment ce que l'utilisateur a acheté
+    const isContract = computed(() => {
+      // On récupère le premier article de la commande
+      const item = orderStore.currentOrder?.order_items?.[0] ?? orderStore.currentOrder?.items?.[0];
+      
+      // À ADAPTER SELON TON BACKEND : 
+      // Ici je pars du principe que si l'objet possède une propriété "contrat", c'est un contrat.
+      // Sinon (ex: ça pourrait être "professional_card" ou tu peux vérifier item.type), c'est une carte.
+      return !!item?.contrat; 
+    });
+
+    // 💡 La nouvelle fonction de routage intelligent
+    const handleSuccessAction = async () => {
+      // On arrête le compteur s'il est cliqué manuellement
+      if (countdownTimer) clearInterval(countdownTimer);
+      
+      if (isContract.value) {
+        // ➡️ PARCOURS CONTRAT : On va à l'éditeur
+        emit('succes'); 
+        router.push('/contractWritter');
+      } else {
+        // ⬇️ PARCOURS CARTE DE VISITE : On télécharge
+        const success = await paiementStore.downloadOrder();
+        if (success) {
+           emit('succes');
+           // Optionnel : tu peux rediriger vers l'accueil après le téléchargement
+           // router.push('/');
+        }
+      }
+    };
+
+    onMounted(() => {
+      if (Object.keys(route.query).length > 0) {
+        router.replace({ path: route.path, query: {} });
+      }
+
+      countdownTimer = setInterval(() => {
+        countdown.value--;
+        if (countdown.value <= 0) {
+          handleSuccessAction(); // 👈 On lance l'action calculée quand le temps est écoulé
+        }
+      }, 1000);
+    });
+
+    onUnmounted(() => {
+      if (countdownTimer) clearInterval(countdownTimer);
+    });
+
+    return {
+      router,
+      countdown,
+      paiementStore,
+      isContract,
+      handleSuccessAction
+    };
+  }
 }
 </script>
 
@@ -216,19 +205,19 @@ export default {
 }
 
 .success__download {
-    background: #2f6dff;
-    color: #fff;
-    border: none;
-    border-radius: 999px;
-    padding: 0.9rem 1.5rem;
-    font-weight: 700;
-    cursor: pointer;
-    transition: transform 0.2s ease, opacity 0.2s ease;
+  background: #2f6dff;
+  color: #fff;
+  border: none;
+  border-radius: 999px;
+  padding: 0.9rem 1.5rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.2s ease, opacity 0.2s ease;
 }
 
 .success__download:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .success__download:hover:not(:disabled) {

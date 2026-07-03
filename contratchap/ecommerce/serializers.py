@@ -73,6 +73,7 @@ class CartItemSerializer(serializers.ModelSerializer):
             'contrat',       # Nullable
             'pro',           # Nullable
             'quantity',
+            'user_inputs',
             'unit_price',
             'subtotal',
             'created_at',
@@ -149,6 +150,7 @@ class OrderItemSerializer(serializers.ModelSerializer):
             'pro',            # FK
             'pro_name',       # snapshot 
             'unit_price',
+            'user_inputs',
             'quantity',
             'subtotal',
         ]
