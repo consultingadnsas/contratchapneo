@@ -7,15 +7,19 @@
       </svg>
     </div>
     <h3 class="success__title">{{ message }}</h3>
+    
     <p class="success__subtitle">
-      Vous allez être redirigé vers l'éditeur dans <span>{{ countdown }}s</span>.
+      <span v-if="isContract">Vous allez être redirigé vers l'éditeur dans <span>{{ countdown }}s</span>.</span>
+      <span v-else>Votre téléchargement va démarrer dans <span>{{ countdown }}s</span>.</span>
     </p>
 
     <button
       class="success__download"
-      @click="goToEditor"
+      :disabled="paiementStore.isLoading"
+      @click="handleSuccessAction"
     >
-      Aller à l'éditeur maintenant
+      <span v-if="paiementStore.isLoading">Téléchargement en cours...</span>
+      <span v-else>{{ isContract ? "Aller à l'éditeur maintenant" : "Télécharger ma carte" }}</span>
     </button>
 
     <mainButton 
@@ -27,8 +31,10 @@
 
 <script lang="ts">
 import { useRouter, useRoute } from 'vue-router';
-import { ref, onMounted, onUnmounted } from 'vue';
+import { ref, onMounted, onUnmounted, computed } from 'vue';
 import mainButton from '../buttons/mainButton.vue';
+import { usePaiementStore } from '../../stores/paiementStore';
+import { useOrderStore } from '../../stores/orderStore'; // 👈 Import du store de commande
 
 export default {
   components: {
@@ -48,24 +54,49 @@ export default {
     const countdown = ref(3);
     let countdownTimer: any = null;
 
-    // Nouvelle fonction de redirection
-    const goToEditor = () => {
+    const paiementStore = usePaiementStore();
+    const orderStore = useOrderStore(); // 👈 Initialisation du store
+
+    // 💡 Déterminer intelligemment ce que l'utilisateur a acheté
+    const isContract = computed(() => {
+      // On récupère le premier article de la commande
+      const item = orderStore.currentOrder?.order_items?.[0] ?? orderStore.currentOrder?.items?.[0];
+      
+      // À ADAPTER SELON TON BACKEND : 
+      // Ici je pars du principe que si l'objet possède une propriété "contrat", c'est un contrat.
+      // Sinon (ex: ça pourrait être "professional_card" ou tu peux vérifier item.type), c'est une carte.
+      return !!item?.contrat; 
+    });
+
+    // 💡 La nouvelle fonction de routage intelligent
+    const handleSuccessAction = async () => {
+      // On arrête le compteur s'il est cliqué manuellement
       if (countdownTimer) clearInterval(countdownTimer);
-      emit('succes'); 
-      router.push('/contractWritter'); // 👈 On pointe directement vers l'éditeur
+      
+      if (isContract.value) {
+        // ➡️ PARCOURS CONTRAT : On va à l'éditeur
+        emit('succes'); 
+        router.push('/contractWritter');
+      } else {
+        // ⬇️ PARCOURS CARTE DE VISITE : On télécharge
+        const success = await paiementStore.downloadOrder();
+        if (success) {
+           emit('succes');
+           // Optionnel : tu peux rediriger vers l'accueil après le téléchargement
+           // router.push('/');
+        }
+      }
     };
 
     onMounted(() => {
-      // Nettoyage de l'URL pour la propreté
       if (Object.keys(route.query).length > 0) {
         router.replace({ path: route.path, query: {} });
       }
 
-      // Lancement du compte à rebours
       countdownTimer = setInterval(() => {
         countdown.value--;
         if (countdown.value <= 0) {
-          goToEditor(); // Redirection automatique quand on atteint 0
+          handleSuccessAction(); // 👈 On lance l'action calculée quand le temps est écoulé
         }
       }, 1000);
     });
@@ -77,7 +108,9 @@ export default {
     return {
       router,
       countdown,
-      goToEditor
+      paiementStore,
+      isContract,
+      handleSuccessAction
     };
   }
 }
@@ -129,19 +162,19 @@ export default {
 }
 
 .success__download {
-    background: #2f6dff;
-    color: #fff;
-    border: none;
-    border-radius: 999px;
-    padding: 0.9rem 1.5rem;
-    font-weight: 700;
-    cursor: pointer;
-    transition: transform 0.2s ease, opacity 0.2s ease;
+  background: #2f6dff;
+  color: #fff;
+  border: none;
+  border-radius: 999px;
+  padding: 0.9rem 1.5rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.2s ease, opacity 0.2s ease;
 }
 
 .success__download:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .success__download:hover:not(:disabled) {

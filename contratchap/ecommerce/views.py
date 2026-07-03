@@ -446,20 +446,20 @@ class OrderDetailView(APIView):
 class OrderDownloadView(APIView):
     """
     GET /orders/<order_id>/download/
-    Génère et télécharge les contrats d'une commande.
-    Si 1 contrat -> retourne le PDF.
-    Si > 1 contrat -> retourne un ZIP contenant les PDFs.
+    Génère et télécharge les contrats ET/OU les cartes de visite d'une commande.
+    Si 1 document -> retourne le PDF.
+    Si > 1 document -> retourne un ZIP contenant les PDFs.
     """
     permission_classes = [AllowAny]
 
     def get(self, request, order_id):
-        # 1. Récupération de la commande
+        # 1. Récupération de la commande (On précharge aussi 'pro' pour éviter les requêtes N+1)
         order = get_object_or_404(
-            Order.objects.prefetch_related('order_items__contrat'), 
+            Order.objects.prefetch_related('order_items__contrat', 'order_items__pro'), 
             id=order_id
         )
 
-        # 2. Vérification des accès et du nombre de téléchargement (Utilisateur connecté OU Invité via email)
+        # 2. Vérification des accès et du nombre de téléchargements
         if not self._can_access(request, order):
             return Response(
                 {'message': 'Accès non autorisé à ce téléchargement.'},
@@ -472,46 +472,57 @@ class OrderDownloadView(APIView):
         order.download_count = F('download_count') + 1
         order.save(update_fields=['download_count'])
 
-        # 3. Récupérer uniquement les items qui sont des contrats
-        contract_items = [item for item in order.order_items.all() if item.contrat]
+        # 🚨 ON SUPPRIME LA VÉRIFICATION 404 ICI (on la fera après avoir inspecté tous les items)
 
-        if not contract_items:
-            return Response(
-                {'message': 'Aucun contrat à télécharger pour cette commande.'},
-                status=status.HTTP_404_NOT_FOUND
-            )
-
-        # 4. Magie Contratchap : Génération dans un dossier temporaire qui s'efface tout seul !
+        # 3. Magie Contratchap : Génération ou récupération des fichiers
         with tempfile.TemporaryDirectory() as temp_dir:
             generated_files = [] # Liste de tuples (nom_du_fichier.pdf, chemin_absolu)
 
-            for item in contract_items:
-                contrat = item.contrat
-                user_inputs = item.user_inputs or {} # Tes données de formulaire !
+            # On boucle sur TOUS les items du panier
+            for item in order.order_items.all():
                 
-                if not contrat.fichier_modele or not contrat.fichier_modele.path:
-                    continue 
+                # --- CAS A : C'est un CONTRAT dynamique ---
+                if item.contrat:
+                    contrat = item.contrat
+                    user_inputs = item.user_inputs or {} 
                     
-                # A. Remplir le DOCX
-                filled_docx_path = os.path.join(temp_dir, f"temp_{item.id}.docx")
-                fill_docx_template(contrat.fichier_modele.path, user_inputs, filled_docx_path)
-                
-                # B. Convertir en PDF
-                pdf_filename = f"{contrat.title.replace(' ', '_')}_{order.id}.pdf"
-                pdf_path = os.path.join(temp_dir, pdf_filename)
-                
-                convert_docx_to_pdf(filled_docx_path, temp_dir)
-                
-                # LibreOffice nomme le fichier généré avec le même nom, mais en .pdf
-                generated_temp_pdf = os.path.join(temp_dir, f"temp_{item.id}.pdf")
-                
-                # On le renomme avec le vrai titre du contrat
-                if os.path.exists(generated_temp_pdf):
-                    os.rename(generated_temp_pdf, pdf_path)
-                    generated_files.append((pdf_filename, pdf_path))
+                    if not contrat.fichier_modele or not contrat.fichier_modele.path:
+                        continue 
+                        
+                    filled_docx_path = os.path.join(temp_dir, f"temp_{item.id}.docx")
+                    fill_docx_template(contrat.fichier_modele.path, user_inputs, filled_docx_path)
+                    
+                    pdf_filename = f"{contrat.title.replace(' ', '_')}_{order.id}.pdf"
+                    pdf_path = os.path.join(temp_dir, pdf_filename)
+                    
+                    convert_docx_to_pdf(filled_docx_path, temp_dir)
+                    
+                    generated_temp_pdf = os.path.join(temp_dir, f"temp_{item.id}.pdf")
+                    
+                    if os.path.exists(generated_temp_pdf):
+                        os.rename(generated_temp_pdf, pdf_path)
+                        generated_files.append((pdf_filename, pdf_path))
 
+                # --- CAS B : C'est un PROFESSIONNEL (Carte de visite / Fiche) ---
+                elif item.pro:
+                    # ⚠️ Remplace 'fichier_pdf' par le vrai nom de ton champ dans LegalProfessional !
+                    if item.pro.visiting_card and hasattr(item.pro.visiting_card, 'path'):
+                        pdf_path = item.pro.visiting_card.path
+                        
+                        if os.path.exists(pdf_path):
+                            prenom = getattr(item.pro, 'first_name', 'Pro')
+                            nom = getattr(item.pro, 'last_name', '')
+                            pdf_filename = f"Carte_Visite_{prenom}_{nom}.pdf".replace(" ", "_")
+                            
+                            # On ajoute directement le fichier existant à la liste !
+                            generated_files.append((pdf_filename, pdf_path))
+
+            # 4. Si après avoir cherché on n'a vraiment trouvé aucun fichier (ni contrat ni carte)
             if not generated_files:
-                return Response({'message': 'Erreur lors de la génération des fichiers.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+                return Response(
+                    {'message': 'Aucun document trouvé pour cette commande (PDF manquant ou erreur).'}, 
+                    status=status.HTTP_404_NOT_FOUND
+                )
 
             # 5. Renvoyer le fichier (PDF unique ou ZIP en mémoire RAM)
             if len(generated_files) == 1:
@@ -530,16 +541,16 @@ class OrderDownloadView(APIView):
                 zip_buffer = io.BytesIO()
                 with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_file:
                     for filename, path in generated_files:
+                        # arcname évite de recréer toute l'arborescence des dossiers du serveur dans le ZIP
                         zip_file.write(path, arcname=filename)
                 
                 zip_buffer.seek(0)
-                zip_filename = f"Contrats_Contratchap_Cmd_{order.id}.zip"
+                zip_filename = f"Documents_Contratchap_{order.id}.zip"
                 
                 response = FileResponse(zip_buffer, as_attachment=True, filename=zip_filename)
                 response['Content-Type'] = 'application/zip'
 
-            # 🚨 TRÈS IMPORTANT POUR VUE.JS / NUXT : 
-            # Autorise le front à lire le nom du fichier depuis le header
+            # Autorise le front à lire le nom du fichier
             response['Access-Control-Expose-Headers'] = 'Content-Disposition'
             
             return response
