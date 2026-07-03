@@ -1,31 +1,52 @@
 <template>
-  <div class="success__screen">
-    <div class="success__icon">
-      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <circle cx="12" cy="12" r="11" stroke="currentColor" stroke-width="1.5"/>
-        <path d="M7 12.5L10.5 16L17 9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>
-    </div>
-    <h3 class="success__title">{{ message }}</h3>
+  <div class="payment-callback-wrapper">
     
-    <p class="success__subtitle">
-      <span v-if="isContract">Vous allez être redirigé vers l'éditeur dans <span>{{ countdown }}s</span>.</span>
-      <span v-else>Votre téléchargement va démarrer dans <span>{{ countdown }}s</span>.</span>
-    </p>
+    <!-- 1. ÉCRAN DE VÉRIFICATION (Le Gardien) -->
+    <div v-if="status === 'verifying'" class="verify__screen">
+      <div class="spinner"></div>
+      <h3 class="verify__title">Vérification de votre paiement...</h3>
+      <p class="verify__subtitle">
+        Veuillez patienter. Nous attendons la confirmation sécurisée.
+      </p>
+    </div>
 
-    <button
-      class="success__download"
-      :disabled="paiementStore.isLoading"
-      @click="handleSuccessAction"
-    >
-      <span v-if="paiementStore.isLoading">Téléchargement en cours...</span>
-      <span v-else>{{ isContract ? "Aller à l'éditeur maintenant" : "Télécharger ma carte" }}</span>
-    </button>
+    <!-- 2. ÉCRAN DE SUCCÈS -->
+    <div v-else-if="status === 'success'" class="success__screen">
+      <div class="success__icon">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="12" cy="12" r="11" stroke="currentColor" stroke-width="1.5"/>
+          <path d="M7 12.5L10.5 16L17 9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <h3 class="success__title">{{ message }}</h3>
+      
+      <p class="success__subtitle">
+        <span v-if="isContract">Vous allez être redirigé vers l'éditeur dans <span>{{ countdown }}s</span>.</span>
+        <span v-else>Votre téléchargement va démarrer dans <span>{{ countdown }}s</span>.</span>
+      </p>
 
-    <mainButton 
-      label="Retour à l'accueil" 
-      @click="()=>router.push('/')"
+      <button
+        class="success__download"
+        :disabled="paiementStore.isLoading"
+        @click="handleSuccessAction"
+      >
+        <span v-if="paiementStore.isLoading">Téléchargement en cours...</span>
+        <span v-else>{{ isContract ? "Aller à l'éditeur maintenant" : "Télécharger ma carte" }}</span>
+      </button>
+
+      <mainButton 
+        label="Retour à l'accueil" 
+        @click="()=>router.push('/')"
+      />
+    </div>
+
+    <!-- 3. ÉCRAN D'ÉCHEC (Importé depuis failForm.vue) -->
+    <FailForm 
+      v-else-if="status === 'fail'" 
+      message="Transaction non aboutie"
+      @timeout="() => router.push('/')"
     />
+
   </div>
 </template>
 
@@ -33,12 +54,14 @@
 import { useRouter, useRoute } from 'vue-router';
 import { ref, onMounted, onUnmounted, computed } from 'vue';
 import mainButton from '../buttons/mainButton.vue';
+import FailForm from './failForm.vue'; // 👈 Import du composant d'échec
 import { usePaiementStore } from '../../stores/paiementStore';
-import { useOrderStore } from '../../stores/orderStore'; // 👈 Import du store de commande
+import { useOrderStore } from '../../stores/orderStore';
 
 export default {
   components: {
-    mainButton
+    mainButton,
+    FailForm
   },
   props: {
     message: {
@@ -51,54 +74,67 @@ export default {
     
     const router = useRouter();
     const route = useRoute();
+    const paiementStore = usePaiementStore();
+    const orderStore = useOrderStore();
+
+    // 💡 Gestion de l'état du gardien
+    const status = ref<'verifying' | 'success' | 'fail'>('verifying');
+    
     const countdown = ref(3);
     let countdownTimer: any = null;
 
-    const paiementStore = usePaiementStore();
-    const orderStore = useOrderStore(); // 👈 Initialisation du store
-
-    // 💡 Déterminer intelligemment ce que l'utilisateur a acheté
     const isContract = computed(() => {
-      // On récupère le premier article de la commande
       const item = orderStore.currentOrder?.order_items?.[0] ?? orderStore.currentOrder?.items?.[0];
-      
-      // À ADAPTER SELON TON BACKEND : 
-      // Ici je pars du principe que si l'objet possède une propriété "contrat", c'est un contrat.
-      // Sinon (ex: ça pourrait être "professional_card" ou tu peux vérifier item.type), c'est une carte.
       return !!item?.contrat; 
     });
 
-    // 💡 La nouvelle fonction de routage intelligent
     const handleSuccessAction = async () => {
-      // On arrête le compteur s'il est cliqué manuellement
       if (countdownTimer) clearInterval(countdownTimer);
       
       if (isContract.value) {
-        // ➡️ PARCOURS CONTRAT : On va à l'éditeur
         emit('succes'); 
         router.push('/contractWritter');
       } else {
-        // ⬇️ PARCOURS CARTE DE VISITE : On télécharge
         const success = await paiementStore.downloadOrder();
         if (success) {
            emit('succes');
-           // Optionnel : tu peux rediriger vers l'accueil après le téléchargement
-           // router.push('/');
         }
       }
     };
 
-    onMounted(() => {
+    const startCountdown = () => {
+      countdownTimer = setInterval(() => {
+        countdown.value--;
+        if (countdown.value <= 0) {
+          handleSuccessAction();
+        }
+      }, 1000);
+    };
+
+    onMounted(async () => {
+      // Nettoyage de l'URL
       if (Object.keys(route.query).length > 0) {
         router.replace({ path: route.path, query: {} });
       }
 
-      countdownTimer = setInterval(() => {
-        countdown.value--;
-        if (countdown.value <= 0) {
-          handleSuccessAction(); // 👈 On lance l'action calculée quand le temps est écoulé
-        }
-      }, 1000);
+      // 1. Récupération de l'ID de commande
+      const orderId = (route.query.order_id as string) || (route.query.id as string) || orderStore.currentOrder?.id;
+
+      if (!orderId) {
+        status.value = 'fail';
+        return;
+      }
+
+      // 2. LE GARDIEN LANCE LA REQUÊTE NGROK
+      const isPaidAndDownloaded = await paiementStore.downloadContracts(orderId);
+
+      // 3. RÉPARTITION SELON LE RÉSULTAT
+      if (isPaidAndDownloaded) {
+        status.value = 'success';
+        startCountdown(); // On lance le minuteur uniquement si c'est un succès
+      } else {
+        status.value = 'fail';
+      }
     });
 
     onUnmounted(() => {
@@ -107,6 +143,7 @@ export default {
 
     return {
       router,
+      status,
       countdown,
       paiementStore,
       isContract,
@@ -117,9 +154,15 @@ export default {
 </script>
 
 <style scoped>
-/* ── 1. Écran de vérification (Le fameux Spinner) ── */
+/* ── Conteneur global ── */
+.payment-callback-wrapper {
+  min-height: 100vh;
+  background-color: #f8fafc;
+}
+
+/* ── 1. Écran de vérification (Le Spinner) ── */
 .verify__screen {
-    height: 60vh;
+    height: 100vh;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -156,11 +199,7 @@ export default {
     line-height: 1.6;
 }
 
-.verify__subtitle strong {
-    color: #ef4444;
-}
-
-/* ── 2. Écran de succès (Ton design) ── */
+/* ── 2. Écran de succès (Ton design d'origine) ── */
 .success__screen {
     height: 100vh;
     display: flex;

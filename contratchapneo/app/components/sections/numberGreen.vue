@@ -4,14 +4,14 @@
       
       <!-- PARTIE VISUELLE : L'humain et la chaleur -->
       <div class="image-wrapper">
-        <img src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=800&q=80" alt="Conseillère juridique souriante" class="advisor-img" />
+        <img src="/call.jpg" alt="Conseillère juridique souriante" class="advisor-img" />
       </div>
 
       <!-- PARTIE CONTENU : Le message et les contacts -->
       <div class="content-wrapper">
         <h2 class="title">Besoin d'aide ?<span>Contactez-nous.</span> </h2>
         <p class="subtitle">
-          Le droit peut sembler complexe, mais vous n'êtes pas seul. Notre équipe d'experts OHADA est là pour vous écouter et vous orienter vers la bonne solution.
+          Vous n'êtes pas seul. En cas de doute ou pour toute question, n'hesitez pas à nous contacter.
         </p>
         
         <!-- LES OPTIONS DE CONTACT -->
@@ -83,8 +83,7 @@ export default {
 }
 
 .trust-container {
-  max-width: 1100px;
-  width: 100%;
+  min-width: 100%;
   background: #f8fafc;
   border-radius: 24px;
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.04);
