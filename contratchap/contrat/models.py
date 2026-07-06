@@ -37,6 +37,9 @@ class Contrat(models.Model):
     # Statistics
     views = models.PositiveIntegerField(default=0)
     downloads = models.PositiveIntegerField(default=0)
+
+    # Visibility
+    is_active = models.BooleanField(default=True)
     
     # Timestamps
     created_at = models.DateTimeField(auto_now_add=True)
