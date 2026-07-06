@@ -59,9 +59,10 @@
             />
             
             <viewModale
-                :previewText="textToShow"
                 v-if="isViewOpen" 
+                :contract="contratStore.contrat"
                 @close="isViewOpen = false"
+                @buy="(id) => { addTocart(id); isViewOpen = false; }"
             />
 
             <cartBubble @open-cart="openModal()" />

@@ -40,10 +40,11 @@
                 :isOpen="isOpen" 
                 @close="isOpen = false"
             />
-            <ViewModale 
+            <viewModale
                 v-if="isViewOpen" 
-                :previewText="selectedPreviewText" 
-                @close="isViewOpen = false" 
+                :contract="contratStore.contrat"
+                @close="isViewOpen = false"
+                @buy="(id) => { addTocart(id); isViewOpen = false; }"
             />
         </Teleport>
 

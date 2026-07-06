@@ -8,7 +8,7 @@
             <DesktopMenu :theme="theme" :isScrolled="isScrolled" />
 
             <div class="cta-container desktop-only">
-                <a href="#" class="cta-desktop">Connexion</a>
+                <a href="/auth/login" class="cta-desktop">Connexion</a>
             </div>
 
             <Hamburger

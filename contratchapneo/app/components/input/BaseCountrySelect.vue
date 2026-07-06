@@ -103,22 +103,25 @@ export default {
     }
   },
     emits: ['update:modelValue', 'blur', 'change'],
-    setup(props, { emit }) {
-        const generatedId = useId();
+  setup(props, { emit }) {
+      const generatedId = useId();
 
-        // On garde la logique de computed ici
-        const inputId = computed(() => props.id || `input-${generatedId}`);
+      const inputId = computed(() => props.id || `input-${generatedId}`);
 
-        // On définit la méthode ici pour pouvoir l'utiliser dans le template
-        const handleInput = (event) => {
-            emit('update:modelValue', event.target.value);
-        };
+      // CORRECTION : On renomme handleInput en handleChange pour correspondre au @change du template
+      const handleChange = (event) => {
+          const value = event.target.value;
+          // Met à jour le v-model du parent
+          emit('update:modelValue', value);
+          // Optionnel : émet un event change classique
+          emit('change', value);
+      };
 
-        return {
-            inputId,
-            handleInput
-        };
-    }
+      return {
+          inputId,
+          handleChange
+      };
+  }
 };
 </script>
 

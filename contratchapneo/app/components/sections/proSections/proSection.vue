@@ -17,14 +17,15 @@
                 class="toolbar__select" 
                 placeholder="Choisir le pays" 
                 :options="proStore.countries"
-                @select="handleCountryFilter"
+                v-model="activeCountryCode"
+                @update:modelValue="handleCountryFilter"
             />
             
             <BaseSearchInput 
                 class="toolbar__search" 
                 placeholder="Trouver un professionnel"
                 v-model="searchQuery"
-                @search="handleSearch"
+                @update:modelValue="handleSearch"
             />
         </div>
 
@@ -115,9 +116,22 @@ export default {
         }
 
         // 2. Gestionnaires de filtres
+        // On crée une variable pour stocker le minuteur de recherche
+        let searchTimeout: ReturnType<typeof setTimeout>;
+
+        // La nouvelle fonction de recherche optimisée
         const handleSearch = (query: string) => {
-            searchQuery.value = query;
-            fetchPros();
+            searchQuery.value = query; // On met à jour la valeur
+            
+            // On annule la recherche précédente si l'utilisateur est encore en train de taper
+            if (searchTimeout) {
+                clearTimeout(searchTimeout);
+            }
+            
+            // On lance la vraie requête API uniquement s'il arrête de taper pendant 300ms
+            searchTimeout = setTimeout(() => {
+                fetchPros();
+            }, 300);
         };
 
         const handleDomainFilter = (slug: string) => {
@@ -168,7 +182,7 @@ export default {
         });
 
         return {
-            router, cartStore, proStore, searchQuery, activeDomainSlug,
+            router, cartStore, proStore, searchQuery, activeDomainSlug, activeCountryCode,
             handleSearch, handleDomainFilter, handleCountryFilter,
             isOpen, openModal, isViewOpen, openViewModal, addToCart
         }
