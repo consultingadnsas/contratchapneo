@@ -66,7 +66,7 @@ export default {
     const footerSections = [
       {
         title: 'MENU',
-        links: ['Banque de contrats', 'Contrat sur mesure', 'Packs d\'associé', 'Nos professionnels', 'Outils de calculs']
+        links: ['Banque de contrats', 'Contrat sur mesure', 'Packs de contrats', 'Experts', 'Outils de calculs']
       },
       {
         title: 'SOCIAL',

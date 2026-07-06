@@ -29,6 +29,7 @@
                             :options="ohadaCountries"
                             placeholder="Ind."
                             class="prefix-select"
+                            required
                         />
                         <BaseInput
                             v-model="formData.phoneNumber"
@@ -50,23 +51,21 @@
                     required
                 />
 
-                <!-- ZONE D'UPLOAD MULTIPLE -->
+                <!-- ZONE D'UPLOAD UNIQUE -->
                 <div class="form-group custom-upload-group">
-                    <label class="custom-label">Vos documents (Max : 5) <span class="required-mark">*</span></label>
+                    <label class="custom-label">Votre document <span class="required-mark">*</span></label>
                     
-                    <div class="file-upload-container" :class="{ 'has-file': selectedFiles.length > 0 }">
+                    <div class="file-upload-container" :class="{ 'has-file': selectedFile }">
                         <input 
                             type="file" 
                             id="file-upload" 
                             @change="handleFileUpload" 
                             accept=".pdf, .doc, .docx, application/msword, application/vnd.openxmlformats-officedocument.wordprocessingml.document" 
-                            multiple
                             class="file-input-hidden"
-                            :disabled="selectedFiles.length >= 5"
                         />
-                        <label for="file-upload" class="file-upload-label" :class="{ 'disabled': selectedFiles.length >= 5 }">
+                        <label for="file-upload" class="file-upload-label">
                             <div class="upload-icon">
-                                <svg v-if="selectedFiles.length === 0" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <svg v-if="!selectedFile" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                     <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
                                     <polyline points="17 8 12 3 7 8"></polyline>
                                     <line x1="12" y1="3" x2="12" y2="15"></line>
@@ -79,27 +78,23 @@
                                     <polyline points="10 9 9 9 8 9"></polyline>
                                 </svg>
                             </div>
-                            <span v-if="selectedFiles.length === 0" class="upload-text">Cliquez pour choisir vos fichiers</span>
-                            <span v-else-if="selectedFiles.length < 5" class="upload-text">Ajouter un autre fichier ({{ selectedFiles.length }}/5)</span>
-                            <span v-else class="upload-text">Limite de 5 fichiers atteinte</span>
+                            <span v-if="!selectedFile" class="upload-text">Cliquez pour choisir votre fichier</span>
+                            <span v-else class="upload-text">Cliquez pour remplacer le fichier</span>
                         </label>
                     </div>
 
-                    <!-- Affichage de la liste des fichiers sélectionnés -->
-                    <ul v-if="selectedFiles.length > 0" class="selected-files-list">
-                        <li v-for="(file, index) in selectedFiles" :key="index" class="file-item">
-                            <span class="file-name" :title="file.name">{{ file.name }}</span>
-                            <button type="button" class="remove-file-btn" @click="removeFile(index)" aria-label="Retirer ce fichier">
+                    <!-- Affichage du fichier sélectionné -->
+                    <ul v-if="selectedFile" class="selected-files-list">
+                        <li class="file-item">
+                            <span class="file-name" :title="selectedFile.name">{{ selectedFile.name }}</span>
+                            <button type="button" class="remove-file-btn" @click="removeFile" aria-label="Retirer ce fichier">
                                 &times;
                             </button>
                         </li>
                     </ul>
 
-                    <small class="file-hint">Taille maximale : 10 Mo par fichier. Formats acceptés : .pdf, .docx</small>
+                    <small class="file-hint">Taille maximale : 10 Mo. Formats acceptés : .pdf, .docx</small>
                 </div>
-
-                <div v-if="successMessage" class="alert success">{{ successMessage }}</div>
-                <div v-if="errorMessage" class="alert error">{{ errorMessage }}</div>
 
                 <form-button
                     label="Envoyer la demande"
@@ -109,6 +104,16 @@
                 />
             </form>
         </div>
+
+        <!-- Composant de notification -->
+        <Teleport to="body">
+            <baseNotification 
+                v-model:show="notify.show"
+                :type="notify.type"
+                :title="notify.title"
+                :message="notify.message"
+            />
+        </Teleport>
     </div>
 </template>
 
@@ -118,6 +123,7 @@ import BaseInput from '../../input/BaseInput.vue';
 import BaseSelect from '../../input/BaseSelect.vue';
 import BaseArea from '../../input/BaseArea.vue';
 import formButton from '../../buttons/formButton.vue';
+import baseNotification from '../../tools/baseNotification.vue';
 
 export default {
     name: 'EtudeContratRight',
@@ -125,7 +131,8 @@ export default {
         BaseInput,
         BaseSelect,
         BaseArea,
-        formButton
+        formButton,
+        baseNotification
     },
     setup() {
         const formData = ref({
@@ -148,67 +155,77 @@ export default {
             { name: "🇬🇼 (+245)", value: "+245" }
         ];
 
-        // Remplacement de `selectedFile` par un tableau de fichiers
-        const selectedFiles = ref<File[]>([]);
-        
+        // Remplacé par un seul File au lieu d'un tableau
+        const selectedFile = ref<File | null>(null);
         const isSubmitting = ref<boolean>(false);
-        const successMessage = ref<string>('');
-        const errorMessage = ref<string>('');
+
+        // État de la notification
+        const notify = ref({
+            show: false,
+            type: 'success',
+            title: '',
+            message: ''
+        });
+
+        const showNotification = (type: string, title: string, message = '') => {
+            notify.value = { show: true, type, title, message };
+        };
 
         const handleFileUpload = (event: Event) => {
             const target = event.target as HTMLInputElement;
             if (target.files && target.files.length > 0) {
-                
-                const newFiles = Array.from(target.files);
-                
-                // 1. Vérifier si on dépasse la limite globale de 5 fichiers
-                if (selectedFiles.value.length + newFiles.length > 5) {
-                    errorMessage.value = `Vous ne pouvez sélectionner que 5 fichiers maximum. Il vous reste ${5 - selectedFiles.value.length} place(s).`;
-                    target.value = ''; // Réinitialiser l'input
-                    return;
-                }
+                const file = target.files[0];
 
-                // 2. Traiter chaque nouveau fichier
-                let hasSizeError = false;
-
-                newFiles.forEach(file => {
-                    if (file.size > 10 * 1024 * 1024) {
-                        hasSizeError = true;
-                    } else {
-                        // On évite d'ajouter le même fichier deux fois (optionnel mais propre)
-                        const isDuplicate = selectedFiles.value.some(f => f.name === file.name && f.size === file.size);
-                        if (!isDuplicate) {
-                            selectedFiles.value.push(file);
-                        }
-                    }
-                });
-
-                if (hasSizeError) {
-                    errorMessage.value = "Certains fichiers ont été ignorés car ils dépassent 10 Mo.";
+                // Vérification de la taille (10 Mo)
+                if (file.size > 10 * 1024 * 1024) {
+                    showNotification('error', 'Fichier trop lourd', "Le fichier dépasse la limite de 10 Mo.");
                 } else {
-                    errorMessage.value = ''; 
+                    selectedFile.value = file;
                 }
 
-                target.value = ''; // Reset de l'input pour pouvoir resélectionner le même fichier si on l'a supprimé entre temps
+                target.value = ''; // Reset de l'input
             }
         };
 
-        const removeFile = (index: number) => {
-            selectedFiles.value.splice(index, 1);
-            if (selectedFiles.value.length === 0) {
-                errorMessage.value = ''; // On vide l'erreur s'il n'y a plus de fichiers
+        const removeFile = () => {
+            selectedFile.value = null;
+        };
+
+        // Validation avant soumission
+        const validateForm = () => {
+            if (!formData.value.name.trim()) {
+                showNotification('error', 'Champs requis', 'Le nom complet est obligatoire.');
+                return false;
             }
+            if (!formData.value.email.trim()) {
+                showNotification('error', 'Champs requis', 'L\'adresse e-mail est obligatoire.');
+                return false;
+            }
+            if (!/\S+@\S+\.\S+/.test(formData.value.email)) {
+                showNotification('error', 'Format invalide', 'L\'adresse e-mail n\'est pas valide.');
+                return false;
+            }
+            if (!formData.value.phoneNumber.trim()) {
+                showNotification('error', 'Champs requis', 'Le numéro de téléphone est obligatoire.');
+                return false;
+            }
+            if (!formData.value.description.trim()) {
+                showNotification('error', 'Champs requis', 'Le message ou contexte est obligatoire.');
+                return false;
+            }
+            if (!selectedFile.value) {
+                showNotification('error', 'Document manquant', 'Veuillez joindre le document à analyser.');
+                return false;
+            }
+            return true;
         };
 
         const handleSubmit = async () => {
-            if (selectedFiles.value.length === 0) {
-                errorMessage.value = "Veuillez joindre au moins un document à analyser.";
+            if (!validateForm()) {
                 return;
             }
 
             isSubmitting.value = true;
-            errorMessage.value = '';
-            successMessage.value = '';
 
             try {
                 const payload = new FormData();
@@ -217,22 +234,22 @@ export default {
                 payload.append('phone', `${formData.value.phonePrefix} ${formData.value.phoneNumber}`);
                 payload.append('description', formData.value.description);
                 
-                // 🪄 NOUVEAU : On ajoute tous les fichiers à la même clé 'documents'
-                selectedFiles.value.forEach((file) => {
-                    payload.append('documents', file);
-                });
+                // Ajout du document unique
+                if (selectedFile.value) {
+                    payload.append('documents', selectedFile.value); // Ou 'document' en fonction de ce qu'attend ton backend
+                }
 
                 // Simulation API
                 await new Promise(resolve => setTimeout(resolve, 1500)); 
 
-                successMessage.value = "Votre demande a été envoyée avec succès ! Nos experts vous contacteront rapidement.";
+                showNotification('success', 'Succès !', 'Votre demande a été envoyée avec succès ! Nos experts vous contacteront rapidement.');
                 
                 // Reset form
                 formData.value = { name: '', email: '', type: '', description: '', phonePrefix: '+225', phoneNumber: '' };
-                selectedFiles.value = [];
+                selectedFile.value = null;
 
             } catch (error) {
-                errorMessage.value = "Une erreur est survenue lors de l'envoi. Veuillez réessayer.";
+                showNotification('error', 'Erreur d\'envoi', "Une erreur est survenue lors de l'envoi. Veuillez réessayer.");
                 console.error(error);
             } finally {
                 isSubmitting.value = false;
@@ -242,13 +259,12 @@ export default {
         return {
             formData,
             ohadaCountries,
-            selectedFiles,
+            selectedFile,
             isSubmitting,
-            successMessage,
-            errorMessage,
             handleFileUpload,
             removeFile,
-            handleSubmit
+            handleSubmit,
+            notify
         };
     }
 };
@@ -475,28 +491,6 @@ export default {
 :deep(.prefix-select .form-select) {
     padding-left: 1rem !important;
     padding-right: 2rem !important;
-}
-
-/* ── Alertes ── */
-.alert {
-    padding: 1rem;
-    border-radius: 10px;
-    font-size: 0.95rem;
-    font-weight: 500;
-    text-align: center;
-    margin-top: 0.5rem;
-}
-
-.alert.error {
-    background: rgba(239, 68, 68, 0.1);
-    color: #fca5a5;
-    border: 1px solid rgba(239, 68, 68, 0.3);
-}
-
-.alert.success {
-    background: rgba(50, 244, 89, 0.1);
-    color: #32f459;
-    border: 1px solid rgba(50, 244, 89, 0.3);
 }
 
 :deep(.submit-btn:hover:not(:disabled)) {

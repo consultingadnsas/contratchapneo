@@ -22,9 +22,10 @@
 
         <emptyState
             v-else-if="contratStore.contracts.length === 0" 
-            title = "Contrat non disponibile pour l'instant"
-            description="Le contrat démandé n'est pas disponible pour l'instant. Faire un contrat sur mesure "
-            @go-to="() => router.push('contractBank/customContrat')"
+            title="Contrat non disponible"
+            description="Le contrat demandé n'est pas disponible pour l'instant."
+            textAction="Faire un contrat sur mesure"
+            type="contrat"
         />
 
         <template v-else>
@@ -121,7 +122,7 @@ export default {
         };
 
         // Make a query 
-        const searchQuery = ref<string>('');
+        const searchQuery = ref((route.query.q as string) || '');
 
         let debounceTimeout: NodeJS.Timeout;
 
@@ -176,6 +177,16 @@ export default {
                 // Debug
                 console.log("Recherche lancée pour :", newQuery)
             }, 500)
+        })
+
+        onMounted(() => {
+            // 2. Si on arrive depuis l'accueil avec une recherche, on l'utilise immédiatement !
+            if (searchQuery.value) {
+                contratStore.fetchContracts(1, activeCategoryId.value, searchQuery.value);
+            } else {
+                // Sinon, chargement classique
+                contratStore.getContracts(1, activeCategoryId.value);
+            }
         })
 
         return {

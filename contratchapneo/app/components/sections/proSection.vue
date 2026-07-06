@@ -36,7 +36,7 @@
                 </div>
             </div>
 
-            <mainButton label="Voir tous les professionnels" @click="router.push('/pro')" />
+            <mainButton label="Voir tous les experts" @click="router.push('/pro')" />
         </div>
     </section>
 </template>

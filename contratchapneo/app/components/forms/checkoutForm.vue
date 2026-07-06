@@ -42,18 +42,27 @@
             :isLoading="cartStore.isLoading"
         />
 
-        <p v-if="cartStore.error" class="text-red-600 text-sm mt-2">{{ cartStore.error }}</p>
+        <!-- Le composant de notification injecté dans le body pour éviter les problèmes d'affichage -->
+        <Teleport to="body">
+            <BaseNotification 
+                v-model:show="notify.show"
+                :type="notify.type"
+                :title="notify.title"
+                :message="notify.message"
+            />
+        </Teleport>
     </form>
 </template>
 
 <script>
-import { ref, reactive, onMounted, watch } from 'vue'
+import { ref, reactive } from 'vue'
 
-import BaseInput    from '../input/BaseInput.vue'
-import CheckoutButton from '../buttons/checkoutButton.vue'   // renommer en PascalCase côté fichier aussi
-import BaseSelect   from '../input/BaseSelect.vue'
+import BaseInput from '../input/BaseInput.vue'
+import CheckoutButton from '../buttons/checkoutButton.vue'
+import BaseSelect from '../input/BaseSelect.vue'
+import BaseNotification from '../tools/baseNotification.vue' // 👈 Import du nouveau composant
 
-import { useCartStore }  from '../../stores/cartStore'
+import { useCartStore } from '../../stores/cartStore'
 import { useOrderStore } from '../../stores/orderStore'
 
 export default {
@@ -63,6 +72,7 @@ export default {
         BaseInput,
         CheckoutButton,
         BaseSelect,
+        BaseNotification // 👈 Déclaration du composant
     },
 
     props: {
@@ -72,59 +82,66 @@ export default {
         },
     },
 
-    emits: ['success'],   // ✅ corrigé : 'succes' → 'success'
+    emits: ['success'],
 
     setup(props, { emit }) {
-        console.log('📋 [CheckoutForm] Montage du composant CheckoutForm')
-        const cartStore  = useCartStore()
+        const cartStore = useCartStore()
         const orderStore = useOrderStore()
-        console.log('🛒 [CheckoutForm] CartStore:', { totalPrice: cartStore.totalPrice, totalItems: cartStore.totalItems })
-        console.log('🛍️ [CheckoutForm] OrderStore:', { hasOrder: !!orderStore.currentOrder })
+
+        // ── État de la notification ───────────────────────────────────────
+        const notify = ref({
+            show: false,
+            type: 'success',
+            title: '',
+            message: ''
+        });
+
+        const showNotification = (type, title, message = '') => {
+            notify.value = { show: true, type, title, message };
+        };
 
         // ── État du formulaire ────────────────────────────────────────────
         const checkoutform = reactive({
-            full_name:      '',
-            email:          '',
-            phone_number:   '',
+            full_name: '',
+            email: '',
+            phone_number: '',
             payment_method: '',
         })
 
-        // ── Validation basique ────────────────────────────────────────────
+        // ── Validation avec Notifications ─────────────────────────────────
         const validate = () => {
-            console.log('🔍 [CheckoutForm] Validation du formulaire')
             if (!checkoutform.full_name.trim()) {
-                console.warn('⚠️ Le nom complet est requis.')
-                return 'Le nom complet est requis.'
+                showNotification('error', 'Champs manquant', 'Le nom complet est requis.');
+                return false;
             }
             if (!checkoutform.email.trim()) {
-                console.warn('⚠️ L\'adresse email est requise.')
-                return "L'adresse email est requise."
+                showNotification('error', 'Champs manquant', "L'adresse email est requise.");
+                return false;
             }
             if (!/\S+@\S+\.\S+/.test(checkoutform.email)) {
-                console.warn('⚠️ L\'adresse email est invalide:', checkoutform.email)
-                return "L'adresse email est invalide."
+                showNotification('error', 'Format invalide', "L'adresse email n'est pas valide.");
+                return false;
             }
             if (!checkoutform.payment_method) {
-                console.warn('⚠️ Veuillez choisir un moyen de paiement.')
-                return 'Veuillez choisir un moyen de paiement.'
+                showNotification('error', 'Paiement', 'Veuillez choisir un moyen de paiement.');
+                return false;
             }
-            console.log('✅ Validation réussie')
-            return null
+            return true;
         }
 
         // ── Soumission ────────────────────────────────────────────────────
         const submitForm = async () => {
-
-            // 🕵️‍♂️ LOGS DE DÉBOGAGE À AJOUTER ICI
-            console.log("🔍 Contenu complet de currentOrder:", orderStore.currentOrder)
-            console.log("🔍 L'ID extrait est-il valide ? :", orderStore.currentOrder?.id)
+            
+            // 🛑 On bloque la soumission si la validation échoue
+            if (!validate()) {
+                return;
+            }
 
             try {
-                // Envoyer au backend : uniquement les données invité requises pour le checkout
                 const payload = {
                     guest: {
-                        full_name:    checkoutform.full_name,
-                        email:        checkoutform.email,
+                        full_name: checkoutform.full_name,
+                        email: checkoutform.email,
                         phone_number: checkoutform.phone_number || null,
                     },
                 }
@@ -132,21 +149,19 @@ export default {
                 const order = await orderStore.checkout(payload)
                 
                 if (!order?.id) {
-                    console.error("❌ order.id manquant après checkout :", order)
-                    return
+                    showNotification('error', 'Erreur système', "Impossible de générer l'identifiant de la commande.");
+                    return;
                 }
 
-                console.log("✅ Order créé avec ID :", order.id)
-
-                // Étape 3 : Initier le paiement avec le vrai order.id
                 const paiementResponse = await cartStore.initiatePayment(
                     {
-                        order_id:       order.id,           // ✅ depuis le retour direct, pas orderStore.currentOrder
-                        payment_method: checkoutform.payment_method.toUpperCase() // souvent attendu en majuscules
+                        order_id: order.id,
+                        payment_method: checkoutform.payment_method.toUpperCase()
                     },
                     checkoutform.email
                 )
 
+                // Envoi de l'événement de succès (pas besoin de notification succès ici car l'utilisateur est généralement redirigé vers l'URL de paiement)
                 emit('success', {
                     paymentMethod: checkoutform.payment_method,
                     email: checkoutform.email,
@@ -161,15 +176,16 @@ export default {
                 })
 
             } catch (err) {
+                // ❌ Affichage de l'erreur API
+                showNotification('error', 'Échec de la commande', cartStore.error || "Une erreur est survenue lors de l'initialisation du paiement.");
                 console.error('Échec de la soumission :', err)
-            } finally {
-                console.log("Soumission terminée")
             }
         }
 
         return {
             cartStore,
             orderStore,
+            notify, // Exposer l'état
             paymentOptions: [
                 { value: 'WAVE',         name: 'Wave' },
                 { value: 'WAVESN',       name: 'Wave Sénégal' },
@@ -200,13 +216,14 @@ export default {
     background:    #eef2ff;
     border-radius: 8px;
     box-shadow:    0 8px 32px 0 rgba(31, 38, 135, 0.15);
+    padding: 1.5rem; /* Ajout d'un peu de padding pour l'esthétique */
 }
 
 .checkout-form h3 {
     color: #202b4a;
+    margin-bottom: 1rem;
 }
 
-/* Donne au CardElement Stripe un aspect cohérent avec tes BaseInput */
 .stripe-card-element {
     border:        1px solid #d1d5db;
     border-radius: 6px;

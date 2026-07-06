@@ -2,7 +2,7 @@
     <div class="contrat-card-section">
         
         <header>
-            <h2>Découvrez tous nos professionnels</h2>
+            <h2>Découvrez tous nos Expert</h2>
             <p>Pour un suivi plus personnalisé concernant vos besoins.</p>
         </header>
 
@@ -33,9 +33,10 @@
 
         <emptyState
             v-else-if="proStore.professionals.length === 0" 
-            title="Aucun professionnel disponible pour cette recherche"
-            description="Le professionnel que vous cherchez n'est pas encore disponible. Essayez de modifier vos filtres ou contactez-nous pour plus d'informations."
-            @go-to="() => router.push('/')"
+            title="Aucun expert trouvé"
+            description="Aucun professionnel ne correspond à vos critères."
+            textAction="Contactez nos services juridiques"
+            type="pro"
         />
 
         <template v-else>

@@ -1,5 +1,6 @@
 <template>
-    <article class="pro-card">
+    <!-- Ajout du clic sur toute la carte -->
+    <article class="pro-card" @click="viewContrat">
         <div 
             class="card-bg" 
             :style="{ backgroundImage: `url(${image})` }"
@@ -9,11 +10,12 @@
 
         <div class="card-info">
             <h4 class="pro-name">{{ title }}</h4>
-            <p class="pro-info">{{ description }}</p>
+            <!-- Optionnel: tu as retiré la description ici, mais tu peux la remettre si besoin -->
             <p class="pro-specialty" >{{ price }} FCFA</p>
         </div>
 
         <div class="btn-container">
+            <!-- .stop empêche le clic d'ouvrir la modale d'aperçu quand on veut juste acheter -->
             <button @click.stop="handleFlyToCart($event)">
                 <span>
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6.5">
@@ -25,7 +27,8 @@
         </div>
 
         <div class="btn_container2">
-            <button @click.stop="()=>{$emit('view')}">
+            <!-- .stop ici aussi -->
+            <button @click.stop="viewContrat">
                 <span>
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
@@ -33,7 +36,6 @@
                     </svg>
                 </span>
             </button>
-            <!-- Tooltip "Aperçu" -->
             <span class="tooltip">Aperçu</span>
         </div>
     </article>
@@ -66,34 +68,28 @@ export default defineComponent({
     emits: ['buy', 'view'],
     setup(props, { emit }) {
         
-        // La fonction qui gère l'animation du "vol" vers le panier
         const handleFlyToCart = (event: MouseEvent) => {
-            // 1. On cherche la bulle du panier sur l'écran
             const cartBubble = document.querySelector('.glass-bubble');
             
-            // Sécurité : si la bulle n'est pas trouvée, on émet l'achat direct sans animation
             if (!cartBubble) {
                 emit('buy'); 
                 return;
             }
 
-            // 2. Coordonnées de départ (là où l'utilisateur a cliqué)
             const startX = event.clientX;
             const startY = event.clientY;
 
-            // 3. Coordonnées d'arrivée (le centre exact de la bulle panier)
             const cartRect = cartBubble.getBoundingClientRect();
             const endX = cartRect.left + (cartRect.width / 2);
             const endY = cartRect.top + (cartRect.height / 2);
 
-            // 4. Création de la petite boule bleue
             const ghost = document.createElement('div');
             ghost.style.position = 'fixed';
             ghost.style.left = `${startX}px`;
             ghost.style.top = `${startY}px`;
             ghost.style.width = '20px';
             ghost.style.height = '20px';
-            ghost.style.backgroundColor = '#007bff'; // Le bleu de ton thème
+            ghost.style.backgroundColor = '#007bff'; 
             ghost.style.borderRadius = '50%';
             ghost.style.zIndex = '9999';
             ghost.style.pointerEvents = 'none'; 
@@ -102,25 +98,22 @@ export default defineComponent({
             
             document.body.appendChild(ghost);
 
-            // 5. Lancement de l'animation
             const animation = ghost.animate([
                 { transform: 'translate(-50%, -50%) scale(1)', opacity: 1 },
                 { transform: `translate(calc(-50% + ${endX - startX}px), calc(-50% + ${endY - startY}px)) scale(0.2)`, opacity: 0.5 }
             ], {
-                duration: 600, // 0.6 secondes de vol
+                duration: 600, 
                 easing: 'cubic-bezier(0.25, 1, 0.5, 1)' 
             });
 
-            // 6. Quand le vol est terminé...
             animation.onfinish = () => {
-                ghost.remove(); // On supprime la boule
-                emit('buy');    // On prévient le parent pour qu'il ajoute au store !
+                ghost.remove(); 
+                emit('buy');    
             };
         };
 
         function viewContrat() {
-            console.log('vous avez cliqué pour voir');
-            emit('view'); // C'est mieux d'émettre l'événement ici aussi !
+            emit('view'); 
         }
 
         return {
@@ -130,7 +123,6 @@ export default defineComponent({
     }
 });
 </script>
-
 
 <style scoped>
 .pro-card {
@@ -160,15 +152,16 @@ export default defineComponent({
     transform: scale(1.1);
 }
 
-/* Overlay : sombre en bas et transparent en haut */
+/* Overlay : totalement transparent en haut, devient très noir en bas */
 .overlay {
     position: absolute;
     inset: 0;
     background: linear-gradient(
-        to top, 
-        rgba(0, 0, 0, 0.626) 0%, 
-        rgba(0, 0, 0, 1.9) 20%, 
-        transparent 100%
+        to bottom, 
+        transparent 0%, 
+        transparent 40%, 
+        rgba(0, 0, 0, 0.7) 65%, 
+        rgba(0, 0, 0, 0.95) 70%
     );
     z-index: 2;
 }
@@ -182,11 +175,13 @@ export default defineComponent({
     padding: 1.5rem;
     z-index: 3;
     color: #ffffff;
+    /* On ajoute un padding droit pour que le texte n'écrase pas les boutons */
+    padding-right: 70px;
 }
 
 .pro-name {
     margin: 0;
-    font-size: 1.25rem;
+    font-size: 1rem;
     font-weight: 700;
     line-height: 1.2;
     letter-spacing: -0.02em;
@@ -195,7 +190,7 @@ export default defineComponent({
 .pro-info {
     font-size: 0.80rem;
     font-weight: 500;
-    color: #edecec;
+    color: #999999;
 }
 
 .pro-specialty {
@@ -206,7 +201,7 @@ export default defineComponent({
     padding: 0.2rem 0.5rem;
     border-radius: 6px;
     width: fit-content;
-    max-width: 80%;
+    max-width: 100%;
     color: #ffffff;
 }
 
@@ -267,7 +262,7 @@ export default defineComponent({
 /* Style du tooltip */
 .tooltip {
     position: absolute;
-    bottom: 50px; /* au-dessus du bouton */
+    bottom: 50px; 
     left: 50%;
     transform: translateX(-50%);
     background-color: rgba(0, 0, 0, 0.8);
@@ -280,7 +275,7 @@ export default defineComponent({
     opacity: 0;
     visibility: hidden;
     transition: opacity 0.2s ease, visibility 0.2s ease;
-    pointer-events: none; /* pour ne pas bloquer le clic */
+    pointer-events: none; 
 }
 
 /* Petite flèche sous le tooltip */

@@ -23,43 +23,70 @@
 
     <p class="description">
       <slot name="description">{{ description }}</slot>
-      <span>{{ textAction }}</span>
+      <!-- Le texte d'action devient cliquable -->
+      <a href="#" class="action-link" @click.prevent="handleAction">
+        {{ textAction }}
+      </a>
     </p>
-
-    <div class="">
-      <mainButton label="contrat sur mesure" @click="$emit('go-to')"/>
-    </div>
   </div>
 </template>
 
 <script>
-import mainButton from '../buttons/mainButton.vue'
-export default{
+import { useRouter } from 'vue-router'
 
-  props:{
+export default {
+  name: 'EmptyState',
+  props: {
     title: {
       type: String,
-      default: 'Error'
+      default: 'Aucun résultat'
     },
     description: {
       type: String,
-      default: "According to local regulations, you are temporarily unable to register through a third-party account. Please return and click 'Register Now' to create account."
+      default: "Nous n'avons trouvé aucun résultat correspondant à votre recherche."
     },
-    textAction:{
-      type:String,
-      default:"Cliquez ici"
+    textAction: {
+      type: String,
+      default: "Cliquez ici pour une demande spécifique"
+    },
+    // NOUVEAU : On ajoute un 'type' pour savoir où on se trouve
+    type: {
+      type: String,
+      default: 'contrat', // Peut être 'contrat' ou 'pro'
+      validator: (value) => ['contrat', 'pro'].includes(value)
     }
   },
-  emits:['go-to'],
-  components:{
-    mainButton
-  },
-  setup(props, {emit}){
+  emits: ['go-to'],
+  
+  setup(props, { emit }) {
+    const router = useRouter()
 
+    const handleAction = () => {
+      // Si le parent veut gérer lui-même l'action (optionnel)
+      emit('go-to')
+
+      // Routage automatique basé sur le type
+      if (props.type === 'contrat') {
+        router.push('/contractBank/customContrat')
+      } else if (props.type === 'pro') {
+        // Redirige vers la page services juridiques avec un petit délai pour permettre au composant de se monter,
+        // puis on cible l'ancre #contact-section.
+        router.push('/services').then(() => {
+          setTimeout(() => {
+            const contactSection = document.getElementById('contact-section');
+            if (contactSection) {
+              contactSection.scrollIntoView({ behavior: 'smooth' });
+            }
+          }, 300); // 300ms laisse le temps à la page de se charger avant de scroller
+        });
+      }
+    }
+
+    return {
+      handleAction
+    }
   }
-
 }
-
 </script>
 
 <style scoped>
@@ -69,12 +96,13 @@ export default{
   align-items: center;
   justify-content: center;
   gap: 1rem;
-  padding: 1rem;
+  padding: 3rem 1rem; /* Un peu plus de padding vertical pour respirer */
   text-align: center;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   background-color: #FFFBF4;
   width: 100%;
   box-sizing: border-box;
+  border-radius: 16px; /* Optionnel : léger arrondi */
 }
 
 .illustration {
@@ -85,24 +113,34 @@ export default{
 .title {
   font-size: 26px;
   font-weight: 700;
-  color: #1a1a1a; /* Gris très foncé / noir */
+  color: #1a1a1a; 
   margin: 0 0 8px 0;
 }
 
 .description {
   font-size: 15px;
   line-height: 1.6;
-  color: #6b7280; /* Gris moyen */
+  color: #6b7280; 
   max-width: 650px;
   margin: 0;
 }
 
-.description span{
+/* Le texte cliquable repensé */
+.action-link {
   font-weight: 600;
-  color: var(--primary-color);
+  color: #10507e; /* Utilisation de ton bleu ou primary-color */
+  text-decoration: none;
+  margin-left: 4px;
+  border-bottom: 1px dashed transparent;
+  transition: all 0.3s ease;
+  cursor: pointer;
 }
 
-/* Petite animation subtile pour rendre le SVG moins statique (optionnel) */
+.action-link:hover {
+  color: #32f459; /* Ton vert d'accentuation */
+  border-bottom-color: #32f459;
+}
+
 @keyframes float {
   0% { transform: translateY(0px); }
   50% { transform: translateY(-5px); }

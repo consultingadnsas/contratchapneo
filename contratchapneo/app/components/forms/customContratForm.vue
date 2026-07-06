@@ -1,22 +1,26 @@
 <template>
     <form 
-        class="w-full flex flex-col gap-2"
+        class="custom-contract-form w-full flex flex-col gap-4"
         @submit.prevent="submitForm"
     >
-
         <h3>{{ formTitle }}</h3>
 
+        <!-- Ajout du v-model et des bonnes options -->
         <BaseSelect 
-            label="Selectionner votre type de contrat"
-            
+            label="Sélectionner votre type de contrat"
+            v-model="checkoutform.contract_type"
+            :options="contractTypes"
+            placeholder="Choisissez une option..."
+            required
         />
 
         <BaseInput 
-            label="Nom complet / nom société" 
+            label="Nom complet / nom de la société" 
             name="name" 
             type="text" 
-            placeholder="Entrez votre Nom complet / nom société"
+            placeholder="Entrez votre nom ou raison sociale"
             v-model="checkoutform.name"
+            required
         />
 
         <BaseInput 
@@ -25,6 +29,7 @@
             type="tel" 
             placeholder="Entrez votre numéro de téléphone"
             v-model="checkoutform.phone_number"
+            required
         />
 
         <BaseInput 
@@ -33,105 +38,191 @@
             type="email" 
             placeholder="Entrez votre adresse email"
             v-model="checkoutform.email"
+            required
         />
 
+        <!-- Correction du name et du v-model -->
         <BaseInput 
             label="Sujet" 
-            name="email" 
+            name="subject" 
             type="text" 
-            placeholder="Entrez l'objet de votre contrat"
-            v-model="checkoutform.email"
+            placeholder="Entrez l'objet de votre demande"
+            v-model="checkoutform.subject"
+            required
         />
 
-        <BaseArea label="Description"/>
+        <!-- Ajout du v-model -->
+        <BaseArea 
+            label="Description détaillée"
+            placeholder="Expliquez-nous votre besoin spécifique..."
+            v-model="checkoutform.description"
+            rows="5"
+            required
+        />
 
         <checkoutButton 
-            label="Soumettre" 
+            label="Soumettre la demande" 
             type="submit"
             :isLoading="loading"
         />
+
+        <ClientOnly>
+            <Teleport to="body">
+                <BaseNotification 
+                    v-model:show="notify.show"
+                    :type="notify.type"
+                    :title="notify.title"
+                    :message="notify.message"
+                />
+            </Teleport>
+        </ClientOnly>
     </form>
 </template>
 
 <script>
+import { ref, reactive } from 'vue'
 import BaseInput from '../input/BaseInput.vue'
 import checkoutButton from '../buttons/checkoutButton.vue'
 import BaseSelect from '../input/BaseSelect.vue'
 import BaseArea from '../input/BaseArea.vue'
-import {ref, reactive} from 'vue'
+import BaseNotification from '../tools/baseNotification.vue' // Attention à la majuscule si ton fichier l'exige
 
 export default {
-    components:{
+    components: {
         BaseInput,
         checkoutButton,
         BaseSelect,
-        BaseArea
+        BaseArea,
+        BaseNotification
     },
-    props:{
-        formTitle:{
-            type:String,
-            default: 'Mon contrat sur mesure'
+    props: {
+        formTitle: {
+            type: String,
+            default: 'Mon contrat sur-mesure'
         }
     },
+    emits: ['success'], // Correction orthographique (2 's')
+    
+    setup(props, { emit }) {
 
-    emits:['succes'],
-    setup(props, {emit}){
-
-        const checkoutform = reactive(
-            {
-                name:"",
-                email: "",
-                phone_number:""
-            }
-        )
+        // 1. Déclaration de toutes les variables nécessaires au backend
+        const checkoutform = reactive({
+            contract_type: "",
+            name: "",
+            email: "",
+            phone_number: "",
+            subject: "",
+            description: ""
+        })
 
         const loading = ref(false)
-        
-        const error = ref(null)
 
-        const optionpayment =[
-            { options: "Wave" },
-            { options: "Orange Money" },
-            { options: "Moov Money" }
+        // 2. Gestion de la notification
+        const notify = ref({
+            show: false,
+            type: 'success',
+            title: '',
+            message: ''
+        });
+
+        const showNotification = (type, title, message = '') => {
+            notify.value = { show: true, type, title, message };
+        };
+
+        // 3. Options adaptées pour un contrat sur-mesure
+        const contractTypes = [
+            { value: "prestation", name: "Contrat de prestation de services" },
+            { value: "travail", name: "Contrat de travail" },
+            { value: "partenariat", name: "Contrat de partenariat" },
+            { value: "cession", name: "Contrat de cession" },
+            { value: "autre", name: "Autre besoin spécifique" }
         ]
 
+        // 4. Fonction de validation
+        const validateForm = () => {
+            if (!checkoutform.contract_type) {
+                showNotification('error', 'Type manquant', 'Veuillez sélectionner le type de contrat.');
+                return false;
+            }
+            if (!checkoutform.name.trim()) {
+                showNotification('error', 'Nom manquant', 'Votre nom complet ou raison sociale est requis.');
+                return false;
+            }
+            if (!checkoutform.phone_number.trim()) {
+                showNotification('error', 'Téléphone manquant', 'Votre numéro de téléphone est requis.');
+                return false;
+            }
+            if (!checkoutform.email.trim() || !/\S+@\S+\.\S+/.test(checkoutform.email)) {
+                showNotification('error', 'Email invalide', 'Veuillez entrer une adresse email valide.');
+                return false;
+            }
+            if (!checkoutform.subject.trim()) {
+                showNotification('error', 'Sujet manquant', "Veuillez préciser l'objet de votre demande.");
+                return false;
+            }
+            if (!checkoutform.description.trim()) {
+                showNotification('error', 'Description manquante', 'Veuillez détailler votre besoin dans la description.');
+                return false;
+            }
+            return true;
+        }
+
+        // 5. Soumission sécurisée
         const submitForm = async () => {
+            if (!validateForm()) return; // On stoppe si la validation échoue
+
             loading.value = true
-            error.value = null
 
             try {
-                // Simulation d'un appel API (ex: POST /api/checkout)
-                await new Promise((resolve, reject) => {
-                setTimeout(() => {
-                    // Simuler une réussite ou une erreur aléatoire
-                    Math.random() > 0.2 ? resolve({ success: true }) : reject("Erreur serveur")
-                }, 1500)
-                })
+                // Simulation d'un appel API
+                await new Promise((resolve) => setTimeout(() => resolve({ success: true }), 1500))
                 
-                emit('succes')
+                // Affichage du succès
+                showNotification('success', 'Demande envoyée !', 'Nos experts analyseront votre besoin et vous contacteront sous 24h.');
+                
+                emit('success')
 
-                checkoutform.name = "";
-                checkoutform.email = "";
-                checkoutform.phone_number = "";
+                // Réinitialisation de l'objet form
+                Object.assign(checkoutform, {
+                    contract_type: "",
+                    name: "",
+                    email: "",
+                    phone_number: "",
+                    subject: "",
+                    description: ""
+                });
+
             } catch (err) {
-                error.value = err
+                showNotification('error', 'Erreur d\'envoi', 'Une erreur est survenue lors de la soumission de votre demande.');
                 console.error("Échec de la soumission :", err)
             } finally {
                 loading.value = false
             }
         }
 
-        return{
+        return {
             checkoutform,
             loading,
-            error,
-            submitForm
+            submitForm,
+            notify,
+            contractTypes
         }
-
     }
 }
 </script>
 
-<style>
+<style scoped>
+.custom-contract-form {
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 2rem;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+}
 
+.custom-contract-form h3 {
+    color: #1e293b;
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+}
 </style>
