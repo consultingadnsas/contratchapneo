@@ -1,41 +1,40 @@
-export default defineNuxtPlugin(() => {
+export default defineNuxtPlugin(async () => {
   const config = useRuntimeConfig()
-  const token = useCookie('token') // Ne fonctionnera que si le cookie n'est PAS HttpOnly
-  const csrfToken = useCookie('csrftoken')
 
   const api = $fetch.create({
     baseURL: config.public.apiBase || 'http://localhost:8000',
-
-    // ✅ INDISPENSABLE : Autorise l'échange de cookies (cart_session_id, tokens...)
-    credentials: 'include',
+    credentials: 'include', // ✅ Le navigateur enverra ton cookie HttpOnly tout seul !
 
     onRequest({ options }) {
-      // ✅ Garde ceci uniquement si tes tokens ne sont pas en HttpOnly
-      if (token.value) {
-        options.headers = {
-          ...options.headers,
-          Authorization: `Bearer ${token.value}`,
+      // ❌ Plus besoin d'injecter manuellement Authorization: Bearer !
+
+      const method = options.method?.toUpperCase() || 'GET'
+      if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(method)) {
+        const csrfFromBrowser = useCookie('csrftoken').value;
+        if (csrfFromBrowser) {
+          options.headers = {
+            ...options.headers,
+            'X-CSRFToken': csrfFromBrowser
+          }
+        } else {
+           console.warn("🚨 Aucun cookie CSRF trouvé dans le navigateur !")
         }
       }
-
-      /*
-      const method = options.method?.toUpperCase() || 'GET'
-      if (csrfToken.value && ['POST', 'PUT', 'PATCH', 'DELETE'].includes(method)) {
-        options.headers = {
-          ...options.headers,
-          'X-CSRFToken': csrfToken.value
-        }
-      }*/
-
     },
 
     onResponseError({ response }) {
-      if (response.status === 403) navigateTo('auth/login')
+      if (response.status === 403) navigateTo('/auth/login')
       if (response.status === 500) throw new Error('Erreur serveur')
     },
   })
 
-  return {
-    provide: { api }
+  // Initialiser le token CSRF au chargement de l'app
+  try {
+    await api('/account/csrf/')
+    console.log('✅ Token CSRF initialisé')
+  } catch (err) {
+    console.warn('⚠️ Erreur lors de l\'initialisation du token CSRF:', err)
   }
+
+  return { provide: { api } }
 })

@@ -53,6 +53,7 @@ class FilterOptionsView(APIView):
     pour tes menus déroulants de filtrage sur le Frontend.
     """
     permission_classes = []
+    authentication_classes = []
 
     def get(self, request, *args, **kwargs):
         # On ne renvoie que les pays/domaines qui ont au moins un professionnel actif

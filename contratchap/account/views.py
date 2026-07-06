@@ -137,6 +137,18 @@ class LogoutView(APIView):
         
         return response        
 
+class CSRFTokenView(APIView):
+    """Initialise le token CSRF pour les requêtes cross-site"""
+    permission_classes = [AllowAny]
+    authentication_classes = []
+
+    def get(self, request):
+        csrf_token = get_token(request)
+        return Response(
+            {'csrfToken': csrf_token},
+            status=status.HTTP_200_OK
+        )
+
 class UserProfileView(APIView):
 
     permission_classes = [IsAuthenticated]

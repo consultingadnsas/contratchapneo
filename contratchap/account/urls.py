@@ -3,7 +3,7 @@ from .views import (
     RegisterView, 
     LoginView, 
     LogoutView,
-    #get_csrf_token
+    CSRFTokenView
 )
 from rest_framework_simplejwt.views import (
     TokenObtainPairView,
@@ -22,5 +22,5 @@ urlpatterns = [
     path('token/verify', TokenVerifyView.as_view(), name='Token_verify'),
 
     # Csrf
-    # path('csrf/', get_csrf_token, name='api-csrf'),
+    path('csrf/', CSRFTokenView.as_view(), name='api-csrf'),
 ]
