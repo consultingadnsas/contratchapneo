@@ -355,3 +355,32 @@ class AdminContractDetailView(APIView):
             status=status.HTTP_204_NO_CONTENT
         )
 
+# ==========================================
+# 3. URL: /api/admin/contract/
+# ==========================================
+
+class AdminCategoryDetail(APIView):
+
+    permission_classes=[IsAdminUser]
+
+    def post(self, request):
+
+        serializer = CategorySerializer(data=request.data)
+
+        if serializer.is_valid():
+            serializer.save()
+            return Response(
+                {
+                    'data': serializer.data,
+                    'message': 'Catégorie ajoutée avec succès'
+                },
+                status=status.HTTP_201_CREATED
+            )
+        
+        return Response(
+            {
+                'error': serializer.errors,
+                'message': 'Erreur lors de la création de la catégorie'
+            },
+            status=status.HTTP_400_BAD_REQUEST
+        )

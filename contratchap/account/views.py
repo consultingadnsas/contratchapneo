@@ -8,6 +8,8 @@ from django.utils.translation import gettext_lazy as _
 from django.contrib.auth import authenticate
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.exceptions import TokenError
+from django.middleware.csrf import get_token
+from rest_framework.decorators import api_view, permission_classes
 # Create your views here.
 
 class RegisterView(APIView):

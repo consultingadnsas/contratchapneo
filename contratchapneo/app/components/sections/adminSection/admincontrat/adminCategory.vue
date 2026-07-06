@@ -10,8 +10,13 @@
       
       <!-- Grille à 4 colonnes pour les dossiers -->
       <div class="grid-4-cols">
-        <div class="folder-wrapper" v-for="(cat, index) in filteredCategories" :key="index" @click="openCategory(cat)">
-          <folderCards :title="cat" subtitle="Dossier Boutique" color="blue" :hasItems="true" />
+        <div class="folder-wrapper" v-for="(cat, index) in contratstore.categories" :key="index" @click="openCategory(cat)">
+          <folderCards 
+            :title="cat.title" 
+            subtitle="Dossier Boutique" 
+            color="blue" 
+            :hasItems="true" 
+          />
           
           <!-- Bouton de suppression avec alerte -->
           <button class="delete-folder-btn" @click.stop="handleDeleteFolder(index, cat)" title="Supprimer ce dossier et son contenu">
@@ -40,7 +45,7 @@
       <!-- Grille à 2 colonnes pour les contrats -->
       <div class="grid-2-cols">
         <!-- Cartes des contrats existants -->
-        <div class="contract-card" v-for="contract in filteredContracts" :key="contract.id" :class="{'card-offline': !contract.isActive}">
+        <div class="contract-card" v-for="category in contratstore.categories" :key="category.id" :class="{'card-offline': !contract.isActive}">
           <div class="card-header">
             <div class="icon-box-light"><component :is="DocumentTextIcon" class="icon-md" /></div>
             <span class="status-badge" :class="contract.isActive ? 'badge-green' : 'badge-gray'">
@@ -81,22 +86,36 @@
 </template>
 
 <script lang="ts">
-import { ref, computed, markRaw } from 'vue';
+import { ref, computed, markRaw, onMounted } from 'vue';
 import { PlusIcon, TrashIcon, PencilSquareIcon, DocumentTextIcon, ArrowLeftIcon, MagnifyingGlassIcon } from '@heroicons/vue/24/outline';
 import folderCards from '../../../cards/folderCards.vue'; 
+import {useContratStore} from '../../../../stores/contratStore';
+import type {Contrat, Category} from '../../../../stores/contratStore';
+import {useAdminContratStore} from '../../../../stores/adminContratStore'
 
 export default {
+  
   name: 'AdminCategories',
+  
   components: { folderCards },
+  
   props: {
     categories: { type: Array as () => string[], required: true },
     contracts: { type: Array as () => any[], required: true },
     searchQuery: { type: String, default: '' }
   },
+  
   emits: ['add-category', 'delete-category', 'add-contract', 'edit-contract', 'delete-contract', 'toggle-status'],
+  
   setup(props, { emit }) {
+    
+    // Store pour gérer les catégories
+
+    const contratstore = useContratStore();
+    const adminStore = useAdminContratStore();
+
     const openedCategory = ref<string | null>(null);
-    const newCategory = ref('');
+    const newCategory = ref<null | string>('');
 
     // --- RECHERCHE ---
     const filteredCategories = computed(() => {
@@ -119,6 +138,7 @@ export default {
     // --- ACTIONS DOSSIERS ---
     const handleAdd = () => {
       if (newCategory.value.trim() !== '') {
+        adminStore.addNewCategory(newCategory.value)
         emit('add-category', newCategory.value.trim());
         newCategory.value = '';
       }
@@ -135,9 +155,19 @@ export default {
       if(confirm('Supprimer ce contrat définitivement ?')) emit('delete-contract', id);
     };
 
+    onMounted(()=>{
+
+    })
+
     return {
-      openedCategory, openCategory, closeCategory, 
-      newCategory, filteredCategories, filteredContracts,
+      contratstore,
+      adminStore,
+      openedCategory, 
+      openCategory, 
+      closeCategory, 
+      newCategory, 
+      filteredCategories, 
+      filteredContracts,
       handleAdd, handleDeleteFolder, handleDeleteContract,
       PlusIcon: markRaw(PlusIcon), TrashIcon: markRaw(TrashIcon), 
       PencilSquareIcon: markRaw(PencilSquareIcon), DocumentTextIcon: markRaw(DocumentTextIcon), 

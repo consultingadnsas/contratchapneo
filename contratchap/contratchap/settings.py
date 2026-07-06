@@ -33,11 +33,20 @@ ALLOWED_HOSTS = [
     'kettle-diploma-lifter.ngrok-free.dev', 
     '127.0.0.1',
     'localhost',
-    '172.30.144.1'
+    '172.30.144.1',
+
 ]
 
 CORS_EXPOSE_HEADERS = [
     'Content-Disposition',
+]
+
+CSRF_TRUSTED_ORIGINS = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+    "https://kettle-diploma-lifter.ngrok-free.dev", # Ajouté au cas où vous testez via ngrok
 ]
 
 # Application definition
@@ -166,7 +175,7 @@ CORS_ALLOWED_ORIGINS = [
 CORS_ALLOW_CREDENTIALS = True
 
 # Seulement en dev
-CORS_ALLOW_ALL_ORIGINS = True 
+# CORS_ALLOW_ALL_ORIGINS = True 
 
 # PAIEMENT SETTINGS
 STRIPE_SECRET_KEY = config('STRIPE_SECRET_KEY')

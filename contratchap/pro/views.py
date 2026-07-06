@@ -12,6 +12,7 @@ class LegalProfessionalListView(APIView):
     """
     # L'annuaire est public, pas besoin d'être connecté
     permission_classes = [] 
+    authentication_classes = []
 
     def get(self, request, *args, **kwargs):
         # 1. Base de la requête optimisée (Adieu les requêtes N+1 !)
