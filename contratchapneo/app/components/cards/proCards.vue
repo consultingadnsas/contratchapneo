@@ -125,6 +125,7 @@ export default defineComponent({
 }
 
 .pro-specialty {
+    width: 50%;
     margin: 0.25rem 0 0 0;
     font-size: 0.9rem;
     font-weight: 400;

@@ -48,6 +48,7 @@ class PaymentInitiateView(APIView):
     et retourne l'URL de redirection vers leur page de paiement.
     """
     permission_classes = [AllowAny]
+    authentication_classes = []
 
     def post(self, request):
         serializer = PaymentInitiateSerializer(data=request.data)
@@ -164,6 +165,7 @@ class PaymentSimulateView(APIView):
     Désactivé automatiquement hors DEBUG.
     """
     permission_classes = [AllowAny]
+    authentication_classes = []
 
     def post(self, request):
         if not settings.DEBUG:

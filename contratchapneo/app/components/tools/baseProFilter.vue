@@ -2,9 +2,8 @@
   <div class="filter-wrapper">
     
     <div class="mobile-filter">
-      <select v-model="selectedDomainSlug" @change="handleFilter">
+      <select :value="activeDomain" @change="onSelectChange">
         <option value="">Tous les domaines</option>
-        
         <option v-for="domain in domains" :key="domain.id" :value="domain.slug">
           {{ domain.name }}
         </option>
@@ -13,7 +12,7 @@
 
     <div class="desktop-filter">
       <button 
-        :class="{ active: selectedDomainSlug === '' }" 
+        :class="{ active: activeDomain === '' }" 
         @click="selectDomain('')"
       >
         Tout
@@ -22,7 +21,7 @@
       <button 
         v-for="domain in domains" 
         :key="domain.id" 
-        :class="{ active: selectedDomainSlug === domain.slug }"
+        :class="{ active: activeDomain === domain.slug }"
         @click="selectDomain(domain.slug)"
       >
         {{ domain.name }}
@@ -33,9 +32,8 @@
 </template>
 
 <script lang="ts">
-import { ref, PropType } from 'vue';
+import { PropType } from 'vue';
 
-// Typage des données reçues du parent
 export interface LegalDomain {
     id: number;
     name: string;
@@ -45,35 +43,35 @@ export interface LegalDomain {
 export default {
   name: 'BaseProFilter',
   
-  // On reçoit les domaines depuis `proSection`
   props: {
     domains: {
         type: Array as PropType<LegalDomain[]>,
         default: () => []
+    },
+    // NOUVEAU : On écoute le filtre actif dicté par l'URL/le parent
+    activeDomain: {
+        type: String,
+        default: ''
     }
   },
   
   emits: ['filter'],
   
   setup(props, { emit }) {
-    // On utilise le 'slug' comme identifiant de filtre, car c'est ce que Django attend
-    const selectedDomainSlug = ref<string>('');
-
-    // Déclenché par le clic sur un bouton Desktop
+    // Boutons Desktop
     const selectDomain = (slug: string) => {
-      selectedDomainSlug.value = slug;
-      emit('filter', selectedDomainSlug.value);
+      emit('filter', slug);
     };
 
-    // Déclenché par le select Mobile
-    const handleFilter = () => {
-      emit('filter', selectedDomainSlug.value);
+    // Select Mobile
+    const onSelectChange = (event: Event) => {
+      const target = event.target as HTMLSelectElement;
+      emit('filter', target.value);
     };
 
     return {
-      selectedDomainSlug,
       selectDomain,
-      handleFilter
+      onSelectChange
     };
   }
 };

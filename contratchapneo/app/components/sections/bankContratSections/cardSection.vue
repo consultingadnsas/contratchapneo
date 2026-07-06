@@ -14,7 +14,7 @@
                 class="toolbar__search" 
                 placeholder="Trouver un contrat..."
                 v-model="searchQuery"
-                theme="dark"
+                theme="light"
             />
         </div>
 

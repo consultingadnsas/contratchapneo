@@ -1,33 +1,31 @@
 <template>
-  <!-- Le fond global est géré ici -->
   <div class="admin-layout">
     
-    <!-- 1. LA SIDEBAR (Transmet la liste et écoute les clics) -->
     <AdminSidebar 
       :menuItems="adminMenu" 
       @navigate="changePage" 
       @logout="handleLogout" 
     />
 
-    <!-- 2. L'ESPACE DE TRAVAIL BLEU NUIT -->
     <main class="main-workspace">
-        <!-- L'en-tête dynamique -->
         <AdminHeader 
           :title="currentPageTitle" 
           :subtitle="currentPageSubtitle"
           @add-contract="openAddContractModal"
         />
 
-        <!-- Le contenu (A terme, ce sera un <router-view />) -->
         <div class="workspace-content">
           <adminHome v-if="activePageId === 'overview'" />
-          <adminContrats v-if="activePageId === 'contracts'"/>
+          <adminContrats v-if="activePageId === 'contracts'" 
+          :targetTab="requestedTab"/>
+          <adminpacks v-if="activePageId === 'packs'"/>
           <adminHistory v-if="activePageId === 'history'"/>
+          <adminInbox v-if="activePageId === 'inbox'"/>
+          <adminFinance v-if="activePageId === 'finance'"/>
+          <adminExperts v-if="activePageId === 'experts' "/>
+          <admintestimonial v-if="activePageId === 'temoin'"/>
+          <adminSettings v-if="activePageId === 'settings'"/>
           
-          <!-- Exemple d'espace vide pour les autres pages en attendant -->
-          <div v-else class="placeholder-page">
-            <h2>Module "{{ currentPageTitle }}" en cours de développement...</h2>
-          </div>
         </div>
     </main>
 
@@ -35,40 +33,52 @@
 </template>
 
 <script lang="ts">
-import { ref, computed } from 'vue';
-import AdminSidebar, { MenuItem } from '../../components/navigation/adminSidebar.vue' // Ajustez vos chemins
+import { ref, computed, markRaw } from 'vue';
+import AdminSidebar, { MenuItem } from '../../components/navigation/adminSidebar.vue';
 import AdminHeader from '../../components/heroSection/adminHeader.vue';
 import adminHome from '../../components/sections/adminSection/adminHome.vue';
-import adminContrats from '../../components/sections/adminSection/adminContrats.vue';
-import adminHistory from '../../components/sections/adminSection/adminHistory.vue'
+import adminContrats from '../../components/sections/adminSection/admincontrat/adminContrats.vue';
+import adminHistory from '../../components/sections/adminSection/adminHistory.vue';
+import adminInbox from '../../components/sections/adminSection/adminInbox.vue';
+import adminFinance from '../../components/sections/adminSection/adminFinance.vue';
+import adminExperts from '../../components/sections/adminSection/adminExperts.vue';
+import admintestimonial from '../../components/sections/adminSection/admintestimonial.vue';
+import adminpacks from '../../components/sections/adminSection/adminpacks.vue';
+import adminSettings from '../../components/sections/adminSection/adminSettings.vue';
 import { 
   HomeIcon, 
   BookOpenIcon, 
   InboxIcon, 
   DocumentTextIcon, 
   TrashIcon,
-  Cog8ToothIcon
+  Cog8ToothIcon,
+  UsersIcon,
+  BanknotesIcon,
+  ChatBubbleBottomCenterTextIcon,
+  SwatchIcon
 } from '@heroicons/vue/24/outline';
 
 export default {
   name: 'AdminLayout',
-  components: { AdminSidebar, AdminHeader, adminHome, adminContrats, adminHistory },
+  components: { AdminSidebar, AdminHeader, adminHome, adminContrats, adminHistory, adminInbox, adminFinance, adminExperts, admintestimonial, adminpacks, adminSettings },
   setup() {
-    // La liste stricte des rubriques demandées
-   // La liste stricte des rubriques demandées
-
+    // Ajout de la propriété 'category' pour reproduire le style de l'image
     const adminMenu = ref<MenuItem[]>([
-      { id: 'overview', label: "Tableau de bord", isActive: true, icon: HomeIcon },
-      { id: 'history', label: 'Historiques', isActive: false, icon: BookOpenIcon },
-      { id: 'inbox', label: 'Boîte de réception', isActive: false, icon: InboxIcon },
-      { id: 'contracts', label: 'Contrats', isActive: false, icon: DocumentTextIcon },
-      { id: 'trash', label: 'Corbeille', isActive: false, icon: TrashIcon },
-      {id: 'settings', label: 'Paramètre', isActive:false, icon: Cog8ToothIcon },
+      { id: 'overview', label: "Dashboard", isActive: true, icon: markRaw(HomeIcon), category: 'General' },
+      { id: 'history', label: 'Historiques', isActive: false, icon: markRaw(BookOpenIcon), category: 'General' },
+      { id: 'finance', label: 'Finances', isActive: false, icon: markRaw(BanknotesIcon), category: 'General' },
+      { id: 'inbox', label: 'Demandes clients', isActive: false, icon: markRaw(InboxIcon), category: 'General' },
+      { id: 'contracts', label: 'Banque de Contrats', isActive: false, icon: markRaw(DocumentTextIcon), category: 'Catalogue' },
+      { id: 'experts', label: 'Experts Juridiques', isActive: false, icon: markRaw(UsersIcon), category: 'Catalogue' },
+      { id: 'settings', label: 'Paramètres', isActive:false, icon: markRaw(Cog8ToothIcon), category: 'Tools' },
+      { id: 'trash', label: 'Corbeille', isActive: false, icon: markRaw(TrashIcon), category: 'Tools' },
+      { id: 'temoin', label: 'Témoignages', isActive: false, icon: markRaw(ChatBubbleBottomCenterTextIcon), category: 'Catalogue' },
+      { id: 'packs', label: 'Packs de contrat', isActive: false, icon : markRaw(SwatchIcon), category: 'Catalogue' }
     ]);
 
     const activePageId = ref('overview');
+    const requestedTab = ref('contracts'); // Par défaut, onglet normal
 
-    // Mettre à jour les titres de l'en-tête dynamiquement
     const currentPageTitle = computed(() => adminMenu.value.find(m => m.id === activePageId.value)?.label || '');
     const currentPageSubtitle = computed(() => {
       if (activePageId.value === 'overview') return "Dernières actions et notifications de la plateforme.";
@@ -79,24 +89,31 @@ export default {
 
     const changePage = (id: string) => {
       activePageId.value = id;
+      requestedTab.value = 'contracts';
       adminMenu.value.forEach(item => item.isActive = (item.id === id));
+    };
+
+    const goToCatalogueTab = () => {
+      activePageId.value = 'contracts';
+      requestedTab.value = 'categories'; // On cible spécifiquement les dossiers
+      adminMenu.value.forEach(item => item.isActive = (item.id === 'contracts'));
     };
 
     const handleLogout = () => console.log("Fermeture de la session Admin");
     const openAddContractModal = () => console.log("Ouverture de la modale d'ajout de contrat !");
 
-    return { adminMenu, activePageId, currentPageTitle, currentPageSubtitle, changePage, handleLogout, openAddContractModal };
+    return { adminMenu, activePageId, requestedTab, currentPageTitle, currentPageSubtitle, goToCatalogueTab, changePage, handleLogout, openAddContractModal };
   }
 }
 </script>
 
 <style scoped>
-/* LE FOND BLEU NUIT SE TROUVE ICI */
+/* LE NOUVEAU FOND GRIS/BLEU TRÈS CLAIR DE L'IMAGE */
 .admin-layout {
   display: flex;
   flex-direction: column;
   height: 100vh;
-  background-color: #0f172a; /* Bleu Nuit ContratChap */
+  background-color: #f4f7fe; /* Fond lumineux */
   font-family: 'Inter', system-ui, sans-serif;
   overflow: hidden;
 }
@@ -110,21 +127,20 @@ export default {
   padding: 1.5rem;
   overflow-y: auto;
   overflow-x: hidden;
-  padding-bottom: calc(80px + env(safe-area-inset-bottom)); /* Laisse la place à la navbar mobile */
+  padding-bottom: calc(80px + env(safe-area-inset-bottom)); 
 }
 
 @media (min-width: 1024px) {
   .main-workspace { padding: 2.5rem 3rem; }
 }
 
-/* Style de remplacement pour les pages non créées */
 .placeholder-page {
   display: flex;
   justify-content: center;
   align-items: center;
   height: 400px;
-  border: 2px dashed rgba(255, 255, 255, 0.1);
-  border-radius: 16px;
+  border: 2px dashed #cbd5e1;
+  border-radius: 20px;
   color: #64748b;
   text-align: center;
 }

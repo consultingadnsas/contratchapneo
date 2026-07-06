@@ -4,7 +4,7 @@ from .views import (
     PaymentInitiateView, 
     PaymentSimulateView, 
     DownloadContractView,
-    payment_webhook_view
+    payment_webhook_view,
 )
 from django.views.decorators.csrf import csrf_exempt
 

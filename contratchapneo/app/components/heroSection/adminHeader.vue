@@ -7,12 +7,6 @@
     
     <div class="header-actions">
       <!-- Le bouton d'ajout global -->
-      <button class="btn-primary" @click="$emit('add-contract')">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-        </svg>
-        Nouveau Contrat
-      </button>
     </div>
   </header>
 </template>
@@ -34,12 +28,13 @@ export default {
   flex-direction: column;
   gap: 1.5rem;
   margin-bottom: 2rem;
+  
 }
 
 .page-title {
   font-size: 1.8rem;
   font-weight: 700;
-  color: #ffffff; /* Texte blanc sur fond sombre */
+  color: var(--primary-color);  
   margin: 0 0 0.2rem 0;
   letter-spacing: -0.02em;
 }
@@ -54,8 +49,8 @@ export default {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  background-color: #34d399; /* Vert ContratChap */
-  color: #064e3b; /* Vert très foncé pour le texte */
+  background-color: var(--primary-color); /* Vert ContratChap */
+  color: #ffffff; /* Vert très foncé pour le texte */
   border: none;
   padding: 0.75rem 1.25rem;
   border-radius: 8px;

@@ -12,7 +12,7 @@
           <div class="overlay"></div>
           <div class="image-text">
             <h2>Bienvenue sur notre plateforme</h2>
-            <p>Connectez-vous pour accéder à vos contrats</p>
+            <p>Connectez-vous pour accéder à vos packs de contrats</p>
           </div>
         </div>
       </div>

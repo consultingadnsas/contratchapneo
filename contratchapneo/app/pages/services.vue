@@ -274,6 +274,7 @@ export default {
     line-height: 1.6;
     max-width: 700px;
     margin-top: 1rem;
+    text-align: justify;
 }
 
 .hero-description strong {
@@ -408,7 +409,7 @@ export default {
 }
 
 .contact-item {
-    background: #f8fafc; 
+    background:#ffffff; 
     border-radius: 20px;
     padding: 2.5rem 2rem;
     display: flex;
@@ -420,7 +421,7 @@ export default {
 }
 
 .contact-item:hover {
-    background: #ffffff;
+    background: #eaf0f7;
     border-color: #e2e8f0;
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.03);
 }

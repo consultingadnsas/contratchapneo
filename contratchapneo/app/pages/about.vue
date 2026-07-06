@@ -211,6 +211,7 @@ export default {
     font-size: 1.1rem;
     line-height: 1.6;
     margin-bottom: 2.5rem;
+    text-align: justify;
 }
 
 .muted-text {
@@ -277,7 +278,7 @@ export default {
 
 .stat-item h3 {
     font-size: 2.5rem;
-    font-weight: 400;
+    font-weight: 600;
     color: #0f172a;
     margin: 0 0 0.2rem 0;
 }

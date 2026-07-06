@@ -37,6 +37,7 @@ class CartDetailView(APIView):
     Retourne le panier courant avec ses lignes.
     """
     permission_classes = [AllowAny]
+    authentication_classes = []
 
     def get(self, request):
         cart = get_or_create_cart(request)
@@ -52,6 +53,7 @@ class CartAddItemView(APIView):
     Ajoute un contrat ou un professionnel au panier.
     """
     permission_classes = [AllowAny]
+    authentication_classes = []
 
     def post(self, request):
         serializer = AddToCartSerializer(data=request.data)
@@ -123,6 +125,7 @@ class CartItemUpdateView(APIView):
     """
     # AllowAny car les utilisateurs invités (sessions) peuvent aussi modifier leur panier
     permission_classes = [AllowAny]
+    authentication_classes = []
 
     def patch(self, request, contrat_id):
         # 1. On récupère le panier de l'utilisateur (ou de la session)
@@ -181,6 +184,7 @@ class CartRemoveItemView(APIView):
     Supprime une ligne du panier.
     """
     permission_classes = [AllowAny]
+    authentication_classes = []
 
     def delete(self, request, item_id):
         cart = get_or_create_cart(request)
@@ -203,6 +207,7 @@ class CartClearView(APIView):
     Vide entièrement le panier.
     """
     permission_classes = [AllowAny]
+    authentication_classes = []
 
     def delete(self, request):
         cart = get_or_create_cart(request)
@@ -234,6 +239,7 @@ class CheckoutView(APIView):
     5. Retourne la commande créée
     """
     permission_classes = [AllowAny]
+    authentication_classes = []
 
     def post(self, request):
         cart = get_or_create_cart(request)
@@ -352,6 +358,7 @@ class OrderListView(APIView):
     Non accessible aux invités (ils n'ont pas de compte).
     """
     permission_classes = [IsAuthenticated]
+    authentication_classes = []
 
     def get(self, request):
         orders = Order.objects.filter(
@@ -369,6 +376,7 @@ class OrderDetailView(APIView):
         Accessible au user connecté propriétaire OU à l'invité via son email.
     """
     permission_classes = [AllowAny]
+    authentication_classes = []
 
     def get(self, request, order_id):
         order = get_object_or_404(
@@ -572,6 +580,7 @@ class OrderCancelView(APIView):
     Annule une commande en statut 'pending'.
     """
     permission_classes = [AllowAny]
+    authentication_classes = []
 
     def post(self, request, order_id):
         order = get_object_or_404(Order, id=order_id)
