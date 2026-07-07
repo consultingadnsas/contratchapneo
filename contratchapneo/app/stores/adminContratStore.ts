@@ -16,30 +16,28 @@ export const useAdminContratStore = defineStore('adminContrat', ()=>{
     // Compute
 
     // Actions
-    const addNewCategory = async(categoryTitle:string|'')=>{
-
+    const addNewCategory = async (payload: { title: string; description: string }) => {
         isLoading.value = true;
         error.value = null;
 
         try {
             const response = await $api('/contrat/admin-category/', {
-                method:"POST",
+                method: "POST",
                 body: {
-                    title: categoryTitle,
-                    description: ""
+                    title: payload.title,
+                    description: payload.description // On envoie la vraie description !
                 }
-            })
-            if(response){
-                console.log("Ajout de catégorie réussie", response)
-                return response
+            });
+            if (response) {
+                console.log("Ajout de catégorie réussi", response);
+                return response;
             }
-        } catch(err:any){
-            error.value = err.message || "Erreur lors de l'ajout de catégorie"
-            console.error("Un soucis est intervenue:", err)
-        } finally{
+        } catch(err: any) {
+            error.value = err.message || "Erreur lors de l'ajout de catégorie";
+            console.error("Un souci est intervenu :", err);
+        } finally {
             isLoading.value = false;
         }
-
     }
 
     return{

@@ -86,7 +86,7 @@
             <button class="close-modal-btn" @click="isFolderModalOpen = false">&times;</button>
           </div>
           
-          <form @submit.prevent="submitNewFolder" class="folder-modal-body">
+          <form @submit.prevent="handleAdd" class="folder-modal-body">
             <div class="form-group">
               <label for="folderName">Nom de la catégorie</label>
               <input type="text" id="folderName" v-model="newFolderData.name" placeholder="Ex: Droit Immobilier" required />
@@ -110,7 +110,7 @@
 </template>
 
 <script lang="ts">
-import { ref, computed, markRaw, onMounted } from 'vue';
+import { ref, computed, markRaw, onMounted, reactive } from 'vue';
 import { PlusIcon, TrashIcon, PencilSquareIcon, DocumentTextIcon, ArrowLeftIcon, MagnifyingGlassIcon } from '@heroicons/vue/24/outline';
 import folderCards from '../../../cards/folderCards.vue'; 
 import {useContratStore} from '../../../../stores/contratStore';
@@ -141,6 +141,13 @@ export default {
     const openedCategory = ref<string | null>(null);
     const newCategory = ref<null | string>('');
 
+    // About Modale
+    const isFolderModalOpen = ref<boolean>(false);
+    const newFolderData = reactive({
+      name:'',
+      description:''
+    })
+
     // --- RECHERCHE ---
     const filteredCategories = computed(() => {
       if (!props.searchQuery) return props.categories;
@@ -166,10 +173,23 @@ export default {
 
     // --- ACTIONS DOSSIERS ---
     const handleAdd = () => {
-      if (newCategory.value.trim() !== '') {
-        adminStore.addNewCategory(newCategory.value)
-        emit('add-category', newCategory.value.trim());
-        newCategory.value = '';
+      if (newFolderData.name.trim() !== '') {
+        // 1. Appel au store avec le bon format
+        adminStore.addNewCategory({ 
+            title: newFolderData.name, 
+            description: newFolderData.description 
+        });
+        
+        // 2. Émission vers le parent
+        emit('add-category', { 
+            name: newFolderData.name, 
+            description: newFolderData.description 
+        });
+        
+        // 3. Réinitialisation
+        newFolderData.name = '';
+        newFolderData.description = '';
+        isFolderModalOpen.value = false;
       }
     };
 
@@ -189,6 +209,8 @@ export default {
     })
 
     return {
+      newFolderData,
+      isFolderModalOpen,
       contratstore,
       adminStore,
       openedCategory, 

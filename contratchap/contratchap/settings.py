@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 from pathlib import Path
 import os
 from decouple import config
+from datetime import timedelta
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -187,3 +188,16 @@ XPAYE_RETURN_URL       = config('XPAYE_RETURN_URL')    # ton frontend
 # ── Email & Frontend ───────────────────────────────────────
 FRONTEND_URL       = 'http://localhost:3000'
 DEFAULT_FROM_EMAIL = 'no-reply@tonsite.com'
+
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(days=1),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
+    'ROTATE_REFRESH_TOKENS': True,
+    'BLACKLIST_AFTER_ROTATION': True,
+    'AUTH_HEADER_TYPES': ('Bearer',),
+    'AUTH_COOKIE': 'access_token',  # Nom du cookie pour le access token
+    'AUTH_COOKIE_REFRESH': 'refresh_token',  # Nom du cookie pour le refresh token
+    'AUTH_COOKIE_SECURE': not DEBUG,  # HTTPS seulement en production
+    'AUTH_COOKIE_HTTP_ONLY': True,  # HttpOnly pour sécurité
+    'AUTH_COOKIE_SAMESITE': 'Lax',  # ou 'Strict' selon vos besoins
+}
