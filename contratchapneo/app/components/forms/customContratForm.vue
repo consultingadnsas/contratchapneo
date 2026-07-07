@@ -3,7 +3,8 @@
         class="custom-contract-form w-full flex flex-col gap-4"
         @submit.prevent="submitForm"
     >
-        <h3>{{ formTitle }}</h3>
+
+        <h3> {{ formTitle }} </h3>
 
         <!-- Ajout du v-model et des bonnes options -->
         <BaseSelect 
@@ -91,7 +92,9 @@ import BaseInput from '../input/BaseInput.vue'
 import checkoutButton from '../buttons/checkoutButton.vue'
 import BaseSelect from '../input/BaseSelect.vue'
 import BaseArea from '../input/BaseArea.vue'
-import BaseNotification from '../tools/baseNotification.vue' // Attention à la majuscule si ton fichier l'exige
+import {ref, reactive} from 'vue'
+
+import { useCartStore } from '../../stores/cartStore'
 
 export default {
     components: {
@@ -107,9 +110,11 @@ export default {
             default: 'Mon contrat sur-mesure'
         }
     },
-    emits: ['success'], // Correction orthographique (2 's')
-    
-    setup(props, { emit }) {
+
+    emits:['succes'],
+    setup(props, {emit}){
+
+        const cartStore = useCartStore();
 
         // 1. Déclaration de toutes les variables nécessaires au backend
         const checkoutform = reactive({
@@ -206,7 +211,8 @@ export default {
             }
         }
 
-        return {
+        return{
+            cartStore,
             checkoutform,
             loading,
             submitForm,

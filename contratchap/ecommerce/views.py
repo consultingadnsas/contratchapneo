@@ -7,7 +7,7 @@ from django.conf import settings
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.permissions import AllowAny, IsAuthenticated, IsAdminUser
 from rest_framework.exceptions import PermissionDenied
 from django.shortcuts import get_object_or_404
 from django.db import transaction
@@ -22,7 +22,7 @@ from .serializers import (
     CheckoutSerializer,
 )
 from .helpers import (get_or_create_cart, set_cart_cookie_if_needed)
-from contrat.models import Contrat
+from contrat.models import Contrat, CustomedContract
 from pro.models import LegalProfessional
 
 from contrat.utils import fill_docx_template, convert_docx_to_pdf
@@ -68,16 +68,17 @@ class CartAddItemView(APIView):
         # 🚨 CORRECTION ICI : On utilise .get() pour éviter le KeyError
         contrat_id = serializer.validated_data.get('contrat_id')
         pro_id     = serializer.validated_data.get('pro_id')
+        customed_contract_id = serializer.validated_data.get('customed_contract')
         quantity   = serializer.validated_data.get('quantity', 1)
 
         # Vérification de sécurité
-        if not contrat_id and not pro_id:
+        if not contrat_id and not pro_id and not customed_contract_id:
              return Response(
-                {'errors': 'Vous devez fournir soit un contrat_id, soit un pro_id.'},
+                {'errors': 'Vous devez fournir soit un contrat_id, soit un pro_id, soit un customed_contract.'},
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        # ⚖️ LOGIQUE HYBRIDE : CONTRAT OU PRO
+        # ⚖️ LOGIQUE HYBRIDE : CONTRAT OU PRO OU CONTRAT SUR MESURE
         if contrat_id:
             contrat = get_object_or_404(Contrat, id=contrat_id)
             item, created = CartItem.objects.get_or_create(
@@ -91,7 +92,7 @@ class CartAddItemView(APIView):
             if not created:
                 item.quantity += quantity
                 item.save()
-                
+
         elif pro_id:
             pro = get_object_or_404(LegalProfessional, id=pro_id)
             item, created = CartItem.objects.get_or_create(
@@ -100,6 +101,20 @@ class CartAddItemView(APIView):
                 defaults={
                     'quantity'  : quantity,
                     'unit_price': pro.prix,
+                }
+            )
+            if not created:
+                item.quantity += quantity
+                item.save()
+
+        elif customed_contract_id:
+            customed_contract = get_object_or_404(CustomedContract, id=customed_contract_id)
+            item, created = CartItem.objects.get_or_create(
+                cart=cart,
+                customed_contract=customed_contract,
+                defaults={
+                    'quantity'  : quantity,
+                    'unit_price': customed_contract.prix,
                 }
             )
             if not created:
@@ -310,31 +325,32 @@ class CheckoutView(APIView):
         # Création des lignes de commande
         order_items = []
         
-        for item in cart.items.select_related('contrat', 'pro'):
+        for item in cart.items.select_related('contrat', 'pro', 'customed_contract'):
             
-            # 2️⃣ On prépare les deux variables séparément
+            # 2️⃣ On prépare les trois variables séparément
             c_title = None
             p_name = None
+            customized_name = None
             
             if item.contrat:
-                # CORRECTION : Le champ s'appelle 'titre' et non 'title'
                 c_title = item.contrat.title
             elif item.pro:
-                # CORRECTION : Utilisation de get_title_display() si c'est un champ choices, 
-                # sinon on récupère simplement l'attribut 'title'.
                 pro_title = item.pro.get_title_display() if hasattr(item.pro, 'get_title_display') else getattr(item.pro, 'title', '')
                 p_name = f"{item.pro.first_name} {item.pro.last_name} - {pro_title}"
+            elif item.customed_contract:
+                customized_name = item.customed_contract.subject or f"Contrat sur mesure #{item.customed_contract.id}"
 
-            # 3️⃣ On insère chaque info dans SA propre colonne
             order_items.append(
                 OrderItem(
-                    order        =order,
-                    contrat      =item.contrat,
-                    pro          =item.pro,  
-                    contrat_title=c_title,  
-                    pro_name     =p_name,   
-                    unit_price   =item.unit_price,
-                    quantity     =item.quantity,
+                    order             =order,
+                    contrat           =item.contrat,
+                    pro               =item.pro,
+                    contrat_customed  =item.customed_contract,
+                    contrat_title     =c_title,
+                    customised_contract = customized_name,
+                    pro_name          =p_name,
+                    unit_price        =item.unit_price,
+                    quantity          =item.quantity,
                 )
             )
             
@@ -616,3 +632,11 @@ class OrderCancelView(APIView):
             order.guest is not None and
             order.guest.email == email
         )
+
+# ===================================================
+# 1.  Pour la gestion ecommerce, côté administrateurs
+# ===================================================
+
+class AdminOrderListView(APIView):
+
+    permission_classes = [IsAdminUser]

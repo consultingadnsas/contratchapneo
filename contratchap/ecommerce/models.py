@@ -3,7 +3,7 @@ from django.conf import settings
 import uuid
 
 # About relation
-from contrat.models import Contrat
+from contrat.models import (Contrat, CustomedContract)
 from pro.models import LegalProfessional
 
 class Cart(models.Model):
@@ -104,6 +104,14 @@ class CartItem(models.Model):
         null=True, 
         blank=True
     )
+    # Contrat sur demande devient optionnel
+    customed_contract = models.ForeignKey(
+        CustomedContract,
+        on_delete=models.CASCADE,
+        related_name='customed_contract_items',
+        null=True,
+        blank=True
+    )
     quantity = models.PositiveIntegerField(default=1)
     unit_price = models.DecimalField(
         max_digits=10,
@@ -122,21 +130,24 @@ class CartItem(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        # On remplace unique_together par une contrainte de validation stricte : 
-        # Un item doit avoir SOIT un contrat, SOIT un pro (mais pas les deux, ni aucun)
+        # 🚨 MISE À JOUR : Un item doit avoir SOIT un contrat, SOIT un pro, SOIT un contrat sur mesure
         constraints = [
             models.CheckConstraint(
                 condition=(
-                    models.Q(contrat__isnull=False, pro__isnull=True) |
-                    models.Q(contrat__isnull=True, pro__isnull=False)
+                    models.Q(contrat__isnull=False, pro__isnull=True, customed_contract__isnull=True) |
+                    models.Q(contrat__isnull=True, pro__isnull=False, customed_contract__isnull=True) |
+                    models.Q(contrat__isnull=True, pro__isnull=True, customed_contract__isnull=False)
                 ),
-                name='cartitem_contrat_or_pro_exclusive'
+                name='cartitem_exclusive_type'
             )
         ]
 
     def __str__(self):
         if self.contrat:
             return f'{self.quantity}x {self.contrat.title}'
+        elif self.customed_contract:
+            # Assure-toi que ton modèle CustomedContract a bien un champ 'title' ou adapte ce nom
+            return f'{self.quantity}x Sur mesure: {self.customed_contract.title}'
         return f'{self.quantity}x Carte de visite - {self.pro.first_name} {self.pro.last_name}'
 
     def get_subtotal(self):
@@ -146,8 +157,11 @@ class CartItem(models.Model):
         if not self.unit_price:
             if self.contrat:
                 self.unit_price = self.contrat.prix
+            elif self.customed_contract:
+                # 💡 Assure-toi que CustomedContract possède bien un champ 'prix'
+                self.unit_price = self.customed_contract.prix 
             elif self.pro:
-                self.unit_price = self.pro.prix # Correspond à ton champ prix
+                self.unit_price = self.pro.prix
         super().save(*args, **kwargs)
 
 class GuestInfo(models.Model):
@@ -266,10 +280,17 @@ class OrderItem(models.Model):
         null=True, blank=True,
         related_name='order_items'
     )
+    contrat_customed = models.ForeignKey(
+        'contrat.CustomedContract',
+        on_delete=models.SET_NULL,
+        blank=True,
+        null=True,
+    )
 
     # Snapshots — figés définitivement au moment du checkout
     # Rendu optionnel selon ce qu'on achète
     contrat_title = models.CharField(max_length=255, null=True, blank=True)
+    customised_contract = models.CharField(max_length=225, null=True, blank=True)
     pro_name = models.CharField(max_length=255, null=True, blank=True) 
 
     user_inputs = models.JSONField(
@@ -285,26 +306,40 @@ class OrderItem(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
+        # 🚨 MISE À JOUR : Validation stricte à 3 voies
         constraints = [
             models.CheckConstraint(
                 condition=(
-                    models.Q(contrat__isnull=False, pro__isnull=True) |
-                    models.Q(contrat__isnull=True, pro__isnull=False)
+                    models.Q(contrat__isnull=False, pro__isnull=True, contrat_customed__isnull=True) |
+                    models.Q(contrat__isnull=True, pro__isnull=False, contrat_customed__isnull=True) |
+                    models.Q(contrat__isnull=True, pro__isnull=True, contrat_customed__isnull=False)
                 ),
-                name='orderitem_contrat_or_pro_exclusive'
+                name='orderitem_exclusive_type'
             )
         ]
 
     def __str__(self):
-        name = self.contrat_title if self.contrat_title else f"Carte - {self.pro_name}"
-        return f'{self.quantity}x {name} — commande {str(self.order.id)[:8]}…'
+        if self.contrat_title:
+            name = self.contrat_title
+        elif self.customised_contract:
+            name = f"Sur mesure : {self.customised_contract}"
+        else:
+            name = f"Carte - {self.pro_name}"
+        return f'{self.quantity} x {name} — commande {str(self.order.id)[:8]}…'
 
     def get_subtotal(self):
         return self.unit_price * self.quantity
 
     def save(self, *args, **kwargs):
+        # On capture les noms définitifs pour la facture !
         if not self.contrat_title and self.contrat:
             self.contrat_title = self.contrat.title
         if not self.pro_name and self.pro:
-            self.pro_name = f"{self.pro.first_name} {self.pro.last_name}" # Correspond à tes champs
+            self.pro_name = f"{self.pro.first_name} {self.pro.last_name}"
+            
+        # 💡 Capture du nom du contrat sur mesure
+        if not self.customised_contract and self.contrat_customed:
+            # J'utilise getattr au cas où CustomedContract n'a pas de champ title exact
+            self.customised_contract = getattr(self.contrat_customed, 'title', f"Demande sur mesure #{self.contrat_customed.id}")
+            
         super().save(*args, **kwargs)

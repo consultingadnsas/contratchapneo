@@ -66,6 +66,8 @@ export const usePaiementStore = defineStore('paiement', () => {
         isLoading.value = true;
         error.value = null;
 
+        const maxRetries:number = 5;
+
         try {
             const cartStore = useCartStore();
             const { useOrderStore } = await import('./orderStore');

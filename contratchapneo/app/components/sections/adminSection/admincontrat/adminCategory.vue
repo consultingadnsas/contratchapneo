@@ -10,8 +10,13 @@
       </div>
       
       <div class="grid-4-cols">
-        <div class="folder-wrapper" v-for="(cat, index) in filteredCategories" :key="index" @click="openCategory(cat)">
-          <folderCards :title="typeof cat === 'string' ? cat : cat.name" subtitle="Banque de contrat" color="blue" :hasItems="true" />
+        <div class="folder-wrapper" v-for="(cat, index) in contratstore.categories" :key="index" @click="openCategory(cat)">
+          <folderCards 
+            :title="cat.title" 
+            subtitle="Dossier Boutique" 
+            color="blue" 
+            :hasItems="true" 
+          />
           
           <button class="delete-folder-btn" @click.stop="handleDeleteFolder(index, cat)" title="Supprimer ce dossier et son contenu">
             <component :is="TrashIcon" class="icon-xs" />
@@ -36,7 +41,8 @@
       </div>
 
       <div class="grid-2-cols">
-        <div class="contract-card" v-for="contract in filteredContracts" :key="contract.id" :class="{'card-offline': !contract.isActive}">
+        <!-- Cartes des contrats existants -->
+        <div class="contract-card" v-for="category in contratstore.categories" :key="category.id" :class="{'card-offline': !contract.isActive}">
           <div class="card-header">
             <div class="icon-box-light"><component :is="DocumentTextIcon" class="icon-md" /></div>
             <span class="status-badge" :class="contract.isActive ? 'badge-green' : 'badge-gray'">
@@ -104,41 +110,36 @@
 </template>
 
 <script lang="ts">
-import { ref, computed, markRaw, reactive } from 'vue';
+import { ref, computed, markRaw, onMounted } from 'vue';
 import { PlusIcon, TrashIcon, PencilSquareIcon, DocumentTextIcon, ArrowLeftIcon, MagnifyingGlassIcon } from '@heroicons/vue/24/outline';
 import folderCards from '../../../cards/folderCards.vue'; 
+import {useContratStore} from '../../../../stores/contratStore';
+import type {Contrat, Category} from '../../../../stores/contratStore';
+import {useAdminContratStore} from '../../../../stores/adminContratStore'
 
 export default {
+  
   name: 'AdminCategories',
+  
   components: { folderCards },
+  
   props: {
     categories: { type: Array as () => string[], required: true },
     contracts: { type: Array as () => any[], required: true },
     searchQuery: { type: String, default: '' }
   },
+  
   emits: ['add-category', 'delete-category', 'add-contract', 'edit-contract', 'delete-contract', 'toggle-status'],
+  
   setup(props, { emit }) {
-    const openedCategory = ref<string | null>(null);
     
-    // --- GESTION DE LA MODALE DOSSIER ---
-    const isFolderModalOpen = ref(false);
-    const newFolderData = reactive({
-      name: '',
-      description: ''
-    });
+    // Store pour gérer les catégories
 
-    const submitNewFolder = () => {
-      if (newFolderData.name.trim() !== '') {
-        emit('add-category', { 
-          name: newFolderData.name.trim(), 
-          description: newFolderData.description.trim() 
-        });
-        
-        newFolderData.name = '';
-        newFolderData.description = '';
-        isFolderModalOpen.value = false;
-      }
-    };
+    const contratstore = useContratStore();
+    const adminStore = useAdminContratStore();
+
+    const openedCategory = ref<string | null>(null);
+    const newCategory = ref<null | string>('');
 
     // --- RECHERCHE ---
     const filteredCategories = computed(() => {
@@ -164,8 +165,16 @@ export default {
     const closeCategory = () => { openedCategory.value = null; };
 
     // --- ACTIONS DOSSIERS ---
-    const handleDeleteFolder = (index: number, cat: string | any) => {
-      const catName = typeof cat === 'string' ? cat : cat.name;
+    const handleAdd = () => {
+      if (newCategory.value.trim() !== '') {
+        adminStore.addNewCategory(newCategory.value)
+        emit('add-category', newCategory.value.trim());
+        newCategory.value = '';
+      }
+    };
+
+    const handleDeleteFolder = (index: number, catName: string) => {
+      // Alerte globale de suppression de dossier et de son contenu
       if (confirm(`⚠️ ATTENTION : Si vous supprimez le dossier "${catName}", vous supprimerez également TOUT son contenu (tous les contrats associés). Voulez-vous vraiment continuer ?`)) {
         emit('delete-category', index, catName);
       }
@@ -175,11 +184,20 @@ export default {
       if(confirm('Supprimer ce contrat définitivement ?')) emit('delete-contract', id);
     };
 
+    onMounted(()=>{
+
+    })
+
     return {
-      openedCategory, openCategory, closeCategory, 
-      isFolderModalOpen, newFolderData, submitNewFolder,
-      filteredCategories, filteredContracts,
-      handleDeleteFolder, handleDeleteContract,
+      contratstore,
+      adminStore,
+      openedCategory, 
+      openCategory, 
+      closeCategory, 
+      newCategory, 
+      filteredCategories, 
+      filteredContracts,
+      handleAdd, handleDeleteFolder, handleDeleteContract,
       PlusIcon: markRaw(PlusIcon), TrashIcon: markRaw(TrashIcon), 
       PencilSquareIcon: markRaw(PencilSquareIcon), DocumentTextIcon: markRaw(DocumentTextIcon), 
       ArrowLeftIcon: markRaw(ArrowLeftIcon), MagnifyingGlassIcon: markRaw(MagnifyingGlassIcon)
