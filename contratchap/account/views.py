@@ -8,6 +8,8 @@ from django.utils.translation import gettext_lazy as _
 from django.contrib.auth import authenticate
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.exceptions import TokenError
+from django.middleware.csrf import get_token
+from rest_framework.decorators import api_view, permission_classes
 # Create your views here.
 
 class RegisterView(APIView):
@@ -134,6 +136,18 @@ class LogoutView(APIView):
         response.delete_cookie('refresh_token')
         
         return response        
+
+class CSRFTokenView(APIView):
+    """Initialise le token CSRF pour les requêtes cross-site"""
+    permission_classes = [AllowAny]
+    authentication_classes = []
+
+    def get(self, request):
+        csrf_token = get_token(request)
+        return Response(
+            {'csrfToken': csrf_token},
+            status=status.HTTP_200_OK
+        )
 
 class UserProfileView(APIView):
 

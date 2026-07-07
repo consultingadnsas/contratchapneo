@@ -5,9 +5,13 @@ import uuid
 
 class Category(models.Model):
 
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    id = models.UUIDField(
+        primary_key=True, 
+        default=uuid.uuid4, 
+        editable=False
+    )
     title = models.CharField(max_length=100)
-    description = models.TextField()
+    description = models.TextField(blank=True)
     # Timestamps
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -37,6 +41,9 @@ class Contrat(models.Model):
     # Statistics
     views = models.PositiveIntegerField(default=0)
     downloads = models.PositiveIntegerField(default=0)
+
+    # Visibility
+    is_active = models.BooleanField(default=True)
     
     # Timestamps
     created_at = models.DateTimeField(auto_now_add=True)
@@ -44,6 +51,29 @@ class Contrat(models.Model):
 
     def __str__(self):
         return f'Contrat {self.title}'
+
+class CustomedContract(models.Model):
+    
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    category = models.ForeignKey(
+        Category,
+        on_delete=models.SET_NULL,
+        blank=True,
+        null=True,
+        related_name='customised_contracts'
+    )
+    subject = models.CharField(max_length=225)
+    phone_number = models.CharField(max_length=12)
+    email = models.EmailField()
+    description = models.TextField()
+    price = models.FloatField(default=25000.00)
+
+    is_wrotten = models.BooleanField(default = False)
+
+    # Timestamps
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
     
 class Pack(models.Model):
 

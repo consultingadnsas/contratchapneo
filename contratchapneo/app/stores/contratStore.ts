@@ -1,7 +1,7 @@
 import {defineStore} from "pinia";
 import {ref} from "vue"
 
-export interface Category{
+export interface Category{ 
     id?: string;
     title: string;
     description: string;

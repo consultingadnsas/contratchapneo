@@ -56,6 +56,8 @@
 </template>
 
 <script>
+import { useId, computed } from 'vue'
+
 export default {
   name: 'BaseSelect',
   inheritAttrs: false,

@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 from pathlib import Path
 import os
 from decouple import config
+from datetime import timedelta
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -33,11 +34,20 @@ ALLOWED_HOSTS = [
     'kettle-diploma-lifter.ngrok-free.dev', 
     '127.0.0.1',
     'localhost',
-    '172.30.144.1'
+    '172.30.144.1',
+
 ]
 
 CORS_EXPOSE_HEADERS = [
     'Content-Disposition',
+]
+
+CSRF_TRUSTED_ORIGINS = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+    "https://kettle-diploma-lifter.ngrok-free.dev", # Ajouté au cas où vous testez via ngrok
 ]
 
 # Application definition
@@ -63,9 +73,7 @@ INSTALLED_APPS = [
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
-        'rest_framework.authentication.SessionAuthentication',
-        'account.authenticate.CookieJWTAuthentication'
+        'account.authenticate.CookieJWTAuthentication',
     ),
     'DEFAULT_PERMISSION_CLASSES': (
         'rest_framework.permissions.IsAuthenticated',
@@ -166,7 +174,7 @@ CORS_ALLOWED_ORIGINS = [
 CORS_ALLOW_CREDENTIALS = True
 
 # Seulement en dev
-CORS_ALLOW_ALL_ORIGINS = True 
+# CORS_ALLOW_ALL_ORIGINS = True 
 
 # PAIEMENT SETTINGS
 STRIPE_SECRET_KEY = config('STRIPE_SECRET_KEY')
@@ -180,3 +188,16 @@ XPAYE_RETURN_URL       = config('XPAYE_RETURN_URL')    # ton frontend
 # ── Email & Frontend ───────────────────────────────────────
 FRONTEND_URL       = 'http://localhost:3000'
 DEFAULT_FROM_EMAIL = 'no-reply@tonsite.com'
+
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(days=1),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
+    'ROTATE_REFRESH_TOKENS': True,
+    'BLACKLIST_AFTER_ROTATION': True,
+    'AUTH_HEADER_TYPES': ('Bearer',),
+    'AUTH_COOKIE': 'access_token',  # Nom du cookie pour le access token
+    'AUTH_COOKIE_REFRESH': 'refresh_token',  # Nom du cookie pour le refresh token
+    'AUTH_COOKIE_SECURE': not DEBUG,  # HTTPS seulement en production
+    'AUTH_COOKIE_HTTP_ONLY': True,  # HttpOnly pour sécurité
+    'AUTH_COOKIE_SAMESITE': 'Lax',  # ou 'Strict' selon vos besoins
+}

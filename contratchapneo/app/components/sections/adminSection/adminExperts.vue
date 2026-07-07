@@ -97,6 +97,7 @@
 import { ref, computed, markRaw } from 'vue';
 import ExpertModal from '../../modale/expertModal.vue';
 import secondButton from '../../buttons/secondButton.vue';
+import {useProStore} from '../../../stores/proStore'
 import { 
   UserPlusIcon, 
   MagnifyingGlassIcon, 
@@ -109,6 +110,8 @@ export default {
   name: 'AdminExperts',
   components: { ExpertModal, secondButton },
   setup() {
+    const proStore = useProStore();
+    
     const searchQuery = ref('');
     const activeTab = ref('Tous');
 

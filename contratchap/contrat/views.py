@@ -5,18 +5,19 @@ import os
 
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework import status, permissions
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework import status
+from rest_framework.permissions import AllowAny, IsAuthenticated, IsAdminUser
 from rest_framework.pagination import PageNumberPagination
 
 from django.db import transaction
 from django.shortcuts import get_object_or_404
 from django.db.models import Q, F
-from .models import Category, Contrat
+from .models import Category, Contrat, CustomedContract
 from .serializers import (
     CategorySerializer, 
     ContratSerializer, 
-    CategoryWithContractsSerializer
+    CategoryWithContractsSerializer,
+    CustomedContractSerializer,
 )
 
 from docx import Document
@@ -216,7 +217,31 @@ class ContratOperationsView(APIView):
                 },
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
-        
+
+class CustomedContractRequestView(APIView):
+    permission_classes = [AllowAny]
+    authentication_classes = []
+
+    def post(self, request):
+        serializer = CustomedContractSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(
+                {
+                    'data': serializer.data,
+                    'message': 'Demande de contrat sur mesure enregistrée avec succès.'
+                },
+                status=status.HTTP_201_CREATED
+            )
+
+        return Response(
+            {
+                'errors': serializer.errors,
+                'message': 'Impossible de créer la demande sur mesure.'
+            },
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
 class ContractTagsView(APIView):
 
     permission_classes = [AllowAny]
@@ -271,3 +296,116 @@ class ContractTagsView(APIView):
         except Exception as e:
             return Response({"error": str(e)}, status=500)
 
+
+
+# Manage contracts and categories with proper permissions and error handling.
+
+# ==========================================
+# 1. URL: /api/admin/contracts/
+# ==========================================
+class AdminContractListCreateView(APIView):
+    permission_classes = [IsAdminUser]
+
+    def post(self, request):
+        """Création d'un nouveau contrat"""
+        # On passe le contexte pour la gestion des URLs des fichiers si nécessaire
+        serializer = ContratSerializer(data=request.data, context={'request': request})
+        
+        if serializer.is_valid():
+            serializer.save()
+            return Response(
+                {
+                    'data': serializer.data,
+                    'message': 'Contrat créé avec succès'
+                }, 
+                status=status.HTTP_201_CREATED
+            )
+        
+        return Response(
+            {
+                'error': serializer.errors,
+                'message': 'Erreur lors de la création du contrat'
+            }, 
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+
+# ==============================================
+# 2. URL: /api/admin/contracts/<int:contrat_id>/
+# ==============================================
+class AdminContractDetailView(APIView):
+    permission_classes = [IsAdminUser]
+
+    def get(self, request, contrat_id):
+        """Récupération d'un contrat spécifique avec sa catégorie"""
+        contract = get_object_or_404(
+            Contrat.objects.select_related('category'), 
+            id=contrat_id
+        )
+        serializer = ContratSerializer(contract, context={'request': request})
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    
+    def put(self, request, contrat_id):
+        """Mise à jour d'un contrat spécifique"""
+        contract = get_object_or_404(Contrat, id=contrat_id)
+
+        # Note: partial=True permet une mise à jour partielle (comportement d'un PATCH)
+        serializer = ContratSerializer(contract, data=request.data, partial=True, context={'request': request})
+        
+        if serializer.is_valid():
+            serializer.save()
+            return Response(
+                {
+                    'data': serializer.data,
+                    'message': 'Contrat mis à jour avec succès'
+                }, 
+                status=status.HTTP_200_OK
+            )
+        
+        return Response(
+            {
+                'error': serializer.errors,
+                'message': 'Erreur lors de la mise à jour du contrat'
+            }, 
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    def delete(self, request, contrat_id):
+        """Suppression d'un contrat spécifique"""
+        contract = get_object_or_404(Contrat, id=contrat_id)
+        contract.delete()
+        # En REST, une suppression réussie retourne généralement un statut 204 No Content
+        return Response(
+            {"message": "Contrat supprimé avec succès"}, 
+            status=status.HTTP_204_NO_CONTENT
+        )
+
+# ==========================================
+# 3. URL: /api/admin/contract/
+# ==========================================
+
+class AdminCategoryDetail(APIView):
+
+    permission_classes=[IsAdminUser]
+
+    def post(self, request):
+
+        serializer = CategorySerializer(data=request.data)
+
+        if serializer.is_valid():
+            serializer.save()
+            return Response(
+                {
+                    'data': serializer.data,
+                    'message': 'Catégorie ajoutée avec succès'
+                },
+                status=status.HTTP_201_CREATED
+            )
+        
+        return Response(
+            {
+                'error': serializer.errors,
+                'message': 'Erreur lors de la création de la catégorie'
+            },
+            status=status.HTTP_400_BAD_REQUEST
+        )
