@@ -55,7 +55,10 @@
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
                         </div>
                         <h4>Téléphone</h4>
-                        <p><a href="tel:+2250779101170">+225 07 79 10 11 70</a></p>
+                        <p>
+                            <a href="tel:+2250508884088">+225 05 08 88 40 88</a>
+                            <a href="tel:+2290157218391">+229 01 57 21 83 91</a>
+                        </p>
                     </div>
                 </div>
             </section>          
@@ -221,25 +224,6 @@ export default {
     flex-direction: column;
 }
 
-/* --- TYPOGRAPHIE --- */
-.muted-text {
-    color: #64748b;
-}
-
-.pill-badge {
-    display: inline-block;
-    border: 1px solid #e2e8f0;
-    color: #34d399; 
-    background-color: rgba(52, 211, 153, 0.1);
-    padding: 6px 18px;
-    border-radius: 50px;
-    font-size: 0.8rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    margin-bottom: 1.5rem;
-}
-
 .text-accent {
     color:#10507e; 
 }
@@ -338,59 +322,6 @@ export default {
     margin: 0;
 }
 
-.services-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 2rem;
-}
-
-.service-card {
-    background: #ffffff;
-    border: 1px solid #e2e8f0;
-    border-radius: 20px;
-    padding: 2.5rem 2rem;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    transition: all 0.3s ease;
-    cursor: pointer; /* Indique clairement que c'est cliquable */
-}
-
-/* Effet interactif renforcé au survol */
-.service-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 15px 30px rgba(52, 211, 153, 0.1); /* Ombre très légèrement teintée de vert */
-    border-color: #34d399; 
-}
-
-.card-icon {
-    width: 50px;
-    height: 50px;
-    color: #34d399;
-    background: rgba(52, 211, 153, 0.1);
-    padding: 12px;
-    border-radius: 14px;
-    margin-bottom: 1.5rem;
-    transition: transform 0.3s ease;
-}
-
-/* Petite animation de l'icône au survol de la carte */
-.service-card:hover .card-icon {
-    transform: scale(1.1);
-}
-
-.service-card h3 {
-    font-size: 1.25rem;
-    font-weight: 700;
-    margin: 0 0 0.8rem 0;
-}
-
-.service-card p {
-    font-size: 0.95rem;
-    line-height: 1.6;
-    margin: 0;
-}
-
 /* --- 3. SECTION COORDONNÉES --- */
 .contact-section {
     padding: 2rem 2rem 6rem 2rem;
@@ -451,6 +382,8 @@ export default {
 }
 
 .contact-item p {
+    display: flex;
+    flex-direction: column;
     color: #64748b;
     font-size: 1rem;
     margin: 0;

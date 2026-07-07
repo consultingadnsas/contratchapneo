@@ -6,7 +6,7 @@
         </div>
         
         <div class="image-container">
-            <img src="../../../assets/pictures/ContratChap/pexels-gustavo-fring-6699310.jpg" alt="Illustration contrat">
+            <img src="/custom.jpg" alt="Illustration contrat">
         </div>
 
     </div>

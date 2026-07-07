@@ -85,53 +85,38 @@ import notifications from '../../tools/notifications.vue'
 import mainButton from '../../buttons/mainButton.vue'
 
 import { ref, onMounted, watch } from 'vue'
-import {useContratStore} from '../../../stores/contratStore'
-import {useCartStore} from '../../../stores/cartStore'
+import { useContratStore } from '../../../stores/contratStore'
+import { useCartStore } from '../../../stores/cartStore'
 import { useRouter, useRoute } from 'vue-router'
-import type { Contrat } from '../../../stores/contratStore'
 
 export default {
-    
     components: {
-        contratCards,
-        Basefilter,
-        Paginator,
-        BaseSearchInput,
-        contractCardSkeleton,
-        emptyState,
-        cartModale,
-        viewModale,
-        cartBubble,
-        notifications,
-        mainButton
+        contratCards, Basefilter, Paginator, BaseSearchInput,
+        contractCardSkeleton, emptyState, cartModale, viewModale,
+        cartBubble, notifications, mainButton
     },
     
     setup() {
-
         const router = useRouter();
         const route = useRoute();
-
         const contratStore = useContratStore();
-
         const cartStore = useCartStore();
 
         const activeCategoryId = ref((route.query.category as string) || '');
-
-        const handlePageChange = (page: number) => {
-            contratStore.getContracts(page, activeCategoryId.value);
-        };
-
-        // Make a query 
         const searchQuery = ref((route.query.q as string) || '');
-
         let debounceTimeout: NodeJS.Timeout;
 
-        // About cart view
+        const handlePageChange = (page: number) => {
+            if (searchQuery.value) {
+                contratStore.fetchContracts(page, activeCategoryId.value, searchQuery.value);
+            } else {
+                contratStore.getContracts(page, activeCategoryId.value);
+            }
+        };
+
+        // --- Modales ---
         const isOpen = ref<boolean>(false);
-        
-        const openModal = ()=> {
-            isOpen.value = true;
-        }
+        const openModal = () => { isOpen.value = true; }
 
         const addTocart = async (contratId: string) => {
             try {
@@ -141,65 +126,53 @@ export default {
             }
         }
 
-        // About modalView
-        const isViewOpen = ref<boolean>(false) // Votre deuxième booléen
-        const textToShow = ref<string | null>(null)
+        const isViewOpen = ref<boolean>(false);
+        const textToShow = ref<string | null>(null);
+        
         const openViewModal = async(contratId:string) => {
             await contratStore.getSpecificContract(contratId);
-            console.log('Contrat reçu complet :', contratStore.contrat);
-            textToShow.value = contratStore.contrat?.document_preview
-            isViewOpen.value = true; // On ouvre la deuxième modale
-            console.log('The item selected', contratId)
+            textToShow.value = contratStore.contrat?.document_preview;
+            isViewOpen.value = true; 
         }
 
-        onMounted(()=>{
-            // On charge la première page de contrats
-            contratStore.getContracts(1, activeCategoryId.value);
-        })
-        watch(
-            () => route.query.category,
-            (newCategoryId) => {
-                activeCategoryId.value = (newCategoryId as string) || '';
-                // On relance la recherche depuis la page 1 avec le nouveau filtre
-                contratStore.getContracts(1, activeCategoryId.value);
-            }
-        );
-
-        watch(searchQuery, (newQuery) => {
-            
-            clearTimeout(debounceTimeout);
-
-            // On attends 600ms d'inactivité avant de lancer la requête
-            debounceTimeout = setTimeout(()=> {
-                // On va dans le store pour réccupérer le contrat concerné
-                // paramètres: page=1, categorie, mot-clé
-                contratStore.fetchContracts(1, activeCategoryId.value, newQuery),
-                // Debug
-                console.log("Recherche lancée pour :", newQuery)
-            }, 500)
-        })
-
-        onMounted(() => {
-            // 2. Si on arrive depuis l'accueil avec une recherche, on l'utilise immédiatement !
+        // --- Surveillances (Filtres et Recherche) ---
+        watch(() => route.query.category, (newCategoryId) => {
+            activeCategoryId.value = (newCategoryId as string) || '';
             if (searchQuery.value) {
                 contratStore.fetchContracts(1, activeCategoryId.value, searchQuery.value);
             } else {
-                // Sinon, chargement classique
                 contratStore.getContracts(1, activeCategoryId.value);
             }
-        })
+        });
+
+        watch(searchQuery, (newQuery) => {
+            clearTimeout(debounceTimeout);
+            // On attend 500ms d'inactivité avant de lancer la requête
+            debounceTimeout = setTimeout(() => {
+                // CORRECTION ICI : Le point-virgule au lieu de la virgule
+                contratStore.fetchContracts(1, activeCategoryId.value, newQuery);
+                console.log("Recherche lancée pour :", newQuery);
+            }, 500);
+        });
+
+        // --- Chargement initial unique ---
+        onMounted(() => {
+            // Un SEUL onMounted qui vérifie si on vient de l'accueil avec une recherche
+            if (searchQuery.value) {
+                contratStore.fetchContracts(1, activeCategoryId.value, searchQuery.value);
+            } else {
+                contratStore.getContracts(1, activeCategoryId.value);
+            }
+        });
 
         return {
             router,
             activeCategoryId,
             handlePageChange,
             searchQuery,
-            debounceTimeout,
             contratStore,
             cartStore,
             textToShow,
-
-            // modale
             isOpen,
             openModal,
             isViewOpen,

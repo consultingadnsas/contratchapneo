@@ -52,7 +52,8 @@
 </template>
 
 <script lang="ts">
-import { ref, onMounted, onBeforeUnmount } from 'vue';
+// N'oublie pas d'ajouter onBeforeUpdate, nextTick et watch dans l'import
+import { ref, onMounted, onBeforeUnmount, onBeforeUpdate, nextTick, watch } from 'vue';
 import { useRouter } from 'vue-router';
 
 // Convention : Majuscule pour les composants Vue
@@ -78,11 +79,22 @@ export default {
         const contratStore = useContratStore();
         const cartStore = useCartStore();
 
-        // Gestion propre des références du DOM via Vue
+        // --- 1. GESTION PROPRE DES RÉFÉRENCES DOM ---
         const cardRefs = ref<HTMLElement[]>([]);
+        
+        // ASTUCE VUE 3 : On vide le tableau avant chaque mise à jour du DOM 
+        // pour ne pas garder en mémoire des éléments HTML obsolètes après une recherche
+        onBeforeUpdate(() => {
+            cardRefs.value = [];
+        });
+
         const setCardRef = (el: any) => {
-            if (el && el.$el) {
-                cardRefs.value.push(el.$el);
+            // On s'assure de récupérer la balise HTML, que ce soit via un composant ($el) ou directement
+            const domElement = el?.$el || el;
+            
+            // On vérifie que c'est un vrai élément HTML avant de l'ajouter
+            if (domElement instanceof Element) {
+                cardRefs.value.push(domElement as HTMLElement);
             }
         };
 
@@ -112,17 +124,14 @@ export default {
             }
         }
 
-        // --- CORRECTION DE LA VISUALISATION ---
+        // --- VISUALISATION ---
         const isViewOpen = ref<boolean>(false);
-        const selectedPreviewText = ref<string>(''); // Stocke le texte du contrat sélectionné
+        const selectedPreviewText = ref<string>(''); 
 
-        // On passe directement le texte du contrat lors du clic
         const openViewModal = async(contratId:string) => {
             await contratStore.getSpecificContract(contratId);
-            console.log('Contrat reçu complet :', contratStore.contrat);
-            selectedPreviewText.value = contratStore.contrat?.document_preview
-            isViewOpen.value = true; // On ouvre la deuxième modale
-            console.log('The item selected', contratId)
+            selectedPreviewText.value = contratStore.contrat?.document_preview || '';
+            isViewOpen.value = true; 
         }
 
         onMounted(() => {            
@@ -139,15 +148,23 @@ export default {
                     }
                 });
             }, { threshold: 0.2, rootMargin: '0px 0px -20px 0px' });
-
-            setTimeout(() => {
-                cardRefs.value.forEach((cardEl) => {
-                    if (cardEl) observer?.observe(cardEl);
-                });
-            }, 100);
             
             contratStore.getContracts();
         });
+
+        // --- 2. SURVEILLANCE DES CARTES ---
+        // On observe les changements dans les contrats (par exemple après une recherche)
+        watch(() => contratStore.contracts, async () => {
+            // On attend que Vue ait fini de dessiner les nouvelles cartes à l'écran
+            await nextTick();
+            
+            // Seulement maintenant, on demande à l'IntersectionObserver de les surveiller
+            cardRefs.value.forEach((cardEl) => {
+                if (cardEl instanceof Element) {
+                    observer?.observe(cardEl);
+                }
+            });
+        }, { deep: true, immediate: true }); // immediate: true permet de l'exécuter au premier chargement
 
         onBeforeUnmount(() => {
             if (observer) observer.disconnect();
@@ -161,7 +178,7 @@ export default {
             isOpen,
             openModal,
             isViewOpen,
-            selectedPreviewText, // Ajouté au return
+            selectedPreviewText,
             addTocart,
             openViewModal,
             router,

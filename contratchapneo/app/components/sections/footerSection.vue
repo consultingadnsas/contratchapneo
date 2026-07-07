@@ -3,19 +3,38 @@
     <div class="footer-upper">
       <div class="footer-contact-col">
         <div class="social-links">
-          <a href="#" aria-label="Instagram" class="social-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>
+          
+          <a href="https://www.tiktok.com/@contratchap?_r=1&_t=ZN-97pbVnfYGHO" target="_blank" aria-label="TikTok" class="social-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M9 12a4 4 0 1 0 4 4V4a5 5 0 0 0 5 5"></path>
+            </svg>
           </a>
-          <a href="#" aria-label="X" class="social-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4l11.733 16h4.267l-11.733 -16z M4 20l6.768 -6.768 M20 4l-6.768 6.768"></path></svg>
+          
+          <div class="social-dropdown">
+            <button aria-label="Facebook" class="social-icon fb-btn">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path>
+              </svg>
+            </button>
+            <div class="social-dropdown-content">
+              <a href="https://www.facebook.com/share/19HDjsnZdS/?mibextid=wwXIfr" target="_blank">🇨🇮 Côte d'Ivoire</a>
+              <a href="https://www.facebook.com/share/18zWA2JiSH/?mibextid=wwXIfr" target="_blank">🇸🇳 Sénégal</a>
+              <a href="https://www.facebook.com/share/14hKSAApwFB/?mibextid=wwXIfr" target="_blank">🇧🇯 Bénin</a>
+            </div>
+          </div>
+
+          <a href="https://www.linkedin.com/company/contratchap/" target="_blank" aria-label="LinkedIn" class="social-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path>
+              <rect x="2" y="9" width="4" height="12"></rect>
+              <circle cx="4" cy="4" r="2"></circle>
+            </svg>
           </a>
-          <a href="#" aria-label="YouTube" class="social-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33A2.78 2.78 0 0 0 3.4 19c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.25 29 29 0 0 0-.46-5.33z"></path><polygon points="9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02"></polygon></svg>
-          </a>
+
         </div>
         
         <div class="contact-info">
-          <p class="address">Angre 8e tranche, Chicken Nation<br />Abidjan, Côte d'Ivoire</p>
+          <p class="address">Angré 8e tranche, Chicken Nation<br />Abidjan, Côte d'Ivoire</p>
           <p class="email">Consultingadnsas@gmail.com</p>
           <p class="phone">+225 05 08 88 40 88</p>
           <p class="phone">+229 01 57 21 83 91</p>
@@ -31,7 +50,8 @@
           <h3 class="column-title">{{ section.title }}</h3>
           <ul>
             <li v-for="(link, idx) in section.links" :key="idx">
-              <a href="#">{{ link }}</a>
+              <router-link v-if="link.path" :to="link.path">{{ link.label }}</router-link>
+              <a v-else href="#">{{ link.label }}</a>
             </li>
           </ul>
         </div>
@@ -40,21 +60,23 @@
 
     <div class="footer-divider-container">
       <div class="divider-line"></div>
-      <button class="btn-get-started">Get Started</button>
+      <button class="btn-get-started" @click="$router.push('/contractBank')">Commencer</button>
     </div>
 
     <div class="footer-lower">
       <p class="brand-pitch">
-        Avec contratchap, vous optez pour le meilleur du juridique et sécurisez votre business.
+        Avec ContratChap, vous optez pour le meilleur du juridique et sécurisez votre business.
       </p>
       <div class="legal-links">
-        <a href="#">TERMS & CONDITIONS</a>
-        <a href="#">PRIVACY POLICY</a>
+        <router-link to="/">CONDITIONS D'UTILISATION</router-link>
+        <router-link to="/">POLITIQUE DE CONFIDENTIALITÉ</router-link>
       </div>
     </div>
 
-    <div class="giant-watermark">
-      Contratchap
+    <div class="watermark-wrapper">
+      <div class="giant-watermark">
+        ContratChap
+      </div>
     </div>
   </footer>
 </template>
@@ -63,18 +85,31 @@
 export default {
   name: 'FooterSection',
   setup() {
+    // Structure mise à jour : Chaque lien a un "label" (le texte) et un "path" (la route)
     const footerSections = [
       {
         title: 'MENU',
-        links: ['Banque de contrats', 'Contrat sur mesure', 'Packs de contrats', 'Experts', 'Outils de calculs']
+        links: [
+          { label: 'Banque de contrats', path: '/contractBank' },
+          { label: 'Contrat sur mesure', path: '/contractBank/customContrat' },
+          { label: 'Experts', path: '/pro' },
+          { label: 'Outils de calculs', path: '/lawCalcul' },
+          { label: 'Services Juridiques', path: '/services' }
+        ]
       },
       {
-        title: 'SOCIAL',
-        links: ['Face', 'Torebag', 'Hat', 'Blouse']
+        title: 'RESSOURCES',
+        links: [
+          { label: 'Notre Blog', },
+          { label: 'Tutoriels',  },
+          { label: 'FAQ', }
+        ]
       },
       {
-        title: 'CART',
-        links: ['Blog', 'Contact', 'Terms', 'Tutorials']
+        title: 'À PROPOS',
+        links: [
+          { label: 'Qui sommes-nous ?', path: '/about' },
+        ]
       }
     ];
 
@@ -123,6 +158,7 @@ export default {
 .social-links {
   display: flex;
   gap: 0.75rem;
+  align-items: center;
 }
 
 .social-icon {
@@ -134,11 +170,14 @@ export default {
   border: 1px solid #333333;
   border-radius: 50%;
   color: #ffffff;
-  transition: border-color 0.3s, color 0.3s;
+  background: transparent;
+  cursor: pointer;
+  transition: border-color 0.3s, color 0.3s, background 0.3s;
 }
 
 .social-icon:hover {
   border-color: #ffffff;
+  background: rgba(255, 255, 255, 0.1);
 }
 
 .social-icon svg {
@@ -146,6 +185,71 @@ export default {
   height: 18px;
 }
 
+/* --- MENU DÉROULANT FACEBOOK --- */
+.social-dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+.social-dropdown-content {
+  visibility: hidden;
+  opacity: 0;
+  position: absolute;
+  top: 130%; /* 👈 La bulle s'ouvre vers le BAS */
+  left: 50%;
+  transform: translateX(-50%) translateY(-10px); /* 👈 Animation adaptée */
+  background-color: #1a1a1a;
+  border: 1px solid #333333;
+  min-width: 150px;
+  border-radius: 12px;
+  padding: 0.5rem;
+  box-shadow: 0px 10px 30px rgba(0,0,0,0.5);
+  z-index: 10;
+  transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+/* Petite flèche en haut de la bulle */
+.social-dropdown-content::after {
+  content: '';
+  position: absolute;
+  bottom: 100%; /* 👈 Place la flèche au-dessus de la bulle */
+  top: auto;
+  left: 50%;
+  transform: translateX(-50%);
+  border-width: 6px;
+  border-style: solid;
+  border-color: transparent transparent #1a1a1a transparent; /* 👈 Pointe vers le haut */
+}
+
+.social-dropdown:hover .social-dropdown-content,
+.social-dropdown:focus-within .social-dropdown-content {
+  visibility: visible;
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+.social-dropdown-content a {
+  color: #ffffff;
+  text-decoration: none;
+  font-size: 0.85rem;
+  font-weight: 500;
+  padding: 0.6rem 0.8rem;
+  border-radius: 8px;
+  transition: background 0.2s, color 0.2s;
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+}
+
+.social-dropdown-content a:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+}
+
+/* Contact info texts */
 .contact-info {
   display: flex;
   flex-direction: column;
@@ -191,7 +295,7 @@ export default {
   transition: color 0.2s;
 }
 
-.footer-column a:hover {
+.footer-column a:hover, .footer-column a.router-link-active {
   color: #ffffff;
 }
 
@@ -257,6 +361,7 @@ export default {
 .legal-links {
   display: flex;
   gap: 2rem;
+  flex-wrap: wrap;
 }
 
 .legal-links a {
@@ -272,22 +377,30 @@ export default {
   color: #999999;
 }
 
+.watermark-wrapper {
+  position: absolute;
+  inset: 0; /* Prend toute la taille du footer */
+  overflow: hidden; /* Ne coupe QUE le filigrane */
+  pointer-events: none;
+  z-index: 1;
+  border-radius: inherit;
+}
+
 /* --- FILIGRANE ARRIÈRE-PLAN --- */
 .giant-watermark {
   position: absolute;
   bottom: -2rem;
   left: 5%;
-  font-size: 16vw;
+  font-size: 14vw;
   font-weight: 700;
   color: #151515;
   user-select: none;
   pointer-events: none;
   white-space: nowrap;
-  z-index: 1;
   line-height: 1;
 }
 
-/* --- RESPONSIVE DESIGN (Tablettes et Ordinateurs) --- */
+/* --- RESPONSIVE DESIGN --- */
 @media (min-width: 768px) {
   .main-footer {
     padding: 6rem 4rem 3rem 4rem;

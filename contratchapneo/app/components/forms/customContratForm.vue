@@ -7,6 +7,7 @@
 
         <!-- Ajout du v-model et des bonnes options -->
         <BaseSelect 
+            id="custom-contract-type"
             label="Sélectionner votre type de contrat"
             v-model="checkoutform.contract_type"
             :options="contractTypes"
@@ -15,6 +16,7 @@
         />
 
         <BaseInput 
+            id="custom-name"
             label="Nom complet / nom de la société" 
             name="name" 
             type="text" 
@@ -24,6 +26,7 @@
         />
 
         <BaseInput 
+            id="custom-phone"
             label="Numéro de téléphone" 
             name="phoneNumber" 
             type="tel" 
@@ -33,6 +36,7 @@
         />
 
         <BaseInput 
+            id="custom-email"
             label="Email" 
             name="email" 
             type="email" 
@@ -43,6 +47,7 @@
 
         <!-- Correction du name et du v-model -->
         <BaseInput 
+            id="custom-subject"
             label="Sujet" 
             name="subject" 
             type="text" 
@@ -53,6 +58,7 @@
 
         <!-- Ajout du v-model -->
         <BaseArea 
+            id="custom-description"
             label="Description détaillée"
             placeholder="Expliquez-nous votre besoin spécifique..."
             v-model="checkoutform.description"
@@ -66,7 +72,7 @@
             :isLoading="loading"
         />
 
-        <ClientOnly>
+       <ClientOnly>
             <Teleport to="body">
                 <BaseNotification 
                     v-model:show="notify.show"
@@ -215,8 +221,13 @@ export default {
 .custom-contract-form {
     background: #ffffff;
     border-radius: 12px;
+    min-width: 80%;
     padding: 2rem;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+    display: flex;
+    margin: 2rem;
+    flex-direction: column;
+    gap: 1rem;
 }
 
 .custom-contract-form h3 {
