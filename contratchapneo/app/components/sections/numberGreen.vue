@@ -155,8 +155,9 @@ span {
 
 /* Cartes Numéros */
 .phone-item {
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
+  background: #acbfd164;
+  border: 3px solid #e2e8f0;
+  min-width: 100%;
   border-radius: 16px;
   padding: 1rem 1.2rem;
   display: flex;
@@ -172,6 +173,7 @@ span {
 }
 
 .phone-info {
+  border-radius: 12px;
   display: flex;
   align-items: center;
   gap: 1rem;

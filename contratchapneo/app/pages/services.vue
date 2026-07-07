@@ -258,7 +258,7 @@ export default {
     line-height: 1.6;
     max-width: 700px;
     margin-top: 1rem;
-    text-align: justify;
+    text-align: center;
 }
 
 .hero-description strong {

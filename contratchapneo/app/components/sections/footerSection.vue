@@ -60,7 +60,7 @@
 
     <div class="footer-divider-container">
       <div class="divider-line"></div>
-      <button class="btn-get-started" @click="$router.push('/contractBank')">Commencer</button>
+      <button class="btn-get-started" @click="$router.push('/contractBank')">Commencer maintenant</button>
     </div>
 
     <div class="footer-lower">
@@ -322,6 +322,7 @@ export default {
 }
 
 .btn-get-started {
+  width: 50%;
   position: relative;
   z-index: 2;
   background-color: #ffffff;
