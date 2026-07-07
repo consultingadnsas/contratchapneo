@@ -4,7 +4,7 @@
         @submit.prevent="submitForm"
     >
 
-        <h3>{{ formTitle }}</h3>
+        <h3> {{ formTitle }} </h3>
 
         <BaseSelect 
             label="Selectionner votre type de contrat"
@@ -60,6 +60,8 @@ import BaseSelect from '../input/BaseSelect.vue'
 import BaseArea from '../input/BaseArea.vue'
 import {ref, reactive} from 'vue'
 
+import { useCartStore } from '../../stores/cartStore'
+
 export default {
     components:{
         BaseInput,
@@ -76,6 +78,8 @@ export default {
 
     emits:['succes'],
     setup(props, {emit}){
+
+        const cartStore = useCartStore();
 
         const checkoutform = reactive(
             {
@@ -122,6 +126,7 @@ export default {
         }
 
         return{
+            cartStore,
             checkoutform,
             loading,
             error,

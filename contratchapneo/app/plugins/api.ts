@@ -23,7 +23,7 @@ export default defineNuxtPlugin(async () => {
     },
 
     onResponseError({ response }) {
-      if (response.status === 403) navigateTo('/auth/login')
+      if (response.status === 403) throw new Error('Erreur serveur')
       if (response.status === 500) throw new Error('Erreur serveur')
     },
   })

@@ -6,6 +6,7 @@ from .views import (
     ContractListView,
     ContractsView,
     ContratOperationsView,
+    CustomedContractRequestView,
     ContractTagsView,
 
     AdminCategoryDetail
@@ -25,5 +26,6 @@ urlpatterns = [
     path('tags/<uuid:contrat_id>/', ContractTagsView.as_view(), name='contract-tags'),
 
     # Admin endpoints:
-    path('admin-category/', AdminCategoryDetail.as_view(), name='admin-category')
+    path('admin-category/', AdminCategoryDetail.as_view(), name='admin-category'),
+    path('custom-requests/', CustomedContractRequestView.as_view(), name='custom-contract-requests'),
 ]

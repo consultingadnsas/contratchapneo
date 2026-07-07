@@ -12,11 +12,12 @@ from rest_framework.pagination import PageNumberPagination
 from django.db import transaction
 from django.shortcuts import get_object_or_404
 from django.db.models import Q, F
-from .models import Category, Contrat
+from .models import Category, Contrat, CustomedContract
 from .serializers import (
     CategorySerializer, 
     ContratSerializer, 
-    CategoryWithContractsSerializer
+    CategoryWithContractsSerializer,
+    CustomedContractSerializer,
 )
 
 from docx import Document
@@ -216,7 +217,31 @@ class ContratOperationsView(APIView):
                 },
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
-        
+
+class CustomedContractRequestView(APIView):
+    permission_classes = [AllowAny]
+    authentication_classes = []
+
+    def post(self, request):
+        serializer = CustomedContractSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(
+                {
+                    'data': serializer.data,
+                    'message': 'Demande de contrat sur mesure enregistrée avec succès.'
+                },
+                status=status.HTTP_201_CREATED
+            )
+
+        return Response(
+            {
+                'errors': serializer.errors,
+                'message': 'Impossible de créer la demande sur mesure.'
+            },
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
 class ContractTagsView(APIView):
 
     permission_classes = [AllowAny]

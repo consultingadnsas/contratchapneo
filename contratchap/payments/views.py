@@ -416,7 +416,7 @@ class DownloadContractView(APIView):
         buffer = io.BytesIO(pdf_bytes)
         response = FileResponse(buffer, content_type='application/pdf')
         
-        nom_fichier = f"Contrat_{item.contrat.titre}.pdf" # Remplace 'titre' par 'title' si besoin
+        nom_fichier = f"Contrat_{item.contrat.title}.pdf" # Remplace 'titre' par 'title' si besoin
         response['Content-Disposition'] = f'attachment; filename="{nom_fichier}"'
         return response
 
