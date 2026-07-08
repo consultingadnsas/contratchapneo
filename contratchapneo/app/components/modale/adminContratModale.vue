@@ -185,7 +185,7 @@ export default {
 .modal-footer { display: flex; justify-content: flex-end; gap: 1rem; border-top: 1px solid #f1f5f9; padding-top: 1.5rem; margin-top: 0.5rem; }
 .btn-outline { background: white; border: 1px solid #e2e8f0; color: #475569; padding: 0.6rem 1.2rem; border-radius: 50px; font-weight: 600; cursor: pointer; transition: 0.2s; }
 .btn-outline:hover { background: #f8fafc; }
-.btn-primary { display: flex; align-items: center; gap: 0.5rem; background: #2563eb; color: #ffffff; border: none; padding: 0.6rem 1.2rem; border-radius: 50px; font-weight: 600; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 10px rgba(37, 99, 235, 0.2); }
+.btn-primary { display: flex; width: 500%; align-items: center; gap: 0.5rem; background: #2563eb; color: #ffffff; border: none; padding: 0.6rem 1.2rem; border-radius: 50px; font-weight: 600; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 10px rgba(37, 99, 235, 0.2); }
 .btn-primary:hover { background: #1d4ed8; transform: translateY(-2px); }
 
 /* SWITCH TOGGLE */

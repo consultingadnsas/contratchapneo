@@ -244,7 +244,8 @@ export default defineComponent({
     display: flex;
     align-items: center;
     justify-content: center;
-    background: transparent;
+    background: rgba(255, 255, 255, 0.075);
+    border: 1px solid rgba(255, 255, 255, 0.089);
     border-radius: 999px;
     width: 45px;
     height: 45px;
@@ -252,7 +253,7 @@ export default defineComponent({
 }
 
 .btn_container2:hover {
-    background: rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.315);
     backdrop-filter: blur(15px);
     -webkit-backdrop-filter: blur(15px);
     border: 1px solid rgba(255, 255, 255, 0.2);

@@ -92,7 +92,7 @@ import BaseInput from '../input/BaseInput.vue'
 import checkoutButton from '../buttons/checkoutButton.vue'
 import BaseSelect from '../input/BaseSelect.vue'
 import BaseArea from '../input/BaseArea.vue'
-import {ref, reactive} from 'vue'
+import BaseNotification from '../tools/baseNotification.vue' // <-- IMPORT AJOUTÉ
 
 import { useCartStore } from '../../stores/cartStore'
 
@@ -111,8 +111,8 @@ export default {
         }
     },
 
-    emits:['succes'],
-    setup(props, {emit}){
+    emits: ['success'], // <-- CORRIGÉ (2 "s")
+    setup(props, { emit }) {
 
         const cartStore = useCartStore();
 
@@ -180,7 +180,7 @@ export default {
 
         // 5. Soumission sécurisée
         const submitForm = async () => {
-            if (!validateForm()) return; // On stoppe si la validation échoue
+            if (!validateForm()) return; 
 
             loading.value = true
 
@@ -191,7 +191,7 @@ export default {
                 // Affichage du succès
                 showNotification('success', 'Demande envoyée !', 'Nos experts analyseront votre besoin et vous contacteront sous 24h.');
                 
-                emit('success')
+                emit('success') // L'événement correspond maintenant à la déclaration
 
                 // Réinitialisation de l'objet form
                 Object.assign(checkoutform, {
@@ -211,7 +211,7 @@ export default {
             }
         }
 
-        return{
+        return {
             cartStore,
             checkoutform,
             loading,

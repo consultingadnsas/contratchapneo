@@ -202,15 +202,6 @@ export default {
     background-color: #fffbf4; 
 }
 
-/* ==========================================
-   2. LE COFFRE NUMÉRIQUE (Arrière-plan)
-========================================== */
-
-/* ==========================================
-   3. LES CONTRATS FLOTTANTS (Effet Verre)
-========================================== */
-
-
 /* On force le contenu textuel et les cartes au premier plan */
 .contrat-card-section > * {
     position: relative;
