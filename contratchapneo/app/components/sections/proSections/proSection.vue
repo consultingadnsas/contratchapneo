@@ -70,7 +70,6 @@
                 @close="isViewOpen = false"
                 @pay-consultation="()=>{addToCart}"
             />
-
         </Teleport>
 
     </div>
