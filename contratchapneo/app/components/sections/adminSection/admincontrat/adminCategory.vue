@@ -124,9 +124,18 @@ export default {
   components: { folderCards },
   
   props: {
-    categories: { type: Array as () => string[], required: true },
-    contracts: { type: Array as () => any[], required: true },
-    searchQuery: { type: String, default: '' }
+    categories: { 
+      type: Array as () => string[], 
+      required: true 
+    },
+    contracts: { 
+      type: Array as () => any[], 
+      required: true 
+    },
+    searchQuery: { 
+      type: String, 
+      default: '' 
+    }
   },
   
   emits: ['add-category', 'delete-category', 'add-contract', 'edit-contract', 'delete-contract', 'toggle-status'],
@@ -182,14 +191,16 @@ export default {
         
         // 2. Émission vers le parent
         emit('add-category', { 
-            name: newFolderData.name, 
-            description: newFolderData.description 
+          name: newFolderData.name, 
+          description: newFolderData.description 
         });
         
         // 3. Réinitialisation
         newFolderData.name = '';
         newFolderData.description = '';
         isFolderModalOpen.value = false;
+
+        contratstore.getCategories();
       }
     };
 
@@ -205,7 +216,7 @@ export default {
     };
 
     onMounted(()=>{
-
+      contratstore.getCategories();
     })
 
     return {
