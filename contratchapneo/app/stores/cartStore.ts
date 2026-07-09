@@ -162,24 +162,26 @@ export const useCartStore = defineStore('cart', () => {
         }
     };
 
-    const addCustomizedContract = async(customed_contract_id:string) => {
+    const addCustomizedContract = async (customedContractId: string) => {
         isLoading.value = true;
         error.value = null;
 
-        try{
+        try {
             const response = await $api('/ecommerce/cart/add/', {
-                method:'POST',
-                body: {customed_contract_id:customed_contract_id}
-            })
+                method: 'POST',
+                body: { customed_contract: customedContractId }   // ✅ clé alignée avec la vue Django
+            });
 
             if (response) {
+                console.log("votre reponse", response)
                 cart.value = normalizeCart(response);
             }
-        }   catch (err: any){
+        } catch (err: any) {
             error.value = err.message;
-            console.error
-        }   finally{
-            isLoading.value = true;
+            console.error(err);   // ✅ appel réel de la fonction
+            throw err;             // ✅ pour que le formulaire puisse afficher l'erreur si besoin
+        } finally {
+            isLoading.value = false;   // ✅ corrigé
         }
     }
 

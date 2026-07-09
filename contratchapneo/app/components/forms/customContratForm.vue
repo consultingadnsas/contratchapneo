@@ -193,7 +193,7 @@ export default {
 
             try {
                 // 3. Appel au VRAI store en passant les données du formulaire
-                const response = await contratStore.submitCustomContract(checkoutform);
+                await contratStore.submitCustomContract(checkoutform);
                 
                 // Si aucune erreur n'a été levée, on affiche le succès
                 showNotification(
@@ -213,14 +213,6 @@ export default {
                     subject: "",
                     description: ""
                 });
-
-                //
-                if (response?.id) {
-                    await cartStore.addCustomizedContract(response.id)   // ✅ id transmis
-                    router.push('/order/checkout');
-                    console.log("Contrat ajouté au panier", response?.id);
-                    
-                }
 
             } catch (err) {
                 // Si le store renvoie une erreur (throw error), on atterrit ici

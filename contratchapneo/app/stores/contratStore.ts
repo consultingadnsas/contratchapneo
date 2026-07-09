@@ -224,8 +224,14 @@ export const useContratStore = defineStore('contrat', ()=> {
     };
 
     const submitCustomContract = async (payload:object) => {
+        
         isLoading.value = true;
+
+        const { useCartStore } = await import('./cartStore');
+        const cartStore = useCartStore();
+        
         try {
+            
             const response = await $api('/contrat/custom-requests/', {
                 method:'POST',
                 body:payload
@@ -233,6 +239,7 @@ export const useContratStore = defineStore('contrat', ()=> {
 
             if(response && response.id){
                 console.log("Votre nouveau contrat sur demande", response.id);
+                await cartStore.addCustomizedContract(response?.id)
                 return response; // <-- Ajoute ce return pour que le composant puisse vérifier
             }
 
