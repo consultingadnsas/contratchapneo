@@ -162,14 +162,14 @@ export const useCartStore = defineStore('cart', () => {
         }
     };
 
-    const addCustomizedContract = async() => {
+    const addCustomizedContract = async(customed_contract_id:string) => {
         isLoading.value = true;
         error.value = null;
 
         try{
             const response = await $api('/ecommerce/cart/add/', {
                 method:'POST',
-                body: {}
+                body: {customed_contract_id:customed_contract_id}
             })
 
             if (response) {

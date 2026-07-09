@@ -223,6 +223,27 @@ export const useContratStore = defineStore('contrat', ()=> {
         }
     };
 
+    const submitCustomContract = async (payload:object) => {
+        isLoading.value = true;
+        try {
+            const response = await $api('/contrat/custom-requests/', {
+                method:'POST',
+                body:payload
+            });
+
+            if(response && response.id){
+                console.log("Votre nouveau contrat sur demande", response.id);
+                return response; // <-- Ajoute ce return pour que le composant puisse vérifier
+            }
+
+        } catch (error) {
+            console.error("Erreur lors de la création de la demande :", error);
+            throw error; // <-- IMPORTANT : On rejette l'erreur vers le composant Vue
+        } finally {
+            isLoading.value = false;
+        }
+    }
+
     const fetchContractTags = async (contrat_id: string) => {
         isLoading.value = true;
         error.value = "";
@@ -303,6 +324,7 @@ export const useContratStore = defineStore('contrat', ()=> {
         getSpecificContract,
         fetchContracts,
         fetchContractTags,
-        fillContractTags
+        fillContractTags,
+        submitCustomContract
     }
 }, {persist: true})
