@@ -162,6 +162,27 @@ export const useCartStore = defineStore('cart', () => {
         }
     };
 
+    const addCustomizedContract = async() => {
+        isLoading.value = true;
+        error.value = null;
+
+        try{
+            const response = await $api('/ecommerce/cart/add/', {
+                method:'POST',
+                body: {}
+            })
+
+            if (response) {
+                cart.value = normalizeCart(response);
+            }
+        }   catch (err: any){
+            error.value = err.message;
+            console.error
+        }   finally{
+            isLoading.value = true;
+        }
+    }
+
     const removeFromCart = async (contratId: string) => {
         isLoading.value = true;
         error.value = null;
@@ -261,113 +282,6 @@ export const useCartStore = defineStore('cart', () => {
         }
     };
 
-    const initializeStripe = async (orderId: string, email: string) => {
-        if (!orderId) {
-            const err = new Error('Aucun identifiant de commande pour Stripe.');
-            error.value = err.message;
-            throw err;
-        }
-
-        isLoading.value = true;
-        error.value = null;
-        stripeReady.value = false;
-
-        try {
-            const config = useRuntimeConfig();
-            if (!config.public.stripePublicKey) {
-                throw new Error('Clé publique Stripe non configurée.');
-            }
-
-            stripeInstance = await loadStripe(config.public.stripePublicKey);
-            if (!stripeInstance) {
-                throw new Error('Impossible de charger Stripe.');
-            }
-
-            const response: any = await initiatePayment({ order_id: orderId, payment_method: 'STRIPE' }, email);
-            if (!response?.client_secret) {
-                throw new Error(response?.error || 'Impossible d/initier la clé d/intention de paiement.');
-            }
-
-            stripeClientSecret = response.client_secret;
-
-            const appearance = {
-                theme: 'flat',
-                variables: {
-                    colorPrimary: '#007bff',
-                    fontFamily: 'sans-serif'
-                }
-            };
-
-            stripeElements = stripeInstance.elements({
-                clientSecret: stripeClientSecret,
-                appearance,
-            });
-
-            stripeReady.value = true;
-            return stripeElements;
-        } catch (err: any) {
-            error.value = err.message || 'Erreur lors de l\'initialisation de Stripe.';
-            throw err;
-        } finally {
-            isLoading.value = false;
-        }
-    };
-
-    const confirmStripePayment = async (returnUrl: string) => {
-        if (!stripeInstance || !stripeElements) {
-            const err = new Error('Stripe n\'est pas encore initialisé.');
-            error.value = err.message;
-            throw err;
-        }
-
-        isLoading.value = true;
-        error.value = null;
-
-        try {
-            const { error: stripeError, paymentIntent } = await stripeInstance.confirmPayment({
-                elements: stripeElements,
-                confirmParams: {
-                    // 💡 OBLIGATOIRE : Ajout de la clé attendue par Stripe pour valider la requête
-                    return_url: returnUrl,
-                },
-                redirect: 'if_required',
-            });
-
-            if (stripeError) {
-                const alreadySucceeded = stripeError.code === 'payment_intent_unexpected_state' && stripeError?.payment_intent?.status === 'succeeded';
-                if (alreadySucceeded) {
-                    return stripeError.payment_intent;
-                }
-
-                // Si on obtient un état inattendu, on tente de relire l'intention existante.
-                if (stripeError.code === 'payment_intent_unexpected_state' && stripeClientSecret) {
-                    const retrieval = await stripeInstance.retrievePaymentIntent(stripeClientSecret);
-                    if (retrieval?.paymentIntent?.status === 'succeeded') {
-                        return retrieval.paymentIntent;
-                    }
-                }
-
-                error.value = stripeError.message || 'La transaction a été refusée.';
-                throw stripeError;
-            }
-
-            return paymentIntent;
-        } catch (err: any) {
-            error.value = err.message || 'Une erreur inattendue est survenue lors de la validation.';
-            throw err;
-        } finally {
-            isLoading.value = false;
-        }
-    };
-
-    const resetStripeState = () => {
-        stripeInstance = null;
-        stripeElements = null;
-        stripeClientSecret = null;
-        stripeReady.value = false;
-        error.value = null;
-    };
-
     return {
         isLoading,
         error,
@@ -389,9 +303,7 @@ export const useCartStore = defineStore('cart', () => {
         clearCart,
         checkout,
         initiatePayment,
-        initializeStripe,
-        confirmStripePayment,
-        resetStripeState,
+        addCustomizedContract
     };
 },
     {persist: true}

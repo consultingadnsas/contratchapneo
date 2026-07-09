@@ -66,7 +66,9 @@ class CustomedContract(models.Model):
     phone_number = models.CharField(max_length=12)
     email = models.EmailField()
     description = models.TextField()
+    #
     price = models.FloatField(default=25000.00)
+    promo_price = models.FloatField(default=0.0)
 
     is_wrotten = models.BooleanField(default = False)
 
