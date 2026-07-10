@@ -304,10 +304,14 @@ class ContractTagsView(APIView):
 # 1. URL: /api/admin/contracts/
 # ==========================================
 class AdminContractListCreateView(APIView):
+    
     permission_classes = [IsAdminUser]
 
     def post(self, request):
-        """Création d'un nouveau contrat"""
+        
+        """ 
+            Création d'un nouveau contrat 
+        """
         # On passe le contexte pour la gestion des URLs des fichiers si nécessaire
         serializer = ContratSerializer(data=request.data, context={'request': request})
         

@@ -95,6 +95,9 @@ import BaseArea from '../input/BaseArea.vue'
 import BaseNotification from '../tools/baseNotification.vue' // <-- IMPORT AJOUTÉ
 
 import { useCartStore } from '../../stores/cartStore'
+import {useContratStore} from '../../stores/contratStore'
+
+import {useRouter, useRoute} from 'vue-router'
 
 export default {
     components: {
@@ -114,7 +117,11 @@ export default {
     emits: ['success'], // <-- CORRIGÉ (2 "s")
     setup(props, { emit }) {
 
+        const router = useRouter();
+        const route = useRoute()
+
         const cartStore = useCartStore();
+        const contratStore = useContratStore();
 
         // 1. Déclaration de toutes les variables nécessaires au backend
         const checkoutform = reactive({
@@ -185,15 +192,19 @@ export default {
             loading.value = true
 
             try {
-                // Simulation d'un appel API
-                await new Promise((resolve) => setTimeout(() => resolve({ success: true }), 1500))
+                // 3. Appel au VRAI store en passant les données du formulaire
+                await contratStore.submitCustomContract(checkoutform);
                 
-                // Affichage du succès
-                showNotification('success', 'Demande envoyée !', 'Nos experts analyseront votre besoin et vous contacteront sous 24h.');
+                // Si aucune erreur n'a été levée, on affiche le succès
+                showNotification(
+                    'success', 
+                    'Demande envoyée !', 
+                    'Nos experts analyseront votre besoin et vous contacteront sous 24h.'
+                );
                 
-                emit('success') // L'événement correspond maintenant à la déclaration
+                emit('success')
 
-                // Réinitialisation de l'objet form
+                // Réinitialisation du formulaire
                 Object.assign(checkoutform, {
                     contract_type: "",
                     name: "",
@@ -203,16 +214,21 @@ export default {
                     description: ""
                 });
 
+                router.push('/order/checkout');
+
             } catch (err) {
+                // Si le store renvoie une erreur (throw error), on atterrit ici
                 showNotification('error', 'Erreur d\'envoi', 'Une erreur est survenue lors de la soumission de votre demande.');
-                console.error("Échec de la soumission :", err)
             } finally {
                 loading.value = false
             }
         }
 
         return {
+            route,
+            router,
             cartStore,
+            contratStore,
             checkoutform,
             loading,
             submitForm,

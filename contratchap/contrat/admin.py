@@ -5,3 +5,4 @@ from .models import *
 admin.site.register(Category)
 admin.site.register(Contrat) 
 admin.site.register(Pack)
+admin.site.register(CustomedContract)

@@ -16,7 +16,8 @@
 
         <div class="workspace-content">
           <adminHome v-if="activePageId === 'overview'" />
-          <adminContrats v-if="activePageId === 'contracts'" 
+          <adminContrats 
+            v-if="activePageId === 'contracts'" 
           :targetTab="requestedTab"/>
           <adminpacks v-if="activePageId === 'packs'"/>
           <adminHistory v-if="activePageId === 'history'"/>

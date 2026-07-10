@@ -50,7 +50,7 @@
     <adminCategories 
       v-if="activeTab === 'categories'"
       :categories="standardCategories"
-      :contracts="standardContracts"
+      :contracts="contratStore.contracts"
       :searchQuery="searchQuery"
       @add-category="addStdCategory"
       @delete-category="deleteStdCategory"
@@ -89,11 +89,13 @@ import adminContratsModal from '../../../modale/adminContratModale.vue';
 import adminCategories from './adminCategory.vue'; 
 import adminSurmesure from './adminSurmesure.vue';
 import { MagnifyingGlassIcon } from '@heroicons/vue/24/outline'; 
+import {useContratStore} from '../../../../stores/contratStore';
 
 export default {
   name: 'AdminContracts',
   components: { adminContratsModal, adminCategories, adminSurmesure },
   setup() {
+    const contratStore = useContratStore();
     const activeTab = ref('categories');
     const searchQuery = ref('');
     const surmesureRef = ref<any>(null); // Pour appeler la méthode de l'enfant
@@ -191,6 +193,7 @@ export default {
     };
 
     return {
+      contratStore,
       activeTab, 
       standardCategories, standardContracts, customContracts,
       addStdCategory, deleteStdCategory, deleteStdContract, toggleStdStatus,

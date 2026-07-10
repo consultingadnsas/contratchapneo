@@ -9,7 +9,8 @@ from .views import (
     CustomedContractRequestView,
     ContractTagsView,
 
-    AdminCategoryDetail
+    AdminCategoryDetail,
+    AdminContractListCreateView
 )
 
 urlpatterns = [
@@ -28,4 +29,5 @@ urlpatterns = [
     # Admin endpoints:
     path('admin-category/', AdminCategoryDetail.as_view(), name='admin-category'),
     path('custom-requests/', CustomedContractRequestView.as_view(), name='custom-contract-requests'),
+    path('admin-contrat/', AdminContractListCreateView.as_view(), name="admin-contract")
 ]

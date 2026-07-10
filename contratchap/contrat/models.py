@@ -66,13 +66,18 @@ class CustomedContract(models.Model):
     phone_number = models.CharField(max_length=12)
     email = models.EmailField()
     description = models.TextField()
+    #
     price = models.FloatField(default=25000.00)
+    promo_price = models.FloatField(default=0.0)
 
     is_wrotten = models.BooleanField(default = False)
 
     # Timestamps
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f'Contrat sur mesure de {self.email}'
 
     
 class Pack(models.Model):

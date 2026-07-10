@@ -114,7 +114,7 @@ class CartAddItemView(APIView):
                 customed_contract=customed_contract,
                 defaults={
                     'quantity'  : quantity,
-                    'unit_price': customed_contract.prix,
+                    'unit_price': customed_contract.price,
                 }
             )
             if not created:

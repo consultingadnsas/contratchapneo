@@ -223,6 +223,36 @@ export const useContratStore = defineStore('contrat', ()=> {
         }
     };
 
+    const submitCustomContract = async (payload: object) => {
+        isLoading.value = true;
+
+        const { useCartStore } = await import('./cartStore');
+        const cartStore = useCartStore();
+
+        try {
+            const response = await $api('/contrat/custom-requests/', {
+                method: 'POST',
+                body: payload
+            });
+
+            const createdContract = response?.data ?? response;
+            const customContractId = createdContract?.id;
+
+            if (customContractId) {
+                console.log('Votre nouveau contrat sur demande', customContractId);
+                await cartStore.addCustomizedContract(customContractId);
+                return createdContract;
+            }
+
+            throw new Error('Aucun identifiant n\'a été renvoyé pour la demande de contrat sur mesure.');
+        } catch (error) {
+            console.error('Erreur lors de la création de la demande :', error);
+            throw error;
+        } finally {
+            isLoading.value = false;
+        }
+    }
+
     const fetchContractTags = async (contrat_id: string) => {
         isLoading.value = true;
         error.value = "";
@@ -303,6 +333,7 @@ export const useContratStore = defineStore('contrat', ()=> {
         getSpecificContract,
         fetchContracts,
         fetchContractTags,
-        fillContractTags
+        fillContractTags,
+        submitCustomContract
     }
 }, {persist: true})
