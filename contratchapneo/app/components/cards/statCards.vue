@@ -106,7 +106,7 @@ export default{
     border: none;
     cursor: pointer;
     color: #ffffff;
-    background: var(--secondary-light-color);
+    background: var(--primary-color);
     transition: transform 0.3s ease;
     flex-shrink: 0;
 }
@@ -116,8 +116,8 @@ export default{
 }
 
 .size-4 {
-    width: 16px;
-    height: 16px;
+    width: 12px;
+    height: 12px;
 }
 .pos-center-bottom {
     bottom: -5px;
@@ -197,13 +197,13 @@ export default{
     }
 
     .btn-container {
-        width: 60px;
-        height: 60px;
+        width: 50px;
+        height: 50px;
     }
 
     .features-cards button {
-        width: 40px;
-        height: 40px;
+        width: 28px;
+        height: 28px;
     }
 }
 </style>

@@ -93,17 +93,17 @@ export default {
 
 @media (min-width: 1180px) {
     .main-header {
-        top: 16px; left: 50%; transform: translateX(-50%); width: 100%; max-width: 1200px; border-radius: 50px ; background: rgba(210, 215, 245, 0.632); border: 1px solid rgba(255, 255, 255, 0); box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0);
+        top: 16px; left: 50%; transform: translateX(-50%); width: 100%; max-width: 1200px; border-radius: 50px ; background: transparent; border: 1px solid rgba(255, 255, 255, 0); box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0);
     }
     .main-header.is-scrolled {
         top: 8px; background: rgba(255, 255, 255, 0.65); border: 1px solid rgba(255, 255, 255, 0.45); box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.06);
     }
-    .pic__container img { width: 70px; height: 50px; }
+    .pic__container img { width: 75px; height: 60px; }
     .nav-container { padding: 0 2rem; width: 100%; gap: 1rem; flex: 1; }
     
     .desktop-only { display: block; flex-shrink: 0; }
     .cta-desktop {
-        display: block; white-space: nowrap; background: var(--primary-color-dark); color: white; padding: 0.55rem 1.15rem; border-radius: 50px; font-weight: 800; font-size: 0.85rem; text-decoration: none; transition: opacity 0.2s, transform 0.2s;
+        display: block; white-space: nowrap; background:var(--primary-color); color: white ; padding: 0.55rem 1.15rem; border-radius: 50px; font-weight: 800; font-size: 0.85rem; text-decoration: none; transition: opacity 0.2s, transform 0.2s;
     }
     .cta-desktop:hover { opacity: 0.85; transform: scale(1.02); }
     .mobile-only { display: none !important; }

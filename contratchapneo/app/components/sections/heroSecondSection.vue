@@ -1,35 +1,48 @@
 <template>
     <section class="hero-section">
-        <div class="bg-shape shape-bottom-right"></div>
-        <div class="bg-shape shape-top-left"></div>
+        <div class="wave-section"></div>
 
         <div class="flex flex-col gap-4 content-wrapper">
             <div class="research-desktop">
                <base-research-input/>
                 <h1>
-                    Téléchargez facilement tous vos contrats
-                </h1> 
+                    Téléchargez facilement tous <span class="gradient-text2">vos</span> 
+                </h1>
+                <span class="gradient-text">contrats</span>
             </div>
-    
-            <div class="revision-cta desktop-cta" @click="router.push('/etudeContrat')">
-                <div class="cta-texts">
-                    <p>Besoin d'une révision de contrat ?</p>
-                    <span>Faites les analyser par nos experts</span>
+            
+            <div class="desktop-buttons-group">
+                <div class="revision-cta desktop-cta main-action" @click="router.push('/contractBank')">
+                    <div class="cta-texts">
+                        <p>Télécharger vos contrats</p>
+                    </div>
+                    <div class="cta-arrow floating-arrow">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="size-4">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 19.5 15-15m0 0H8.25m11.25 0v11.25" />
+                        </svg>
+                    </div>
                 </div>
-                <!-- Bouton flèche flottant -->
-                <div class="cta-arrow floating-arrow">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="size-4">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 19.5 15-15m0 0H8.25m11.25 0v11.25" />
-                    </svg>
-                 </div>
+
+                <div class="revision-cta desktop-cta secondary-action glass-btn" @click="router.push('/etudeContrat')">
+                    <div class="cta-texts">
+                        <p>Réviser un contrat</p>
+                    </div>
+                    <div class="cta-arrow floating-arrow">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="size-4">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 19.5 15-15m0 0H8.25m11.25 0v11.25" />
+                        </svg>
+                     </div>
+                </div>
             </div>
+
              <div class="research-mobile">
                 <h1>
-                    Téléchargez facilement tous vos contrats
+                    Téléchargez facilement tous <span class="gradient-text">vos contrats</span>
                 </h1> 
                 <base-research-input/>
             </div>
         </div>
+        
         <div class="pic-wrapper">
             <div class="pic-container">
                 <img src="/Accueil 2.png" alt="Contrats OHADA">
@@ -42,17 +55,30 @@
             </div>
         </div>
 
-        <div class="revision-cta mobile-cta" @click="router.push('/etude-contrats')">
-            <div class="cta-texts">
-                <p>Besoin d'une révision de contrat ?</p>
-                <span>Faites analyser vos documents par nos experts</span>
+        <div class="mobile-buttons-group">
+            <div class="revision-cta mobile-cta main-action" @click="router.push('/contractBank')">
+                <div class="cta-texts">
+                    <p>Télécharger un contrat</p>
+                </div>
+                <div class="cta-arrow floating-arrow">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="size-4">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 19.5 15-15m0 0H8.25m11.25 0v11.25" />
+                    </svg>
+                </div>
             </div>
-            <div class="cta-arrow floating-arrow">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="size-4">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 19.5 15-15m0 0H8.25m11.25 0v11.25" />
-                </svg>
+
+            <div class="revision-cta mobile-cta secondary-action glass-btn" @click="router.push('/etude-contrats')">
+                <div class="cta-texts">
+                    <p>Besoin d'une révision de contrat ?</p>
+                </div>
+                <div class="cta-arrow floating-arrow">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="size-4">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 19.5 15-15m0 0H8.25m11.25 0v11.25" />
+                    </svg>
+                </div>
             </div>
         </div>
+
         <caroussel-countries/>
     </section>
 </template>
@@ -82,7 +108,6 @@ export default defineComponent({
             'Sécurisez juridiquement vos business en un clic.',
             'Accédez à des modèles conformes aux droits OHADA.'
         ]
-       // --- Liste des pays de l'OHADA avec leurs codes ISO ---
 
         const displayText = ref<string>('');
         const phraseIndex = ref<number>(0);
@@ -128,7 +153,7 @@ export default defineComponent({
 </script>
 
 <style scoped>
-/* ── 📱 Mobile First (Valeurs par défaut pour Téléphones) ─────── */
+/* ── 📱 Mobile First ─────── */
 .hero-section {
     position: relative;
     width: 100%;
@@ -146,6 +171,11 @@ export default defineComponent({
     background: radial-gradient(circle, #202b4a 30%, #0f0f0f 100%);
 }
 
+.content-wrapper {
+    position: relative;
+    z-index: 10; /* Sécurise le contenu au-dessus des vagues */
+}
+
 /* Bloc texte */
 .hero-section h1 {
     font-size: clamp(1.5rem, 6vw, 2.5rem); 
@@ -156,12 +186,68 @@ export default defineComponent({
     padding-top: 5rem
 }
 
-.hero-section span {
-    color: var(--secondary-light-color);
+/* DÉGRADÉS SUR TEXTE */
+.gradient-text {
     font-size: clamp(1rem, 3.5vw, 1.3rem);
     font-weight: 600;
     line-height: 1.2;
+    background: linear-gradient(90deg, #32f459 0%, #156ca9 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    display: inline-block; 
 }
+.gradient-text2 {
+    font-size: clamp(1rem, 3.5vw, 1.3rem);
+    font-weight: 600;
+    line-height: 1.2;
+    background: linear-gradient(70deg, #32f459 0%, #156ca9 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    display: inline-block; 
+}
+
+/* ── NOUVELLES VAGUES FLUIDES EN ARRIÈRE-PLAN ──────────────────── */
+.wave-section {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    z-index: 0;
+    pointer-events: none; /* CRUCIAL: Rend les vagues "fantômes" pour les clics */
+}
+
+/* La forme de base des vagues */
+.wave-section::before,
+.wave-section::after {
+    content: "";
+    position: absolute;
+    width: 250vw; /* Très large pour avoir une courbure douce */
+    height: 250vw;
+    top: 50%; /* Position sur l'écran */
+    left: 50%;
+    transform: translateX(-50%);
+    border-radius: 42%; /* Déformation du cercle pour l'effet vague */
+    opacity: 0.6;
+}
+
+/* Vague 1 (Bleutée) */
+.wave-section::before {
+    background: linear-gradient(to top, rgba(21, 107, 169, 0.016), rgba(21, 107, 169, 0.203));
+    animation: rotate-waves 30s linear infinite;
+}
+
+/* Vague 2 (Verte, légèrement décalée) */
+.wave-section::after {
+    top: 55%;
+    border-radius: 38%;
+    background: linear-gradient(to top, rgba(50, 244, 89, 0.071), rgba(50, 244, 89, 0.016));
+    animation: rotate-waves 35s linear infinite reverse;
+}
+
+@keyframes rotate-waves {
+    0% { transform: translateX(-50%) rotate(0deg); }
+    100% { transform: translateX(-50%) rotate(360deg); }
+}
+/* ───────────────────────────────────────────────────────────── */
 
 .cursor {
     color: var(--secondary-light-color);
@@ -174,7 +260,7 @@ export default defineComponent({
     50% { opacity: 0; }
 }
 
-/* ── Conteneur image + cartes (Mobile) ────────────────────────── */
+/* Conteneur image + cartes */
 .pic-wrapper {
     display: flex;
     justify-content: center;
@@ -192,24 +278,18 @@ export default defineComponent({
     align-items: center;
     z-index: 1;
 }
+
+/* CERCLE LUMINEUX DERRIÈRE L'IMAGE */
 .pic-container::before {
     content: '';
     position: absolute;
-    
-    /* 1. Le déplacement en haut à gauche */
-    /* Des valeurs négatives le font sortir de sa boîte vers le haut et la gauche */
     top: 12%; 
     left: -30%; 
-    
-    /* 2. Une forme concrète et stricte */
-    width: 155%; /* Le cercle fait la même taille que le conteneur du téléphone */
+    width: 155%; 
     aspect-ratio: 1 / 1;
-    border-radius: 50%; /* Ça force la forme en cercle parfait */
-    
-    /* 3. Ton dégradé exact */
-    background: radial-gradient(circle, #32f459 30%, #4db562 100%);
-    
-    /* Assure que le cercle reste bien derrière le téléphone */
+    border-radius: 50%; 
+    background: radial-gradient(circle at 40% 65%, #3197f5 0%, #1a62cc 55%, #082d73 100%);
+    box-shadow: 0 0 60px 20px rgba(11, 16, 12, 0.4); 
     z-index: 0; 
 }
 
@@ -224,7 +304,7 @@ export default defineComponent({
     z-index: 1;
 }
 
-/* ── Cartes flottantes (Mobile) ──────────────────────────────── */
+/* Cartes flottantes */
 .floating-card {
     position: absolute;
     z-index: 5;
@@ -252,28 +332,58 @@ export default defineComponent({
 .card-bottom-left { animation-delay: 1.6s; }
 .card-bottom-right { animation-delay: 2.4s; }
 
-/* ── CTA Révision de Contrats (Glassmorphism & Flottement) ───── */
+/* ── BOUTONS ── */
+.mobile-buttons-group {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    width: 100%;
+    z-index: 10;
+}
+
+.desktop-buttons-group {
+    display: none; 
+    flex-direction: row;
+    gap: 1.5rem;
+    margin-top: 2rem;
+    position: relative;
+    z-index: 20;
+}
+
 .revision-cta {
-    margin-top: 3.5rem;
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 1.5rem;
-    background: rgba(240, 240, 240, 0.11);
-    border: 1px solid rgba(255, 255, 255, 0.1);
     padding: 12px 16px 12px 20px;
     border-radius: 50px;
     cursor: pointer;
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
     width: fit-content;
     transition: all 0.3s ease;
 }
 
-/* Effet au survol de la bannière */
-.revision-cta:hover {
-    background: rgba(255, 255, 255, 0.08);
-    /* On reprend la couleur verte de ton cercle en fond */
+.main-action {
+    background: var(--primary-color, #156ca9);
+    border: 1px solid transparent;
+}
+
+.main-action:hover {
+    background: #0f4c78; 
+    transform: translateY(-3px);
+    box-shadow: 0 10px 30px rgba(21, 108, 169, 0.4);
+}
+
+.glass-btn {
+    background: rgba(255, 255, 255, 0.05); 
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.glass-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.3);
     transform: translateY(-3px);
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
 }
@@ -287,7 +397,7 @@ export default defineComponent({
 .revision-cta .cta-texts p {
     color: var(--my-white, #ffffff);
     font-weight: 600;
-    font-size: clamp(0.9rem, 2vw, 1rem);
+    font-size: clamp(0.8rem, 2vw, 0.8rem);
 }
 
 .cta-texts p{
@@ -295,88 +405,61 @@ export default defineComponent({
 }
 
 .revision-cta .cta-texts span {
-    /* Le vert fluo de ton animation */
-    color: var(--primary-color); 
+    color: #a3c2d1; 
     font-size: clamp(0.75rem, 1.5vw, 0.85rem);
     font-weight: 500;
     opacity: 0.9;
     margin-right: 15px
 }
 
-/* Le bouton flèche animé comme les cartes */
 .cta-arrow {
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 40px;
-    height: 40px;
+    width: 30px;
+    height:30px;
     border-radius: 50%;
-    background: #32f459;
-    color: white;
+    background: white;
+    color: var(--primary-color);
     flex-shrink: 0;
     transition: all 0.3s ease;
 }
 
-.revision-cta:hover .cta-arrow {
+.glass-btn .cta-arrow {
+    background: var(--primary-color);
+    color: white;
+}
+
+.main-action:hover .cta-arrow {
     background: #32f459;
     color: #0f0f0f;
 }
 
-.desktop-cta {
-    display: none !important;
-}
-.research-desktop{
-    display: none !important;
+.glass-btn:hover .cta-arrow {
+    background:white ;
+    color: var(--primary-color)
 }
 
-.research-mobile{
-    display: grid !important;
-}
-.mobile-cta {
-    display: flex !important;
-    width: 100%;
-    z-index: 10;
-}
+.desktop-cta { display: none !important; }
+.research-desktop{ display: none !important; }
 
+.research-mobile{ display: grid !important; }
+.research-mobile h1 .gradient-text{ font-size: 2rem; text-align: center; }
+.mobile-cta { display: flex !important; width: 100%; }
 
 @media (max-width: 480px) {
-    .revision-cta {
-        margin-top: -2rem; /* <-- On passe de 1rem à 2.5rem ici */
-    }
+    .mobile-buttons-group { margin-top: -2rem; }
 }
 
-/* ── 📐 Phablettes (Écrans larges ou téléphones en paysage) ──── */
+/* ── 📐 Phablettes ──── */
 @media (min-width: 480px) {
-    .pic-container, .pic-container img {
-        width: 230px;
-        min-width: 230px;
-    }
-    .revision-cta{
-        width: 100%; 
-    }
+    .pic-container, .pic-container img { width: 230px; min-width: 230px; }
     .pic-container::before {
-    content: '';
-    position: absolute;
-    
-    /* 1. Le déplacement en haut à gauche */
-    /* Des valeurs négatives le font sortir de sa boîte vers le haut et la gauche */
-    top: 20%; 
-    left: 10%; 
-    
-    /* 2. Une forme concrète et stricte */
-    width: 80%; /* Le cercle fait la même taille que le conteneur du téléphone */
-    aspect-ratio: 1 / 1;
-    border-radius: 50%; /* Ça force la forme en cercle parfait */
-    
-    /* 3. Ton dégradé exact */
-    background: radial-gradient(circle, #32f459 30%, #4db562 100%);
-    
-    /* Assure que le cercle reste bien derrière le téléphone */
-    z-index: 0; 
-}
-    .floating-card {
-        width: 130px !important;
+        top: 20%; left: 10%; width: 80%; aspect-ratio: 1 / 1; border-radius: 50%; 
+        background: radial-gradient(circle, #3279f4 30%, #212a5b 100%);
+        box-shadow: 0 0 60px 20px rgba(11, 16, 12, 0.4); z-index: 0; 
     }
+    .floating-card { width: 130px !important; }
     .card-top-left, .card-top-right       { --ty-base: -170px; }
     .card-bottom-left, .card-bottom-right { --ty-base: 80px; }
     .card-top-left, .card-mid-left, .card-bottom-left   { --tx: -60%; }
@@ -385,147 +468,62 @@ export default defineComponent({
 
 /* ── 平板 Tablettes (A partir de 768px) ───────────────────────── */
 @media (min-width: 768px) {
-    .hero-section {
-        padding: 3rem 2.5rem;
-        gap: 3rem;
-    }
-
-    .hero-section > .content-wrapper {
-        top: 2rem;
-    }
-
-    .pic-wrapper {
-        padding: 160px 80px;
-    }
-    /* L'image passe à sa taille moyenne */
-    .pic-container, .pic-container img {
-        width: 300px;
-        min-width: 300px;
-    }
+    .hero-section { padding: 3rem 2.5rem; gap: 3rem; }
+    .hero-section > .content-wrapper { top: 2rem; }
+    .pic-wrapper { padding: 160px 80px; }
+    .pic-container, .pic-container img { width: 300px; min-width: 300px; }
     .pic-container::before {
-    content: '';
-    position: absolute;
-    
-    /* 1. Le déplacement en haut à gauche */
-    /* Des valeurs négatives le font sortir de sa boîte vers le haut et la gauche */
-    top: 20%; 
-    left: 10%; 
-    
-    /* 2. Une forme concrète et stricte */
-    width: 80%; /* Le cercle fait la même taille que le conteneur du téléphone */
-    aspect-ratio: 1 / 1;
-    border-radius: 50%; /* Ça force la forme en cercle parfait */
-    
-    /* 3. Ton dégradé exact */
-    background: radial-gradient(circle, #32f459 30%, #4db562 100%);
-    
-    /* Assure que le cercle reste bien derrière le téléphone */
-    z-index: 0; 
-}
-
-    .floating-card {
-        width: 160px !important;
+        top: 20%; left: 10%; width: 80%; aspect-ratio: 1 / 1; border-radius: 50%; 
+        background: radial-gradient(circle at 40% 65%, #3197f5 0%, #1a62cc 55%, #082d73 100%);
+        box-shadow: 0 0 60px 20px rgba(11, 16, 12, 0.4); z-index: 0; 
     }
-
+    .floating-card { width: 160px !important; }
     .card-top-left, .card-top-right       { --ty-base: -220px; }
     .card-bottom-left, .card-bottom-right { --ty-base: 80px; }
     .card-top-left, .card-mid-left, .card-bottom-left   { --tx: -65%; }
     .card-top-right, .card-mid-right, .card-bottom-right { --tx: 65%; }
-    /* 👇 ON PLACE L'INVERSION ICI, AVANT L'ACCOLADE FINALE 👇 */
-    .desktop-cta {
-        display: flex !important;
-        margin-top: 3.5rem; 
-    }
-    .research-desktop{
-        display: grid !important;
-    }
-    .research-mobile{
-        display:none !important;
-    }
-    .mobile-cta {
-        display: none !important;
-    }
+    
+    .desktop-cta { display: flex !important; }
+    .desktop-buttons-group { display: flex; }
+    .research-desktop{ display: grid !important; }
+    .research-desktop h1{ font-size: 3.5rem; text-align: left; }
+    .research-desktop .gradient-text { text-align: left; font-size: 3.5rem; }
+    .gradient-text2 { text-align: left; font-size: 3.5rem; }
+    .research-mobile{ display:none !important; }
+    .mobile-buttons-group { display: none !important; }
 }
-
 
 /* ── 💻 Desktop (A partir de 1200px) ─────────────────────────── */
 @media (min-width: 1200px) {
-    
     .hero-section {
-        flex-direction: row; 
-        justify-content: space-between;
-        align-items: center;
-        padding: 1rem 3rem !important;
-        gap: 5rem;
-        height: 100vh !important;
-        min-height: 600px !important;
-        top: 0; /* Plus besoin de pousser vers le bas */
+        flex-direction: row; justify-content: space-between; align-items: center;
+        padding: 1rem 3rem !important; gap: 5rem; height: 100vh !important; min-height: 600px !important; top: 0; 
     }
-
-    .hero-section > .content-wrapper {
-        width: 50%;
-        top: 0;
-        gap: 0rem
-    }
-
-    .pic-wrapper {
-        width: 50%;
-        padding: 60px 40px;
-    }
-    
-    .pic-container, .pic-container img {
-        width: 300px;
-        min-width: 355px;
-    }
+    .hero-section > .content-wrapper { width: 50%; top: 0; gap: 0rem; align-items: flex-start; }
+    .pic-wrapper { width: 50%; padding: 60px 40px; }
+    .pic-container, .pic-container img { width: 300px; min-width: 450px; }
 
     .pic-container::before {
-    content: '';
-    position: absolute;
+        top: 20%; left: 10%; width: 80%; aspect-ratio: 1 / 1; border-radius: 50%; 
+        background: radial-gradient(circle at 40% 65%, #3197f5 0%, #1a62cc 55%, #082d73 100%);
+        box-shadow: 0 0 60px 20px rgba(11, 16, 12, 0.4); z-index: 0; 
+    }
     
-    /* 1. Le déplacement en haut à gauche */
-    /* Des valeurs négatives le font sortir de sa boîte vers le haut et la gauche */
-    top: 10%; 
-    left: 5%; 
-    
-    /* 2. Une forme concrète et stricte */
-    width: 90%; /* Le cercle fait la même taille que le conteneur du téléphone */
-    aspect-ratio: 1 / 1;
-    border-radius: 50%; /* Ça force la forme en cercle parfait */
-    
-    /* 3. Ton dégradé exact */
-    background: radial-gradient(circle, #32f459 30%, #4db562 100%);
-    
-    /* Assure que le cercle reste bien derrière le téléphone */
-    z-index: 0; 
-}
-    
-
     .floating-card {
-        width: 160px !important;
-        min-height: 140px;
-        box-sizing: border-box;
-        padding: 10px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        text-align: center;
+        width: 130px !important; min-height: 110px; box-sizing: border-box; padding: 10px;
+        display: flex; align-items: center; justify-content: center; text-align: center;
     }
-
     .floating-card:hover {
-        animation-play-state: paused;
-        cursor: pointer;
+        animation-play-state: paused; cursor: pointer;
         transform: translateX(var(--tx)) translateY(var(--ty-base)) scale(1.05);
-        transition: transform 0.2s ease-in-out;
-        z-index: 20; 
+        transition: transform 0.2s ease-in-out; z-index: 20; 
     }
-
-    .card-top-left, .card-top-right       { --ty-base: -190px; }
-    .card-bottom-left, .card-bottom-right { --ty-base: 50px; }
-    .card-top-left, .card-bottom-left   { --tx: -60%; }
-    .card-top-right, .card-bottom-right { --tx: 60%; }
+    .card-top-left, .card-top-right       { --ty-base: -180px; }
+    .card-bottom-left, .card-bottom-right { --ty-base: 80px; }
+    .card-top-left, .card-bottom-left   { --tx: -10%; }
+    .card-top-right, .card-bottom-right { --tx: 10%; }
 }
 
-/* ── Animation de flottaison globale ─────────────────────────── */
 @keyframes float {
     0%, 100% { transform: translateX(var(--tx)) translateY(var(--ty-base)); }
     50%      { transform: translateX(var(--tx)) translateY(calc(var(--ty-base) - 8px)); }

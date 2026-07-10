@@ -1,5 +1,5 @@
 <template>
-    <article class="pro-card">
+    <article class="pro-card" @click="()=>{$emit('view')}">
         <div 
             class="card-bg" 
             :style="{ backgroundImage: `url(${image})` }"

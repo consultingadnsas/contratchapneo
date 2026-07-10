@@ -53,6 +53,12 @@
                     @pro-checkout="addToCart(pro.id)"
                 />
             </div>
+            <Paginator 
+                :currentPage="proStore.currentPage" 
+                :totalCount="proStore.totalCount" 
+                :pageSize="proStore.pageSize" 
+                @page-changed="handlePageChange"
+            />
             
         </template>
 
@@ -87,8 +93,8 @@ import cartModale from '../../modale/cartModale.vue'
 import viewModale from '../../modale/viewModale.vue'
 import proModale from '../../modale/proModale.vue'
 
-import { ref, onMounted, watch } from 'vue' // 👈 Ajout de "watch"
-import { useRouter, useRoute } from 'vue-router' // 👈 Ajout de "useRoute"
+import { ref, onMounted, watch } from 'vue' 
+import { useRouter, useRoute } from 'vue-router' 
 import { useProStore } from '../../../stores/proStore'
 import { useCartStore } from '../../../stores/cartStore'
 
@@ -101,7 +107,7 @@ export default {
     
     setup() {
         const router = useRouter();
-        const route = useRoute(); // 👈 Accès à l'URL
+        const route = useRoute(); 
         const proStore = useProStore();
         const cartStore = useCartStore();
 
@@ -109,53 +115,54 @@ export default {
         const activeDomainSlug = ref((route.query.domaine as string) || '');
         const activeCountryCode = ref('');
         const searchQuery = ref('');
+        const currentPage = ref(1); // 👈 Ajout : On suit la page locale
 
-        // Fonction centralisée pour la recherche
-        const fetchPros = () => {
-            proStore.getProfessionals(activeDomainSlug.value, activeCountryCode.value, searchQuery.value);
+        // Fonction centralisée pour la recherche (avec la pagination)
+        const fetchPros = (page = 1) => {
+            currentPage.value = page; // On garde en mémoire la page actuelle
+            // On suppose que ton store a une fonction qui prend (page, domaine, pays, recherche)
+            // Adapte le nom de la fonction selon ton store (fetchProfessionals ou getProfessionals)
+            proStore.getProfessionals(page, activeDomainSlug.value, activeCountryCode.value, searchQuery.value);
         }
 
         // 2. Gestionnaires de filtres
-        // On crée une variable pour stocker le minuteur de recherche
         let searchTimeout: ReturnType<typeof setTimeout>;
 
-        // La nouvelle fonction de recherche optimisée
         const handleSearch = (query: string) => {
-            searchQuery.value = query; // On met à jour la valeur
+            searchQuery.value = query; 
+            if (searchTimeout) clearTimeout(searchTimeout);
             
-            // On annule la recherche précédente si l'utilisateur est encore en train de taper
-            if (searchTimeout) {
-                clearTimeout(searchTimeout);
-            }
-            
-            // On lance la vraie requête API uniquement s'il arrête de taper pendant 300ms
             searchTimeout = setTimeout(() => {
-                fetchPros();
+                fetchPros(1); // 👈 Nouvelle recherche = retour à la page 1
             }, 300);
         };
 
         const handleDomainFilter = (slug: string) => {
             activeDomainSlug.value = slug;
-            // 🪄 Met à jour l'URL dynamiquement quand on clique sur un bouton de baseProFilter
             router.push({ path: '/pro', query: { ...route.query, domaine: slug || undefined } });
-            fetchPros();
+            fetchPros(1); // 👈 Nouveau filtre = retour à la page 1
         };
 
         const handleCountryFilter = (code: string) => {
             activeCountryCode.value = code;
-            fetchPros();
+            fetchPros(1); // 👈 Nouveau filtre = retour à la page 1
         };
 
-        // 3. 🪄 SURVEILLANCE : Si l'utilisateur clique sur la NavBox depuis CETTE page
+        // 👈 CORRECTION ICI : On utilise la fonction centralisée
+         const handlePageChange = (page: number) => {
+            fetchPros(page);
+        };
+
+        // 3. Surveillance URL
         watch(() => route.query.domaine, (newDomain) => {
             const newSlug = (newDomain as string) || '';
             if (activeDomainSlug.value !== newSlug) {
                 activeDomainSlug.value = newSlug;
-                fetchPros(); // On relance la recherche instantanément
+                fetchPros(1);
             }
         });
 
-        // 4. Modales (inchangées)
+        // 4. Modales
         const isOpen = ref<boolean>(false);
         const openModal = () => { isOpen.value = true; }
 
@@ -176,15 +183,21 @@ export default {
 
         // 5. Chargement initial
         onMounted(async () => {
-            await proStore.getFilters();
-            // On lance la recherche initiale en prenant en compte l'URL
-            fetchPros(); 
+            // On ne charge les filtres que s'ils n'existent pas encore dans le store
+            if (proStore.domains.length === 0) {
+                await proStore.getFilters();
+            }
+            
+            // On ne charge les pros que si la liste est vide ou si tu souhaites forcer le rafraîchissement
+            if (proStore.professionals.length === 0) {
+                fetchPros(1);
+            }
         });
 
         return {
             router, cartStore, proStore, searchQuery, activeDomainSlug, activeCountryCode,
             handleSearch, handleDomainFilter, handleCountryFilter,
-            isOpen, openModal, isViewOpen, openViewModal, addToCart
+            isOpen, openModal, isViewOpen, openViewModal, addToCart, handlePageChange
         }
     }
 }

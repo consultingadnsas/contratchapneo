@@ -237,7 +237,7 @@ export default {
 
 .input-icon-left {
   left: 8px;
-  background: var(--secondary-light-color, #32f459); 
+  background: var(--primary-color-dark); 
   width: 40px;  
   height: 40px; 
   border-radius: 50%; 

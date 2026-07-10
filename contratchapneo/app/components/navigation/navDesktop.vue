@@ -1,5 +1,6 @@
 <template>
     <ul :class="['nav-links-desktop', `theme-${theme}`, { 'is-scrolled': isScrolled }]">
+        
         <li><NuxtLink to="/">Accueil</NuxtLink></li>
 
         <li class="dropdown-item" @mouseenter="isDropdownOpen = true" @mouseleave="isDropdownOpen = false">
@@ -65,7 +66,10 @@
         </li>
 
         <li><NuxtLink to="/etudeContrat">Révision de contrats</NuxtLink></li>
-        <li><NuxtLink to="/about"> À propos</NuxtLink></li>
+
+        <li class="nav-divider"></li>
+
+        <li><NuxtLink to="/about">À propos</NuxtLink></li>
     </ul>
 </template>
 
@@ -109,10 +113,13 @@ export default {
 .nav-links-desktop { display: none; }
 
 @media (min-width: 1180px) {
-    .nav-links-desktop { display: flex; list-style: none; padding: 0; margin: 0; gap: 0.2rem; flex: 1; justify-content: center; }
+    /* CORRECTION : On retire le justify-content: center pour que le margin-left: auto fonctionne */
+    .nav-links-desktop { 
+        display: flex; list-style: none; padding: 0; margin: 0; gap: 0.2rem; flex: 1; align-items: center; 
+    }
     
     .nav-links-desktop li a, .nav-links-desktop li .dropdown-trigger {
-        position: relative; display: flex; align-items: center; white-space: nowrap; font-size: clamp(0.85rem, 0.9vw, 0.9rem); gap: 0.3rem; font-weight: 500; padding: 0.5rem 0.6rem; border-radius: 50px; color: var(--tertiary-color); text-decoration: none; transition: background 0.2s, opacity 0.2s; cursor: pointer;
+        position: relative; display: flex; align-items: center; white-space: nowrap; font-size: clamp(0.8rem, 0.9vw, 0.9rem); gap: 0.3rem; font-weight: 500; padding: 0.5rem 0.6rem; border-radius: 50px; color: var(--tertiary-color); text-decoration: none; transition: background 0.2s, opacity 0.2s; cursor: pointer;
     }
 
     .nav-links-desktop li a::after, .nav-links-desktop li .dropdown-trigger::after {
@@ -125,6 +132,16 @@ export default {
 
     .nav-links-desktop li a:hover, .nav-links-desktop li .dropdown-trigger:hover {
         background: rgba(255, 255, 255, 0.15) !important; backdrop-filter: blur(12px) !important; -webkit-backdrop-filter: blur(12px) !important; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08) !important; transform: translateY(-1px);
+    }
+
+    /* ── NOUVEAU : LA SÉPARATION VISUELLE ── */
+    .nav-divider {
+        width: 1px;
+        height: 20px;
+        background-color: transparent; /* S'adapte au thème clair/sombre automatiquement */
+        opacity: 0.3;
+        margin-right: 1.5rem;
+        margin-left: auto; /* 👈 C'est ceci qui pousse tout le groupe de droite vers la droite de l'écran */
     }
 
     .dropdown-item { position: relative; }

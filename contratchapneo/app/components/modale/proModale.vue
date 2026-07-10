@@ -9,66 +9,45 @@
 
                 <div class="modal-layout">
 
-                    <!-- ── COLONNE GAUCHE : photo + badge vérifié + prix ── -->
+                    <!-- ── COLONNE GAUCHE : Photo complète ── -->
                     <div class="modal-visual">
-
-                        <!-- Photo de profil -->
-                        <div class="pro-avatar-wrapper">
-                            <img
-                                v-if="professional.profile_picture"
-                                :src="professional.profile_picture"
-                                :alt="`${professional.first_name} ${professional.last_name}`"
-                                class="pro-avatar"
-                            />
-                            <!-- Fallback initiales si pas de photo -->
-                            <div v-else class="pro-avatar pro-avatar--fallback">
-                                {{ initials }}
-                            </div>
-
-                            <!-- Badge vérifié -->
-                            <span v-if="professional.is_verified" class="verified-badge" title="Professionnel vérifié">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                                    <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                                </svg>
-                            </span>
-                        </div>
-
-                        <!-- Nom + titre -->
-                        <div class="pro-identity">
-                            <p class="pro-fullname">{{ professional.first_name }} {{ professional.last_name }}</p>
-                            <p class="pro-title-label">{{ professional.title_display }}</p>
-                        </div>
-
-                        <!-- Localisation -->
-                        <div class="pro-location">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
-                                <path d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
-                            </svg>
-                            <span>{{ professional.city }}, {{ professional.country?.name }}</span>
-                        </div>
-
-                        <!-- Prix -->
-                        <div class="price-tag">
-                            <span class="price-label">Consultation</span>
-                            <span class="price-amount">{{ professional.prix }} FCFA</span>
+                        <!-- Photo de profil couvrant tout l'espace -->
+                        <img
+                            v-if="professional.profile_picture"
+                            :src="professional.profile_picture"
+                            :alt="`${professional.first_name} ${professional.last_name}`"
+                            class="pro-cover-image"
+                        />
+                        <!-- Fallback si pas de photo -->
+                        <div v-else class="pro-cover-fallback">
+                            {{ initials }}
                         </div>
 
                     </div>
 
-                    <!-- ── COLONNE DROITE : infos détaillées ── -->
+                    <!-- ── COLONNE DROITE : Infos détaillées ── -->
                     <div class="modal-info">
-                        <h2 class="modal-title">
-                            {{ professional.first_name }} {{ professional.last_name }}
-                        </h2>
+                        <div class="header-titles">
+                            <h2 class="modal-title">
+                                {{ professional.first_name }} {{ professional.last_name }} 
+                                <span v-if="professional.is_verified" class="verified-badge-floating" title="Professionnel vérifié">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                                        <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                    </svg>
+                                </span>
+                            </h2>
+                               
+                            <p class="pro-role-subtitle">{{ professional.title_display }} </p>
+                        </div>
 
                         <div class="scrollable-body">
 
                             <!-- Bio -->
                             <p class="long-description muted-text">{{ professional.bio }}</p>
 
-                            <!-- Expérience + N° d'ordre -->
+                            <!-- Grille d'informations (Expérience, N°, Ordre, Localisation) -->
                             <div class="meta-grid">
+                                
                                 <div class="meta-item">
                                     <svg viewBox="0 0 24 24" fill="none" stroke="#34d399" stroke-width="2">
                                         <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
@@ -78,6 +57,7 @@
                                         <span class="meta-value">{{ professional.years_of_experience }} ans</span>
                                     </div>
                                 </div>
+
                                 <div class="meta-item">
                                     <svg viewBox="0 0 24 24" fill="none" stroke="#34d399" stroke-width="2">
                                         <path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
@@ -87,6 +67,7 @@
                                         <span class="meta-value">{{ professional.registration_number }}</span>
                                     </div>
                                 </div>
+
                                 <div class="meta-item" v-if="professional.professional_order">
                                     <svg viewBox="0 0 24 24" fill="none" stroke="#34d399" stroke-width="2">
                                         <path d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
@@ -96,6 +77,21 @@
                                         <span class="meta-value">{{ professional.professional_order }}</span>
                                     </div>
                                 </div>
+
+                                <!-- NOUVEAU : Localisation sur la même ligne que l'ordre pro -->
+                                <div class="meta-item" v-if="professional.city || professional.country?.name">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="#34d399" stroke-width="2">
+                                        <path d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                                        <path d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                    </svg>
+                                    <div>
+                                        <span class="meta-label">Localisation</span>
+                                        <span class="meta-value">
+                                            {{ professional.city }}<template v-if="professional.city && professional.country?.name">, </template>{{ professional.country?.name }}
+                                        </span>
+                                    </div>
+                                </div>
+
                                 <div class="meta-item" v-if="professional.website">
                                     <svg viewBox="0 0 24 24" fill="none" stroke="#34d399" stroke-width="2">
                                         <path d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9"/>
@@ -103,7 +99,7 @@
                                     <div>
                                         <span class="meta-label">Site web</span>
                                         <a :href="professional.website" target="_blank" class="meta-link">
-                                            {{ professional.website }}
+                                            Lien vers le site
                                         </a>
                                     </div>
                                 </div>
@@ -128,7 +124,7 @@
                         <div class="modal-actions">
                             <checkout-button 
                                 @click="$emit('pay-consultation', professional)" 
-                                label="payer consultation"
+                                label="Payer la consultation"
                             />
                         </div>
 
@@ -228,76 +224,53 @@ export default {
     overflow: hidden;
 }
 
-/* ── Colonne gauche (fond sombre dégradé) ── */
+/* ── Colonne gauche (Photo) ── */
 .modal-visual {
-    background: linear-gradient(160deg, #0f172a 0%, #1e3a5f 100%);
-    padding: 3rem 2rem;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 1.5rem;
-    color: #ffffff;
-}
-
-/* Avatar */
-.pro-avatar-wrapper {
     position: relative;
-    flex-shrink: 0;
+    width: 100%;
+    height: 100%;
+    background-color: #0f172a;
+    overflow: hidden;
 }
 
-.pro-avatar {
-    width: 130px;
-    height: 130px;
-    border-radius: 50%;
+.pro-cover-image {
+    width: 100%;
+    height: 100%;
     object-fit: cover;
-    border: 4px solid rgba(255, 255, 255, 0.25);
+    object-position: center;
     display: block;
 }
 
-.pro-avatar--fallback {
-    background: rgba(255, 255, 255, 0.15);
+.pro-cover-fallback {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(160deg, #0f172a 0%, #1e3a5f 100%);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 2.5rem;
+    font-size: 5rem;
     font-weight: 700;
-    color: #fff;
+    color: rgba(255, 255, 255, 0.5);
     letter-spacing: 2px;
 }
 
-.verified-badge {
-    position: absolute;
-    bottom: 4px; right: 4px;
+/* Badge vérifié flottant sur l'image */
+.verified-badge-floating {
+    position: relative;
+    top: 0.2rem;
+    left: 0.9rem;
     background: #34d399;
-    border-radius: 50%;
-    width: 28px; height: 28px;
-    display: flex; align-items: center; justify-content: center;
-    border: 2px solid #0f172a;
+    color: #064e3b;
+    padding: 0rem 0.2rem;
+    border-radius: 50px;
+    font-size: 0.5rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 0.2rem;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.15);
 }
-.verified-badge svg { width: 16px; height: 16px; color: #0f172a; }
-
-/* Identité */
-.pro-identity { text-align: center; }
-.pro-fullname { font-size: 1.2rem; font-weight: 700; margin: 0 0 0.3rem; }
-.pro-title-label { font-size: 0.9rem; color: #94a3b8; margin: 0; }
-
-/* Localisation */
-.pro-location {
-    display: flex; align-items: center; gap: 0.4rem;
-    font-size: 0.85rem; color: #cbd5e1;
-}
-.pro-location svg { width: 16px; height: 16px; flex-shrink: 0; }
-
-/* Bloc prix */
-.price-tag {
-    width: 100%; padding: 1.25rem 1.5rem; border-radius: 16px;
-    display: flex; flex-direction: column; align-items: center; gap: 0.25rem;
-    background: rgba(255, 255, 255, 0.08);
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    margin-top: auto;
-}
-.price-label  { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; color: #94a3b8; }
-.price-amount { font-size: 1.5rem; font-weight: 800; color: #34d399; }
+.verified-badge-floating svg { width: 20px; height: 20px; }
 
 /* ── Colonne droite ── */
 .modal-info {
@@ -307,10 +280,26 @@ export default {
     height: 100%; overflow: hidden;
 }
 
+.header-titles {
+    margin-bottom: 1.5rem;
+    flex-shrink: 0;
+}
+
 .modal-title {
     font-size: 2rem; font-weight: 800; color: #0f172a;
-    margin: 0 0 1.5rem; line-height: 1.1;
-    flex-shrink: 0;
+    margin: 0 0 0.2rem 0; line-height: 1.1; display: flex; flex-direction: grid;
+    padding: 0.2rem 0;
+}
+.modal-title .verified-badge-floating{
+    margin: 0 0 0.5rem 0;
+}
+
+
+.pro-role-subtitle {
+    font-size: 1.05rem;
+    color: #64748b;
+    font-weight: 500;
+    margin: 0;
 }
 
 /* Zone scrollable */
@@ -363,9 +352,10 @@ export default {
 
 /* Actions */
 .modal-actions {
-    display: flex; justify-content: center; gap: 1rem; width: 100%;
+    display: flex; justify-content: flex-start; gap: 1rem; width: 100%;
     flex-shrink: 0; margin-top: auto;
 }
+
 /* Transition */
 .modal-fade-enter-active, .modal-fade-leave-active { transition: opacity 0.3s; }
 .modal-fade-enter-from,   .modal-fade-leave-to     { opacity: 0; }
@@ -382,10 +372,12 @@ export default {
         min-height: auto;
         display: block;
     }
-    .modal-visual { padding: 2.5rem 1.5rem; }
+    .modal-visual { 
+        height: 250px; /* Limite la hauteur de l'image sur mobile */
+    }
     .modal-info   { padding: 2rem; height: auto; overflow: visible; }
     .scrollable-body { overflow-y: visible; padding-right: 0; margin-bottom: 0; }
-    .modal-title  { font-size: 1.6rem; margin-bottom: 1rem; }
+    .modal-title  { font-size: 1.6rem; }
     .meta-grid    { grid-template-columns: 1fr; }
     .features-list { grid-template-columns: 1fr; }
     .modal-actions { flex-direction: column; margin-top: 2rem; }

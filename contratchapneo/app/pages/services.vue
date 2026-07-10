@@ -2,6 +2,14 @@
     <div class="page-wrapper">
         <main class="legal-services-page">
             <Navbar theme="light"/>
+            <section class="services-section">
+                <div class="section-header">
+                    <h2>Nos Domaines <span class="text-accent">d'Intervention</span></h2>
+                    <p class="muted-text">Cliquez sur un service pour être mis en relation avec nos experts.</p>
+                </div>
+                <servicesCards :services="services" />
+            </section>
+
             <section class="hero-section">
                 <div class="hero-content">
                     <h1 class="main-title">
@@ -17,14 +25,6 @@
                         <span class="stat-label">{{ stat.label }}</span>
                     </div>
                 </div>
-            </section>
-
-            <section class="services-section">
-                <div class="section-header">
-                    <h2>Nos Domaines d'Intervention</h2>
-                    <p class="muted-text">Cliquez sur un service pour être mis en relation avec nos experts.</p>
-                </div>
-                <servicesCards :services="services" />
             </section>
 
             <section id="contact-section" class="contact-section">
@@ -246,7 +246,7 @@ export default {
 }
 
 .main-title {
-    font-size: clamp(2.5rem, 5vw, 4rem);
+    font-size: clamp(2.5rem, 5vw, 3rem);
     font-weight: 800;
     line-height: 1.15;
     margin: 0;
@@ -311,9 +311,10 @@ export default {
 }
 
 .section-header h2 {
-    font-size: 2.2rem;
-    font-weight: 700;
-    margin: 0 0 0.5rem 0;
+     font-size: clamp(2.5rem, 5vw, 4rem);
+    font-weight: 800;
+    line-height: 1.15;
+    margin: 0;
     color: #0f172a;
 }
 

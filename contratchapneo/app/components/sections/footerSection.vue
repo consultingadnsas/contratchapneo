@@ -5,15 +5,17 @@
         <div class="social-links">
           
           <a href="https://www.tiktok.com/@contratchap?_r=1&_t=ZN-97pbVnfYGHO" target="_blank" aria-label="TikTok" class="social-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M9 12a4 4 0 1 0 4 4V4a5 5 0 0 0 5 5"></path>
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14" id="Tiktok--Streamline-Core" height="14" width="14">
+              <path id="Union" fill="#8fbffa" d="M9.422 1.14a1 1 0 0 0 -2 0v8.58a1.893 1.893 0 1 1 -1.893 -1.892 1 1 0 1 0 0 -2 3.893 3.893 0 1 0 3.893 3.893V5.283a5.266 5.266 0 0 0 3.288 1.146 1 1 0 1 0 0 -2 3.288 3.288 0 0 1 -3.288 -3.288Z" stroke-width="1"></path>
             </svg>
           </a>
           
           <div class="social-dropdown">
             <button aria-label="Facebook" class="social-icon fb-btn">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" id="Facebook-Logo--Streamline-Ultimate" height="24" width="24">
+                <path d="M17.768 7.5H13.5V5.6a0.972 0.972 0 0 1 1.012 -1.1c0.418 0 2.988 0.01 2.988 0.01V0.5h-4.329C9.244 0.5 8.5 3.474 8.5 5.355V7.5h-3v4h3v12h5v-12h3.851Z" fill="#9feaff" stroke-width="1"></path>
+                <path d="M14.631 7.5H13.5V5.6a0.972 0.972 0 0 1 1.012 -1.1c0.418 0 2.988 0.01 2.988 0.01V0.5h-4.329C9.244 0.5 8.5 3.474 8.5 5.355V7.5h-3v4h3v2.131Z" fill="#dff9ff" stroke-width="1"></path>
+                <path d="M17.768 7.5H13.5V5.6a0.972 0.972 0 0 1 1.012 -1.1c0.418 0 2.988 0.01 2.988 0.01V0.5h-4.329C9.244 0.5 8.5 3.474 8.5 5.355V7.5h-3v4h3v12h5v-12h3.851Z" fill="none" stroke="#00303e" stroke-linecap="round" stroke-linejoin="round" stroke-width="1"></path>
               </svg>
             </button>
             <div class="social-dropdown-content">
@@ -24,10 +26,14 @@
           </div>
 
           <a href="https://www.linkedin.com/company/contratchap/" target="_blank" aria-label="LinkedIn" class="social-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path>
-              <rect x="2" y="9" width="4" height="12"></rect>
-              <circle cx="4" cy="4" r="2"></circle>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" id="Linkedin-Logo--Streamline-Ultimate" height="24" width="24">
+              <path d="M1.5 9.5h5v13h-5Z" fill="#9feaff" stroke-width="1"></path>
+              <path d="M15.5 13.5a2 2 0 0 0 -2 2v7h-5v-13h5v1.485a6.307 6.307 0 0 1 3.99 -1.495c2.962 0 5.01 2.2 5.01 6.355V22.5h-5v-7a2 2 0 0 0 -2 -2" fill="#9feaff" stroke-width="1"></path>
+              <path d="M1.5 5a2.5 2.5 0 1 0 5 0 2.5 2.5 0 1 0 -5 0" fill="#9feaff" stroke-width="1"></path>
+              <path d="M1.5 9.5h5v2.015h-5Z" fill="#dff9ff" stroke-width="1"></path>
+              <path d="M17.49 9.49a6.309 6.309 0 0 0 -3.99 1.494V9.5h-5v2.015h3.515A1.485 1.485 0 0 1 13.5 13a6.307 6.307 0 0 1 3.99 -1.495c2.962 0 5.01 2.195 5.01 6.355v-2.015c0 -4.16 -2.048 -6.355 -5.01 -6.355" fill="#dff9ff" stroke-width="1"></path>
+              <path d="M4 4.515a2.5 2.5 0 0 1 2.285 1.492 2.5 2.5 0 1 0 -4.57 0A2.5 2.5 0 0 1 4 4.515" fill="#dff9ff" stroke-width="1"></path>
+              <path d="M6.5 22.5h-5v-13h5Zm9 -9a2 2 0 0 0 -2 2v7h-5v-13h5v1.485a6.307 6.307 0 0 1 3.99 -1.495c2.962 0 5.01 2.2 5.01 6.355V22.5h-5v-7a2 2 0 0 0 -2 -2M6.5 5A2.5 2.5 0 1 1 4 2.5 2.5 2.5 0 0 1 6.5 5" fill="none" stroke="#00303e" stroke-linecap="round" stroke-linejoin="round" stroke-width="1"></path>
             </svg>
           </a>
 
@@ -322,7 +328,7 @@ export default {
 }
 
 .btn-get-started {
-  width: 50%;
+  width: 30%;
   position: relative;
   z-index: 2;
   background-color: #ffffff;

@@ -67,42 +67,57 @@ export const useProStore = defineStore('proStore', () => {
     const professional = ref<LegalProfessional | null>(null);
     const countries = ref<Country[]>([]);
     const domains = ref<LegalDomain[]>([]);
+    const currentPage = ref(1);
+    const totalCount = ref(0);
+    const pageSize = ref(10);
 
     // --- ACTIONS ---
 
     /**
      * 1. Récupérer la liste des professionnels avec filtres
      */
-    const getProfessionals = async (domainSlug: string = '', countryCode: string = '', searchQuery: string = '') => {
-        isLoading.value = true;
-        error.value = null;
-        
-        try {
-            const params: Record<string, any> = {};
-            if (domainSlug) params.domain = domainSlug;
-            if (countryCode) params.country = countryCode;
-            if (searchQuery) params.q = searchQuery;
+    const getProfessionals = async (page: number = 1, domainSlug: string = '', countryCode: string = '', searchQuery: string = '') => {
+    isLoading.value = true;
+    error.value = null;
+    
+    try {
+        // 1. On inclut la page dans les paramètres
+        const params: Record<string, any> = { page }; 
+        if (domainSlug) params.domain = domainSlug;
+        if (countryCode) params.country = countryCode;
+        if (searchQuery) params.q = searchQuery;
 
-            const response = await $api<LegalProfessional[]>('/pro/professionals/', {
-                method: 'GET',
-                params
-            });
+        const response = await $api<any>('/pro/professionals/', {
+            method: 'GET',
+            params
+        });
 
-            if (response) {
-                professionals.value = response.map(pro => ({
-                    ...pro,
-                    profile_picture: resolveMediaUrl(pro.profile_picture)
-                }));
-                console.log('Professionnels récupérés avec succès', professionals.value);
-            }
-        } catch (err: any) {
-            console.error('Erreur getProfessionals:', err);
-            error.value = err.message || "Erreur lors de la récupération des professionnels";
-            professionals.value = [];
-        } finally {
-            isLoading.value = false;
+        if (response) {
+            // 2. Mise à jour des variables de pagination du Store
+            // (Assure-toi que ton backend renvoie bien un champ "count")
+            totalCount.value = response.count || 0; 
+            currentPage.value = page;
+
+            // 3. On extrait les données du tableau "results" (standard de pagination)
+            // Le "|| response" est une sécurité au cas où ton backend renvoie encore un tableau direct
+            const resultsArray = response.results || response; 
+
+            professionals.value = resultsArray.map((pro: any) => ({
+                ...pro,
+                profile_picture: resolveMediaUrl(pro.profile_picture)
+            }));
+            
+            console.log('Professionnels de la page', page, 'récupérés avec succès', professionals.value);
         }
-    };
+    } catch (err: any) {
+        console.error('Erreur getProfessionals:', err);
+        error.value = err.message || "Erreur lors de la récupération des professionnels";
+        professionals.value = [];
+        totalCount.value = 0; // On remet à 0 en cas d'erreur
+    } finally {
+        isLoading.value = false;
+    }
+};
 
     /**
      * 2. Charger les filtres (Pays et Domaines)
@@ -145,8 +160,11 @@ export const useProStore = defineStore('proStore', () => {
         professional,
         countries,
         domains,
+        currentPage,
+        totalCount,
+        pageSize,
         getProfessionals,
         getFilters,
-        getSpecificProfessional
+        getSpecificProfessional,
     };
 });
