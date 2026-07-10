@@ -128,3 +128,8 @@ def fill_docx_template(template_path, user_inputs, output_path):
     doc.save(output_path)
     
     return output_path
+
+def user_has_free_access_to_contract(user, contrat_id):
+    """
+        Vérifie si l'utilisateur possède un pack actif 
+    """

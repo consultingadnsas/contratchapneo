@@ -82,11 +82,12 @@ class CustomedContract(models.Model):
 
     
 class Pack(models.Model):
-
+    """ LE CATALOGUE (Ce qui s'affiche sur la boutique) """
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     title = models.CharField(max_length=255)
     description = models.TextField()
     prix = models.DecimalField(max_digits=10, decimal_places=2)
+    
     contrats = models.ManyToManyField(
         Contrat,
         related_name='packs',
@@ -94,19 +95,37 @@ class Pack(models.Model):
     )
     picture = models.ImageField(upload_to='pack_images/', blank=True, null=True)
 
-    # customer relation
-    customer = models.ForeignKey(CustomUser, blank=True, null=True, on_delete=models.SET_NULL)
-
     # Statistics
     views = models.PositiveIntegerField(default=0)
     downloads = models.PositiveIntegerField(default=0)
 
-    # Subscription
-    is_active = models.BooleanField(default=False)
+    # Visibility sur la boutique
+    is_active = models.BooleanField(default=True)
 
-    # Timestamps
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return f'Pack {self.title} ({self.contrats.count()} contrats)'
+
+
+class UserPack(models.Model):
+    """ L'ACHAT (Ce qui donne le droit d'accès gratuit à l'utilisateur) """
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    
+    # Qui a acheté ?
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='mes_packs')
+    
+    # Qu'est-ce qu'il a acheté ?
+    pack = models.ForeignKey(Pack, on_delete=models.PROTECT, related_name='purchasers')
+    
+    # Est-ce que son pack est toujours valide ?
+    is_active = models.BooleanField(default=True) 
+    
+    # Optionnel : Tu pourrais ajouter une date d'expiration si le pack dure 1 an par exemple
+    # expires_at = models.DateTimeField(null=True, blank=True)
+
+    purchased_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f'{self.user.email} a acheté le {self.pack.title}'
