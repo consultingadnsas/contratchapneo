@@ -310,7 +310,7 @@ export default {
 .sug-icon {
   width: 18px;
   height: 18px;
-  color: var(--secondary-light-color, #32f459);
+  color: var(--primary-color);
 }
 
 .sug-text {

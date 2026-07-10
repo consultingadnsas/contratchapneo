@@ -396,8 +396,8 @@ export default defineComponent({
 
 .revision-cta .cta-texts p {
     color: var(--my-white, #ffffff);
-    font-weight: 600;
-    font-size: clamp(0.8rem, 2vw, 0.8rem);
+    font-weight: 400;
+    font-size: clamp(0.9rem, 2vw, 0.9rem);
 }
 
 .cta-texts p{

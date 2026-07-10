@@ -224,6 +224,7 @@ span {
   align-items: center;
   justify-content: center;
   transition: all 0.2s ease;
+  margin-bottom: 0.5rem
 }
 
 .wa-icon-inline:hover {
