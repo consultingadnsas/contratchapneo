@@ -9,7 +9,7 @@ export interface User {
   password: string;
   email: string;
   phone_number: string;
-  user_type: string;
+  user_type?: string;
 }
 
 export const useAuthStore = defineStore('auth', () => {
@@ -33,7 +33,31 @@ export const useAuthStore = defineStore('auth', () => {
 
   // Actions
   const register = async (payload: Omit<User, 'id'>) => {
-    // ... ton code existant pour register ...
+    
+    isLoading.value = true;
+    error.value = '';
+
+    try {
+      
+      const response = await $api('/account/register/', {
+        method: 'POST',
+        body: payload
+      })
+
+      if (response) {
+        isLoading.value = false;
+        //Debuging
+        console.log('reponse de création', response)
+        navigateTo('/login');
+      }
+
+    } catch (err:any) {
+      console.error(err)
+      throw new Error("Un soucis est intervenu");
+
+    } finally {
+      isLoading.value = false;
+    }
   }
 
   // Nouvelle action pour le Login

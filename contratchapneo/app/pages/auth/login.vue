@@ -21,27 +21,21 @@
 
         <form @submit.prevent="handleLogin" class="dossier-form">
           
-          <div class="input-group">
-            <label for="email">Adresse Email</label>
-            <input 
-              type="email" 
-              id="email" 
-              v-model="email" 
-              placeholder="cabinet@exemple.com" 
-              required 
-            />
-          </div>
+          <BaseInput 
+            label="Email/username" 
+            placeholder="Entrer username/email"
+            v-model="loginForm.identifier"
+            :errorMessage="errors.identifier"
+        />
 
-          <div class="input-group">
-            <label for="password">Mot de passe d'accès</label>
-            <input 
-              type="password" 
-              id="password" 
-              v-model="password" 
-              placeholder="••••••••" 
-              required 
-            />
-          </div>
+        <BaseInput 
+            label="Mot de passe" 
+            placeholder="Entrer un mot de passe"
+            type="password"
+            v-model="loginForm.password"
+            :errorMessage="errors.password"
+        />
+
 
           <div class="form-options">
             <label class="checkbox-container">
@@ -81,42 +75,80 @@
 <script lang="ts">
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
+import { useAuthStore } from '../../stores/authStore'
+import { validateForm } from '../../utils/validators'
+
+import BaseInput from '../../components/input/BaseInput.vue'
 
 export default {
   name: 'LoginPack',
+  components: {
+    BaseInput,
+  },
   setup() {
     const router = useRouter();
-    const email = ref('');
-    const password = ref('');
-    const rememberMe = ref(false);
-    const isLoading = ref(false);
+    const authStore = useAuthStore();
     
-    // Nouvelle variable pour gérer l'échec de la connexion
+    // 1. On utilise "identifier" au lieu de séparer email et username
+    const loginForm = ref({ 
+        identifier: "", 
+        password: "" 
+    });
+
+    const errors = ref<Record<string, string>>({});
     const loginFailed = ref(false);
+    const isLoading = ref(false); // Pour ton bouton de chargement
 
     const handleLogin = async () => {
-      isLoading.value = true;
-      loginFailed.value = false; // Réinitialise l'erreur à chaque tentative
+      // On réinitialise l'état d'erreur général
+      loginFailed.value = false;
 
-      // Simulation d'un appel API pour la connexion
-      setTimeout(() => {
-        isLoading.value = false;
+      // 2. On valide les deux champs (ça va vérifier s'ils ne sont pas vides)
+      const validation = validateForm(loginForm.value);
+      errors.value = validation.errors;
+      
+      if (validation.isValid) {
+        isLoading.value = true;
         
-        // Pour tester l'apparition du bouton, on simule un échec systématique
-        // À remplacer par ta vraie logique (ex: if(response.error) { loginFailed.value = true; })
-        loginFailed.value = true; 
-        console.log('Échec de la connexion pour', email.value);
-      }, 1500);
+        try {
+          // 3. LA MAGIE EST ICI 🪄 : On détecte s'il y a un '@'
+          const isEmail = loginForm.value.identifier.includes('@');
+
+          // 4. On construit l'objet exactement comme ton backend l'attend
+          const payload = {
+            password: loginForm.value.password,
+            // Si isEmail est vrai, on crée la clé 'email', sinon on crée 'username'
+            ...(isEmail 
+                ? { email: loginForm.value.identifier } 
+                : { username: loginForm.value.identifier }
+            )
+          };
+
+          console.log("Données prêtes à être envoyées :", payload);
+
+          // 5. On envoie au store
+          await authStore.login(payload);
+          
+          // Redirection après succès (si non gérée dans le store)
+          router.push('/profile/dashboard'); 
+
+        } catch (error) {
+          console.error("Erreur de connexion :", error);
+          loginFailed.value = true;
+        } finally {
+          isLoading.value = false;
+        }
+      }
     };
 
     return {
-      email,
-      password,
-      rememberMe,
-      isLoading,
+      router,
+      authStore,
+      loginForm,
+      errors,
       loginFailed,
+      isLoading,
       handleLogin,
-      router
     };
   }
 }

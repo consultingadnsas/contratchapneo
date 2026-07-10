@@ -1,61 +1,22 @@
 <template>
   <div class="dashboard-container">
+    
     <sidebar />
 
     <!-- 2. LE CONTENU PRINCIPAL (À droite de la sidebar) -->
     <main class="main-content">
 
-        <header class="dashboard-header">
-            <div>
-                <h1 class="greeting">Bonjour, Maître</h1>
-                <p class="subtitle">Voici un résumé de votre activité juridique.</p>
-            </div>
-            <button class="primary-btn">+ Nouveau contrat</button>
-        </header>
-
-        <div class="dashboard-grid">
-          <!-- Colonne Principale -->
-          <div class="left-column">
-            <section class="legal-widget glass-widget">
-              <div class="section-header">
-                <div class="title-wrapper">
-                  <h2>Dossiers récents</h2>
-                  <span class="status-badge pulse-blue">Activité récente</span>
-                </div>
-              </div>
-              <div class="widget-content list-layout">
-                  <div class="contract-item">
-                      <div class="contract-details">
-                          <h3>Contrat de Prestation de Service</h3>
-                          <p>Modifié il y a 2 heures</p>
-                      </div>
-                      <span class="legal-badge badge-draft">Brouillon</span>
-                  </div>
-              </div>
-            </section>
-          </div>
-
-          <!-- Colonne Secondaire -->
-          <div class="right-column">
-            <section class="legal-widget glass-widget alert-widget">
-              <div class="section-header">
-                  <div class="title-wrapper">
-                      <h2>Actions requises</h2>
-                      <div class="notification-dot">1</div>
-                  </div>
-              </div>
-              <div class="widget-content list-layout">
-                  <div class="action-item">
-                      <div class="action-text">
-                          <h4>Signature en attente</h4>
-                          <p>M. Dupont</p>
-                      </div>
-                      <button class="action-btn">Signer</button>
-                  </div>
-              </div>
-            </section>
-          </div>
+      <header class="dashboard-header">
+        <div>
+          <h1 class="greeting">Bonjour, Maître</h1>
+          <p class="subtitle">Voici un résumé de votre activité juridique.</p>
         </div>
+        <mainButton/>
+      </header>
+
+      <div class="dashboard-grid">
+        <h3>Vous n'avez aucun pack acheter</h3>
+      </div>
 
     </main>
   </div>
@@ -65,11 +26,14 @@
 import { ref } from 'vue';
 // ASSUREZ-VOUS QUE LE CHEMIN EST BON VERS VOTRE SIDEBAR
 import sidebar from '../../components/navigation/sidebar.vue'; 
-
+import cardSection from '../../components/sections/bankContratSections/cardSection.vue'
+import mainButton from '../../components/buttons/secondButton.vue'
 export default {
   name: 'DashboardLayout',
   components: {
-    sidebar
+    sidebar,
+    cardSection,
+    mainButton
   },
   setup() {
 

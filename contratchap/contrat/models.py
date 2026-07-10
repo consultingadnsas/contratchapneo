@@ -1,6 +1,7 @@
 from django.db import models
 from django.conf import settings
 import uuid
+from account.models import CustomUser
 # Create your models here.
 
 class Category(models.Model):
@@ -93,9 +94,15 @@ class Pack(models.Model):
     )
     picture = models.ImageField(upload_to='pack_images/', blank=True, null=True)
 
+    # customer relation
+    customer = models.ForeignKey(CustomUser, blank=True, null=True, on_delete=models.SET_NULL)
+
     # Statistics
     views = models.PositiveIntegerField(default=0)
     downloads = models.PositiveIntegerField(default=0)
+
+    # Subscription
+    is_active = models.BooleanField(default=False)
 
     # Timestamps
     created_at = models.DateTimeField(auto_now_add=True)

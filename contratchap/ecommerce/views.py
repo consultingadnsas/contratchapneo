@@ -135,8 +135,8 @@ class CartAddItemView(APIView):
 
 class CartItemUpdateView(APIView):
     """
-    PATCH /cart/update/<uuid:contrat_id>/
-    Met à jour la quantité d'un contrat spécifique dans le panier.
+        PATCH /cart/update/<uuid:contrat_id>/
+        Met à jour la quantité d'un contrat spécifique dans le panier.
     """
     # AllowAny car les utilisateurs invités (sessions) peuvent aussi modifier leur panier
     permission_classes = [AllowAny]
