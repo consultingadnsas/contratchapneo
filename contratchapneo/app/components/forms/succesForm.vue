@@ -6,20 +6,27 @@
             <path d="M7 12.5L10.5 16L17 9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
     </div>
-    <h3 class="success__title">{{ message }}</h3>
+    
+    <h3 class="success__title">{{ displayMessage }}</h3>
+    
     <p class="success__subtitle">
-        Vous serez redirigé dans <span>{{ countdown }}s</span>.
+        {{ displaySubtitle }}
     </p>
+
+    <!-- 1. CAS CONTRAT SIMPLE OU CARTE DE VISITE : On affiche le bouton de téléchargement -->
     <button
+        v-if="productType === 'carte' || productType === 'contrat_simple'"
         class="success__download"
-        :disabled="downloading || !canDownload"
-        @click="downloadContract"
+        :disabled="paiementStore.downloading"
+        @click="handleDownload"
     >
-        {{ downloading ? 'Téléchargement en cours...' : 'Télécharger le contrat' }}
+        {{ paiementStore.downloading ? 'Téléchargement en cours...' : 'Télécharger votre document' }}
     </button>
+    
+    <!-- Bouton de redirection manuelle dont le texte s'adapte au produit -->
     <mainButton 
-        label="aller page d'accueil" 
-        @click="()=>router.push('/')"
+        :label="buttonLabel" 
+        @click="handleManualAction"
     />
   </div>
 </template>
@@ -29,7 +36,7 @@ import { useRouter, useRoute } from 'vue-router';
 import { ref, onMounted, onUnmounted, computed } from 'vue';
 import mainButton from '../buttons/mainButton.vue';
 import { usePaiementStore } from '../../stores/paiementStore';
-import { useOrderStore } from '../../stores/orderStore'; // 👈 Import du store de commande
+import { useOrderStore } from '../../stores/orderStore';
 
 export default {
   components: {
@@ -50,37 +57,105 @@ export default {
     let countdownTimer: any = null;
 
     const paiementStore = usePaiementStore();
-    const orderStore = useOrderStore(); // 👈 Initialisation du store
+    const orderStore = useOrderStore();
 
-    // 💡 Déterminer intelligemment ce que l'utilisateur a acheté
-    const isContract = computed(() => {
-      // On récupère le premier article de la commande
-      const item = orderStore.currentOrder?.order_items?.[0] ?? orderStore.currentOrder?.items?.[0];
-      
-      // À ADAPTER SELON TON BACKEND : 
-      // Ici je pars du principe que si l'objet possède une propriété "contrat", c'est un contrat.
-      // Sinon (ex: ça pourrait être "professional_card" ou tu peux vérifier item.type), c'est une carte.
-      return !!item?.contrat; 
+    // 💡 Détecter précisément le type de produit acheté
+    const productType = computed(() => {
+      const item: any = orderStore.currentOrder?.order_items?.[0] ?? orderStore.currentOrder?.items?.[0];
+
+      if (!item) return 'inconnu';
+
+      const isCustomContract = Boolean(
+        item?.is_custom ||
+        item?.type === 'custom_contract' ||
+        item?.contrat_customed ||
+        item?.customised_contract ||
+        (item?.contrat && item?.is_custom)
+      );
+
+      // 🛑 CAS 1 : Contrat personnalisé (Rédacteur / Éditeur)
+      if (isCustomContract) {
+        return 'contrat_personnalise';
+      }
+
+      // 📄 CAS 2 : Contrat simple avec génération automatique
+      if (item.contrat) {
+        return 'contrat_simple';
+      }
+
+      // 📇 CAS 3 : Carte de visite
+      return 'carte';
     });
 
-    // 💡 La nouvelle fonction de routage intelligent
-    const handleSuccessAction = async () => {
-      // On arrête le compteur s'il est cliqué manuellement
+    const isCustomContractOrder = computed(() => productType.value === 'contrat_personnalise');
+
+    const displayMessage = computed(() => {
+      if (isCustomContractOrder.value) {
+        return 'Votre contrat sur mesure a bien été pris en charge.';
+      }
+      return props.message;
+    });
+
+    const displaySubtitle = computed(() => {
+      if (isCustomContractOrder.value) {
+        return 'Vous pouvez maintenant continuer vers l\'éditeur pour finaliser votre contrat.';
+      }
+      return `Vous serez redirigé dans ${countdown.value}s.`;
+    });
+
+    // Label dynamique pour le bouton principal
+    const buttonLabel = computed(() => {
+      if (productType.value === 'contrat_personnalise') return 'Rédiger mon contrat';
+      return "Aller à la page d'accueil";
+    });
+
+    // 🔄 Redirection automatique après les 3 secondes
+    const handleAutomaticRedirection = async () => {
       if (countdownTimer) clearInterval(countdownTimer);
       
-      if (isContract.value) {
-        // ➡️ PARCOURS CONTRAT : On va à l'éditeur
-        emit('succes'); 
+      switch (productType.value) {
+        case 'contrat_personnalise':
+          // 🛑 ZÉRO REQUÊTE BACKEND : Redirection directe sur l'éditeur
+          emit('succes'); 
+          router.push('/');
+          break;
+
+        case 'contrat_simple':
+          // ⬇️ Génération et téléchargement automatique du PDF, puis redirection accueil
+          await paiementStore.downloadOrder();
+          emit('succes');
+          router.push('/contractWritter');
+          break;
+
+        case 'carte':
+        default:
+          // ⬇️ Téléchargement automatique de la carte, puis redirection accueil
+          await paiementStore.downloadOrder();
+          emit('succes');
+          router.push('/');
+          break;
+      }
+    };
+
+    // 🖱️ Clic manuel sur le bouton principal
+    const handleManualAction = () => {
+      if (countdownTimer) clearInterval(countdownTimer);
+      
+      if (productType.value === 'contrat_personnalise') {
+        emit('succes');
         router.push('/contractWritter');
       } else {
-        // ⬇️ PARCOURS CARTE DE VISITE : On télécharge
-        const success = await paiementStore.downloadOrder();
-        if (success) {
-           emit('succes');
-           // Optionnel : tu peux rediriger vers l'accueil après le téléchargement
-           // router.push('/');
-        }
+        router.push('/');
       }
+    };
+
+    // 📥 Clic manuel sur "Télécharger" (Disponible uniquement pour carte et contrat simple)
+    const handleDownload = async () => {
+      // Sécurité absolue : si c'est un contrat personnalisé, on bloque tout appel API
+      if (productType.value === 'contrat_personnalise') return; 
+      
+      if (countdownTimer) clearInterval(countdownTimer);
+      await paiementStore.downloadOrder();
     };
 
     onMounted(() => {
@@ -91,7 +166,7 @@ export default {
       countdownTimer = setInterval(() => {
         countdown.value--;
         if (countdown.value <= 0) {
-          handleSuccessAction(); // 👈 On lance l'action calculée quand le temps est écoulé
+          handleAutomaticRedirection();
         }
       }, 1000);
     });
@@ -101,11 +176,14 @@ export default {
     });
 
     return {
-      router,
       countdown,
       paiementStore,
-      isContract,
-      handleSuccessAction
+      productType,
+      displayMessage,
+      displaySubtitle,
+      buttonLabel,
+      handleManualAction,
+      handleDownload
     };
   }
 }

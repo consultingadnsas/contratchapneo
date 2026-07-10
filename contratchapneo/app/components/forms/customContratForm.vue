@@ -214,6 +214,8 @@ export default {
                     description: ""
                 });
 
+                router.push('/order/checkout');
+
             } catch (err) {
                 // Si le store renvoie une erreur (throw error), on atterrit ici
                 showNotification('error', 'Erreur d\'envoi', 'Une erreur est survenue lors de la soumission de votre demande.');

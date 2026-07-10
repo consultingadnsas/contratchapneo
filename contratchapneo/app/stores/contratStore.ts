@@ -223,29 +223,31 @@ export const useContratStore = defineStore('contrat', ()=> {
         }
     };
 
-    const submitCustomContract = async (payload:object) => {
-        
+    const submitCustomContract = async (payload: object) => {
         isLoading.value = true;
 
         const { useCartStore } = await import('./cartStore');
         const cartStore = useCartStore();
-        
+
         try {
-            
             const response = await $api('/contrat/custom-requests/', {
-                method:'POST',
-                body:payload
+                method: 'POST',
+                body: payload
             });
 
-            if(response && response.id){
-                console.log("Votre nouveau contrat sur demande", response.id);
-                await cartStore.addCustomizedContract(response?.id)
-                return response; // <-- Ajoute ce return pour que le composant puisse vérifier
+            const createdContract = response?.data ?? response;
+            const customContractId = createdContract?.id;
+
+            if (customContractId) {
+                console.log('Votre nouveau contrat sur demande', customContractId);
+                await cartStore.addCustomizedContract(customContractId);
+                return createdContract;
             }
 
+            throw new Error('Aucun identifiant n\'a été renvoyé pour la demande de contrat sur mesure.');
         } catch (error) {
-            console.error("Erreur lors de la création de la demande :", error);
-            throw error; // <-- IMPORTANT : On rejette l'erreur vers le composant Vue
+            console.error('Erreur lors de la création de la demande :', error);
+            throw error;
         } finally {
             isLoading.value = false;
         }
