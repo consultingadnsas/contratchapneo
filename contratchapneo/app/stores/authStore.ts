@@ -96,11 +96,40 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
+  const getProfile = async () => {
+
+    isLoading.value = true;
+
+    try {
+      const response = await $api<User>('/account/me/',{
+        method: 'GET',
+      });
+
+      if(response){
+
+        user.value = response;
+
+        console.log(user.value);
+
+      }
+    } catch (err: any) {
+      throw err
+    } finally {
+      isLoading.value = false;
+    }
+
+  }
+
+  const logout = async()=>{
+    
+  }
+
   return {
     user,
     isLoading,
     error,
     register,
-    login, // <-- Ne pas oublier d'exporter la fonction
+    login,
+    getProfile
   }
 })

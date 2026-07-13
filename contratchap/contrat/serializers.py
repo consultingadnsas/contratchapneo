@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Category, Contrat, CustomedContract
+from .models import Category, Contrat, CustomedContract, Pack, UserPack
 
 class CategorySerializer(serializers.ModelSerializer):
 
@@ -82,3 +82,10 @@ class CategoryWithContractsSerializer(serializers.ModelSerializer):
             'created_at', 
             'updated_at'
         ]
+
+class PackSerializer(serializers.ModelSerializer):
+
+    class Meta:
+
+        model = UserPack
+        fields = '__all__'

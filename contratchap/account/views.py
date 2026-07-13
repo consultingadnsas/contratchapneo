@@ -9,7 +9,14 @@ from django.contrib.auth import authenticate
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.exceptions import TokenError
 from django.middleware.csrf import get_token
-from rest_framework.decorators import api_view, permission_classes
+
+# ===========================================
+# Relation
+# ===========================================
+
+from contrat.models import (Pack, UserPack, Contrat, Category, CustomedContract)
+from contrat.serializers import(ContratSerializer, )
+
 # Create your views here.
 
 class RegisterView(APIView):
@@ -161,3 +168,15 @@ class UserProfileView(APIView):
             {'user': serializer.data},
             status=status.HTTP_200_OK
         )
+
+# ===========================================
+# Relation about Contract
+# ===========================================
+
+class UserPackView(APIView):
+
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+
+        packs = Pack.objects.filter(user=request.user)

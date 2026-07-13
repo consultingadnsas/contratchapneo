@@ -3,19 +3,18 @@
     
     <sidebar />
 
-    <!-- 2. LE CONTENU PRINCIPAL (À droite de la sidebar) -->
     <main class="main-content">
 
       <header class="dashboard-header">
         <div>
-          <h1 class="greeting">Bonjour, Maître</h1>
+          <h1 class="greeting">Bonjour, {{ authStore.user.user.username }}</h1>
           <p class="subtitle">Voici un résumé de votre activité juridique.</p>
         </div>
         <mainButton/>
       </header>
 
       <div class="dashboard-grid">
-        <h3>Vous n'avez aucun pack acheter</h3>
+        <profile-section/>
       </div>
 
     </main>
@@ -23,22 +22,32 @@
 </template>
 
 <script lang="ts">
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 // ASSUREZ-VOUS QUE LE CHEMIN EST BON VERS VOTRE SIDEBAR
 import sidebar from '../../components/navigation/sidebar.vue'; 
 import cardSection from '../../components/sections/bankContratSections/cardSection.vue'
-import mainButton from '../../components/buttons/secondButton.vue'
+import mainButton from '../../components/buttons/secondButton.vue';
+import profileSection from '../../components/sections/userSection/profileSection.vue'
+import {useAuthStore} from '../../stores/authStore'
+
 export default {
   name: 'DashboardLayout',
   components: {
     sidebar,
     cardSection,
-    mainButton
+    mainButton,
+    profileSection
   },
   setup() {
 
-    return {
+    const authStore = useAuthStore();
 
+    onMounted(()=> {
+      authStore.getProfile();
+    })
+
+    return {
+      authStore
     };
   }
 };
@@ -46,7 +55,7 @@ export default {
 
 <style scoped>
 /* =========================================
-   STRUCTURE GLOBALE DU DASHBOARD
+  STRUCTURE GLOBALE DU DASHBOARD
 ========================================= */
 .dashboard-container {
   --bg-pearl: #f8fafc;        
@@ -106,19 +115,64 @@ export default {
 /* =========================================
    LE RESTE DU DESIGN (Header, Widgets, etc.)
 ========================================= */
-.dashboard-header { display: flex; flex-direction: column; gap: 1rem; margin-bottom: 2rem; }
-.greeting { font-size: 1.8rem; font-weight: 700; color: var(--text-night); margin-bottom: 0.25rem; }
-.subtitle { color: var(--text-muted); font-size: 1rem; }
-.primary-btn { background-color: var(--text-night); color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 8px; font-weight: 500; cursor: pointer; align-self: flex-start; }
-
-.dashboard-grid { display: grid; grid-template-columns: 1fr; gap: 1.5rem; width: 100%; }
-@media (min-width: 1024px) {
-  .dashboard-header { flex-direction: row; justify-content: space-between; align-items: center; }
-  .primary-btn { align-self: center; }
-  .dashboard-grid { grid-template-columns: 2fr 1fr; gap: 2rem; }
+.dashboard-header { 
+  display: flex; 
+  flex-direction: column; 
+  gap: 1rem; 
+  margin-bottom: 2rem; 
+}
+.greeting { 
+  font-size: 1.8rem; 
+  font-weight: 700; 
+  color: var(--text-night); 
+  margin-bottom: 0.25rem; 
+}
+.subtitle { 
+  color: var(--text-muted); 
+  font-size: 1rem; 
+}
+.primary-btn { 
+  background-color: var(--text-night); 
+  color: white; 
+  border: none; 
+  padding: 0.75rem 1.5rem; 
+  border-radius: 8px; 
+  font-weight: 500; 
+  cursor: pointer; 
+  align-self: flex-start; 
 }
 
-.left-column, .right-column { display: flex; flex-direction: column; gap: 1.5rem; }
+.dashboard-grid { 
+  display: grid; 
+  grid-template-columns: 1fr; 
+  gap: 1.5rem; 
+  width: 100%; 
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+@media (min-width: 1024px) {
+  .dashboard-header { 
+    flex-direction: row; 
+    justify-content: space-between; 
+    align-items: center; 
+  }
+  .primary-btn { 
+    align-self: center; 
+  }
+  .dashboard-grid { 
+    grid-template-columns: 2fr 1fr; 
+    gap: 2rem; 
+  }
+}
+
+.left-column, .right-column { 
+  display: flex; 
+  flex-direction: column; 
+  gap: 1.5rem; 
+}
 
 .glass-widget {
   background: rgba(255, 255, 255, 0.7);
@@ -130,7 +184,14 @@ export default {
   box-shadow: 0 4px 20px rgba(15, 23, 42, 0.03);
 }
 
-.section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; padding-bottom: 0.75rem; border-bottom: 1px solid rgba(15, 23, 42, 0.06); }
+.section-header { 
+  display: flex; 
+  justify-content: space-between; 
+  align-items: center; 
+  margin-bottom: 1.5rem; 
+  padding-bottom: 0.75rem; 
+  border-bottom: 1px solid rgba(15, 23, 42, 0.06); 
+}
 .title-wrapper { display: flex; align-items: center; gap: 0.75rem; }
 .section-header h2 { font-size: 1.15rem; font-weight: 600; margin: 0; }
 
