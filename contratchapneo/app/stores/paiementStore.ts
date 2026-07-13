@@ -1,42 +1,22 @@
-import { useHead } from '#imports';
-import { ref } from 'vue';
-import { defineStore } from 'pinia';
-import { useCartStore } from './cartStore'
-import type { Order } from '../stores/orderStore'
-
-import type { Tags } from './contratStore'
-
-/*
-{
-  "merchantId": "PP-F324",
-  "amount": 1000,
-  "description": "Abonnement Premium",
-  "channel": "CARD",
-  "countryCurrencyCode": "952",
-  "referenceNumber": "REF-772105",
-  "customerEmail": "test@gmail.com",
-  "customerFirstName": "Ishola",
-  "customerLastname": "Lamine",
-  "customerPhoneNumber": "01234567",
-  "notificationURL": "https://votre-site.com/webhook",
-  "returnURL": "https://votre-site.com/retour",
-  "returnContext": "{\"order_id\":\"123\", \"user\":\"88\"}"
-}
-*/
+import { defineStore } from "pinia";
+import { ref } from "vue";
+import { useCartStore } from './cartStore';
+import { useOrderStore } from './orderStore'; // 👈 Import classique en haut
+import type { Tags } from './contratStore';
 
 export interface Paiement {
-    amount: number,
-    channel: string,
-    referenceNumber: string,
-    customerEmail: string,
-    customerFirstName: string,
-    customerLastname: string,
-    customerPhoneNumber: string,
-    description: string,
-    merchantId?: string,
-    notificationURL?: string,
-    returnURL?: string,
-    returnContext?: string,
+    amount: number;
+    channel: string;
+    referenceNumber: string;
+    customerEmail: string;
+    customerFirstName: string;
+    customerLastname: string;
+    customerPhoneNumber: string;
+    description: string;
+    merchantId?: string;
+    notificationURL?: string;
+    returnURL?: string;
+    returnContext?: string;
 }
 
 export const usePaiementStore = defineStore('paiement', () => {
@@ -44,36 +24,51 @@ export const usePaiementStore = defineStore('paiement', () => {
     const { $api } = useNuxtApp();
 
     const isLoading = ref(false);
-
     const error = ref<string | null>(null);
-
-    const order = ref<Order | null>(null)
-    const paiement = ref<Paiement | null>(null)
-    const sandboxMode = ref(true)
-
-    const setSandboxMode = (enabled: boolean) => {
-        sandboxMode.value = enabled
-    }
-
-    // State
-
+    const sandboxMode = ref(true);
     const tags = ref<Tags[] | null>(null);
 
-    // Actions
+    const setSandboxMode = (enabled: boolean) => {
+        sandboxMode.value = enabled;
+    }
+
+    // --- FONCTION UTILITAIRE PRIVÉE ---
+    // Évite de réécrire 20 lignes pour télécharger un fichier physique
+    const triggerBrowserDownload = (blob: Blob, disposition: string, fallbackPrefix: string) => {
+        const filenameMatch = disposition.match(/filename="?([^"]+)"?/);
+        let filename = filenameMatch?.[1];
+
+        if (!filename) {
+            const isZip = blob.type === 'application/zip';
+            filename = isZip ? `${fallbackPrefix}.zip` : `${fallbackPrefix}.pdf`;
+        }
+
+        const url = window.URL.createObjectURL(blob);
+        const anchor = document.createElement('a');
+        anchor.href = url;
+        anchor.download = filename;
+        document.body.appendChild(anchor);
+        anchor.click();
+        document.body.removeChild(anchor);
+        window.URL.revokeObjectURL(url);
+
+        return filename;
+    };
+
+
+    // --- ACTIONS ---
 
     const downloadContracts = async (orderId: string) => {
-
         isLoading.value = true;
         error.value = null;
-
-        const maxRetries:number = 5;
+        const maxRetries: number = 5;
 
         try {
             const cartStore = useCartStore();
-            const { useOrderStore } = await import('./orderStore');
-            const orderStore = useOrderStore();
+            const orderStore = useOrderStore(); // 👈 Instancié à l'intérieur de l'action (évite la dépendance circulaire)
             
-            const email = orderStore.currentOrder?.guest?.email || 'consultingadnsas@gmail.com';
+            const email = orderStore.currentOrder?.guest?.email;
+            if (!email) throw new Error("Email manquant pour le téléchargement.");
 
             // Boucle d'essais pour attendre le Webhook de Ngrok
             for (let i = 0; i < maxRetries; i++) {
@@ -81,31 +76,17 @@ export const usePaiementStore = defineStore('paiement', () => {
                     const response = await $api.raw(`/payment/download/${orderId}/`, {
                         method: 'GET',
                         responseType: 'blob',
-                        query: email ? { email } : undefined,
+                        query: { email },
                     });
 
-                    // Si on arrive ici, Django a autorisé le téléchargement (Commande = PAID)
-                    const blob = response._data as Blob
-                    const disposition = response.headers.get('Content-Disposition') || ''
-                    
-                    const filenameMatch = disposition.match(/filename="?([^"]+)"?/)
-                    let filename = filenameMatch?.[1]
+                    // Si on arrive ici, Django a autorisé le téléchargement
+                    const filename = triggerBrowserDownload(
+                        response._data as Blob, 
+                        response.headers.get('Content-Disposition') || '', 
+                        `commande-${orderId.slice(0, 8)}`
+                    );
 
-                    if (!filename) {
-                        const isZip = blob.type === 'application/zip'
-                        filename = isZip ? `commande-${orderId.slice(0,8)}.zip` : `contrat-${orderId.slice(0,8)}.pdf`
-                    }
-
-                    const url = window.URL.createObjectURL(blob)
-                    const anchor = document.createElement('a')
-                    anchor.href = url
-                    anchor.download = filename
-                    document.body.appendChild(anchor)
-                    anchor.click()
-                    document.body.removeChild(anchor)
-                    window.URL.revokeObjectURL(url)
-
-                    console.log("✅ Téléchargement validé et réussi pour :", filename)
+                    console.log("✅ Téléchargement validé et réussi pour :", filename);
 
                     try {
                         await cartStore.clearCart();
@@ -113,46 +94,38 @@ export const usePaiementStore = defineStore('paiement', () => {
                         console.warn('Impossible de vider le panier:', cartError);
                     }
 
-                    isLoading.value = false;
-                    return true; // Le PDF est téléchargé avec succès !
+                    return true;
 
                 } catch (err: any) {
                     const statusCode = err.response?.status;
                     
                     // Si Django renvoie 403, ça veut dire que la commande est encore PENDING
                     if (statusCode === 403 && i < maxRetries - 1) {
-                        console.log(`⏳ Webhook Ngrok en attente... tentative ${i + 1}/${maxRetries}`);
-                        // On attend 3 secondes avant de retenter
+                        console.log(`⏳ Paiement en attente de validation... tentative ${i + 1}/${maxRetries}`);
                         await new Promise(resolve => setTimeout(resolve, 3000));
                         continue; 
                     }
-                    
-                    // Si c'est une autre erreur (404) ou qu'on a épuisé les essais, on déclenche l'erreur
                     throw err;
                 }
             }
-
         } catch (err: any) {
-            error.value = err.message ?? String(err)
-            console.error("Erreur interceptée lors du téléchargement :", error.value)
-            return false
+            error.value = err.message ?? String(err);
+            console.error("Erreur interceptée lors du téléchargement :", error.value);
+            return false;
         } finally {
-            isLoading.value = false
+            isLoading.value = false;
         }
-    }
+    };
 
     const editContract = async (optionalContractId?: string) => {
         isLoading.value = true;
         error.value = null;
 
-        const { useOrderStore } = await import('./orderStore');
         const orderStore = useOrderStore();
 
         try {
-            // 1. Détermination de l'ID du contrat
             let targetId = optionalContractId;
 
-            // Si on ne lui passe pas d'ID explicitement, on fouille dans la commande !
             if (!targetId) {
                 const purchasedItem =
                     orderStore.currentOrder?.order_items?.[0] ??
@@ -161,148 +134,97 @@ export const usePaiementStore = defineStore('paiement', () => {
                 targetId = purchasedItem?.contrat_id || purchasedItem?.contrat?.id || purchasedItem?.contrat || null;
             }
 
-            // PLAN C (Le fameux parachute au cas où !)
             if (targetId) {
                 localStorage.setItem('backup_contrat_id', targetId);
             } else {
                 targetId = localStorage.getItem('backup_contrat_id');
             }
 
-            // Si on n'a vraiment rien trouvé, on bloque tout
             if (!targetId) {
                 throw new Error("Impossible de trouver l'ID du contrat pour extraire les balises.");
             }
 
-            console.log("ID du contrat trouvé pour extraction :", targetId);
+            const response = await $api(`/contrat/tags/${targetId}/`, { method: 'GET' });
 
-            // 2. Appel à l'API
-            // ⚠️ J'ai corrigé "contract" par "contrat" dans l'URL pour être cohérent avec ton backend
-            const response = await $api(`/contrat/tags/${targetId}/`, {
-                method: 'GET'
-            });
-
-            console.log("Réponse de l'API pour l'édition", response);
-
-            // 3. Stockage des tags extraits
             tags.value = response?.tags || [];
-
-            console.log("Tags extraits avec succès pour l'édition :", tags.value);
-
             return tags.value;
         } catch (err: any) {
             error.value = err.message ?? String(err);
-            console.error("Erreur lors de l'extraction des balises du contrat", error.value);
+            console.error("Erreur lors de l'extraction des balises :", error.value);
             return null;
         } finally {
             isLoading.value = false;
         }
-    }
-
+    };
       
     const generateContract = async (userInputs: Record<string, any>, _contratId?: string) => {
         isLoading.value = true;
         error.value = null;
 
         try {
-            const { useOrderStore } = await import('./orderStore');
             const orderStore = useOrderStore();
-
             const orderId = orderStore.currentOrder?.id;
 
-            if (!orderId) {
-                throw new Error("Impossible de trouver l'ID de la commande à mettre à jour.");
-            }
+            if (!orderId) throw new Error("Impossible de trouver l'ID de la commande à mettre à jour.");
 
-            const email = orderStore.currentOrder?.guest?.email || 'consultingadnsas@gmail.com';
-            await $api.raw(`/ecommerce/orders/${orderId}/?email=${email}`, {
+            const email = orderStore.currentOrder?.guest?.email;
+            
+            await $api.raw(`/ecommerce/orders/${orderId}/`, {
                 method: 'PUT',
-                body: {
-                    user_inputs: userInputs ?? {},
-                },
+                query: email ? { email } : undefined,
+                body: { user_inputs: userInputs ?? {} },
             });
 
-            console.log('Données utilisateur enregistrées dans user_inputs :', userInputs);
             return { ok: true, saved: true };
         } catch (err: any) {
             error.value = err.message ?? String(err);
-            console.error('Erreur lors de l\'enregistrement des données utilisateur', error.value);
             return { ok: false, error: error.value, saved: false };
         } finally {
             isLoading.value = false;
         }
-    }
+    };
 
     const downloadOrder = async (orderId?: string) => {
         isLoading.value = true;
         error.value = null;
 
         try {
-            const { useOrderStore } = await import('./orderStore');
             const orderStore = useOrderStore();
-
-            // 1. Récupération de l'ID (soit passé en paramètre, soit pris dans le store)
             const targetOrderId = orderId || orderStore.currentOrder?.id;
 
-            if (!targetOrderId) {
-                throw new Error("Impossible de trouver l'ID de la commande pour le téléchargement.");
-            }
+            if (!targetOrderId) throw new Error("Impossible de trouver l'ID de la commande.");
 
-            // 2. Gestion de l'email pour les invités
-            // ⚠️ Pense à enlever l'email en dur quand tu seras en vraie production !
-            const email = orderStore.currentOrder?.guest?.email || 'consultingadnsas@gmail.com';
-
-            console.log(`Lancement du téléchargement pour la commande ${targetOrderId}...`);
-
-            // 3. Appel API avec `responseType: 'blob'` pour dire à ofetch qu'on attend un fichier physique
+            const email = orderStore.currentOrder?.guest?.email;
+            
             const response = await $api.raw(`/ecommerce/orders/${targetOrderId}/download/`, {
                 method: 'GET',
                 responseType: 'blob',
-                query: email ? { email } : undefined, // On utilise query plutôt que de le coder en dur dans l'URL
+                query: email ? { email } : undefined,
             });
 
-            const blob = response._data as Blob;
-            
-            // 4. Récupération du nom du fichier envoyé par le backend Django
-            const disposition = response.headers.get('Content-Disposition') || '';
-            const filenameMatch = disposition.match(/filename="?([^"]+)"?/);
-            let filename = filenameMatch?.[1];
-
-            // 5. Plan B : Si le navigateur bloque le header (CORS), on devine l'extension
-            if (!filename) {
-                const isZip = blob.type === 'application/zip';
-                filename = isZip ? `Contrats_Commande_${targetOrderId.slice(0,8)}.zip` : `Contrat_Contratchap_${targetOrderId.slice(0,8)}.pdf`;
-            }
-
-            // 6. Création du lien de téléchargement magique (virtuel)
-            const url = window.URL.createObjectURL(blob);
-            const anchor = document.createElement('a');
-            anchor.href = url;
-            anchor.download = filename;
-            
-            // On l'ajoute au document, on clique dessus, et on nettoie les traces
-            document.body.appendChild(anchor);
-            anchor.click();
-            document.body.removeChild(anchor);
-            window.URL.revokeObjectURL(url);
+            // Utilisation de notre super fonction utilitaire !
+            const filename = triggerBrowserDownload(
+                response._data as Blob, 
+                response.headers.get('Content-Disposition') || '', 
+                `Contrats_Commande_${targetOrderId.slice(0,8)}`
+            );
 
             console.log("✅ Téléchargement réussi :", filename);
             return true;
 
         } catch (err: any) {
             error.value = err.message ?? String(err);
-            console.error("❌ Erreur lors du téléchargement du document :", error.value);
+            console.error("❌ Erreur lors du téléchargement :", error.value);
             return false;
         } finally {
             isLoading.value = false;
         }
-    }
+    };
 
     return {
         isLoading,
         error,
-        order,
         tags,
-        paiement,
         sandboxMode,
         setSandboxMode,
         downloadContracts,
@@ -310,4 +232,4 @@ export const usePaiementStore = defineStore('paiement', () => {
         generateContract,
         downloadOrder
     }
-})
+});

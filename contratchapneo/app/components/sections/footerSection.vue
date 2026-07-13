@@ -328,7 +328,7 @@ export default {
 }
 
 .btn-get-started {
-  width: 30%;
+  width: fit-content;
   position: relative;
   z-index: 2;
   background-color: #ffffff;

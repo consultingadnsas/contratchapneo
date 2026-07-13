@@ -13,7 +13,7 @@
             <div class="page-a4-wrapper">
               <div class="page-a4">
                 <p class="document-text">
-                  {{ contract?.document_preview || "L'aperçu de ce document n'est pas encore disponible." }}
+                  {{ firstParagraphPreview }}
                 </p>
                 <div class="fade-bottom"></div>
               </div>
@@ -54,7 +54,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, PropType } from 'vue';
+import { defineComponent, PropType, computed } from 'vue';
 
 interface Contrat {
   id?: string;
@@ -78,6 +78,21 @@ export default defineComponent({
   
   setup(props, { emit }) {
     
+    // NOUVEAU : Propriété calculée pour extraire uniquement le premier paragraphe
+    const firstParagraphPreview = computed(() => {
+      const text = props.contract?.document_preview;
+      if (!text) return "L'aperçu de ce document n'est pas encore disponible.";
+
+      // Sépare le texte par les sauts de ligne, retire les espaces vides, et garde les paragraphes non vides
+      const paragraphs = text.split('\n').map(p => p.trim()).filter(p => p.length > 0);
+      
+      // S'il y a au moins un paragraphe, on le retourne avec "..." à la fin
+      if (paragraphs.length > 0) {
+        return paragraphs.slice(0, 2).join('\n\n') + '\n\n...';
+      }
+      return text;
+    });
+
     const formatPrice = (price?: number | string) => {
       if (!price) return '0';
       return Number(price).toLocaleString('fr-FR');
@@ -128,6 +143,7 @@ export default defineComponent({
     };
 
     return {
+      firstParagraphPreview, // <-- Ne pas oublier de l'exporter
       formatPrice,
       handleFlyToCart
     };
@@ -155,7 +171,7 @@ export default defineComponent({
 
 .details-modal {
     width: 100%;
-    max-width: 1100px; /* Légèrement plus grand pour bien respirer */
+    max-width: 1100px;
     border-radius: 32px;
     position: relative;
     overflow: hidden;
@@ -185,8 +201,8 @@ export default defineComponent({
 .modal-layout {
     display: grid;
     grid-template-columns: 1.2fr 1fr;
-    min-height: 500px; /* Réduit pour s'adapter aux petits écrans */
-    height: 85vh; /* Prend 85% de la hauteur de l'écran */
+    min-height: 500px; 
+    height: 85vh; 
     flex: 1;
     overflow: hidden;
 }
@@ -197,31 +213,26 @@ export default defineComponent({
     padding: 2.5rem;
     display: flex;
     flex-direction: column;
-    align-items: center; /* 👈 NOUVEAU : Centre la page horizontalement */
-    justify-content: center; /* 👈 NOUVEAU : Centre la page verticalement */
+    align-items: center; 
+    justify-content: center; 
     overflow: hidden; 
 }
 
 .page-a4-wrapper {
     flex-grow: 1;
     width: 100%;
-    max-width: 550px; /* 👈 NOUVEAU : Donne un effet "vraie feuille" centrée */
+    max-width: 550px; 
     margin: 0 auto;
-    overflow-y: auto;
+    overflow: hidden; /* 👈 NOUVEAU : Supprime la possibilité de scroller */
     border-radius: 8px;
     box-shadow: 0 15px 35px rgba(0,0,0,0.4);
     background: #ffffff;
     position: relative;
 }
 
-/* Scrollbar fine pour la page A4 */
-.page-a4-wrapper::-webkit-scrollbar { width: 6px; }
-.page-a4-wrapper::-webkit-scrollbar-track { background: rgba(0,0,0,0.1); }
-.page-a4-wrapper::-webkit-scrollbar-thumb { background-color: #94a3b8; border-radius: 10px; }
-
 .page-a4 {
     padding: 2.5rem 2.5rem 4rem 2.5rem; 
-    min-height: 100%;
+    height: 100%; /* 👈 NOUVEAU : La feuille fait la hauteur maximale */
     position: relative;
 }
 
@@ -236,16 +247,16 @@ export default defineComponent({
 }
 
 .fade-bottom {
-    position: sticky;
+    position: absolute; /* 👈 Changé de sticky à absolute pour se fixer au bas du conteneur */
     bottom: 0; left: 0; right: 0;
-    height: 60px; 
-    background: linear-gradient(to bottom, rgba(255, 255, 255, 0), rgba(255, 255, 255, 1));
+    height: 150px; /* 👈 Fondu plus grand pour un bel effet de page coupée */
+    background: linear-gradient(to bottom, rgba(255, 255, 255, 0), #ffffff 90%);
     pointer-events: none;
 }
 
 /* ── Colonne droite (Infos) ── */
 .modal-info {
-    padding: 2.5rem; /* 👈 NOUVEAU : Padding réduit pour gagner de la place */
+    padding: 2.5rem; 
     background: #ffffff;
     display: flex; flex-direction: column;
     height: 100%; overflow: hidden;
@@ -255,17 +266,16 @@ export default defineComponent({
     font-size: 1.6rem; font-weight: 800; color: #0f172a;
     margin: 0 0 1rem; line-height: 1.2;
     flex-shrink: 0;
-    padding-right: 2rem; /* Évite de cogner le bouton fermer */
+    padding-right: 2rem; 
 }
 
-/* Zone scrollable (Astuce min-height: 0 ajoutée) */
 .scrollable-body {
     flex-grow: 1;
     overflow-y: auto;
     padding-right: 1rem;
     margin-bottom: 1.5rem;
     width: 100%;
-    min-height: 0; /* 👈 TRÈS IMPORTANT : Permet à la zone de rétrécir et ne pas pousser le bouton */
+    min-height: 0; 
 }
 
 .scrollable-body::-webkit-scrollbar       { width: 6px; }
@@ -294,7 +304,7 @@ export default defineComponent({
 /* Actions */
 .modal-actions {
     display: flex; justify-content: center; gap: 1rem; width: 100%;
-    flex-shrink: 0; /* Empêche le bouton de s'écraser */
+    flex-shrink: 0; 
     margin-top: auto;
     padding-bottom: 0.5rem;
 }
