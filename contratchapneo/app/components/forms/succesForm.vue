@@ -1,32 +1,32 @@
 <template>
   <div class="success__screen">
     <div class="success__icon">
-        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <circle cx="12" cy="12" r="11" stroke="currentColor" stroke-width="1.5"/>
-            <path d="M7 12.5L10.5 16L17 9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
+      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="12" cy="12" r="11" stroke="currentColor" stroke-width="1.5"/>
+        <path d="M7 12.5L10.5 16L17 9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
     </div>
     
     <h3 class="success__title">{{ displayMessage }}</h3>
     
     <p class="success__subtitle">
-        {{ displaySubtitle }}
+      {{ displaySubtitle }}
     </p>
 
     <!-- 1. CAS CONTRAT SIMPLE OU CARTE DE VISITE : On affiche le bouton de téléchargement -->
     <button
-        v-if="productType === 'carte' || productType === 'contrat_simple'"
-        class="success__download"
-        :disabled="paiementStore.downloading"
-        @click="handleDownload"
+      v-if="productType === 'carte' || productType === 'contrat_simple'"
+      class="success__download"
+      :disabled="paiementStore.downloading"
+      @click="handleDownload"
     >
-        {{ paiementStore.downloading ? 'Téléchargement en cours...' : 'Télécharger votre document' }}
+      {{ paiementStore.downloading ? 'Téléchargement en cours...' : 'Télécharger votre document' }}
     </button>
     
     <!-- Bouton de redirection manuelle dont le texte s'adapte au produit -->
     <mainButton 
-        :label="buttonLabel" 
-        @click="handleManualAction"
+      :label="buttonLabel" 
+      @click="handleManualAction"
     />
   </div>
 </template>
@@ -198,35 +198,35 @@ export default {
 
 /* ── 1. Écran de vérification (Le Spinner) ── */
 .verify__screen {
-    height: 100vh;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    text-align: center;
-    animation: fadeIn 0.3s ease;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  animation: fadeIn 0.3s ease;
 }
 
 .spinner {
-    width: 60px;
-    height: 60px;
-    border: 4px solid rgba(50, 244, 89, 0.2);
-    border-top: 4px solid #32f459;
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-    margin-bottom: 1.5rem;
+  width: 60px;
+  height: 60px;
+  border: 4px solid rgba(50, 244, 89, 0.2);
+  border-top: 4px solid #32f459;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 1.5rem;
 }
 
 @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 
 .verify__title {
-    color: #202b4a;
-    font-size: 1.5rem;
-    font-weight: 700;
-    margin-bottom: 0.5rem;
+  color: #202b4a;
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
 }
 
 .verify__subtitle {
@@ -237,20 +237,20 @@ export default {
 
 /* ── 2. Écran de succès (Ton design d'origine) ── */
 .success__screen {
-    height: 100vh;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    gap: 1.25rem;
-    padding: 2.5rem 1.5rem;
-    text-align: center;
-    animation: fadeInUp 0.4s ease both;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 1.25rem;
+  padding: 2.5rem 1.5rem;
+  text-align: center;
+  animation: fadeInUp 0.4s ease both;
 }
 
 @keyframes fadeInUp {
-    from { opacity: 0; transform: translateY(16px); }
-    to   { opacity: 1; transform: translateY(0); }
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
 .success__icon {

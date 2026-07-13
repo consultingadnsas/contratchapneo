@@ -16,5 +16,6 @@ class CustomUser(AbstractUser):
     phone_number = models.CharField(max_length=15, blank=True, null=True)
     user_type = models.CharField(max_length=20, choices=USER_TYPE.choices, default=USER_TYPE.INDIVIDUAL)
 
+    # About subscription
     def __str__(self):
         return f'le profile de {self.username}'

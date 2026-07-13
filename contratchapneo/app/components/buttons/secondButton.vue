@@ -28,13 +28,14 @@ export default {
 <style scoped>
 
 .main-button{
-    background-color: var(--secondary-light-color);
+    background-color: var(--secondary-color);
     color: white;
     display: flex;
     gap: 1rem;
     cursor: pointer;
     width: 100%;
     transition: all ease 0.2s;
+    font-size: 0.8rem;
 }
 
 .main-button:hover{

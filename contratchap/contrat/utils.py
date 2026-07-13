@@ -107,12 +107,12 @@ def convert_docx_to_pdf(docx_path, output_dir=None):
     
 def fill_docx_template(template_path, user_inputs, output_path):
     """
-    Injecte les données de l'utilisateur dans le modèle DOCX.
-    
-    :param template_path: Chemin vers le fichier .docx original (le template avec les balises)
-    :param user_inputs: Dictionnaire Python contenant les réponses (ex: {'nom_client': 'Lamine'})
-    :param output_path: Chemin où sauvegarder le nouveau fichier .docx rempli
-    :return: Le chemin vers le fichier rempli
+        Injecte les données de l'utilisateur dans le modèle DOCX.
+        
+        :param template_path: Chemin vers le fichier .docx original (le template avec les balises)
+        :param user_inputs: Dictionnaire Python contenant les réponses (ex: {'nom_client': 'Lamine'})
+        :param output_path: Chemin où sauvegarder le nouveau fichier .docx rempli
+        :return: Le chemin vers le fichier rempli
     """
     if not os.path.exists(template_path):
         raise FileNotFoundError(f"Le fichier modèle n'existe pas : {template_path}")
@@ -128,3 +128,8 @@ def fill_docx_template(template_path, user_inputs, output_path):
     doc.save(output_path)
     
     return output_path
+
+def user_has_free_access_to_contract(user, contrat_id):
+    """
+        Vérifie si l'utilisateur possède un pack actif 
+    """

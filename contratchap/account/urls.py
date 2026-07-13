@@ -3,7 +3,8 @@ from .views import (
     RegisterView, 
     LoginView, 
     LogoutView,
-    CSRFTokenView
+    CSRFTokenView,
+    UserProfileView
 )
 from rest_framework_simplejwt.views import (
     TokenObtainPairView,
@@ -20,6 +21,9 @@ urlpatterns = [
     path('token', TokenObtainPairView.as_view(), name='Token_obtain_pair'),
     path('token/refresh', TokenRefreshView.as_view(), name='Refresh_token'),
     path('token/verify', TokenVerifyView.as_view(), name='Token_verify'),
+
+    # My profile
+    path('me/', UserProfileView.as_view(), name='profile'),
 
     # Csrf
     path('csrf/', CSRFTokenView.as_view(), name='api-csrf'),

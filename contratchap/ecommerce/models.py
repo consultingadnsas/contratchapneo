@@ -3,7 +3,7 @@ from django.conf import settings
 import uuid
 
 # About relation
-from contrat.models import (Contrat, CustomedContract)
+from contrat.models import (Contrat, CustomedContract, Pack)
 from pro.models import LegalProfessional
 
 class Cart(models.Model):
@@ -109,6 +109,14 @@ class CartItem(models.Model):
         CustomedContract,
         on_delete=models.CASCADE,
         related_name='customed_contract_items',
+        null=True,
+        blank=True
+    )
+    # Packs de contrats
+    packs = models.ForeignKey(
+        Pack,
+        on_delete=models.CASCADE,
+        related_name='packs_items',
         null=True,
         blank=True
     )
