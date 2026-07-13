@@ -99,7 +99,7 @@ export default {
   padding: 3rem 1rem; /* Un peu plus de padding vertical pour respirer */
   text-align: center;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  background-color: #FFFBF4;
+  background-color: #fff;
   width: 100%;
   box-sizing: border-box;
   border-radius: 16px; /* Optionnel : léger arrondi */

@@ -15,7 +15,7 @@ from django.middleware.csrf import get_token
 # ===========================================
 
 from contrat.models import (Pack, UserPack, Contrat, Category, CustomedContract)
-from contrat.serializers import(ContratSerializer, )
+from contrat.serializers import(ContratSerializer, PackSerializer)
 
 # Create your views here.
 
@@ -174,9 +174,9 @@ class UserProfileView(APIView):
 # ===========================================
 
 class UserPackView(APIView):
-
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-
-        packs = Pack.objects.filter(user=request.user)
+        packs = UserPack.objects.filter(user=request.user)
+        serializer = PackSerializer(packs, many=True, context={'request': request})
+        return Response(serializer.data, status=status.HTTP_200_OK)

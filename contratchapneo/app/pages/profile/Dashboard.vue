@@ -1,29 +1,26 @@
 <template>
   <div class="dashboard-container">
-    
     <sidebar />
-
     <main class="main-content">
-
       <header class="dashboard-header">
-        <div>
-          <h1 class="greeting">Bonjour, {{ authStore.user.user.username }}</h1>
+        <div v-if="authStore.user">
+          <h1 class="greeting">Bonjour, {{ authStore.user.user?.username ?? 'invité' }}</h1>
           <p class="subtitle">Voici un résumé de votre activité juridique.</p>
+        </div>
+        <div v-else>
+          <p>Chargement...</p>
         </div>
         <mainButton/>
       </header>
-
       <div class="dashboard-grid">
         <profile-section/>
       </div>
-
     </main>
   </div>
 </template>
 
 <script lang="ts">
 import { ref, onMounted } from 'vue';
-// ASSUREZ-VOUS QUE LE CHEMIN EST BON VERS VOTRE SIDEBAR
 import sidebar from '../../components/navigation/sidebar.vue'; 
 import cardSection from '../../components/sections/bankContratSections/cardSection.vue'
 import mainButton from '../../components/buttons/secondButton.vue';
