@@ -118,11 +118,25 @@ export const useProStore = defineStore('proStore', () => {
         isLoading.value = false;
     }
 };
+    // --- NOUVEAU : Le verrou pour éviter les requêtes en double ---
+    const isFetchingFilters = ref<boolean>(false);
 
     /**
      * 2. Charger les filtres (Pays et Domaines)
      */
     const getFilters = async () => {
+        // SÉCURITÉ 1 : Si on a déjà les données en mémoire, on ne fait rien.
+        if (countries.value.length > 0 && domains.value.length > 0) {
+            return;
+        }
+
+        // SÉCURITÉ 2 : Si une requête est déjà en train de tourner, on ne fait rien.
+        if (isFetchingFilters.value) {
+            return;
+        }
+
+        isFetchingFilters.value = true; // On ferme le verrou !
+
         try {
             const response = await $api<{ countries: Country[], domains: LegalDomain[] }>('/pro/professionals/filters/', {
                 method: 'GET'
@@ -136,9 +150,10 @@ export const useProStore = defineStore('proStore', () => {
         } catch (err: any) {
             console.error('Erreur lors du chargement des filtres:', err);
             error.value = err.message;
+        } finally {
+            isFetchingFilters.value = false; // On réouvre le verrou une fois terminé
         }
     };
-
     /**
      * 3. Récupérer un professionnel spécifique par ID (pour la modale)
      */

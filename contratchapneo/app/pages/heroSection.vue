@@ -297,7 +297,7 @@ h1 {
 
 /* ── DÉGRADÉ SUR LE TEXTE ── */
 h1 .accent { 
-  background: linear-gradient(135deg, var(--green-soft) 0%, var(--green) 100%);
+  background: linear-gradient(135deg, var(--primary-color) 0%, var(--green) 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   display: inline-block;

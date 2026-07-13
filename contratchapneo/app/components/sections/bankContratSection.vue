@@ -17,7 +17,7 @@
                 
                 <div class="cards-container">
                     <ContratCards 
-                        v-for="(contrat, index) in contratStore.contracts.slice(0, 4)" 
+                        v-for="(contrat, index) in topDownloadedContracts" 
                         :key="contrat.id || index"
                         :ref="setCardRef"
                         :title="contrat.title"
@@ -53,7 +53,7 @@
 
 <script lang="ts">
 // N'oublie pas d'ajouter onBeforeUpdate, nextTick et watch dans l'import
-import { ref, onMounted, onBeforeUnmount, onBeforeUpdate, nextTick, watch } from 'vue';
+import { ref, onMounted, onBeforeUnmount,computed, onBeforeUpdate, nextTick, watch } from 'vue';
 import { useRouter } from 'vue-router';
 
 // Convention : Majuscule pour les composants Vue
@@ -78,6 +78,15 @@ export default {
         const router = useRouter();
         const contratStore = useContratStore();
         const cartStore = useCartStore();
+        // NOUVEAU : Propriété calculée pour les 4 contrats les plus téléchargés
+        const topDownloadedContracts = computed(() => {
+            // 1. On crée une copie du tableau avec [... ] pour ne pas modifier l'original
+            // 2. On trie du plus grand nombre de 'downloads' au plus petit
+            // 3. On coupe (slice) pour ne garder que les 4 premiers
+            return [...contratStore.contracts]
+                .sort((a, b) => (b.downloads || 0) - (a.downloads || 0))
+                .slice(0, 4);
+        });
 
         // --- 1. GESTION PROPRE DES RÉFÉRENCES DOM ---
         const cardRefs = ref<HTMLElement[]>([]);
@@ -173,6 +182,7 @@ export default {
         return { 
             contratStore,
             cartStore,
+            topDownloadedContracts,
             animatedCards,
             setCardRef, 
             isOpen,

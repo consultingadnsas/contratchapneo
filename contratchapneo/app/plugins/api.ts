@@ -6,8 +6,6 @@ export default defineNuxtPlugin(async () => {
     credentials: 'include', // ✅ Le navigateur enverra ton cookie HttpOnly tout seul !
 
     onRequest({ options }) {
-      // ❌ Plus besoin d'injecter manuellement Authorization: Bearer !
-
       const method = options.method?.toUpperCase() || 'GET'
       if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(method)) {
         const csrfFromBrowser = useCookie('csrftoken').value;
@@ -28,12 +26,15 @@ export default defineNuxtPlugin(async () => {
     },
   })
 
-  // Initialiser le token CSRF au chargement de l'app
-  try {
-    await api('/account/csrf/')
-    console.log('✅ Token CSRF initialisé')
-  } catch (err) {
-    console.warn('⚠️ Erreur lors de l\'initialisation du token CSRF:', err)
+  // ✅ CORRECTION : Initialiser le token CSRF uniquement côté serveur (SSR)
+  // Le navigateur héritera automatiquement des cookies générés lors de la première phase.
+  if (import.meta.server) {
+    try {
+      await api('/account/csrf/')
+      console.log('✅ Token CSRF initialisé côté serveur')
+    } catch (err) {
+      console.warn('⚠️ Erreur lors de l\'initialisation du token CSRF:', err)
+    }
   }
 
   return { provide: { api } }

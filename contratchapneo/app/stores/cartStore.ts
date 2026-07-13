@@ -97,23 +97,35 @@ export const useCartStore = defineStore('cart', () => {
 
     const isEmpty = computed(() => cartItems.value.length === 0);
 
+    // --- NOUVEAU : Le verrou pour le panier ---
+    const isFetchingCart = ref<boolean>(false);
+
     // Actions
     const fetchCart = async () => {
-      isLoading.value = true;
-      error.value = null;
-      try {
-        const response = await $api('/ecommerce/cart/', { method: 'GET' });
-        if (response) {
-          cart.value = normalizeCart(response);
-          console.log("cart response", cart.value.items);
+        // SÉCURITÉ : Si la Navbar et la Page demandent le panier en même temps, 
+        // le deuxième appel sera bloqué ici.
+        if (isFetchingCart.value) {
+            return; 
         }
-      } catch (err: any) {
-          error.value = err.message;
-          console.error("Cart error", err);
-          throw err;
-      } finally {
-          isLoading.value = false;
-      }
+
+        isFetchingCart.value = true; // 🔒 On ferme le verrou
+        isLoading.value = true;
+        error.value = null;
+        
+        try {
+            const response = await $api('/ecommerce/cart/', { method: 'GET' });
+            if (response) {
+                cart.value = normalizeCart(response);
+                console.log("cart response", cart.value.items);
+            }
+        } catch (err: any) {
+            error.value = err.message;
+            console.error("Cart error", err);
+            throw err;
+        } finally {
+            isFetchingCart.value = false; // 🔓 On rouvre le verrou
+            isLoading.value = false;
+        }
     };
 
     // Ici c'est pour l'ajout des contrats dans le panier!
