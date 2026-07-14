@@ -69,7 +69,7 @@ class CartAddItemView(APIView):
         contrat_id = serializer.validated_data.get('contrat_id')
         pro_id     = serializer.validated_data.get('pro_id')
         customed_contract_id = serializer.validated_data.get('customed_contract')
-        pack_id = serializer.validated_data.get('pack')
+        pack_id = serializer.validated_data.get('pack_id') # et non get('pack')
         quantity   = serializer.validated_data.get('quantity', 1)
 
         # Vérification de sécurité
@@ -333,20 +333,20 @@ class CheckoutView(APIView):
 
         # Création de la commande
         order = Order.objects.create(
-            user        =request.user if request.user.is_authenticated else None,
-            guest       =guest,
+            user=request.user if request.user.is_authenticated else None,
+            guest=guest,
             total_amount=total,
         )
 
-        # Création des lignes de commande
         order_items = []
         
-        for item in cart.items.select_related('contrat', 'pro', 'customed_contract'):
+        # NOUVEAU : On ajoute 'packs' au select_related pour optimiser la DB
+        for item in cart.items.select_related('contrat', 'pro', 'customed_contract', 'packs'):
             
-            # 2️⃣ On prépare les trois variables séparément
             c_title = None
             p_name = None
             customized_name = None
+            pack_title = None # NOUVEAU
             
             if item.contrat:
                 c_title = item.contrat.title
@@ -355,25 +355,26 @@ class CheckoutView(APIView):
                 p_name = f"{item.pro.first_name} {item.pro.last_name} - {pro_title}"
             elif item.customed_contract:
                 customized_name = item.customed_contract.subject or f"Contrat sur mesure #{item.customed_contract.id}"
+            elif item.packs:
+                pack_title = item.packs.title # NOUVEAU
 
             order_items.append(
                 OrderItem(
-                    order             =order,
-                    contrat           =item.contrat,
-                    pro               =item.pro,
-                    contrat_customed  =item.customed_contract,
-                    contrat_title     =c_title,
-                    customised_contract = customized_name,
-                    pro_name          =p_name,
-                    unit_price        =item.unit_price,
-                    quantity          =item.quantity,
+                    order=order,
+                    contrat=item.contrat,
+                    pro=item.pro,
+                    contrat_customed=item.customed_contract,
+                    pack=item.packs, # NOUVEAU : On transfère l'objet pack
+                    contrat_title=c_title,
+                    customised_contract=customized_name,
+                    pro_name=p_name,
+                    pack_title=pack_title, # NOUVEAU : On fige le nom
+                    unit_price=item.unit_price,
+                    quantity=item.quantity,
                 )
             )
             
-        # Enregistrement en masse
         OrderItem.objects.bulk_create(order_items)
-
-        # 4️⃣ CORRECTION : On vide le panier une fois la commande passée !
         cart.clear()
 
         return order

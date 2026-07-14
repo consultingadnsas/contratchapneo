@@ -109,21 +109,21 @@ class AddToCartSerializer(serializers.Serializer):
 # ─────────────────────────────────────────
 
 class CartItemSerializer(serializers.ModelSerializer):
-    """ Sérialiseur d'affichage d'une ligne du panier """
     contrat = ContratMiniSerializer(read_only=True)
     pro = ProMiniSerializer(read_only=True)
     customed_contract = CustomizedContractSerializer(read_only=True)
-    pack = PackMiniSerializer(read_only=True) # ✅
+    # CORRECTION ICI : On mappe le champ "packs" du modèle vers la clé "pack" de l'API
+    pack = PackMiniSerializer(source='packs', read_only=True) 
     subtotal = serializers.SerializerMethodField()
 
     class Meta:
         model = CartItem
         fields = [
             'id',
-            'contrat',           # Nullable
-            'pro',               # Nullable
-            'customed_contract', # Nullable
-            'pack',              # ✅ Nullable
+            'contrat',           
+            'pro',               
+            'customed_contract', 
+            'pack',              
             'quantity',
             'user_inputs',
             'unit_price',
@@ -134,7 +134,6 @@ class CartItemSerializer(serializers.ModelSerializer):
 
     def get_subtotal(self, obj):
         return obj.get_subtotal()
-
 
 class CartSerializer(serializers.ModelSerializer):
     items = CartItemSerializer(many=True, read_only=True)
@@ -151,7 +150,11 @@ class CartSerializer(serializers.ModelSerializer):
             'created_at',
             'updated_at',
         ]
-        read_only_fields = ['id', 'created_at', 'updated_at']
+        read_only_fields = [
+            'id', 
+            'created_at', 
+            'updated_at'
+        ]
 
     def get_total(self, obj):
         return obj.get_total()
