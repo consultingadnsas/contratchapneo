@@ -1,53 +1,76 @@
 <template>
-    
-    <section class="">
+    <section class="h-full flex flex-col gap-2">
 
-        <contractCardSkeleton v-if="false"/>
+        <contractCardSkeleton v-if="profileStore.isLoading" />
 
         <emptyState 
+            v-else-if="!profileStore.isLoading && profileStore.userPacks.length === 0"
             title="Aucun pack acheté"
             description="Vous n'avez aucun pack disponible"
             textAction="Acheter pack"
         />
 
-    </section>
+        <div v-else class="pack-container">
+            <pack-buying-card 
+                v-for="(pack, index) in profileStore.userPacks" 
+                :key="pack.id || index"
+                :title="pack.title" 
+                :price="pack.prix"
+                :description="pack.description"
+                @buy=""
+            />
+        </div>
 
+    </section>
 </template>
 
 <script lang="ts">
 import { useProfileStore } from '../../../stores/profileStore'
-import {ref, onMounted} from 'vue'
+import { useCartStore } from '../../../stores/cartStore';
+import { onMounted } from 'vue'
 
 import contractCardSkeleton from '../../cards/contractCardSkeleton.vue';
 import emptyState from '../../tools/emptyState.vue'
+import packBuyingCard from '../../cards/packBuyingCard.vue'
 
-export default{
-
-    components:{
+export default {
+    components: {
         contractCardSkeleton,
-        emptyState
+        emptyState,
+        packBuyingCard
     },
 
-    setup(){
-
+    setup() {
+        const cartStore = useCartStore();
         const profileStore = useProfileStore();
 
-        onMounted(async()=>{
-
-            profileStore.getPacks();
-
-        })
+        onMounted(async () => {
+            await profileStore.fetchPacks();
+        });
 
         return {
-
             profileStore,
         }
-
     }
-
 }
 </script>
 
 <style scoped>
+.pack-container {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 1rem;
+    gap: 0.5rem;
+}
 
+@media(min-width: 768px) {
+    .pack-container {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+    }
+}
 </style>

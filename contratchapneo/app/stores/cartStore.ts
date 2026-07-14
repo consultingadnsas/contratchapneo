@@ -185,6 +185,8 @@ export const useCartStore = defineStore('cart', () => {
         }
     }
 
+    const addPackToCart = async(pack_id:) =>
+
     const removeFromCart = async (contratId: string) => {
         isLoading.value = true;
         error.value = null;

@@ -8,6 +8,7 @@ from .views import (
     ContratOperationsView,
     CustomedContractRequestView,
     ContractTagsView,
+    PacksView,
 
     AdminCategoryDetail,
     AdminContractListCreateView
@@ -22,6 +23,9 @@ urlpatterns = [
     path('', ContractListView.as_view(), name='contract-list'),
     path('operations/', ContratOperationsView.as_view(), name='contrat-operations'),
     path('<uuid:contrat_id>/',ContractsView.as_view(), name="contrats"),
+
+    # Packs
+    path('packs/', PacksView.as_view(), name="pack-view"),
 
     # Contract tag
     path('tags/<uuid:contrat_id>/', ContractTagsView.as_view(), name='contract-tags'),

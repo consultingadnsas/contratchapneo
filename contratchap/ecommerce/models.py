@@ -170,6 +170,8 @@ class CartItem(models.Model):
                 self.unit_price = self.customed_contract.prix 
             elif self.pro:
                 self.unit_price = self.pro.prix
+            elif self.packs:
+                self.unit_price = self.packs.prix
         super().save(*args, **kwargs)
 
 class GuestInfo(models.Model):

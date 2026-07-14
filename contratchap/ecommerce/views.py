@@ -22,7 +22,7 @@ from .serializers import (
     CheckoutSerializer,
 )
 from .helpers import (get_or_create_cart, set_cart_cookie_if_needed)
-from contrat.models import Contrat, CustomedContract
+from contrat.models import Contrat, CustomedContract, Pack
 from pro.models import LegalProfessional
 
 from contrat.utils import fill_docx_template, convert_docx_to_pdf
@@ -69,10 +69,11 @@ class CartAddItemView(APIView):
         contrat_id = serializer.validated_data.get('contrat_id')
         pro_id     = serializer.validated_data.get('pro_id')
         customed_contract_id = serializer.validated_data.get('customed_contract')
+        pack_id = serializer.validated_data.get('pack')
         quantity   = serializer.validated_data.get('quantity', 1)
 
         # Vérification de sécurité
-        if not contrat_id and not pro_id and not customed_contract_id:
+        if not contrat_id and not pro_id and not customed_contract_id and not pack_id:
              return Response(
                 {'errors': 'Vous devez fournir soit un contrat_id, soit un pro_id, soit un customed_contract.'},
                 status=status.HTTP_400_BAD_REQUEST
@@ -115,6 +116,21 @@ class CartAddItemView(APIView):
                 defaults={
                     'quantity'  : quantity,
                     'unit_price': customed_contract.price,
+                }
+            )
+            if not created:
+                item.quantity += quantity
+                item.save()
+
+        elif pack_id:
+            # J'utilise une variable 'pack_obj' pour éviter la confusion
+            pack_obj = get_object_or_404(Pack, id=pack_id) 
+            item, created = CartItem.objects.get_or_create(
+                cart=cart,
+                packs=pack_obj, # 🚨 CORRECTION : "packs" (avec un 's'), car c'est le vrai nom de ton champ dans ton Model !
+                defaults={
+                    'quantity'  : quantity,
+                    'unit_price': pack_obj.prix,
                 }
             )
             if not created:

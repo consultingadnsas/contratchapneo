@@ -1,7 +1,11 @@
 <template>
+  
   <div class="dashboard-container">
+    
     <sidebar />
+    
     <main class="main-content">
+      
       <header class="dashboard-header">
         <div v-if="authStore.user">
           <h1 class="greeting">Bonjour, {{ authStore.user.user?.username ?? 'invité' }}</h1>
@@ -12,11 +16,13 @@
         </div>
         <mainButton/>
       </header>
+      
       <div class="dashboard-grid">
         <profile-section/>
       </div>
     </main>
   </div>
+
 </template>
 
 <script lang="ts">
