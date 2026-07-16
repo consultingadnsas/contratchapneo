@@ -325,7 +325,6 @@ class CheckoutView(APIView):
     5. Retourne la commande créée
     """
     permission_classes = [AllowAny]
-    authentication_classes = []
 
     def post(self, request):
         cart = get_or_create_cart(request)

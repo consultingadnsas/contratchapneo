@@ -73,7 +73,16 @@ export const usePaiementStore = defineStore('paiement', () => {
             const { useOrderStore } = await import('./orderStore');
             const orderStore = useOrderStore();
             
-            const email = orderStore.currentOrder?.guest?.email || 'consultingadnsas@gmail.com';
+            // 🚨 AJOUT CONTRATCHAP : On récupère dynamiquement le bon email (sans adresse en dur !)
+            const backupEmail = typeof window !== 'undefined' ? localStorage.getItem('backup_checkout_email') : null;
+            
+            const email = orderStore.currentOrder?.guest?.email 
+                       || orderStore.currentOrder?.user?.email 
+                       || backupEmail;
+
+            if (!email) {
+                throw new Error("Impossible de récupérer l'email de sécurité pour cette action.");
+            }
 
             // Boucle d'essais pour attendre le Webhook de Ngrok
             for (let i = 0; i < maxRetries; i++) {
@@ -213,7 +222,16 @@ export const usePaiementStore = defineStore('paiement', () => {
                 throw new Error("Impossible de trouver l'ID de la commande à mettre à jour.");
             }
 
-            const email = orderStore.currentOrder?.guest?.email || 'consultingadnsas@gmail.com';
+            // 🚨 AJOUT CONTRATCHAP : On récupère dynamiquement le bon email (sans adresse en dur !)
+            const backupEmail = typeof window !== 'undefined' ? localStorage.getItem('backup_checkout_email') : null;
+            
+            const email = orderStore.currentOrder?.guest?.email 
+                       || orderStore.currentOrder?.user?.email 
+                       || backupEmail;
+
+            if (!email) {
+                throw new Error("Impossible de récupérer l'email de sécurité pour cette action.");
+            }
             await $api.raw(`/ecommerce/orders/${orderId}/?email=${email}`, {
                 method: 'PUT',
                 body: {
@@ -249,7 +267,16 @@ export const usePaiementStore = defineStore('paiement', () => {
 
             // 2. Gestion de l'email pour les invités
             // ⚠️ Pense à enlever l'email en dur quand tu seras en vraie production !
-            const email = orderStore.currentOrder?.guest?.email || 'consultingadnsas@gmail.com';
+            // 🚨 AJOUT CONTRATCHAP : On récupère dynamiquement le bon email (sans adresse en dur !)
+            const backupEmail = typeof window !== 'undefined' ? localStorage.getItem('backup_checkout_email') : null;
+            
+            const email = orderStore.currentOrder?.guest?.email 
+                       || orderStore.currentOrder?.user?.email 
+                       || backupEmail;
+
+            if (!email) {
+                throw new Error("Impossible de récupérer l'email de sécurité pour cette action.");
+            }
 
             console.log(`Lancement du téléchargement pour la commande ${targetOrderId}...`);
 

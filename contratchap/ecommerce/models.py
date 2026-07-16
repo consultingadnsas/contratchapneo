@@ -354,7 +354,7 @@ class OrderItem(models.Model):
     def get_subtotal(self):
         return self.unit_price * self.quantity
 
-    def save(self, *args, **kwargs):
+    def save(self, *args, **kwargs): 
         if not self.contrat_title and self.contrat:
             self.contrat_title = self.contrat.title
         if not self.pro_name and self.pro:

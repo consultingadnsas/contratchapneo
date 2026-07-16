@@ -277,6 +277,21 @@ def payment_webhook_view(request):
         order.status = Order.Status.PAID
         order.save(update_fields=['status'])
 
+        if order.user:  
+            for item in order.order_items.all():
+                # Si la ligne de commande contient un pack
+                if item.pack: 
+                    # On importe le modèle qui relie l'User au Pack (à mettre tout en haut de ton fichier views.py)
+                    from contrat.models import UserPack 
+
+                    # On livre le pack à l'utilisateur !
+                    UserPack.objects.create(
+                        user=order.user,
+                        pack=item.pack,
+                        # Attention: vérifie le nom exact de ton champ de crédits sur tes modèles UserPack et Pack
+                        credits_restants=item.pack.nombre_credits 
+                    )
+
         _increment_downloads(order)
         #_send_download_email(order)
 
