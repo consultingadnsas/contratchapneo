@@ -149,6 +149,61 @@ class CartAddItemView(APIView):
         # On conserve ta logique de cookies hyper importante !
         return set_cart_cookie_if_needed(request, response)
 
+class CartAddPack(APIView):
+    """ 
+    POST /cart/pack/add/ 
+    Ajoute un pack au panier (Connexion obligatoire !)
+    """
+    # 🔒 C'est cette ligne qui fait toute la magie : DRF bloquera 
+    # automatiquement avec une erreur 401 si l'utilisateur n'est pas connecté.
+    permission_classes = [IsAuthenticated]
+    
+    # ⚠️ Enlève `authentication_classes = []` pour que DRF puisse 
+    # utiliser tes tokens JWT ou tes cookies de session pour identifier l'utilisateur !
+
+    def post(self, request):
+        # 1. On récupère l'ID du pack et la quantité depuis le corps de la requête
+        pack_id = request.data.get('pack_id')
+        quantity = int(request.data.get('quantity', 1))
+
+        if not pack_id:
+            return Response(
+                {'errors': 'Vous devez fournir un pack_id.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # 2. On récupère le pack depuis la base de données
+        pack_obj = get_object_or_404(Pack, id=pack_id)
+
+        # 3. On récupère le panier (qui sera forcément lié au `request.user` grâce à IsAuthenticated)
+        cart = get_or_create_cart(request)
+
+        # 4. On ajoute le pack au panier (ou on augmente la quantité s'il y est déjà)
+        item, created = CartItem.objects.get_or_create(
+            cart=cart,
+            packs=pack_obj, # On utilise bien 'packs' (avec un 's') comme vu précédemment
+            defaults={
+                'quantity': quantity,
+                'unit_price': pack_obj.prix,
+            }
+        )
+
+        if not created:
+            item.quantity += quantity
+            item.save()
+
+        # 5. On renvoie le panier mis à jour
+        response = Response(
+            {
+                'data': CartSerializer(cart).data,
+                'message': 'Pack ajouté au panier avec succès !'
+            },
+            status=status.HTTP_200_OK
+        )
+        
+        # 6. Optionnel mais recommandé, on maintient la logique de cookie
+        return set_cart_cookie_if_needed(request, response)
+
 class CartItemUpdateView(APIView):
     """
         PATCH /cart/update/<uuid:contrat_id>/

@@ -1,9 +1,7 @@
 import { defineStore } from "pinia";
 import { ref, computed } from "vue";
-import { loadStripe } from '@stripe/stripe-js';
 import type { Contrat } from "./contratStore";
 import type { GuestInfo} from './orderStore';
-import { useHead } from '#imports';
 
 // L'API renvoie les items imbriqués : { id, quantity, contrat: { ... } }
 export interface CartItem {
@@ -13,6 +11,7 @@ export interface CartItem {
   subtotal: number;
   contrat?: Contrat | null; // Peut désormais être nul
   pro?: ProItem | null;     // Nouvel élément !
+  packs?: any | null;
 }
 
 export interface Cart {
@@ -72,6 +71,15 @@ export const useCartStore = defineStore('cart', () => {
                 normalizedItem.pro = { 
                     ...it.pro, 
                     profile_picture: resolveMediaUrl(it.pro.profile_picture) 
+                };
+            }
+
+            // 💡 NOUVEAU : S'il y a un pack, on résout son image !
+            if (it.packs) {
+                normalizedItem.packs = {
+                    ...it.packs,
+                    // Remplace 'picture' par le vrai nom de ton champ si c'est 'image' ou 'cover'
+                    picture: resolveMediaUrl(it.packs.picture) 
                 };
             }
 
@@ -185,7 +193,31 @@ export const useCartStore = defineStore('cart', () => {
         }
     }
 
-    const addPackToCart = async(pack_id:) =>
+    const addPackToCart = async(pack_id: string) => {
+        isLoading.value = true;
+        error.value = null;
+
+        try {
+            const response = await $api('/ecommerce/cart/pack/add/', {
+                method: 'POST',
+                body: { pack_id: pack_id }
+            });
+
+            if (response) {
+                console.log("Votre reponse de pack", response);
+                cart.value = normalizeCart(response);   // ✅ met à jour le state réactif
+            }
+
+            return response;
+
+        } catch (err: any) {
+            error.value = err.message;
+            console.error("Erreur ajout pack", err);    // ✅ log correct
+            throw err;                                   // ✅ syntaxe correcte
+        } finally {
+            isLoading.value = false;
+        }
+    }
 
     const removeFromCart = async (contratId: string) => {
         isLoading.value = true;
@@ -246,13 +278,17 @@ export const useCartStore = defineStore('cart', () => {
         }
     };
 
-    const checkout = async (payload:GuestInfo) => {
+    // 💡 On rend le payload optionnel avec le "?" car un utilisateur connecté n'en a pas besoin !
+    const checkout = async (payload?: GuestInfo | null) => {
         isLoading.value = true;
         error.value = null;
         try {
+            // Si un payload est fourni (invité), on l'envoie. Sinon, corps vide {} (connecté)
+            const bodyData = payload ? payload : {};
+
             const response = await $api('/ecommerce/checkout/', {
                 method: 'POST',
-                body: { ...payload, cart: cart.value }
+                body: bodyData // 🚨 CORRECTION : On a supprimé `cart: cart.value`
             });
             console.log("checkout response", response)
             return response;
@@ -265,17 +301,18 @@ export const useCartStore = defineStore('cart', () => {
     };
 
     // About the paiement flow with the frontend
-
-    const initiatePayment = async (payload: Object, email: string) => {
-
+    const initiatePayment = async (payload?: any, email?: string) => {
         isLoading.value = true;
         error.value = null;
 
         try {
             const emailQuery = email ? `?email=${encodeURIComponent(email)}` : '';
-            const response = await $api(`/payments/initiate/${emailQuery}`, {
+            const bodyData = payload ? payload : {};
+
+            // 🚨 CORRECTION : On a supprimé `cart: cart.value` ici aussi
+            const response = await $api(`/payment/initiate/${emailQuery}`, { 
                 method: 'POST',
-                body: { ...payload, cart: cart.value }
+                body: bodyData 
             });
             return response;
         } catch (err: any) {
@@ -302,6 +339,7 @@ export const useCartStore = defineStore('cart', () => {
         fetchCart,
         addToCart,
         addProToCart,
+        addPackToCart,
         removeFromCart,
         updateQuantity,
         clearCart,

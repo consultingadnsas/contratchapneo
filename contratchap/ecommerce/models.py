@@ -151,11 +151,17 @@ class CartItem(models.Model):
 
     def __str__(self):
         if self.contrat:
-            return f'{self.quantity}x {self.contrat.title}'
+            return f'{self.quantity}x Contrat : {self.contrat.title}'
         elif self.customed_contract:
-            # Assure-toi que ton modèle CustomedContract a bien un champ 'title' ou adapte ce nom
-            return f'{self.quantity}x Sur mesure: {self.customed_contract.title}'
-        return f'{self.quantity}x Carte de visite - {self.pro.first_name} {self.pro.last_name}'
+            return f'{self.quantity}x Sur mesure : {self.customed_contract.subject}'
+        elif self.pro:
+            # 💡 Astuce : get_title_display() affichera "Avocat" au lieu de "AVOCAT"
+            return f'{self.quantity}x Pro : {self.pro.get_title_display()} {self.pro.last_name}'
+        elif self.packs:
+            # Assure-toi que ton modèle Pack a bien un champ 'title' ou 'name'
+            return f'{self.quantity}x Pack : {self.packs.title}' 
+            
+        return f'{self.quantity}x Élément inconnu'
 
     def get_subtotal(self):
         return self.unit_price * self.quantity

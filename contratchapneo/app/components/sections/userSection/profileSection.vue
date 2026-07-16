@@ -11,14 +11,16 @@
         />
 
         <div v-else class="pack-container">
+            
             <pack-buying-card 
                 v-for="(pack, index) in profileStore.userPacks" 
                 :key="pack.id || index"
                 :title="pack.title" 
                 :price="pack.prix"
                 :description="pack.description"
-                @buy=""
+                @buy="addToCart(pack.id)"
             />
+            
         </div>
 
     </section>
@@ -28,6 +30,7 @@
 import { useProfileStore } from '../../../stores/profileStore'
 import { useCartStore } from '../../../stores/cartStore';
 import { onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 
 import contractCardSkeleton from '../../cards/contractCardSkeleton.vue';
 import emptyState from '../../tools/emptyState.vue'
@@ -44,12 +47,25 @@ export default {
         const cartStore = useCartStore();
         const profileStore = useProfileStore();
 
+        const router = useRouter();
+
+        const addToCart = async(packId:string)=> {
+
+            await cartStore.addPackToCart(packId);
+
+            router.push('/order/checkout/')
+
+        }
+
         onMounted(async () => {
             await profileStore.fetchPacks();
         });
 
         return {
+            cartStore,
             profileStore,
+            router,
+            addToCart
         }
     }
 }

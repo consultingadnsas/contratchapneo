@@ -1,23 +1,23 @@
 <template>
     <div class="cart-items">
-            <div class="items-list">
-              <div v-for="item in cartItems" :key="item.id" class="cart-item">
-              <img :src="item.image || placeholder" :alt="item.name" class="item-image">
-            <div class="item-details">
-                <h4 class="item-name">{{ item.name }}</h4>
-                <p class="item-price">{{ item.price }} FCFA</p>
-                <div class="quantity-controls">
-                <button class="qty-btn" @click="decrease(item.id, item.quantity)" :disabled="item.quantity <= 1">-</button>
-                <span class="quantity">{{ item.quantity }}</span>
-                <button class="qty-btn" @click="increase(item.id, item.quantity)">+</button>
-                </div>
-            </div>
-            <div class="item-total">
-                <span class="total-price">{{ (Number(item.price) * item.quantity).toLocaleString('fr-FR') }} FCFA</span>
-                <button class="remove-btn" @click="removeFromCart(item.id)">🗑️</button>
-            </div>
-            </div>
+      <div class="items-list">
+        <div v-for="item in cartItems" :key="item.id" class="cart-item">
+        <img :src="item.image || placeholder" :alt="item.name" class="item-image">
+      <div class="item-details">
+        <h4 class="item-name">{{ item.name }}</h4>
+        <p class="item-price">{{ item.price }} FCFA</p>
+        <div class="quantity-controls">
+          <button class="qty-btn" @click="decrease(item.id, item.quantity)" :disabled="item.quantity <= 1">-</button>
+          <span class="quantity">{{ item.quantity }}</span>
+          <button class="qty-btn" @click="increase(item.id, item.quantity)">+</button>
         </div>
+      </div>
+      <div class="item-total">
+          <span class="total-price">{{ (Number(item.price) * item.quantity).toLocaleString('fr-FR') }} FCFA</span>
+          <button class="remove-btn" @click="removeFromCart(item.id)">🗑️</button>
+      </div>
+      </div>
+    </div>
 
         <div class="order-summary">
             <div class="summary-line"><span>Sous-total</span><span>{{ formattedTotalPrice }} FCFA</span></div>
@@ -40,7 +40,7 @@ export default {
       (cartStore.cart?.items ?? []).map(i => {
         
         // On prépare des variables par défaut
-        let itemName = 'Article';
+        let itemName = 'Article inconnu';
         let itemImage = null;
 
         // Si c'est un contrat
@@ -50,16 +50,20 @@ export default {
         } 
         // Si c'est un professionnel
         else if (i.pro) {
-          itemName = `${i.pro.first_name} ${i.pro.last_name}`; // ou i.pro.title_display
+          itemName = `${i.pro.first_name} ${i.pro.last_name}`; 
           itemImage = i.pro.profile_picture;
+        }
+        // 💡 NOUVEAU : Si c'est un pack !
+        else if (i.pack) {
+          // Assure-toi que ton modèle Pack utilise bien 'title' (ou change pour 'name' si besoin)
+          itemName = `Pack : ${i.pack.title}`; 
+          itemImage = i.pack.picture; 
         }
 
         return {
           id: i.id,
           name: itemName,
-          // 💡 On utilise directement unit_price fourni par le backend !
           price: Number(i.unit_price || 0), 
-          // 💡 Pareil pour le sous-total
           subtotal: Number(i.subtotal || 0), 
           quantity: i.quantity,
           image: itemImage
