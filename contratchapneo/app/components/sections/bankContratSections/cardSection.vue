@@ -350,7 +350,7 @@ export default {
 }
 
 .search-container-large {
-    min-width: 100%;
+    min-width: 70%;
     display: flex;
     align-items: center;
 }

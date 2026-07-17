@@ -5,7 +5,7 @@
 
         <li class="dropdown-item" @mouseenter="isDropdownOpen = true" @mouseleave="isDropdownOpen = false">
             <NuxtLink to="/contractbank" class="dropdown-trigger">
-                Banque de contrats
+                Contrats
                 <svg :class="['chevron', { 'is-open': isDropdownOpen }]" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                     <polyline points="6 9 12 15 18 9"/>
                 </svg>
@@ -43,26 +43,10 @@
 
         <li><NuxtLink to="/lawCalcul">Calcul de droits</NuxtLink></li>
 
-        <li class="dropdown-item" @mouseenter="isServicesDropdownOpen = true" @mouseleave="isServicesDropdownOpen = false">
+        <li class="dropdown-item">
             <NuxtLink to="/services" class="dropdown-trigger">
-                Services juridiques
-                <svg :class="['chevron', { 'is-open': isServicesDropdownOpen }]" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                    <polyline points="6 9 12 15 18 9"/>
-                </svg>
+                Centre d'appel
             </NuxtLink>
-            <transition name="dropdown-fade">
-                <ul v-if="isServicesDropdownOpen" class="dropdown-menu">
-                    <li><NuxtLink to="/services#diag">Diagnostic juridique</NuxtLink></li>
-                    <li><NuxtLink to="/services#domicile">Domiciliation d'entreprise</NuxtLink></li>
-                    <li><NuxtLink to="/services#crea">Créations d'entreprises</NuxtLink></li>
-                    <li><NuxtLink to="/services#assistance">Assistance juridique</NuxtLink></li>
-                    <li><NuxtLink to="/services#programmes">Programmes juridiques</NuxtLink></li>
-                    <li><NuxtLink to="/services#noms">Enregistrement Noms Commerciaux</NuxtLink></li>
-                    <li><NuxtLink to="/services#marques">Dépôt de Marque</NuxtLink></li>
-                    <li><NuxtLink to="/services#brevets">Brevet d'Invention</NuxtLink></li>
-                    <li><NuxtLink to="/services#tech">Legaltech</NuxtLink></li>
-                </ul>
-            </transition>
         </li>
 
         <li><NuxtLink to="/etudeContrat">Révision de contrats</NuxtLink></li>
@@ -144,7 +128,6 @@ export default {
         margin-left: auto; /* 👈 C'est ceci qui pousse tout le groupe de droite vers la droite de l'écran */
     }
 
-    .dropdown-item { position: relative; }
     .dropdown-menu {
         position: absolute; top: calc(100% + 12px); left: 50%; transform: translateX(-50%); width: 260px; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.6); border-radius: 16px; box-shadow: 0 12px 40px rgba(0, 0, 0, 0.1); padding: 0.5rem; list-style: none; margin: 0; z-index: 200;
     }

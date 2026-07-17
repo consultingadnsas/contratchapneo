@@ -1,81 +1,60 @@
 <template>
     <section class="hero-section">
+        <!-- Les vagues fluides en arrière-plan -->
         <div class="wave-section"></div>
 
-        <div class="flex flex-col gap-4 content-wrapper">
-            <div class="research-desktop">
-               <base-research-input/>
-                <h1>
-                    Téléchargez facilement tous <span class="gradient-text2">vos</span> 
-                </h1>
-                <span class="gradient-text">contrats</span>
+        <!-- ── ZONE TEXTE ANIMÉE ── -->
+        <div class="content-wrapper">
+            
+            <!-- ETAPE 1 & 2 : L'animation "Unroll" du CC -->
+            <div v-if="step <= 2" 
+                 class="brand-unroll-container" 
+                 :class="{ 'is-landing': step === 0, 'is-hidden': step === 2 }">
+                
+                <span class="welcome-text" :class="{ 'show': step >= 1 }">
+                    Bienvenue sur
+                </span>
+                
+                <div class="logo-morph premium-gradient" :class="{ 'is-unrolling': step >= 1 }">
+                    <span class="letter">C</span><span class="hidden-letters" :class="{ 'show': step >= 1 }">ontrat</span><span class="letter">C</span><span class="hidden-letters" :class="{ 'show': step >= 1 }">hap</span>
+                </div>
+            </div>
+
+            <!-- ETAPE 3 : Apparition cinématique mot par mot -->
+            <div v-if="step >= 3" class="final-phrase">
+                <span class="word show-1">Téléchargez&nbsp;</span>
+                <span class="word show-2">facilement&nbsp;</span>
+                <span class="word show-4"><span class="premium-gradient">tous vos contrats</span></span>
             </div>
             
-            <div class="desktop-buttons-group">
-                <div class="revision-cta desktop-cta main-action" @click="router.push('/contractBank')">
+            <!-- ETAPE 4 : Apparition des boutons (Principal + Secondaire) -->
+            <div class="buttons-group" :class="{ 'show': showButton }">
+                
+                <div class="revision-cta main-action premium-shadow" @click="router.push('/contractBank')">
+                    <div class="btn-shine"></div>
                     <div class="cta-texts">
                         <p>Télécharger vos contrats</p>
                     </div>
                     <div class="cta-arrow floating-arrow">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="size-4">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 19.5 15-15m0 0H8.25m11.25 0v11.25" />
                         </svg>
                     </div>
                 </div>
 
-                <div class="revision-cta desktop-cta secondary-action glass-btn" @click="router.push('/etudeContrat')">
-                    <div class="cta-texts">
-                        <p>Réviser un contrat</p>
-                    </div>
-                    <div class="cta-arrow floating-arrow">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="size-4">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 19.5 15-15m0 0H8.25m11.25 0v11.25" />
-                        </svg>
-                     </div>
-                </div>
-            </div>
-
-             <div class="research-mobile">
-                <h1>
-                    Téléchargez facilement tous <span class="gradient-text">vos contrats</span>
-                </h1> 
-                <base-research-input/>
             </div>
         </div>
         
-        <div class="pic-wrapper">
+        <!-- ── ZONE IMAGE & CARTES FLOTTANTES ── -->
+        <div class="pic-wrapper" :class="{ 'fade-in-image': step >= 0 }">
             <div class="pic-container">
-                <img src="/Accueil 2.png" alt="Contrats OHADA">
+                <img src="/Accueil_2.png" alt="Contrats OHADA">
 
-                <stat-cards class="floating-card card-top-left"    title="Banque de contrats" @click="router.push('/contractBank')" />
+                <stat-cards class="floating-card card-top-left"    title="Contrats" @click="router.push('/contractBank')" />
                 <stat-cards class="floating-card card-top-right"   title="Calcul de droits" @click="router.push('/lawCalcul')" />
                 
-                <stat-cards class="floating-card card-bottom-left"  title="Services juridiques" @click="router.push('/services')" />
+                <stat-cards class="floating-card card-bottom-left"  title="Centre d'appel" @click="router.push('/services')" />
                 <stat-cards class="floating-card card-bottom-right" title="Experts" @click="router.push('/pro')" />
-            </div>
-        </div>
-
-        <div class="mobile-buttons-group">
-            <div class="revision-cta mobile-cta main-action" @click="router.push('/contractBank')">
-                <div class="cta-texts">
-                    <p>Télécharger un contrat</p>
-                </div>
-                <div class="cta-arrow floating-arrow">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="size-4">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 19.5 15-15m0 0H8.25m11.25 0v11.25" />
-                    </svg>
-                </div>
-            </div>
-
-            <div class="revision-cta mobile-cta secondary-action glass-btn" @click="router.push('/etude-contrats')">
-                <div class="cta-texts">
-                    <p>Besoin d'une révision de contrat ?</p>
-                </div>
-                <div class="cta-arrow floating-arrow">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="size-4">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 19.5 15-15m0 0H8.25m11.25 0v11.25" />
-                    </svg>
-                </div>
             </div>
         </div>
 
@@ -86,7 +65,6 @@
 <script lang="ts">
 import { onMounted, ref, defineComponent } from 'vue'
 import mainButton from '../buttons/mainButton.vue'
-import BaseResearchInput from '../input/BaseResearchInput.vue'
 import statCards from '../cards/statCards.vue'
 import { useRouter } from 'vue-router'
 import carousselCountries from '../carousselCountries.vue'
@@ -95,7 +73,6 @@ export default defineComponent({
     name: 'HeroSecondSection',
     components: { 
         mainButton, 
-        BaseResearchInput, 
         statCards,
         carousselCountries
     },
@@ -103,49 +80,20 @@ export default defineComponent({
     setup() {
         const router = useRouter();
 
-        const phrases = [
-            'Profitez de nos contrats gratuits.',
-            'Sécurisez juridiquement vos business en un clic.',
-            'Accédez à des modèles conformes aux droits OHADA.'
-        ]
-
-        const displayText = ref<string>('');
-        const phraseIndex = ref<number>(0);
-        const charIndex = ref<number>(0);
-        const isDeleting = ref<boolean>(false);
-        const typeSpeed = ref<number>(100);
-
-        const handleType = () => {
-            const currentPhrase = phrases[phraseIndex.value];
-
-            if(isDeleting.value){
-                displayText.value = currentPhrase.substring(0, charIndex.value - 1);
-                charIndex.value--;
-                typeSpeed.value = 50;
-            } else {
-                displayText.value = currentPhrase.substring(0, charIndex.value + 1);
-                charIndex.value++;
-                typeSpeed.value = 100;
-            }
-
-            if (!isDeleting.value && charIndex.value === currentPhrase.length) {
-                isDeleting.value = true;
-                typeSpeed.value = 3000;
-            } else if (isDeleting.value && charIndex.value === 0) {
-                isDeleting.value = false;
-                phraseIndex.value = (phraseIndex.value + 1) % phrases.length;
-                typeSpeed.value = 500;
-            }
-
-            setTimeout(handleType, typeSpeed.value);
-        };
+        const step = ref<number>(-1); 
+        const showButton = ref<boolean>(false);
 
         onMounted(() => {
-            handleType();
+            setTimeout(() => { step.value = 0; }, 100);    
+            setTimeout(() => { step.value = 1; }, 1600);   
+            setTimeout(() => { step.value = 2; }, 4200);   
+            setTimeout(() => { step.value = 3; }, 4800);   
+            setTimeout(() => { showButton.value = true; }, 5800); 
         })
 
         return {
-            displayText,
+            step,
+            showButton,
             router,
         }
     }
@@ -166,76 +114,49 @@ export default defineComponent({
     flex-direction: column; 
     align-items: center;
     gap: 1rem;
-    padding: 1rem 1rem 1rem 1rem;
+    padding: 1rem;
     padding-bottom: 4rem;
     background: radial-gradient(circle, #202b4a 30%, #0f0f0f 100%);
 }
 
 .content-wrapper {
     position: relative;
-    z-index: 10; /* Sécurise le contenu au-dessus des vagues */
+    z-index: 10; 
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* Centré sur mobile */
+    justify-content: center;
+    width: 100%;
+    margin-top: 4rem;
 }
 
-/* Bloc texte */
-.hero-section h1 {
-    font-size: clamp(1.5rem, 6vw, 2.5rem); 
-    font-weight: 600;
-    color: var(--my-white);
-    line-height: 1.2;
-    margin: 0;
-    padding-top: 5rem
-}
-
-/* DÉGRADÉS SUR TEXTE */
-.gradient-text {
-    font-size: clamp(1rem, 3.5vw, 1.3rem);
-    font-weight: 600;
-    line-height: 1.2;
-    background: linear-gradient(90deg, #32f459 0%, #156ca9 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    display: inline-block; 
-}
-.gradient-text2 {
-    font-size: clamp(1rem, 3.5vw, 1.3rem);
-    font-weight: 600;
-    line-height: 1.2;
-    background: linear-gradient(70deg, #32f459 0%, #156ca9 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    display: inline-block; 
-}
-
-/* ── NOUVELLES VAGUES FLUIDES EN ARRIÈRE-PLAN ──────────────────── */
+/* ── NOUVELLES VAGUES FLUIDES ──────────────────── */
 .wave-section {
     position: absolute;
     inset: 0;
     overflow: hidden;
     z-index: 0;
-    pointer-events: none; /* CRUCIAL: Rend les vagues "fantômes" pour les clics */
+    pointer-events: none; 
 }
 
-/* La forme de base des vagues */
 .wave-section::before,
 .wave-section::after {
     content: "";
     position: absolute;
-    width: 250vw; /* Très large pour avoir une courbure douce */
+    width: 250vw; 
     height: 250vw;
-    top: 50%; /* Position sur l'écran */
+    top: 50%; 
     left: 50%;
     transform: translateX(-50%);
-    border-radius: 42%; /* Déformation du cercle pour l'effet vague */
+    border-radius: 42%; 
     opacity: 0.6;
 }
 
-/* Vague 1 (Bleutée) */
 .wave-section::before {
     background: linear-gradient(to top, rgba(21, 107, 169, 0.016), rgba(21, 107, 169, 0.203));
     animation: rotate-waves 30s linear infinite;
 }
 
-/* Vague 2 (Verte, légèrement décalée) */
 .wave-section::after {
     top: 55%;
     border-radius: 38%;
@@ -247,130 +168,158 @@ export default defineComponent({
     0% { transform: translateX(-50%) rotate(0deg); }
     100% { transform: translateX(-50%) rotate(360deg); }
 }
-/* ───────────────────────────────────────────────────────────── */
 
-.cursor {
-    color: var(--secondary-light-color);
-    animation: blink 0.7s infinite;
-    margin-left: 4px;
-}
-
-@keyframes blink {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0; }
-}
-
-/* Conteneur image + cartes */
-.pic-wrapper {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 70px 40px;
-    box-sizing: border-box;
-    width: 100%;
-}
-
-.pic-container {
-    position: relative;
-    width: 180px; 
-    display: inline-flex; 
-    justify-content: center;
-    align-items: center;
-    z-index: 1;
-}
-
-/* CERCLE LUMINEUX DERRIÈRE L'IMAGE */
-.pic-container::before {
-    content: '';
-    position: absolute;
-    top: 12%; 
-    left: -30%; 
-    width: 155%; 
-    aspect-ratio: 1 / 1;
-    border-radius: 50%; 
-    background: radial-gradient(circle at 40% 65%, #3197f5 0%, #1a62cc 55%, #082d73 100%);
-    box-shadow: 0 0 60px 20px rgba(11, 16, 12, 0.4); 
-    z-index: 0; 
-}
-
-.pic-container img {
-    min-width: 320px;
-    aspect-ratio: 1 / 1; 
-    height: auto; 
-    object-fit: cover; 
-    border-radius: 50%; 
-    display: block;
-    position: relative;
-    z-index: 1;
-}
-
-/* Cartes flottantes */
-.floating-card {
-    position: absolute;
-    z-index: 5;
-    width: 105px !important;
-    height: auto !important;
-    top: 50%;
-    transform: translateX(var(--tx)) translateY(var(--ty-base));
-    animation: float 4s ease-in-out infinite;
-
-    box-sizing: border-box;
-    padding: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-}
-
-.card-top-left, .card-top-right       { --ty-base: -140px; }
-.card-bottom-left, .card-bottom-right { --ty-base: 40px; }
-.card-top-left, .card-bottom-left   { left: 0; --tx: -55%; }
-.card-top-right, .card-bottom-right { right: 0; --tx: 55%; }
-
-.card-top-left { animation-delay: 0s; }
-.card-top-right { animation-delay: 0.8s; }
-.card-bottom-left { animation-delay: 1.6s; }
-.card-bottom-right { animation-delay: 2.4s; }
-
-/* ── BOUTONS ── */
-.mobile-buttons-group {
+/* ========================================================
+   ANIMATIONS TEXTUELLES (CC & PHRASE)
+======================================================== */
+.brand-unroll-container {
     display: flex;
     flex-direction: column;
-    gap: 1rem;
-    width: 100%;
-    z-index: 10;
+    align-items: center; /* Centré sur mobile */
+    justify-content: center;
+    transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+    min-height: 120px;
 }
 
-.desktop-buttons-group {
-    display: none; 
-    flex-direction: row;
-    gap: 1.5rem;
-    margin-top: 2rem;
-    position: relative;
-    z-index: 20;
+.welcome-text {
+    display: block;
+    font-size: clamp(1rem, 4vw, 1.5rem);
+    font-weight: 500;
+    color: #e2e8f0; 
+    opacity: 0;
+    transform: translateY(20px);
+    transition: transform 1s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.8s ease;
+    margin-bottom: -5px; 
+}
+
+.welcome-text.show { transform: translateY(0); opacity: 1; }
+
+.logo-morph {
+    font-size: clamp(4rem, 15vw, 6rem);
+    font-weight: 800;
+    display: flex;
+    align-items: baseline;
+    line-height: 1.1;
+    letter-spacing: -0.04em;
+    white-space: nowrap;
+    transition: font-size 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.brand-unroll-container.is-landing {
+    animation: landIn 1.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes landIn {
+    0% { transform: scale(1.1) translateY(-20px); filter: blur(10px); opacity: 0; }
+    100% { transform: scale(1) translateY(0); filter: blur(0px); opacity: 1; }
+}
+
+.logo-morph.is-unrolling {
+    font-size: clamp(2rem, 8vw, 3.5rem);
+    letter-spacing: -0.02em;
+}
+
+.letter { display: inline-block; font-size: 5rem }
+
+.hidden-letters {
+    display: inline-block;
+    overflow: hidden;
+    max-width: 0; 
+    opacity: 0;
+    vertical-align: bottom;
+    white-space: nowrap;
+    transition: max-width 1.2s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.8s ease 0.2s;
+}
+
+.hidden-letters.show { max-width: 300px; opacity: 1; }
+
+.brand-unroll-container.is-hidden {
+    animation: cinematicVanish 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes cinematicVanish {
+    0% { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+    100% { opacity: 0; transform: translateY(-30px) scale(1.05); filter: blur(15px); display: none; }
+}
+
+.final-phrase {
+    font-size: clamp(2rem, 7.5vw, 3.5rem);
+    font-weight: 700;
+    color: var(--my-white, #ffffff);
+    line-height: 1.2;
+    margin: 0;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center; /* Centré sur mobile */
+    gap: 0.25em;
+    letter-spacing: -0.02em;
+}
+
+.word { display: inline-block; opacity: 0; }
+
+.show-1 { animation: cinematicReveal 1s cubic-bezier(0.16, 1, 0.3, 1) forwards 0s; }
+.show-2 { animation: cinematicReveal 1s cubic-bezier(0.16, 1, 0.3, 1) forwards 0.15s; }
+.show-3 { animation: cinematicReveal 1s cubic-bezier(0.16, 1, 0.3, 1) forwards 0.3s; }
+.show-4 { animation: cinematicReveal 1s cubic-bezier(0.16, 1, 0.3, 1) forwards 0.45s; }
+
+@keyframes cinematicReveal {
+    0% { transform: translateY(30px) rotate(2deg); opacity: 0; filter: blur(8px); }
+    100% { transform: translateY(0) rotate(0deg); opacity: 1; filter: blur(0px); }
+}
+
+.premium-gradient {
+    background: linear-gradient(110deg, #32f459 0%, #156ca9 40%, #5ceb7a 60%, #156ca9 100%);
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+    animation: shineText 5s linear infinite;
+    display: inline-block; 
+}
+
+@keyframes shineText { to { background-position: 200% center; } }
+
+/* ── BOUTONS ── */
+.buttons-group {
+    margin-top: 2.5rem;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: all 1s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.buttons-group.show {
+    opacity: 1;
+    transform: translateY(0);
 }
 
 .revision-cta {
+    position: relative;
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 1.5rem;
-    padding: 12px 16px 12px 20px;
+    padding: 12px 16px 12px 24px;
     border-radius: 50px;
     cursor: pointer;
-    width: fit-content;
-    transition: all 0.3s ease;
+    width: 100%;
+    max-width: 320px;
+    overflow: hidden; 
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .main-action {
-    background: var(--primary-color, #156ca9);
-    border: 1px solid transparent;
+    background: linear-gradient(135deg, #156ca9 0%, #0d4670 100%);
+    border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.main-action:hover {
-    background: #0f4c78; 
-    transform: translateY(-3px);
-    box-shadow: 0 10px 30px rgba(21, 108, 169, 0.4);
+.premium-shadow {
+    box-shadow: 0 15px 35px -5px rgba(21, 108, 169, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
 
 .glass-btn {
@@ -378,150 +327,179 @@ export default defineComponent({
     border: 1px solid rgba(255, 255, 255, 0.2);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
 }
 
-.glass-btn:hover {
-    background: rgba(255, 255, 255, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    transform: translateY(-3px);
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+.revision-cta:hover { transform: translateY(-4px) scale(1.02); }
+.main-action:hover { box-shadow: 0 20px 40px -5px rgba(50, 244, 89, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.3); }
+.glass-btn:hover { background: rgba(255, 255, 255, 0.1); border-color: rgba(255, 255, 255, 0.3); }
+
+.btn-shine {
+    position: absolute;
+    top: 0; left: -100%; width: 50%; height: 100%;
+    background: linear-gradient(to right, rgba(255,255,255,0) 0%, rgba(255,255,255,0.3) 50%, rgba(255,255,255,0) 100%);
+    transform: skewX(-25deg);
+    animation: sweep 4s infinite 2s; 
+    pointer-events: none;
 }
 
-.revision-cta .cta-texts {
-    display: flex;
-    flex-direction: column;
-    gap: 0.2rem;
-}
+@keyframes sweep { 0% { left: -100%; } 20% { left: 200%; } 100% { left: 200%; } }
 
-.revision-cta .cta-texts p {
-    color: var(--my-white, #ffffff);
-    font-weight: 400;
-    font-size: clamp(0.9rem, 2vw, 0.9rem);
-}
-
-.cta-texts p{
-    margin-left: 25px
-}
-
-.revision-cta .cta-texts span {
-    color: #a3c2d1; 
-    font-size: clamp(0.75rem, 1.5vw, 0.85rem);
+.cta-texts p {
+    color: #ffffff;
     font-weight: 500;
-    opacity: 0.9;
-    margin-right: 15px
+    font-size: clamp(0.95rem, 2vw, 1.05rem);
+    margin: 0;
+    position: relative;
+    z-index: 2;
 }
 
 .cta-arrow {
+    position: relative;
+    z-index: 2;
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 30px;
-    height:30px;
+    width: 36px;
+    height: 36px;
     border-radius: 50%;
-    background: white;
-    color: var(--primary-color);
     flex-shrink: 0;
-    transition: all 0.3s ease;
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.glass-btn .cta-arrow {
-    background: var(--primary-color);
-    color: white;
+.main-action .cta-arrow { background: #ffffff; color: #156ca9; }
+.glass-btn .cta-arrow { background: #156ca9; color: #ffffff; }
+
+.main-action:hover .cta-arrow { background: #32f459; color: #080a0f; transform: rotate(45deg); }
+.glass-btn:hover .cta-arrow { background: #ffffff; color: #156ca9; transform: rotate(45deg); }
+
+.floating-arrow svg { width: 18px; height: 18px; }
+
+/* ── ZONE IMAGE & CARTES ── */
+.pic-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 40px 10px;
+    box-sizing: border-box;
+    width: 100%;
+    opacity: 0;
+    transition: opacity 2s ease 0.5s;
 }
 
-.main-action:hover .cta-arrow {
-    background: #32f459;
-    color: #0f0f0f;
+.pic-wrapper.fade-in-image { opacity: 1; }
+
+.pic-container {
+    position: relative;
+    width: 200px; 
+    display: inline-flex; 
+    justify-content: center;
+    align-items: center;
+    z-index: 1;
 }
 
-.glass-btn:hover .cta-arrow {
-    background:white ;
-    color: var(--primary-color)
+.pic-container::before {
+    content: '';
+    position: absolute;
+    top: 22%; left: -2%; width: 100%; aspect-ratio: 1 / 1;
+    border-radius: 50%; 
+    background: radial-gradient(circle at 40% 65%, #3197f5 0%, #1a62cc 55%, #082d73 100%);
+    box-shadow: 0 0 60px 20px rgba(11, 16, 12, 0.4); 
+    z-index: 0; 
 }
 
-.desktop-cta { display: none !important; }
-.research-desktop{ display: none !important; }
-
-.research-mobile{ display: grid !important; }
-.research-mobile h1 .gradient-text{ font-size: 2rem; text-align: center; }
-.mobile-cta { display: flex !important; width: 100%; }
-
-@media (max-width: 480px) {
-    .mobile-buttons-group { margin-top: -2rem; }
+.pic-container img {
+    min-width: 250px;
+    aspect-ratio: 1 / 1; 
+    object-fit: cover; 
+    border-radius: 50%; 
+    position: relative;
+    z-index: 1;
 }
 
-/* ── 📐 Phablettes ──── */
+.floating-card {
+    position: absolute;
+    z-index: 5;
+    width: 110px !important;
+    top: 50%;
+    transform: translateX(var(--tx)) translateY(var(--ty-base));
+    animation: float 4s ease-in-out infinite;
+    padding: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+
+.card-top-left, .card-top-right       { --ty-base: -120px; }
+.card-bottom-left, .card-bottom-right { --ty-base: 60px; }
+.card-top-left, .card-bottom-left   { left: 0; --tx: -50%; }
+.card-top-right, .card-bottom-right { right: 0; --tx: 50%; }
+
+.card-top-left { animation-delay: 0s; }
+.card-top-right { animation-delay: 0.8s; }
+.card-bottom-left { animation-delay: 1.6s; }
+.card-bottom-right { animation-delay: 2.4s; }
+
 @media (min-width: 480px) {
-    .pic-container, .pic-container img { width: 230px; min-width: 230px; }
-    .pic-container::before {
-        top: 20%; left: 10%; width: 80%; aspect-ratio: 1 / 1; border-radius: 50%; 
-        background: radial-gradient(circle, #3279f4 30%, #212a5b 100%);
-        box-shadow: 0 0 60px 20px rgba(11, 16, 12, 0.4); z-index: 0; 
-    }
+    .pic-container { width: 250px; }
+    .pic-container img { min-width: 300px; }
     .floating-card { width: 130px !important; }
-    .card-top-left, .card-top-right       { --ty-base: -170px; }
+    .card-top-left, .card-top-right       { --ty-base: -150px; }
     .card-bottom-left, .card-bottom-right { --ty-base: 80px; }
-    .card-top-left, .card-mid-left, .card-bottom-left   { --tx: -60%; }
-    .card-top-right, .card-mid-right, .card-bottom-right { --tx: 60%; }
+    .card-top-left, .card-bottom-left   { --tx: -55%; }
+    .card-top-right, .card-bottom-right { --tx: 55%; }
 }
 
 /* ── 平板 Tablettes (A partir de 768px) ───────────────────────── */
 @media (min-width: 768px) {
-    .hero-section { padding: 3rem 2.5rem; gap: 3rem; }
-    .hero-section > .content-wrapper { top: 2rem; }
-    .pic-wrapper { padding: 160px 80px; }
-    .pic-container, .pic-container img { width: 300px; min-width: 300px; }
-    .pic-container::before {
-        top: 20%; left: 10%; width: 80%; aspect-ratio: 1 / 1; border-radius: 50%; 
-        background: radial-gradient(circle at 40% 65%, #3197f5 0%, #1a62cc 55%, #082d73 100%);
-        box-shadow: 0 0 60px 20px rgba(11, 16, 12, 0.4); z-index: 0; 
-    }
-    .floating-card { width: 160px !important; }
-    .card-top-left, .card-top-right       { --ty-base: -220px; }
-    .card-bottom-left, .card-bottom-right { --ty-base: 80px; }
-    .card-top-left, .card-mid-left, .card-bottom-left   { --tx: -65%; }
-    .card-top-right, .card-mid-right, .card-bottom-right { --tx: 65%; }
+    .buttons-group { flex-direction: row; justify-content: center; }
+    .revision-cta { width: fit-content; }
     
-    .desktop-cta { display: flex !important; }
-    .desktop-buttons-group { display: flex; }
-    .research-desktop{ display: grid !important; }
-    .research-desktop h1{ font-size: 3.5rem; text-align: left; }
-    .research-desktop .gradient-text { text-align: left; font-size: 3.5rem; }
-    .gradient-text2 { text-align: left; font-size: 3.5rem; }
-    .research-mobile{ display:none !important; }
-    .mobile-buttons-group { display: none !important; }
+    .pic-wrapper { padding: 80px 40px; }
+    .pic-container { width: 300px; }
+    .pic-container img { min-width: 350px; }
+    .floating-card { width: 160px !important; }
+    .card-top-left, .card-top-right       { --ty-base: -180px; }
+    .card-bottom-left, .card-bottom-right { --ty-base: 100px; }
+    .card-top-left, .card-bottom-left   { --tx: -60%; }
+    .card-top-right, .card-bottom-right { --tx: 60%; }
 }
 
 /* ── 💻 Desktop (A partir de 1200px) ─────────────────────────── */
 @media (min-width: 1200px) {
     .hero-section {
         flex-direction: row; justify-content: space-between; align-items: center;
-        padding: 1rem 3rem !important; gap: 5rem; height: 100vh !important; min-height: 600px !important; top: 0; 
-    }
-    .hero-section > .content-wrapper { width: 50%; top: 0; gap: 0rem; align-items: flex-start; }
-    .pic-wrapper { width: 50%; padding: 60px 40px; }
-    .pic-container, .pic-container img { width: 300px; min-width: 450px; }
-
-    .pic-container::before {
-        top: 20%; left: 10%; width: 80%; aspect-ratio: 1 / 1; border-radius: 50%; 
-        background: radial-gradient(circle at 40% 65%, #3197f5 0%, #1a62cc 55%, #082d73 100%);
-        box-shadow: 0 0 60px 20px rgba(11, 16, 12, 0.4); z-index: 0; 
+        padding: 1rem 3rem !important; gap: 2rem; min-height: 100vh;
     }
     
-    .floating-card {
-        width: 130px !important; min-height: 110px; box-sizing: border-box; padding: 10px;
-        display: flex; align-items: center; justify-content: center; text-align: center;
+    /* On aligne le texte et l'animation sur la gauche */
+    .content-wrapper { 
+        width: 50%; 
+        align-items: flex-start; 
+        margin-top: 0;
+        text-align: left;
     }
+    .brand-unroll-container { align-items: flex-start; min-height: 180px; }
+    .final-phrase { justify-content: flex-start; }
+    .buttons-group { justify-content: flex-start; }
+
+    .logo-morph.is-unrolling { font-size: clamp(3rem, 5vw, 5.5rem); }
+    .final-phrase { font-size: clamp(3rem, 5vw, 5.5rem); }
+
+    .pic-wrapper { width: 50%; padding: 60px 40px; justify-content: flex-end; }
+    .pic-container { width: 350px; }
+    .pic-container img { min-width: 450px; }
+    
+    .floating-card { width: 140px !important; min-height: 110px; }
     .floating-card:hover {
         animation-play-state: paused; cursor: pointer;
         transform: translateX(var(--tx)) translateY(var(--ty-base)) scale(1.05);
         transition: transform 0.2s ease-in-out; z-index: 20; 
     }
     .card-top-left, .card-top-right       { --ty-base: -180px; }
-    .card-bottom-left, .card-bottom-right { --ty-base: 80px; }
-    .card-top-left, .card-bottom-left   { --tx: -10%; }
-    .card-top-right, .card-bottom-right { --tx: 10%; }
+    .card-bottom-left, .card-bottom-right { --ty-base: 120px; }
+    .card-top-left, .card-bottom-left   { --tx: -20%; }
+    .card-top-right, .card-bottom-right { --tx: 20%; }
 }
 
 @keyframes float {

@@ -6,7 +6,7 @@
 
                 <li class="mobile-accordion">
                     <div class="mobile-accordion__trigger-wrapper">
-                        <NuxtLink to="/contractbank" class="mobile-accordion__main-link" @click="close">Banque de contrats</NuxtLink>
+                        <NuxtLink to="/contractbank" class="mobile-accordion__main-link" @click="close">Contrats</NuxtLink>
                         <button class="mobile-accordion__icon-btn" @click="isMobileDropdownOpen = !isMobileDropdownOpen">
                             <svg :class="['chevron', { 'is-open': isMobileDropdownOpen }]" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
                         </button>
@@ -42,23 +42,8 @@
 
                 <li class="mobile-accordion">
                     <div class="mobile-accordion__trigger-wrapper">
-                        <NuxtLink to="/services" class="mobile-accordion__main-link" @click="close">Services juridiques</NuxtLink>
-                        <button class="mobile-accordion__icon-btn" @click="isMobileServicesDropdownOpen = !isMobileServicesDropdownOpen">
-                            <svg :class="['chevron', { 'is-open': isMobileServicesDropdownOpen }]" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
-                        </button>
+                        <NuxtLink to="/services" @click="close">Centre d'appel</NuxtLink>
                     </div>
-                    <transition name="accordion">
-                        <ul v-if="isMobileServicesDropdownOpen" class="mobile-accordion__list">
-                            <li><NuxtLink to="/services#diag" @click="close">Diagnostic juridique</NuxtLink></li>
-                            <li><NuxtLink to="/services#domicile" @click="close">Domiciliation d'entreprises</NuxtLink></li>
-                            <li><NuxtLink to="/services#crea" @click="close">Créations d'entreprises</NuxtLink></li>
-                            <li><NuxtLink to="/services#assistance" @click="close">Assistance juridique</NuxtLink></li>
-                            <li><NuxtLink to="/services#noms" @click="close">Enregistrement Noms Commerciaux</NuxtLink></li>
-                            <li><NuxtLink to="/services#marques" @click="close">Dépôt de Marques</NuxtLink></li>
-                            <li><NuxtLink to="/services#brevets" @click="close">Brevets d'Invention</NuxtLink></li>
-                            <li><NuxtLink to="/services#tech" @click="close">Legaltech</NuxtLink></li>
-                        </ul>
-                    </transition>
                 </li>
                 <li><NuxtLink to="/etudeContrat" @click="close">Révision de contrats</NuxtLink></li>
                 <li><NuxtLink to="/about" @click="close">À propos</NuxtLink></li>
@@ -118,7 +103,6 @@ export default {
 .mobile-accordion { border-bottom: 1px solid rgba(0, 0, 0, 0.04); }
 .mobile-accordion__trigger-wrapper { width: 100%; display: flex; justify-content: space-between; align-items: center; padding: 1rem 0; }
 .mobile-accordion__list { list-style: none; padding: 0 0 0.5rem 1rem; margin: 0; display: flex; flex-direction: column; gap: 0.25rem; }
-.mobile-accordion__main-link { font-size: clamp(0.95rem, 4vw, 1.1rem); font-weight: 500; color: var(--primary-color); text-decoration: none; flex-grow: 1; text-align: left; padding: 0 !important; border: none !important; white-space: nowrap; }
 .mobile-accordion__icon-btn { background: none; border: none; color: var(--primary-color); margin-right: -7rem; cursor: pointer; display: flex; align-items: center; justify-content: center; }
 
 .mobile-accordion__list li a { font-size: 0.95rem !important; font-weight: 400 !important; padding: 0.6rem 0 !important; border-bottom: none !important; opacity: 0.8; color: var(--primary-color); text-decoration: none; display: block; transition: opacity 0.2s; }
