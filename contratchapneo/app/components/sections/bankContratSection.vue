@@ -52,11 +52,9 @@
 </template>
 
 <script lang="ts">
-// N'oublie pas d'ajouter onBeforeUpdate, nextTick et watch dans l'import
-import { ref, onMounted, onBeforeUnmount,computed, onBeforeUpdate, nextTick, watch } from 'vue';
+import { ref, onMounted, onBeforeUnmount, computed, onBeforeUpdate, nextTick, watch } from 'vue';
 import { useRouter } from 'vue-router';
 
-// Convention : Majuscule pour les composants Vue
 import MainButton from '../buttons/mainButton.vue';
 import ContratCards from '../cards/contratCards.vue';
 import ContratCategoryCards from '../cards/contratCategoryCards.vue';
@@ -78,30 +76,21 @@ export default {
         const router = useRouter();
         const contratStore = useContratStore();
         const cartStore = useCartStore();
-        // NOUVEAU : Propriété calculée pour les 4 contrats les plus téléchargés
+
         const topDownloadedContracts = computed(() => {
-            // 1. On crée une copie du tableau avec [... ] pour ne pas modifier l'original
-            // 2. On trie du plus grand nombre de 'downloads' au plus petit
-            // 3. On coupe (slice) pour ne garder que les 4 premiers
             return [...contratStore.contracts]
                 .sort((a, b) => (b.downloads || 0) - (a.downloads || 0))
                 .slice(0, 4);
         });
 
-        // --- 1. GESTION PROPRE DES RÉFÉRENCES DOM ---
         const cardRefs = ref<HTMLElement[]>([]);
         
-        // ASTUCE VUE 3 : On vide le tableau avant chaque mise à jour du DOM 
-        // pour ne pas garder en mémoire des éléments HTML obsolètes après une recherche
         onBeforeUpdate(() => {
             cardRefs.value = [];
         });
 
         const setCardRef = (el: any) => {
-            // On s'assure de récupérer la balise HTML, que ce soit via un composant ($el) ou directement
             const domElement = el?.$el || el;
-            
-            // On vérifie que c'est un vrai élément HTML avant de l'ajouter
             if (domElement instanceof Element) {
                 cardRefs.value.push(domElement as HTMLElement);
             }
@@ -133,7 +122,6 @@ export default {
             }
         }
 
-        // --- VISUALISATION ---
         const isViewOpen = ref<boolean>(false);
         const selectedPreviewText = ref<string>(''); 
 
@@ -161,19 +149,14 @@ export default {
             contratStore.getContracts();
         });
 
-        // --- 2. SURVEILLANCE DES CARTES ---
-        // On observe les changements dans les contrats (par exemple après une recherche)
         watch(() => contratStore.contracts, async () => {
-            // On attend que Vue ait fini de dessiner les nouvelles cartes à l'écran
             await nextTick();
-            
-            // Seulement maintenant, on demande à l'IntersectionObserver de les surveiller
             cardRefs.value.forEach((cardEl) => {
                 if (cardEl instanceof Element) {
                     observer?.observe(cardEl);
                 }
             });
-        }, { deep: true, immediate: true }); // immediate: true permet de l'exécuter au premier chargement
+        }, { deep: true, immediate: true });
 
         onBeforeUnmount(() => {
             if (observer) observer.disconnect();
@@ -205,7 +188,7 @@ export default {
     position: relative;
     top: -40px;
     width: 100%;
-    overflow-x: hidden; /* Prévient tout dépassement horizontal imprévu */
+    overflow-x: hidden;
 }
 
 .wrapper-content {
@@ -213,11 +196,11 @@ export default {
     flex-direction: column;
     align-items: center;
     gap: 0rem;
-    width: 100%; /* CORRIGÉ : 110% cause un scroll horizontal sur mobile */
-    padding: 0 1rem; /* CORRIGÉ : On utilise le padding plutôt qu'un margin-left arbitraire */
+    width: 100%;
+    padding: 0 1rem;
 }
 
-/* --- STYLES ORIGINAUX DES CONTRATS (carrousel mobile / grille desktop) --- */
+/* --- CONTENEUR DES CARTES (Mobile First) --- */
 .cards-container {
     display: flex;
     overflow-x: auto;
@@ -233,19 +216,30 @@ export default {
     scroll-snap-align: start;
 }
 
-@media (min-width: 768px) {
+/* ── 📐 TABLETTES & IPAD PRO (De 600px à 1279px) ── */
+@media (min-width: 600px) {
     .cards-container {
         display: grid;
-        grid-template-columns: repeat(4, 1fr);
-        gap: 1rem;
+        grid-template-columns: repeat(2, 1fr); /* 👈 Reste sur 2 colonnes même pour l'iPad Pro */
+        gap: 1.5rem;
         overflow-x: visible;
         scroll-snap-type: none;
-        padding: 0;
+        padding: 0 1rem;
     }
 
     .cards-container > * {
         flex: auto;
         scroll-snap-align: none;
+        width: 100%;
+    }
+}
+
+/* ── 💻 DESKTOP (À partir de 1280px) ── */
+@media (min-width: 1280px) {
+    .cards-container {
+        grid-template-columns: repeat(4, 1fr); /* 👈 4 colonnes repoussées aux grands écrans */
+        padding: 0;
+        gap: 1rem;
     }
 }
 
@@ -400,7 +394,7 @@ export default {
     height: 0.5px;
     background: linear-gradient(to right, var(--primary-color, #4ade80), transparent);
     opacity: 0.6;
-    margin-left: 0; /* CORRIGÉ : le 40px n'était pas très esthétique sur mobile */
+    margin-left: 0;
 }
 
 @media (min-width: 768px) {
@@ -414,7 +408,7 @@ export default {
         margin-left: 50px;
     }
     .wrapper-content {
-        padding: 0; /* On retire le padding sur desktop si nécessaire */
+        padding: 0;
     }
     .wrapper-content h3{
         font-size: 2.2rem;

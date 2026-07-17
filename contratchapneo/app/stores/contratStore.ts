@@ -1,7 +1,7 @@
-import {defineStore} from "pinia";
-import {ref} from "vue"
+import { defineStore } from "pinia";
+import { ref } from "vue";
 
-export interface Category{ 
+export interface Category { 
     id?: string;
     title: string;
     description: string;
@@ -9,7 +9,7 @@ export interface Category{
     updated_at: string;
 }
 
-export interface Contrat{
+export interface Contrat {
     id?: string,
     category: string,
     title: string,
@@ -31,14 +31,14 @@ export interface PaginatedResponse<T> {
     results: T[];
 }
 
-export interface Tags{
+export interface Tags {
     name: string;
     context: string;
 }
 
-export const useContratStore = defineStore('contrat', ()=> {
+export const useContratStore = defineStore('contrat', () => {
 
-    const {$api} = useNuxtApp();
+    const { $api } = useNuxtApp();
     const config = useRuntimeConfig();
 
     const resolveMediaUrl = (path?: string | null) => {
@@ -55,7 +55,7 @@ export const useContratStore = defineStore('contrat', ()=> {
     // State
     const contrat = ref<Contrat | null>(null)
     const category = ref<Category | null>(null)
-    const contracts =  ref<Contrat[]>([]);
+    const contracts = ref<Contrat[]>([]);
     const categories = ref<Category[]>([]);
     const tags = ref<Tags[] | null>(null);
 
@@ -68,26 +68,27 @@ export const useContratStore = defineStore('contrat', ()=> {
     const previousPage = ref<string | null>(null);
     const pageSize = ref(10);
 
-    /* computed */
+    // --- NOUVEAU : Le verrou anti-concurrence pour éviter les requêtes en triple ---
+    const isFetchingContracts = ref<boolean>(false);
 
-    const toCurrentId = async(id:string)=>{
+    /* computed */
+    const toCurrentId = async (id: string) => {
         currentContratId.value = id;
         console.log('contrat attribué', id);
     }
 
     // Actions
 
-    const getCategories = async()=> {
-
+    const getCategories = async () => {
         isLoading.value = true;
         error.value = "";
 
-        try{
-            const response = await $api<Category[]>('/contrat/categories/',{
+        try {
+            const response = await $api<Category[]>('/contrat/categories/', {
                 method: 'GET',
             })
 
-            if (response){
+            if (response) {
                 isLoading.value = false;
                 categories.value = response;
                 console.log("Response reçue", categories.value)
@@ -96,11 +97,11 @@ export const useContratStore = defineStore('contrat', ()=> {
                 isLoading.value = false;
                 console.log('Problème lors de la reccupérations des contrats', response);
             }
-        } catch(err:any){
+        } catch (err: any) {
             isLoading.value = false;
             console.error('Erreu', err)
             throw err
-        } finally{
+        } finally {
             isLoading.value = false;
             console.log("Opération de reccupérations terminée")
         }
@@ -110,15 +111,14 @@ export const useContratStore = defineStore('contrat', ()=> {
         isLoading.value = true;
         error.value = "";
         try {
-            // Typage correct : la réponse contient une propriété 'contrats'
             const response = await $api<{ id: string; title: string; contrats: Contrat[] }>(
-            `/contrat/categories/${id}/`,
-            { method: 'GET' }
+                `/contrat/categories/${id}/`,
+                { method: 'GET' }
             );
             if (response && response.contrats) {
-            contracts.value = response.contrats.map(c => ({ ...c, picture: resolveMediaUrl(c.picture) }));
+                contracts.value = response.contrats.map(c => ({ ...c, picture: resolveMediaUrl(c.picture) }));
             } else {
-            contracts.value = [];
+                contracts.value = [];
             }
         } catch (err: any) {
             console.error('Erreur', err);
@@ -129,10 +129,13 @@ export const useContratStore = defineStore('contrat', ()=> {
     };
 
     const getContracts = async (page: number = 1, categoryId: string = '') => {
+        // 🔒 Sécurité : Si une requête pour les contrats est déjà en cours, on bloque poliment
+        if (isFetchingContracts.value) return;
+
+        isFetchingContracts.value = true; // On ferme le verrou
         error.value = "";
 
-        try 
-        {
+        try {
             const params: Record<string, any> = { page };
             if (categoryId) params.category = categoryId;
 
@@ -154,46 +157,47 @@ export const useContratStore = defineStore('contrat', ()=> {
             error.value = err.message;
             throw err;
         } finally {
+            isFetchingContracts.value = false; // 🔓 On rouvre le verrou
             isLoading.value = false;
         }
     };
 
-    const getSpecificContract = async(contratId:string)=> {
+    const getSpecificContract = async (contratId: string) => {
         error.value = ""
 
-        try{
+        try {
             const response = await $api<Contrat>(`/contrat/${contratId}/`,
-                {method: 'GET'}
+                { method: 'GET' }
             );
-            if(response){
+            if (response) {
                 contrat.value = { ...response, picture: resolveMediaUrl(response.picture) };
                 console.log("Reponse du contrat", contrat.value)
-            } else{
+            } else {
                 console.log("Reponse du contrat", contrat.value)
-            } 
+            }
         } catch (err: any) {
             error.value = err.message;
             throw err;
         } finally {
             isLoading.value = false;
         }
-
     }
 
     const fetchContracts = async (page = 1, categoryId: string | null = null, searchQuery: string | null = null) => {
+        // 🔒 Sécurité : Si une requête pour les contrats est déjà en cours, on bloque
+        if (isFetchingContracts.value) return;
+
+        isFetchingContracts.value = true; // On ferme le verrou
         isLoading.value = true;
         error.value = null;
 
         try {
-            // 1. On construit l'URL de base (adapte le chemin selon tes routes d'API, ex: /contrat/ ou /ecommerce/contrats/)
             let url = `/contrat/?page=${page}`;
             
-            // 2. On ajoute dynamiquement le filtre de catégorie s'il existe
             if (categoryId) {
                 url += `&category=${categoryId}`;
             }
             
-            // 3. NOUVEAU : On ajoute le paramètre de recherche s'il est fourni
             if (searchQuery && searchQuery.trim() !== '') {
                 url += `&q=${encodeURIComponent(searchQuery.trim())}`;
             }
@@ -201,13 +205,11 @@ export const useContratStore = defineStore('contrat', ()=> {
             const response = await $api<PaginatedResponse<Contrat>>(url, { method: 'GET' });
             
             if (response && response.results) {
-                // 4. On met à jour le tableau des contrats qui alimente ta vue/vue-table
                 contracts.value = response.results.map(c => ({ 
                     ...c, 
                     picture: resolveMediaUrl(c.picture) 
                 }));
                 
-                // 5. On met à jour la pagination
                 totalCount.value = response.count;
                 nextPage.value = response.next;
                 previousPage.value = response.previous;
@@ -219,6 +221,7 @@ export const useContratStore = defineStore('contrat', ()=> {
             error.value = err.message || "Erreur lors de la récupération des contrats";
             throw err;
         } finally {
+            isFetchingContracts.value = false; // 🔓 On rouvre le verrou
             isLoading.value = false;
         }
     };
@@ -264,11 +267,7 @@ export const useContratStore = defineStore('contrat', ()=> {
             
             console.log("Votre réponse brute :", response);
 
-            // CORRECTION ICI 👇
-            // On vérifie si response existe et si response.tags est un tableau.
-            // Si oui on le prend, sinon on met un tableau vide par défaut.
             tags.value = response?.tags || [];
-
             console.log("Tags extraits avec succès :", tags.value);
 
             return tags.value;
@@ -280,23 +279,19 @@ export const useContratStore = defineStore('contrat', ()=> {
         }
     }
 
-    const fillContractTags = async (contrat_id: string,) => {
+    const fillContractTags = async (contrat_id: string) => {
         isLoading.value = true;
         error.value = "";
 
         try {
             const response = await $api(`/contrat/tags/${contrat_id}/`, {
                 method: 'POST',
-                body:{}
+                body: {}
             });
             
             console.log("Votre réponse brute :", response);
 
-            // CORRECTION ICI 👇
-            // On vérifie si response existe et si response.tags est un tableau.
-            // Si oui on le prend, sinon on met un tableau vide par défaut.
             tags.value = response?.tags || [];
-
             console.log("Tags extraits avec succès :", tags.value);
 
             return tags.value;
@@ -308,7 +303,7 @@ export const useContratStore = defineStore('contrat', ()=> {
         }
     }
 
-    return{
+    return {
         isLoading,
         error,
         contrat,
@@ -323,7 +318,7 @@ export const useContratStore = defineStore('contrat', ()=> {
         pageSize,
         currentContratId,
 
-        // Guetters
+        // Getters / Mappers
         toCurrentId,
 
         // Actions
@@ -336,4 +331,4 @@ export const useContratStore = defineStore('contrat', ()=> {
         fillContractTags,
         submitCustomContract
     }
-}, {persist: true})
+}, { persist: true })

@@ -123,7 +123,7 @@
                         <!-- Actions -->
                         <div class="modal-actions">
                             <checkout-button 
-                                @click="$emit('pay-consultation', professional)" 
+                                @click.stop="$emit('pro-checkout', professional.id)"
                                 label="Payer la consultation"
                             />
                         </div>
@@ -148,7 +148,7 @@ export default {
         professional: { type: Object as () => LegalProfessional | null, default: null }
     },
 
-    emits: ['close', 'pay-consultation'],
+    emits: ['close', 'pro-checkout'],
 
     components:{
         checkoutButton

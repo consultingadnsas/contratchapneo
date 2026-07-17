@@ -237,7 +237,7 @@ export default {
 
 .input-icon-left {
   left: 8px;
-  background: var(--primary-color-dark); 
+  background: linear-gradient(180deg, var(--green-soft), var(--green)); 
   width: 40px;  
   height: 40px; 
   border-radius: 50%; 
@@ -257,7 +257,7 @@ export default {
 .search-icon {
   width: 20px;
   height: 20px;
-  color: var(--primary-color);
+  color:linear-gradient(180deg, var(--green-soft), var(--green));
   filter: drop-shadow(0 0 5px rgba(96, 165, 250, 0.4));
 }
 

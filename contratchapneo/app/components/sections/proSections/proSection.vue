@@ -74,7 +74,7 @@
                 :isOpen="isViewOpen"
                 :professional="proStore.professional"
                 @close="isViewOpen = false"
-                @pay-consultation="()=>{addToCart}"
+                @pro-checkout="addToCart($event)"
             />
         </Teleport>
 
@@ -273,9 +273,12 @@ header p{
 ========================================== */
 @media (min-width: 768px) {
 
-    .toolbar__search {
-        max-width: 360px;
-        margin-left: auto; 
+   .toolbar__search {
+        flex: 1; /* 👈 Permet de grandir */
+        width: 100%; /* 👈 Prend l'espace disponible */
+        min-height: 10vh;
+        min-width: 300px;
+        margin-left: auto;
     }
 }
 

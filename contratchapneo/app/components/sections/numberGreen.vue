@@ -254,8 +254,15 @@ span {
 
 /* --- RESPONSIVE MOBILE --- */
 @media (max-width: 899px) {
+
+.contact-methods {
+  align-items: center;
+}
+
   .phone-item { 
-    flex-direction: column; 
+    display: flex;
+    flex-direction: column;
+    width: fit-content;
     align-items: stretch; 
     gap: 1.2rem; 
   }
@@ -284,7 +291,7 @@ span {
   
   .action-buttons {
     display: flex;
-    gap: 0.8rem;
+    gap: 0.5rem;
     width: 100%;
   }
 

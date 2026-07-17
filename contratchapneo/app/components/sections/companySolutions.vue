@@ -1,6 +1,5 @@
 <template>
     <section class="main-section pack-section">
-        <!-- Flaque décorative étendue en bas -->
         <div class="puddle-bg"></div>
         <h3>
             Découvrez nos packs adaptés à
@@ -14,7 +13,7 @@
                 :price="card.price"
                 :oldPrice="card.oldPrice"
                 :features="card.features"
-                :planType="card.plan"
+                :planType="card.planType"
                 :description="card.description"
             />
         </div>
@@ -42,7 +41,7 @@ export default {
                     'Accès à 10 documents juridiques payants',
                     'Très petites entreprises ou consultants individuels'
                 ],
-                plan: 'basique',
+                planType: 'basique',
                 description: 'Packs idéal pour les petites entreprises'
             },
             {
@@ -54,7 +53,7 @@ export default {
                     'Rédaction sur-mesure d\'un document juridique',
                     'PME et startups de moins de 10 employés avec un volume de tache juridique modéré'
                 ],
-                plan: 'business',
+                planType: 'business',
                 description: 'Accédez à une fourniture de contrat bien plus épurée et d\'autres avantages intéressant'
             },
             {
@@ -67,7 +66,7 @@ export default {
                     'Suivi par une équipe de juriste(appui & conseils personnalisés)',
                     'PME et startups de plus de 10 employés avec un volume de tache juridique important'
                 ],
-                plan: 'business-pro',
+                planType: 'business-pro',
                 description: 'Profitez de la pleine puissance de Contratchap. Accédez à une panoplie de contrats, de service, de conseil, et de nos outils de calcules'
             }
         ]);
@@ -87,6 +86,7 @@ export default {
     bottom: 10px;
     overflow: hidden;
     background: #98f7abdd;
+    padding-bottom: 3rem;
 }
 
 /* Flaque décorative qui borde tout le bas de la section */
@@ -97,7 +97,6 @@ export default {
     width: 110%;
     height: 250px;
     background: #32f459;
-    /* Forme de vague qui s'étale horizontalement */
     border-radius: 50% 50% 0 0 / 60% 60% 0 0;
     filter: blur(30px);
     opacity: 0.15;
@@ -107,122 +106,71 @@ export default {
 
 .main-section h3 {
     text-align: center;
-    font-size: 1.6rem;
-    padding: 1rem;
+    font-size: clamp(1.5rem, 4vw, 2.5rem);
+    padding: 2rem 1rem 1rem 1rem;
     font-weight: 700;
     color: #111827;
 }
 
-/* --- SECTION DESCRIPTION & IMAGE (Mobile First) --- */
-.business-pic-wrapper {
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
-    padding: 1rem;
-    width: 100%;
-    box-sizing: border-box;
-}
-
-.description p {
-    font-size: 0.95rem;
-    line-height: 1.5;
-    color: #4b5563;
-    margin: 0;
-}
-
-/* Le conteneur de l'image qui porte le dégradé */
-.pic-container {
-    position: relative;
-    width: 100%;
-    height: 240px;
-    border-radius: 1.25rem;
-    overflow: hidden;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-}
-
-.pic-container img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
-
-.pic-container::after {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(to top, rgba(0, 0, 0, 0.4) 0%, transparent 70%);
-    pointer-events: none;
-}
-
-/* --- CONTENEUR DES CARTES (Mobile) --- */
+/* --- CONTENEUR DES CARTES (Scroll horizontal forcé) --- */
 .cards-container {
     display: flex;
     overflow-x: auto;
     scroll-snap-type: x mandatory;
-    gap: 1rem;
-    padding: 0.5rem;
+    gap: 1.5rem;
+    padding: 1.5rem 1rem 3rem 1rem; 
     width: 100%;
-    scrollbar-width: none;
-    border-radius: 1rem;
+    box-sizing: border-box;
+    scrollbar-width: none; 
+    -webkit-overflow-scrolling: touch; 
 }
 
 .cards-container::-webkit-scrollbar {
     display: none;
 }
 
-/* --- RESPONSIVE --- */
+/* Taille de base des cartes (Mobile) */
+.cards-container > * {
+    flex: 0 0 280px; 
+    scroll-snap-align: center; 
+}
+
+/* ── 📐 TABLETTES (A partir de 768px) ── */
 @media (min-width: 768px) {
+    .cards-container {
+        padding: 2rem 2rem 3rem 2rem;
+        gap: 2rem;
+    }
+    
+    .cards-container > * {
+        flex: 0 0 340px; 
+    }
+}
+
+/* ── 💻 PETITS DESKTOP & IPAD PRO (A partir de 1024px) ── */
+@media (min-width: 1024px) {
     .main-section h3 {
         font-size: 2.2rem;
         padding: 3rem 1rem 2rem 1rem;
     }
 
-    .business-pic-wrapper {
-        flex-direction: row;
-        align-items: center;
-        gap: 3rem;
-        padding: 2rem 3rem;
-    }
-
-    .description {
-        flex: 1;
-    }
-
-    .description h4 {
-        font-size: 1.8rem;
-    }
-
-    .description p {
-        font-size: 1.1rem;
-    }
-
-    .pic-container {
-        flex: 1;
-        height: 360px;
-    }
-
-    .pic-container::after {
-        background: linear-gradient(to top, rgba(0, 0, 0, 0.3), transparent);
-    }
-
     .cards-container {
-        padding: 2rem 3rem;
-        justify-content: center;
-        overflow-x: visible;
+        max-width: 1300px;
+        margin: 0 auto;
+        /* 👈 SUPPRESSION DU justify-content: center ICI */
+    }
+
+    .cards-container > * {
+        flex: 0 0 380px; 
     }
 }
 
-@media (min-width: 1024px) {
-    .business-pic-wrapper {
-        max-width: 1200px;
-        margin: 0 auto;
-    }
-
-    .description h4 {
-        font-size: 2.2rem;
+/* ── 🖥️ GRANDS ÉCRANS (A partir de 1280px) ── */
+@media (min-width: 1280px) {
+    .cards-container {
+        /* 👈 On ne centre les cartes QUE lorsqu'on est absolument 
+           sûr qu'elles rentrent toutes sans déborder de l'écran ! */
+        justify-content: center; 
     }
 }
 </style>

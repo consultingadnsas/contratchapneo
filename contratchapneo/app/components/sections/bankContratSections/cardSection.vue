@@ -1,59 +1,90 @@
 <template>
     <div class="contrat-card-section">
         
-        <header class="w-full flex flex-col justify-center items-center gap-4">
+        <header class="hero-header">
             <h2>Découvrez tous nos contrats</h2>
-            <p>Nos contrats sont conformes aux lois en vigueur dans l'espace OHADA.</p>
-            <mainButton label="contrat sur mesure" @click="router.push('/contractBank/customContrat')"/>
-        </header>
-
-        
-        <div class="toolbar">
-            <Basefilter class="toolbar__filter" />
-            <BaseSearchInput 
-                class="toolbar__search" 
-                placeholder="Trouver un contrat..."
-                v-model="searchQuery"
-                theme="light"
-            />
-        </div>
-
-        <contractCardSkeleton v-if="contratStore.isLoading" />
-
-        <emptyState
-            v-else-if="contratStore.contracts.length === 0" 
-            title="Contrat non disponible"
-            description="Le contrat demandé n'est pas disponible pour l'instant."
-            textAction="Faire un contrat sur mesure"
-            type="contrat"
-        />
-
-        <template v-else>
-            
-         <div class="cards-container">
-                <contratCards 
-                    v-for="(contrat, index) in contratStore.contracts" 
-                    :key="contrat.id || index"
-                    :title="contrat.title"
-                    :description="contrat.description"
-                    :price="contrat.prix"
-                    :image="contrat.picture || undefined"
-                    @view="openViewModal(contrat.id)" 
-                    @buy="()=>{addTocart(contrat.id)}"
+            <div class="search-container-large">
+                <BaseSearchInput 
+                    class="large-search" 
+                    placeholder="Rechercher un modèle de contrat..."
+                    v-model="searchQuery"
+                    theme="light"
                 />
             </div>
+
+            <div class="action-buttons">
+                <mainButton 
+                    label="Contrat sur mesure" 
+                    class="btn-inline"
+                    @click="router.push('/contractBank/customContrat')"
+                />
+                <button class="btn-secondary btn-inline" @click="router.push('/etudeContrat')">
+                    Révision de contrat
+                </button>
+            </div>
+        </header>
+
+        <div v-if="searchQuery.trim() !== '' || activeCategoryId !== ''" class="search-results-section">
             
-            <Paginator 
-                :currentPage="contratStore.currentPage"
-                :totalCount="contratStore.totalCount"
-                :pageSize="contratStore.pageSize"
-                @page-change="handlePageChange"
+            <div class="filter-toolbar">
+                <Basefilter class="toolbar__filter" />
+            </div>
+
+            <contractCardSkeleton v-if="contratStore.isLoading" />
+
+            <emptyState
+                v-else-if="contratStore.contracts.length === 0" 
+                title="Aucun contrat trouvé"
+                description="Aucun modèle ne correspond à votre recherche actuelle."
+                textAction="Faire un contrat sur mesure"
+                type="contrat"
             />
 
-        </template>
+            <template v-else>
+                <div class="cards-container">
+                    <contratCards 
+                        v-for="(contrat, index) in contratStore.contracts" 
+                        :key="contrat.id || index"
+                        :title="contrat.title"
+                        :description="contrat.description"
+                        :price="contrat.prix"
+                        :image="contrat.picture || undefined"
+                        @view="openViewModal(contrat.id)" 
+                        @buy="()=>{addTocart(contrat.id)}"
+                    />
+                </div>
+                
+                <Paginator 
+                    :currentPage="contratStore.currentPage"
+                    :totalCount="contratStore.totalCount"
+                    :pageSize="contratStore.pageSize"
+                    @page-change="handlePageChange"
+                />
+            </template>
+
+        </div>
+
+        <div v-else class="packages-section">
+            <div class="packages-header">
+                <h3>Nos offres de contrats</h3>
+                <p>Choisissez le pack qui correspond le mieux à vos besoins pour économiser.</p>
+            </div>
+            
+            <div class="packages-grid">
+                <packCards 
+                    v-for="(pack, index) in packagesList" 
+                    :key="index"
+                    :planType="pack.planType"
+                    :title="pack.title"
+                    :price="pack.price"
+                    :description="pack.description"
+                    :features="pack.features"
+                    :buttonLabel="pack.buttonLabel"
+                />
+            </div>
+        </div>
 
         <Teleport to="body">
-            
             <cartModale
                 :isOpen="isOpen" 
                 @close="isOpen = false"
@@ -72,6 +103,9 @@
 </template>
 
 <script lang="ts">
+// 👈 IMPORT DU COMPOSANT PACKCARDS
+import packCards from '../../cards/packCards.vue' 
+
 import contratCards from '../../cards/contratCards.vue'
 import contractCardSkeleton from '../../cards/contractCardSkeleton.vue'
 import emptyState from '../../tools/emptyState.vue'
@@ -91,6 +125,7 @@ import { useRouter, useRoute } from 'vue-router'
 
 export default {
     components: {
+        packCards, // 👈 Ajout dans les composants déclarés
         contratCards, Basefilter, Paginator, BaseSearchInput,
         contractCardSkeleton, emptyState, cartModale, viewModale,
         cartBubble, notifications, mainButton
@@ -106,6 +141,47 @@ export default {
         const searchQuery = ref((route.query.q as string) || '');
         let debounceTimeout: NodeJS.Timeout;
 
+        // 📦 DONNÉES DES PACKAGES 
+        // Tu peux modifier ces informations pour qu'elles correspondent à tes vraies offres
+        const packagesList = ref([
+            {
+                title: 'Pack basic',
+                price: '29 000 FCFA',
+                oldPrice: '400 000 FCFA',
+                features: [
+                    'Accès à 10 documents juridiques payants',
+                    'Très petites entreprises ou consultants individuels'
+                ],
+                planType: 'basique',
+                description: 'Packs idéal pour les petites entreprises'
+            },
+            {
+                title: 'Pack business',
+                price: '49 000 FCFA',
+                oldPrice: '1 000 000 FCFA',
+                features: [
+                    'Accès à 12 documents juridiques payants',
+                    'Rédaction sur-mesure d\'un document juridique',
+                    'PME et startups de moins de 10 employés avec un volume de tache juridique modéré'
+                ],
+                planType: 'business',
+                description: 'Accédez à une fourniture de contrat bien plus épurée et d\'autres avantages intéressant'
+            },
+            {
+                title: 'Pack business pro',
+                price: '99 000 FCFA',
+                oldPrice: '1 500 000 FCFA',
+                features: [
+                    'Accès à 25 documents juridiques payants',
+                    'Rédaction sur-mesure de 3 documents juridiques',
+                    'Suivi par une équipe de juriste(appui & conseils personnalisés)',
+                    'PME et startups de plus de 10 employés avec un volume de tache juridique important'
+                ],
+                planType: 'business-pro',
+                description: 'Profitez de la pleine puissance de Contratchap. Accédez à une panoplie de contrats, de service, de conseil, et de nos outils de calcules'
+            }
+        ]);
+
         const handlePageChange = (page: number) => {
             if (searchQuery.value) {
                 contratStore.fetchContracts(page, activeCategoryId.value, searchQuery.value);
@@ -114,7 +190,6 @@ export default {
             }
         };
 
-        // --- Modales ---
         const isOpen = ref<boolean>(false);
         const openModal = () => { isOpen.value = true; }
 
@@ -135,7 +210,6 @@ export default {
             isViewOpen.value = true; 
         }
 
-        // --- Surveillances (Filtres et Recherche) ---
         watch(() => route.query.category, (newCategoryId) => {
             activeCategoryId.value = (newCategoryId as string) || '';
             if (searchQuery.value) {
@@ -147,17 +221,14 @@ export default {
 
         watch(searchQuery, (newQuery) => {
             clearTimeout(debounceTimeout);
-            // On attend 500ms d'inactivité avant de lancer la requête
             debounceTimeout = setTimeout(() => {
-                // CORRECTION ICI : Le point-virgule au lieu de la virgule
-                contratStore.fetchContracts(1, activeCategoryId.value, newQuery);
-                console.log("Recherche lancée pour :", newQuery);
+                if (newQuery.trim() !== '') {
+                    contratStore.fetchContracts(1, activeCategoryId.value, newQuery);
+                }
             }, 500);
         });
 
-        // --- Chargement initial unique ---
         onMounted(() => {
-            // Un SEUL onMounted qui vérifie si on vient de l'accueil avec une recherche
             if (searchQuery.value) {
                 contratStore.fetchContracts(1, activeCategoryId.value, searchQuery.value);
             } else {
@@ -166,27 +237,18 @@ export default {
         });
 
         return {
-            router,
-            activeCategoryId,
-            handlePageChange,
-            searchQuery,
-            contratStore,
-            cartStore,
-            textToShow,
-            isOpen,
-            openModal,
-            isViewOpen,
-            openViewModal,
-            addTocart
+            router, activeCategoryId, handlePageChange, searchQuery,
+            contratStore, cartStore, textToShow, isOpen, openModal,
+            isViewOpen, openViewModal, addTocart,
+            packagesList // 👈 Exposer la liste au template
         }
     }
 }
 </script>
 
 <style scoped>
-
 /* ==========================================
-   1. STRUCTURE GLOBALE ET ZONE DE TRAVAIL
+   1. STRUCTURE GLOBALE
 ========================================== */
 .contrat-card-section {
     position: relative;
@@ -196,88 +258,176 @@ export default {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 2rem;
-    padding: 4rem 1rem 1rem 1rem;
+    gap: 1.5rem;
+    padding: 5.5rem 1rem 1rem 1rem;
     overflow: hidden; 
-    background-color: #fffbf4; 
+    background:#FDFCFC; 
 }
 
-/* On force le contenu textuel et les cartes au premier plan */
 .contrat-card-section > * {
     position: relative;
     z-index: 2;
 }
 
 /* ==========================================
-   4. TYPOGRAPHIE ET EN-TÊTE
+   ANIMATIONS DES TRANSITIONS
 ========================================== */
-header {
-    margin-top: 2rem;
-    margin-bottom: 2rem;
+.search-results-section,
+.packages-section {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    animation: fadeIn 0.5s ease-out forwards;
+}
+
+.search-results-section { gap: 1.5rem; }
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(15px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* ==========================================
+   NOUVEAU : ZONE DES PACKAGES
+========================================== */
+.packages-header {
+    text-align: center;
+    margin: 2rem 0;
+}
+
+.packages-header h3 {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--primary-color-dark);
+    margin-bottom: 0.5rem;
+}
+
+.packages-header p {
+    color: #575d67;
+    font-size: 1.05rem;
+}
+
+.packages-grid {
+    width: 100%;
+    max-width: 1300px;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 2rem;
+    place-items: center;
+    margin-top: 1rem;
+}
+
+/* ==========================================
+   2. EN-TÊTE STYLE GOOGLE (Recherche + Boutons)
+========================================== */
+.hero-header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
     text-align: center;
     width: 100%;
+    max-width: 1000px;
+    margin: 0 auto 0.5rem auto;
+    gap: 1.2rem;
 }
 
-header::before {
-    display: inline-block;
-    font-size: 0.8rem;
-    font-weight: 800;
-    letter-spacing: 0.15em;
-    color: #34d399; 
-    background: rgba(52, 211, 153, 0.1);
-    padding: 0.4rem 1rem;
-    border-radius: 50px;
-    margin-bottom: 1.2rem;
-    border: 1px solid rgba(52, 211, 153, 0.2);
-}
-
-.contrat-card-section h2 {
-    font-size: clamp(2.2rem, 5vw, 3.5rem);
+.hero-header h2 {
+    font-size: clamp(2rem, 5vw, 3rem);
     font-weight: 700;
     line-height: 1.2;
     letter-spacing: -0.02em;
-    color: var(--primary-color-dark);
-    margin-bottom: 1rem;
+    color: var(--primary-color-dark); 
+    margin-bottom: 0.5rem;
 }
 
-header p {
-    font-size: 1.15rem;
-    color: var(--primary-color-dark);
+.hero-header p {
+    font-size: 1.1rem;
+    color: #4b525c; 
     max-width: 550px;
     margin: 0 auto;
-    line-height: 1.6;
+    line-height: 1.5;
 }
 
-/* ==========================================
-   5. TOOLBAR (Filtres & Recherche)
-========================================== */
-.toolbar {
-    width: 100%;
-    max-width: 1200px;
+.search-container-large {
+    min-width: 100%;
     display: flex;
     align-items: center;
-    justify-content: space-around;
-    gap: 0.75rem;
-    padding: 0.5rem;
 }
 
-.toolbar__filter {
-    min-width: 0; 
-    margin: 0; 
+.search-container-large :deep(input),
+.search-container-large :deep(.search-container) {
+    height: 75px; 
+    border-radius: 50px;
+    font-size: 1.2rem;
+    width: 100%;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    background: #ffffff;
+    transition: box-shadow 0.2s ease, border-color 0.2s ease;
 }
 
-.toolbar__search {
-    flex: 0 0 auto; 
+.search-container-large :deep(input:focus) {
+    box-shadow: 0 4px 20px rgba(52, 211, 153, 0.3);
+    border-color: #34d399;
 }
 
-:deep(.search-container.is-mobile.is-expanded) {
-    width: auto;
-    flex: 1 1 auto;
-    min-width: 0;
+.action-buttons {
+    display: flex;
+    flex-direction: row; 
+    gap: 1rem;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    max-width: 850px;
+}
+
+.btn-inline {
+    flex: 1; 
+    max-width: 250px; 
+}
+
+.btn-secondary {
+    background: rgba(255, 255, 255, 0.05); 
+    color: var(--primary-color);
+    border: 1px solid rgba(0, 0, 0, 0.2);
+    padding: 0 24px;
+    height: 48px;
+    border-radius: 50px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    backdrop-filter: blur(10px);
+    white-space: nowrap; 
+}
+
+.btn-secondary:hover {
+    border-color: #34d399;
+    color: #10b981;
+    background: rgba(255, 255, 255, 0.1);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(52, 211, 153, 0.15);
 }
 
 /* ==========================================
-   6. GRILLE DE CARTES (Base Mobile)
+   3. BARRE DE FILTRES
+========================================== */
+.filter-toolbar {
+    width: 100%;
+    max-width: 1400px;
+    display: flex;
+    justify-content: flex-start;
+    padding: 0 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.toolbar__filter { min-width: 0; margin: 0; }
+
+/* ==========================================
+   4. GRILLE DE CARTES (CONTRATS)
 ========================================== */
 .cards-container {
     width: 100%;
@@ -295,77 +445,36 @@ header p {
 
 /* 📱 SMARTPHONES (Max 767px) */
 @media (max-width: 767px) {
-    header {
-        margin-bottom: 0.2rem !important; 
+    .hero-header { padding: 0 1rem; }
+    
+    .action-buttons {
+        gap: 0.5rem; 
     }
 
-    header.flex {
-        gap: 0.75rem !important; 
+    .btn-secondary, :deep(.main-btn) {
+        font-size: 0.85rem;
+        padding: 0 10px;
+        height: 44px;
+        max-width: none;
     }
 
-    .toolbar {
-        margin-top: 0; 
-        justify-content: center; 
-        gap: 1rem; 
-        width: 100%;
-        max-width: 92%; 
-        margin-left: auto; 
-        margin-right: auto;
-        position: relative;
-        z-index: 3;
-    }
-
-    /* On réduit l'effet de verre pour ne pas polluer l'écran mobile */
-    .contrat-card-section::after {
-        right: -50px;
-        top: -20px;
-        transform: scale(0.6) rotate(15deg);
-    }
+    .filter-toolbar { justify-content: center; }
 }
 
 /* 💊 TABLETTES (De 768px à 1023px) */
 @media (min-width: 768px) and (max-width: 1023px) {
-    .cards-container {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 1.5rem;
-    }
-
-    .toolbar {
-        padding: 0.5rem 1rem;
-    }
-
-    .toolbar__search {
-        max-width: 320px;
-        margin-left: auto;
-    }
-
-    /* On réduit légèrement l'effet de verre pour qu'il ne chevauche pas le titre sur un iPad */
-    .contrat-card-section::after {
-        right: -20px;
-        transform: scale(0.8) rotate(12deg);
-    }
+    .cards-container { grid-template-columns: repeat(2, 1fr); }
+    .packages-grid { grid-template-columns: repeat(2, 1fr); align-items: stretch; }
 }
 
 /* 💻 PETITS ÉCRANS & ORDINATEURS PORTABLES (De 1024px à 1279px) */
 @media (min-width: 1024px) {
-    /* 3 colonnes au lieu de 4 pour éviter des cartes trop écrasées sur petits PC */
-    .cards-container {
-        grid-template-columns: repeat(3, 1fr);
-    }
-
-    .toolbar__search {
-        max-width: 360px;
-        margin-left: auto;
-    }
-    .toolbar{
-        padding:0%;
-    }
+    .cards-container { grid-template-columns: repeat(3, 1fr); }
+    .packages-grid { grid-template-columns: repeat(3, 1fr); align-items: stretch; }
 }
 
 /* 🖥️ GRANDS ÉCRANS (1280px et plus) */
 @media (min-width: 1280px) {
-    .cards-container {
-        grid-template-columns: repeat(4, 1fr);
-    }
+    .cards-container { grid-template-columns: repeat(4, 1fr); }
 }
 </style>

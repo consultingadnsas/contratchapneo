@@ -45,29 +45,17 @@ import { ref, onMounted, onUnmounted, nextTick } from 'vue'
 export default {
   name: 'SearchInput',
   props: {
-    modelValue: {
-      type: String,
-      default: ''
-    },
-    placeholder: {
-      type: String,
-      default: 'Rechercher...'
-    },
-    theme: {
-            type: String,
-            default: 'light'
-        }
+    modelValue: { type: String, default: '' },
+    placeholder: { type: String, default: 'Rechercher...' },
+    theme: { type: String, default: 'light' }
   },
   emits: ['update:modelValue', 'focus', 'blur'],
   
-  // Directive personnalisée locale pour fermer la recherche si on clique ailleurs
   directives: {
     clickOutside: {
       mounted(el, binding) {
         el.clickOutsideEvent = (event) => {
-          if (!(el === event.target || el.contains(event.target))) {
-            binding.value();
-          }
+          if (!(el === event.target || el.contains(event.target))) binding.value();
         };
         document.addEventListener('click', el.clickOutsideEvent);
       },
@@ -80,13 +68,10 @@ export default {
   setup(props, { emit }) {
     const isExpanded = ref(false);
     const inputRef = ref(null);
-
-    // CORRECTION : On détecte tout de suite au lieu de mettre 'false' par défaut
     const isMobile = ref(typeof window !== 'undefined' ? window.innerWidth < 768 : false);
 
     const checkBreakpoint = () => {
       isMobile.value = window.innerWidth < 768;
-      // Si on repasse sur écran large, on réinitialise l'état étendu
       if (!isMobile.value) isExpanded.value = false;
     };
 
@@ -97,14 +82,10 @@ export default {
     };
 
     const closeSearch = () => {
-      if (!props.modelValue) {
-        isExpanded.value = false;
-      }
+      if (!props.modelValue) isExpanded.value = false;
     };
 
-    const handleInput = (event) => {
-      emit('update:modelValue', event.target.value);
-    };
+    const handleInput = (event) => emit('update:modelValue', event.target.value);
 
     const clearSearch = () => {
       emit('update:modelValue', '');
@@ -112,24 +93,13 @@ export default {
     };
 
     onMounted(() => {
-      // Double vérification par sécurité au montage
       checkBreakpoint();
       window.addEventListener('resize', checkBreakpoint);
     });
 
-    onUnmounted(() => {
-      window.removeEventListener('resize', checkBreakpoint);
-    });
+    onUnmounted(() => window.removeEventListener('resize', checkBreakpoint));
 
-    return {
-      isExpanded,
-      isMobile,
-      inputRef,
-      expandSearch,
-      closeSearch,
-      handleInput,
-      clearSearch
-    };
+    return { isExpanded, isMobile, inputRef, expandSearch, closeSearch, handleInput, clearSearch };
   }
 }
 </script>
@@ -145,8 +115,7 @@ export default {
   align-items: center;
   justify-content: flex-end;
   font-family: sans-serif;
-  transition: all 0.3s ease;
-  width: auto;
+  width: 100%; /* 👈 La barre prend 100% de la largeur du parent */
 }
 
 /* Style de la loupe seule sur Mobile */
@@ -164,87 +133,41 @@ export default {
   transition: background-color 0.2s;
 }
 
-/* --- THÈME SUR FOND SOMBRE (theme="dark") --- */
+.search-trigger:hover {
+  background-color: #e5e7eb;
+}
+
+/* --- THÈME SOMBRE --- */
 .search-container.theme-dark {
-  --bg-color: rgba(255, 255, 255, 0.1); /* Fond légèrement translucide */
-  --text-color: #ffffff; /* Texte blanc */
-  --border-color: rgba(255, 255, 255, 0.3); /* Bordure discrète */
-  --icon-color: #e2e8f0; /* Icône blanche/gris clair */
+  --bg-color: rgba(255, 255, 255, 0.1); 
+  --text-color: #ffffff; 
+  --border-color: rgba(255, 255, 255, 0.3); 
+  --icon-color: #e2e8f0; 
   --focus-ring: rgba(255, 255, 255, 0.3);
   --primary-color: #ffffff;
 }
 
-/* Le fond devient tout blanc uniquement quand on clique dessus (focus) */
 .search-container.theme-dark .search-input:focus {
   background-color: #ffffff;
-  color: #0f172a; /* Texte noir/sombre */
+  color: #0f172a; 
 }
-/* Quand l'input devient blanc, les icônes (loupe/croix) doivent devenir sombres */
 .search-container.theme-dark .search-input:focus ~ .clear-button,
 .search-container.theme-dark:focus-within .internal-icon {
   color: #64748b; 
 }
 
-
-/* ==========================================
-   APPLICATION DES VARIABLES
-========================================== */
+/* --- INPUT --- */
 .search-input {
   width: 100%;
-  padding: 0.7rem 2.5rem 0.7rem 2.7rem;
-  font-size: 1rem;
+  padding: 0.65rem 2.5rem 0.65rem 2.6rem; 
+  font-size: 0.95rem; /* Taille standard pour la toolbar */
   
-  /* Utilisation des variables ici */
-  background-color: var(--bg-color);
-  color: var(--text-color);
+  background-color: var(--bg-color, #ffffff);
+  color: var(--text-color, #111827);
   border: 1px solid var(--border-color);
-  
-  border-radius: 1.5rem;
+  border-radius: 50px;
   outline: none;
   transition: all 0.2s ease;
-}
-
-/* Le placeholder prend la couleur de l'icône */
-.search-input::placeholder {
-  color: var(--icon-color);
-}
-
-.internal-icon, .clear-button {
-  color: var(--icon-color);
-}
-
-.search-trigger:hover {
-  background-color: #e5e7eb;
-}
-
-.search-icon {
-  width: 1.25rem;
-  height: 1.25rem;
-}
-
-/* Wrapper du champ de saisie */
-.search-input-wrapper {
-  position: relative;
-  display: none; /* Caché par défaut sur mobile */
-  align-items: center;
-  width: 100%;
-}
-
-.internal-icon {
-  position: absolute;
-  left: 1rem;
-  color: #9ca3af;
-  pointer-events: none;
-}
-
-.search-input {
-  width: 100%;
-  padding: 0.7rem 2.5rem 0.7rem 2.7rem;
-  font-size: 1rem;
-  border: 1px solid var(--border-color);
-  border-radius: 1.5rem; /* Reprise du style arrondi du BaseInput */
-  outline: none;
-  transition: border-color 0.15s, box-shadow 0.15s;
 }
 
 .search-input:focus {
@@ -252,16 +175,48 @@ export default {
   box-shadow: 0 0 0 3px var(--focus-ring);
 }
 
+.search-input::placeholder {
+  color: var(--icon-color, #9ca3af);
+}
+
+.internal-icon, .clear-button {
+  color: var(--icon-color, #9ca3af);
+}
+
+.search-icon {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+.search-input-wrapper {
+  position: relative;
+  display: none; 
+  align-items: center;
+  width: 100%;
+}
+
+.internal-icon {
+  position: absolute;
+  left: 1rem;
+  pointer-events: none;
+}
+
+/* --- LE BOUTON X --- */
 .clear-button {
   position: absolute;
-  right: 0.8rem;
+  right: -7rem; /* 👈 Bien calé à droite */
   background: none;
   border: none;
-  color: #9ca3af;
   cursor: pointer;
-  padding: 2px;
+  padding: 5px;
   display: flex;
-  max-width: 50px
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+}
+
+.clear-button:hover {
+  background-color: transparent;
 }
 
 .clear-icon {
@@ -269,34 +224,23 @@ export default {
   height: 1.2rem;
 }
 
-/* --- LOGIQUE RESPONSIVE (MOBILE EXPANDED & TABLETTE+) --- */
-
-/* Quand la loupe est cliquée sur mobile */
+/* --- RESPONSIVE --- */
 .search-container.is-mobile.is-expanded {
   flex: 1;
   width: 100%;
 }
-
 .search-container.is-mobile.is-expanded .search-input-wrapper {
   display: flex;
   animation: fadeIn 0.2s ease-out;
 }
 
-/* Rendu naturel sur Tablette et Desktop (>= 768px) */
 @media (min-width: 768px) {
   .search-container {
     width: 100%;
-    max-width: 400px; /* S'affiche proprement dans une barre d'outils */
-    flex: 1;
+    /* Pas de max-width fixe ici, le parent décide ! */
   }
-
-  .search-trigger {
-    display: none; /* Plus besoin du bouton déclencheur */
-  }
-
-  .search-input-wrapper {
-    display: flex; /* Toujours visible */
-  }
+  .search-trigger { display: none; }
+  .search-input-wrapper { display: flex; }
 }
 
 @keyframes fadeIn {

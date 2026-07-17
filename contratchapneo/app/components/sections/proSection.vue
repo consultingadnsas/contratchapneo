@@ -45,7 +45,7 @@
 import { ref, onMounted, onBeforeUpdate, onBeforeUnmount, computed, nextTick } from 'vue';
 import { useRouter } from 'vue-router';
 import mainButton from '../buttons/mainButton.vue';
-import prodCards from '../cards/proCards.vue'; // Ton vrai composant de carte Pro
+import prodCards from '../cards/proCards.vue'; 
 import { useProStore } from '../../stores/proStore'; 
 
 export default {
@@ -62,7 +62,7 @@ export default {
 
             const targets = ['avocat', 'notaire', 'juriste', 'conseill'];
             const result: typeof allPros = [];
-            const usedIds = new Set(); // Pour ne pas afficher deux fois la même personne
+            const usedIds = new Set(); 
 
             // 1. On cherche 1 profil pour chaque mot-clé
             for (const target of targets) {
@@ -77,8 +77,7 @@ export default {
                 }
             }
 
-            // 2. Si jamais on n'en a pas trouvé 4 (ex: pas de notaire en base), 
-            // on comble les trous avec les autres pros disponibles pour garder un beau design.
+            // 2. Si jamais on n'en a pas trouvé 4 
             for (const pro of allPros) {
                 if (result.length >= 4) break;
                 if (!usedIds.has(pro.id)) {
@@ -96,7 +95,7 @@ export default {
             router.push({ path: '/pro', query: { domaine: primaryDomain } });
         };
 
-        // --- Gestion des Animations (inchangé) ---
+        // --- Gestion des Animations ---
         const cardRefs = ref<HTMLElement[]>([]);
         const animatedCards = ref<boolean[]>([false, false, false, false]);
         let observer: IntersectionObserver | null = null;
@@ -134,16 +133,14 @@ export default {
         };
 
         onMounted(async () => {
-            // Demander au store de charger les professionnels s'ils ne sont pas encore là
             if (proStore.professionals.length === 0) {
                 await proStore.getProfessionals();
             }
 
-            // Attendre que le DOM affiche les cartes, puis lancer les animations
             nextTick(() => {
                 setTimeout(() => {
                     initObserver();
-                }, 150); // Léger délai supplémentaire pour la fluidité
+                }, 150); 
             });
         });
 
@@ -192,7 +189,7 @@ export default {
     overflow-x: auto;
     scroll-snap-type: x mandatory;
     gap: 1rem;
-    padding: 0.5rem 1rem;
+    padding: 1.5rem 1rem;
     width: 100%;
     scrollbar-width: thin;
 }
@@ -202,20 +199,33 @@ export default {
     scroll-snap-align: start;
 }
 
-/* --- Grille à partir de 768px (tablette et desktop) --- */
-@media (min-width: 768px) {
+/* ── 📐 TABLETTES & IPAD PRO (De 600px à 1279px) ── */
+@media (min-width: 600px) {
     .cards-container {
         display: grid;
-        grid-template-columns: repeat(4, 1fr);
-        gap: 1rem;
+        grid-template-columns: repeat(2, 1fr); /* 👈 On limite à 2 colonnes pour l'iPad Pro */
+        gap: 1.5rem;
         overflow-x: visible;
         scroll-snap-type: none;
-        padding: 0;
+        padding: 1rem;
+        max-width: 1000px;
+        margin: 0 auto;
     }
 
     .cards-container > * {
         flex: auto;
         scroll-snap-align: none;
+        width: 100%;
+    }
+}
+
+/* ── 💻 DESKTOP (À partir de 1280px) ── */
+@media (min-width: 1280px) {
+    .cards-container {
+        grid-template-columns: repeat(4, 1fr); /* 👈 Les 4 colonnes sont réservées aux grands écrans */
+        gap: 1.5rem;
+        padding: 0;
+        max-width: 1300px;
     }
 }
 
