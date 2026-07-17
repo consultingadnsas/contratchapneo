@@ -74,11 +74,12 @@ export const usePaiementStore = defineStore('paiement', () => {
             const orderStore = useOrderStore();
             
             // 🚨 AJOUT CONTRATCHAP : On récupère dynamiquement le bon email (sans adresse en dur !)
-            const backupEmail = typeof window !== 'undefined' ? localStorage.getItem('backup_checkout_email') : null;
-            
+            // ✅ À UTILISER
+            const backupEmailCookie = useCookie('backup_checkout_email');
+
             const email = orderStore.currentOrder?.guest?.email 
-                       || orderStore.currentOrder?.user?.email 
-                       || backupEmail;
+                    || orderStore.currentOrder?.user?.email 
+                    || backupEmailCookie.value;
 
             if (!email) {
                 throw new Error("Impossible de récupérer l'email de sécurité pour cette action.");
@@ -223,11 +224,12 @@ export const usePaiementStore = defineStore('paiement', () => {
             }
 
             // 🚨 AJOUT CONTRATCHAP : On récupère dynamiquement le bon email (sans adresse en dur !)
-            const backupEmail = typeof window !== 'undefined' ? localStorage.getItem('backup_checkout_email') : null;
-            
+            // ✅ À UTILISER
+            const backupEmailCookie = useCookie('backup_checkout_email');
+
             const email = orderStore.currentOrder?.guest?.email 
-                       || orderStore.currentOrder?.user?.email 
-                       || backupEmail;
+                    || orderStore.currentOrder?.user?.email 
+                    || backupEmailCookie.value;
 
             if (!email) {
                 throw new Error("Impossible de récupérer l'email de sécurité pour cette action.");
@@ -268,11 +270,12 @@ export const usePaiementStore = defineStore('paiement', () => {
             // 2. Gestion de l'email pour les invités
             // ⚠️ Pense à enlever l'email en dur quand tu seras en vraie production !
             // 🚨 AJOUT CONTRATCHAP : On récupère dynamiquement le bon email (sans adresse en dur !)
-            const backupEmail = typeof window !== 'undefined' ? localStorage.getItem('backup_checkout_email') : null;
-            
+            // ✅ À UTILISER
+            const backupEmailCookie = useCookie('backup_checkout_email');
+
             const email = orderStore.currentOrder?.guest?.email 
-                       || orderStore.currentOrder?.user?.email 
-                       || backupEmail;
+                    || orderStore.currentOrder?.user?.email 
+                    || backupEmailCookie.value;
 
             if (!email) {
                 throw new Error("Impossible de récupérer l'email de sécurité pour cette action.");

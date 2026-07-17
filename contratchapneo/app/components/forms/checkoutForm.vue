@@ -130,12 +130,20 @@ export default {
         }
 
         // ── Soumission ────────────────────────────────────────────────────
+        // ── Soumission ────────────────────────────────────────────────────
         const submitForm = async () => {
             
             // 🛑 On bloque la soumission si la validation échoue
             if (!validate()) {
                 return;
             }
+
+            // 🔥 LA CORRECTION EST ICI : Enregistrement de l'email en Cookie
+            // On utilise useCookie fourni par Nuxt (qui le gère automatiquement côté front et back)
+            // On lui donne une durée de vie (maxAge) d'une heure (3600 secondes)
+            const backupEmailCookie = useCookie('backup_checkout_email', { maxAge: 3600 });
+            backupEmailCookie.value = checkoutform.email;
+            console.log("💉 Email sécurisé dans le cookie avant paiement :", backupEmailCookie.value);
 
             try {
                 const payload = {
@@ -161,7 +169,7 @@ export default {
                     checkoutform.email
                 )
 
-                // Envoi de l'événement de succès (pas besoin de notification succès ici car l'utilisateur est généralement redirigé vers l'URL de paiement)
+                // Envoi de l'événement de succès
                 emit('success', {
                     paymentMethod: checkoutform.payment_method,
                     email: checkoutform.email,

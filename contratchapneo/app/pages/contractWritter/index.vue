@@ -54,9 +54,23 @@ const syncData = (newData: Record<string, any>) => {
 };
 
 // 3. L'utilisateur a cliqué sur "Valider" dans la modale
+// 3. L'utilisateur a cliqué sur "Valider" dans la modale
 const submitToBackend = async () => {
     
     console.log("Données transmises au Store :", formDataToSubmit.value);
+
+    // 🔥 LA CORRECTION EST ICI : Injection manuelle de l'email
+    if (typeof window !== 'undefined') {
+        // 1. On tente d'extraire l'email des données que l'utilisateur vient de saisir
+        // (Vérifie le nom exact du champ email de ton form : 'email', 'courriel', etc.)
+        const formEmail = formDataToSubmit.value.email || formDataToSubmit.value.guest_email;
+
+        // 2. S'il y a un email, on le grave dans le localStorage pour le paiementStore
+        if (formEmail) {
+            localStorage.setItem('backup_checkout_email', formEmail);
+            console.log("💉 Email sécurisé depuis le formulaire :", formEmail);
+        }
+    }
 
     try {
         const result = await paiementStore.generateContract(
@@ -64,7 +78,7 @@ const submitToBackend = async () => {
             contratStore.currentContratId || undefined
         );
 
-        if(result){
+        if(result && result.ok){ // ⚠️ Ajout de result.ok pour être plus précis
             router.push('/contractWritter/contractGenerator');
         }
 

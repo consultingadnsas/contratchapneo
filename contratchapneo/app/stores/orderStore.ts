@@ -30,6 +30,7 @@ export interface OrderItem {
 }
 
 export const useOrderStore = defineStore('order', () => {
+    
     const { $api } = useNuxtApp();
 
     const isLoading = ref(false);
@@ -91,6 +92,8 @@ export const useOrderStore = defineStore('order', () => {
                 if (backupEmail) {
                     localStorage.setItem('backup_checkout_email', backupEmail);
                     console.log("🔒 Email sauvegardé en local :", backupEmail);
+                } else{
+                    console.warn("L'email n'a pas été sauvegardé", backupEmail);
                 }
             }
             // 🚨 FIN AJOUT
