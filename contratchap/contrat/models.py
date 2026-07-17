@@ -88,44 +88,93 @@ class Pack(models.Model):
     description = models.TextField()
     prix = models.DecimalField(max_digits=10, decimal_places=2)
     
+    # 1. Contrats fixes inclus d'office (Le mode "Bundle" classique)
     contrats = models.ManyToManyField(
         Contrat,
         related_name='packs',
-        blank=True
+        blank=True,
+        help_text="Les contrats spécifiques inclus d'office dans ce pack."
     )
-    picture = models.ImageField(upload_to='pack_images/', blank=True, null=True)
+    
+    # 🚀 NOUVEAU : Le mode "Crédits"
+    nombre_credits = models.PositiveIntegerField(
+        default=0,
+        help_text="Nombre de contrats au choix que l'utilisateur pourra débloquer gratuitement."
+    )
 
-    # Statistics
+    # 🎁 NOUVEAU : Autres Avantages (Exemples très demandés en LégalTech)
+    remise_sur_mesure = models.PositiveIntegerField(
+        default=0,
+        help_text="Pourcentage de réduction sur les requêtes 'CustomedContract' (ex: 20 pour 20%)"
+    )
+    consultation_pro_incluse = models.BooleanField(
+        default=False,
+        help_text="Cochez si ce pack offre une mise en relation/consultation gratuite avec un pro."
+    )
+    duree_validite_jours = models.PositiveIntegerField(
+        default=365,
+        help_text="Durée de validité du pack en jours (ex: 365 pour 1 an)."
+    )
+
+    picture = models.ImageField(upload_to='pack_images/', blank=True, null=True)
     views = models.PositiveIntegerField(default=0)
     downloads = models.PositiveIntegerField(default=0)
-
-    # Visibility sur la boutique
     is_active = models.BooleanField(default=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return f'Pack {self.title} ({self.contrats.count()} contrats)'
+        return f'Pack {self.title} ({self.contrats.count()} fixes, {self.nombre_credits} crédits)'
 
+
+from django.utils import timezone
+from datetime import timedelta
 
 class UserPack(models.Model):
-    """ L'ACHAT (Ce qui donne le droit d'accès gratuit à l'utilisateur) """
+    """ L'ACHAT (Le portefeuille de l'utilisateur) """
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     
-    # Qui a acheté ?
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='mes_packs')
-    
-    # Qu'est-ce qu'il a acheté ?
     pack = models.ForeignKey(Pack, on_delete=models.PROTECT, related_name='purchasers')
     
-    # Est-ce que son pack est toujours valide ?
-    is_active = models.BooleanField(default=True) 
+    # 💰 NOUVEAU : Le solde de crédits
+    credits_restants = models.PositiveIntegerField(
+        default=0,
+        help_text="Combien de crédits il reste à l'utilisateur pour ce pack."
+    )
     
-    # Optionnel : Tu pourrais ajouter une date d'expiration si le pack dure 1 an par exemple
-    # expires_at = models.DateTimeField(null=True, blank=True)
+    # 🗂️ NOUVEAU : Historique des choix
+    contrats_choisis = models.ManyToManyField(
+        Contrat, 
+        blank=True, 
+        help_text="Les contrats que l'utilisateur a choisi de débloquer avec ses crédits."
+    )
 
+    is_active = models.BooleanField(default=True) 
+    expires_at = models.DateTimeField(null=True, blank=True)
     purchased_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f'{self.user.email} a acheté le {self.pack.title}'
+        return f'{self.user.email} - {self.pack.title} ({self.credits_restants} crédits restants)'
+
+    def save(self, *args, **kwargs):
+        # Initialisation automatique lors de la création (achat du pack)
+        if not self.pk: 
+            # On copie le nombre de crédits initiaux du catalogue
+            self.credits_restants = self.pack.nombre_credits
+            
+            # On calcule la date d'expiration
+            if self.pack.duree_validite_jours:
+                self.expires_at = timezone.now() + timedelta(days=self.pack.duree_validite_jours)
+                
+        super().save(*args, **kwargs)
+
+    @property
+    def is_valid(self):
+        """ Vérifie si le pack est toujours valide (actif et non expiré) """
+        if not self.is_active:
+            return False
+        if self.expires_at and timezone.now() > self.expires_at:
+            return False
+        return True

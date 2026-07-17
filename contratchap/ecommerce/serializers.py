@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from .models import Cart, CartItem, GuestInfo, Order, OrderItem
-from contrat.models import Contrat, CustomedContract
-from pro.models import LegalProfessional # N'oublie pas cet import !
+from contrat.models import Contrat, CustomedContract, Pack, UserPack
+from pro.models import LegalProfessional 
 
 # ─────────────────────────────────────────
 # MINI SERIALIZERS (lecture seule — affichage panier)
@@ -17,7 +17,6 @@ class ContratMiniSerializer(serializers.ModelSerializer):
             'prix', 
             'picture'
         ]
-
 
 class ProMiniSerializer(serializers.ModelSerializer):
     """ Représentation légère du Pro pour l'affichage dans le panier """
@@ -36,7 +35,6 @@ class ProMiniSerializer(serializers.ModelSerializer):
         ]
 
 class CustomizedContractSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = CustomedContract
         fields = [
@@ -49,6 +47,19 @@ class CustomizedContractSerializer(serializers.ModelSerializer):
             'is_wrotten'
         ]
 
+# 🚨 CORRECTION 1 : ModelSerializer au lieu de ModelField
+class PackMiniSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Pack
+        fields = [
+            'id',
+            'title',
+            'description',
+            'prix',
+            'contrats',
+            'picture' # Assure-toi que c'est bien le nom exact dans ton model Pack (pic ou picture)
+        ]
+
 
 # ─────────────────────────────────────────
 # GESTION DE L'AJOUT AU PANIER (Écriture)
@@ -57,26 +68,28 @@ class CustomizedContractSerializer(serializers.ModelSerializer):
 class AddToCartSerializer(serializers.Serializer):
     """
     Sérialiseur dédié UNIQUEMENT à l'action POST /cart/add/.
-    Valide qu'on ajoute soit un contrat, soit un pro, SOIT un contrat sur mesure.
+    Valide qu'on ajoute soit un contrat, soit un pro, soit un sur-mesure, SOIT un pack.
     """
     contrat_id = serializers.UUIDField(required=False, allow_null=True)
     pro_id = serializers.UUIDField(required=False, allow_null=True) 
-    customed_contract = serializers.UUIDField(required=False, allow_null=True) # 🚨 NOUVEAU
+    customed_contract = serializers.UUIDField(required=False, allow_null=True)
+    pack_id = serializers.UUIDField(required=False, allow_null=True) # ✅
     quantity = serializers.IntegerField(default=1, min_value=1)
 
     def validate(self, data):
         contrat_id = data.get('contrat_id')
         pro_id = data.get('pro_id')
         customed_contract = data.get('customed_contract')
+        pack_id = data.get('pack_id')
 
-        # 💡 Petite astuce Python : on compte combien de champs sont remplis
-        provided_items = sum(x is not None for x in [contrat_id, pro_id, customed_contract])
+        # On compte combien de champs sont remplis (le Pack est inclus)
+        provided_items = sum(x is not None for x in [contrat_id, pro_id, customed_contract, pack_id])
 
         # Vérification stricte : un seul article à la fois !
         if provided_items > 1:
-            raise serializers.ValidationError("Vous ne pouvez pas ajouter plus d'un type d'article (contrat, professionnel ou sur mesure) en même temps.")
+            raise serializers.ValidationError("Vous ne pouvez pas ajouter plus d'un type d'article en même temps.")
         if provided_items == 0:
-            raise serializers.ValidationError("Vous devez fournir soit un contrat_id, soit un pro_id, soit un customed_contract.")
+            raise serializers.ValidationError("Vous devez fournir soit un contrat_id, soit un pro_id, soit un customed_contract, soit un pack_id.")
 
         # Vérification de l'existence en Base de Données
         if contrat_id and not Contrat.objects.filter(id=contrat_id).exists():
@@ -85,6 +98,8 @@ class AddToCartSerializer(serializers.Serializer):
             raise serializers.ValidationError({"pro_id": "Ce professionnel n'existe pas."})
         if customed_contract and not CustomedContract.objects.filter(id=customed_contract).exists():
             raise serializers.ValidationError({"customed_contract": "Ce contrat sur mesure n'existe pas."})
+        if pack_id and not Pack.objects.filter(id=pack_id).exists():
+            raise serializers.ValidationError({"pack_id": "Ce pack n'existe pas."})
 
         return data
 
@@ -94,19 +109,21 @@ class AddToCartSerializer(serializers.Serializer):
 # ─────────────────────────────────────────
 
 class CartItemSerializer(serializers.ModelSerializer):
-    """ Sérialiseur d'affichage d'une ligne du panier """
     contrat = ContratMiniSerializer(read_only=True)
     pro = ProMiniSerializer(read_only=True)
-    customed_contract = CustomizedContractSerializer(read_only=True) # 🚨 NOUVEAU
+    customed_contract = CustomizedContractSerializer(read_only=True)
+    # CORRECTION ICI : On mappe le champ "packs" du modèle vers la clé "pack" de l'API
+    pack = PackMiniSerializer(source='packs', read_only=True) 
     subtotal = serializers.SerializerMethodField()
 
     class Meta:
         model = CartItem
         fields = [
             'id',
-            'contrat',           # Nullable
-            'pro',               # Nullable
-            'customed_contract', # 🚨 NOUVEAU (Nullable)
+            'contrat',           
+            'pro',               
+            'customed_contract', 
+            'pack',              
             'quantity',
             'user_inputs',
             'unit_price',
@@ -117,7 +134,6 @@ class CartItemSerializer(serializers.ModelSerializer):
 
     def get_subtotal(self, obj):
         return obj.get_subtotal()
-
 
 class CartSerializer(serializers.ModelSerializer):
     items = CartItemSerializer(many=True, read_only=True)
@@ -134,7 +150,11 @@ class CartSerializer(serializers.ModelSerializer):
             'created_at',
             'updated_at',
         ]
-        read_only_fields = ['id', 'created_at', 'updated_at']
+        read_only_fields = [
+            'id', 
+            'created_at', 
+            'updated_at'
+        ]
 
     def get_total(self, obj):
         return obj.get_total()
@@ -145,7 +165,6 @@ class CartSerializer(serializers.ModelSerializer):
 # ─────────────────────────────────────────
 
 class GuestInfoSerializer(serializers.ModelSerializer):
-    # (Garde ton code existant ici, il était parfait)
     class Meta:
         model  = GuestInfo
         fields = [
@@ -189,8 +208,10 @@ class OrderItemSerializer(serializers.ModelSerializer):
             'contrat_title',        # snapshot 
             'pro',                  # FK
             'pro_name',             # snapshot 
-            'contrat_customed',     # 🚨 NOUVEAU FK
-            'customised_contract',  # 🚨 NOUVEAU snapshot 
+            'contrat_customed',     # FK
+            'customised_contract',  # snapshot 
+            'pack',                 # 🚨 CORRECTION 2 : NOUVEAU FK (Tu l'avais oublié)
+            'pack_title',           # 🚨 CORRECTION 2 : NOUVEAU snapshot (Tu l'avais oublié)
             'unit_price',
             'user_inputs',
             'quantity',

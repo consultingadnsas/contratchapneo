@@ -37,13 +37,12 @@ class Cart(models.Model):
 
     class Meta:
         constraints = [
-            # Un panier doit avoir soit un user, soit une session_key — pas les deux
             models.CheckConstraint(
                 condition=(
                     models.Q(user__isnull=False, session_key__isnull=True) |
                     models.Q(user__isnull=True, session_key__isnull=False)
                 ),
-                name='cart_user_or_session_exclusive'
+                name='cart_user_or_session_exclusive' # 👈 Le nom correct pour le Cart
             )
         ]
 
@@ -138,25 +137,31 @@ class CartItem(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        # 🚨 MISE À JOUR : Un item doit avoir SOIT un contrat, SOIT un pro, SOIT un contrat sur mesure
         constraints = [
             models.CheckConstraint(
                 condition=(
-                    models.Q(contrat__isnull=False, pro__isnull=True, customed_contract__isnull=True) |
-                    models.Q(contrat__isnull=True, pro__isnull=False, customed_contract__isnull=True) |
-                    models.Q(contrat__isnull=True, pro__isnull=True, customed_contract__isnull=False)
+                    models.Q(contrat__isnull=False, pro__isnull=True, customed_contract__isnull=True, packs__isnull=True) |
+                    models.Q(contrat__isnull=True, pro__isnull=False, customed_contract__isnull=True, packs__isnull=True) |
+                    models.Q(contrat__isnull=True, pro__isnull=True, customed_contract__isnull=False, packs__isnull=True) |
+                    models.Q(contrat__isnull=True, pro__isnull=True, customed_contract__isnull=True, packs__isnull=False)
                 ),
-                name='cartitem_exclusive_type'
+                name='cartitem_exclusive_type' # 👈 Le nom correct pour le CartItem
             )
         ]
 
     def __str__(self):
         if self.contrat:
-            return f'{self.quantity}x {self.contrat.title}'
+            return f'{self.quantity}x Contrat : {self.contrat.title}'
         elif self.customed_contract:
-            # Assure-toi que ton modèle CustomedContract a bien un champ 'title' ou adapte ce nom
-            return f'{self.quantity}x Sur mesure: {self.customed_contract.title}'
-        return f'{self.quantity}x Carte de visite - {self.pro.first_name} {self.pro.last_name}'
+            return f'{self.quantity}x Sur mesure : {self.customed_contract.subject}'
+        elif self.pro:
+            # 💡 Astuce : get_title_display() affichera "Avocat" au lieu de "AVOCAT"
+            return f'{self.quantity}x Pro : {self.pro.get_title_display()} {self.pro.last_name}'
+        elif self.packs:
+            # Assure-toi que ton modèle Pack a bien un champ 'title' ou 'name'
+            return f'{self.quantity}x Pack : {self.packs.title}' 
+            
+        return f'{self.quantity}x Élément inconnu'
 
     def get_subtotal(self):
         return self.unit_price * self.quantity
@@ -170,6 +175,8 @@ class CartItem(models.Model):
                 self.unit_price = self.customed_contract.prix 
             elif self.pro:
                 self.unit_price = self.pro.prix
+            elif self.packs:
+                self.unit_price = self.packs.prix
         super().save(*args, **kwargs)
 
 class GuestInfo(models.Model):
@@ -294,13 +301,20 @@ class OrderItem(models.Model):
         blank=True,
         null=True,
     )
+    pack = models.ForeignKey(
+        'contrat.Pack',
+        on_delete=models.SET_NULL,
+        blank=True,
+        null=True,
+        related_name='order_items'
+    )
 
     # Snapshots — figés définitivement au moment du checkout
     # Rendu optionnel selon ce qu'on achète
     contrat_title = models.CharField(max_length=255, null=True, blank=True)
     customised_contract = models.CharField(max_length=225, null=True, blank=True)
     pro_name = models.CharField(max_length=255, null=True, blank=True) 
-
+    pack_title = models.CharField(max_length=255, null=True, blank=True)
     user_inputs = models.JSONField(
         default=dict,
         blank=True, 
@@ -314,15 +328,15 @@ class OrderItem(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        # 🚨 MISE À JOUR : Validation stricte à 3 voies
         constraints = [
             models.CheckConstraint(
                 condition=(
-                    models.Q(contrat__isnull=False, pro__isnull=True, contrat_customed__isnull=True) |
-                    models.Q(contrat__isnull=True, pro__isnull=False, contrat_customed__isnull=True) |
-                    models.Q(contrat__isnull=True, pro__isnull=True, contrat_customed__isnull=False)
+                    models.Q(contrat__isnull=False, pro__isnull=True, contrat_customed__isnull=True, pack__isnull=True) |
+                    models.Q(contrat__isnull=True, pro__isnull=False, contrat_customed__isnull=True, pack__isnull=True) |
+                    models.Q(contrat__isnull=True, pro__isnull=True, contrat_customed__isnull=False, pack__isnull=True) |
+                    models.Q(contrat__isnull=True, pro__isnull=True, contrat_customed__isnull=True, pack__isnull=False)
                 ),
-                name='orderitem_exclusive_type'
+                name='orderitem_exclusive_type' # 👈 Le nom correct pour l'OrderItem
             )
         ]
 
@@ -331,6 +345,8 @@ class OrderItem(models.Model):
             name = self.contrat_title
         elif self.customised_contract:
             name = f"Sur mesure : {self.customised_contract}"
+        elif self.pack_title:
+            name = f"Pack : {self.pack_title}"
         else:
             name = f"Carte - {self.pro_name}"
         return f'{self.quantity} x {name} — commande {str(self.order.id)[:8]}…'
@@ -338,16 +354,16 @@ class OrderItem(models.Model):
     def get_subtotal(self):
         return self.unit_price * self.quantity
 
-    def save(self, *args, **kwargs):
-        # On capture les noms définitifs pour la facture !
+    def save(self, *args, **kwargs): 
         if not self.contrat_title and self.contrat:
             self.contrat_title = self.contrat.title
         if not self.pro_name and self.pro:
             self.pro_name = f"{self.pro.first_name} {self.pro.last_name}"
-            
-        # 💡 Capture du nom du contrat sur mesure
         if not self.customised_contract and self.contrat_customed:
-            # J'utilise getattr au cas où CustomedContract n'a pas de champ title exact
             self.customised_contract = getattr(self.contrat_customed, 'title', f"Demande sur mesure #{self.contrat_customed.id}")
+        
+        # NOUVEAU : Capture du nom du pack
+        if not self.pack_title and self.pack:
+            self.pack_title = self.pack.title
             
         super().save(*args, **kwargs)

@@ -22,7 +22,7 @@ from .serializers import (
     CheckoutSerializer,
 )
 from .helpers import (get_or_create_cart, set_cart_cookie_if_needed)
-from contrat.models import Contrat, CustomedContract
+from contrat.models import Contrat, CustomedContract, Pack
 from pro.models import LegalProfessional
 
 from contrat.utils import fill_docx_template, convert_docx_to_pdf
@@ -69,10 +69,11 @@ class CartAddItemView(APIView):
         contrat_id = serializer.validated_data.get('contrat_id')
         pro_id     = serializer.validated_data.get('pro_id')
         customed_contract_id = serializer.validated_data.get('customed_contract')
+        pack_id = serializer.validated_data.get('pack_id') # et non get('pack')
         quantity   = serializer.validated_data.get('quantity', 1)
 
         # Vérification de sécurité
-        if not contrat_id and not pro_id and not customed_contract_id:
+        if not contrat_id and not pro_id and not customed_contract_id and not pack_id:
              return Response(
                 {'errors': 'Vous devez fournir soit un contrat_id, soit un pro_id, soit un customed_contract.'},
                 status=status.HTTP_400_BAD_REQUEST
@@ -121,6 +122,21 @@ class CartAddItemView(APIView):
                 item.quantity += quantity
                 item.save()
 
+        elif pack_id:
+            # J'utilise une variable 'pack_obj' pour éviter la confusion
+            pack_obj = get_object_or_404(Pack, id=pack_id) 
+            item, created = CartItem.objects.get_or_create(
+                cart=cart,
+                packs=pack_obj, # 🚨 CORRECTION : "packs" (avec un 's'), car c'est le vrai nom de ton champ dans ton Model !
+                defaults={
+                    'quantity'  : quantity,
+                    'unit_price': pack_obj.prix,
+                }
+            )
+            if not created:
+                item.quantity += quantity
+                item.save()
+
         # Construction de la réponse identique à ton code
         response = Response(
             {
@@ -131,6 +147,61 @@ class CartAddItemView(APIView):
         )
         
         # On conserve ta logique de cookies hyper importante !
+        return set_cart_cookie_if_needed(request, response)
+
+class CartAddPack(APIView):
+    """ 
+    POST /cart/pack/add/ 
+    Ajoute un pack au panier (Connexion obligatoire !)
+    """
+    # 🔒 C'est cette ligne qui fait toute la magie : DRF bloquera 
+    # automatiquement avec une erreur 401 si l'utilisateur n'est pas connecté.
+    permission_classes = [IsAuthenticated]
+    
+    # ⚠️ Enlève `authentication_classes = []` pour que DRF puisse 
+    # utiliser tes tokens JWT ou tes cookies de session pour identifier l'utilisateur !
+
+    def post(self, request):
+        # 1. On récupère l'ID du pack et la quantité depuis le corps de la requête
+        pack_id = request.data.get('pack_id')
+        quantity = int(request.data.get('quantity', 1))
+
+        if not pack_id:
+            return Response(
+                {'errors': 'Vous devez fournir un pack_id.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # 2. On récupère le pack depuis la base de données
+        pack_obj = get_object_or_404(Pack, id=pack_id)
+
+        # 3. On récupère le panier (qui sera forcément lié au `request.user` grâce à IsAuthenticated)
+        cart = get_or_create_cart(request)
+
+        # 4. On ajoute le pack au panier (ou on augmente la quantité s'il y est déjà)
+        item, created = CartItem.objects.get_or_create(
+            cart=cart,
+            packs=pack_obj, # On utilise bien 'packs' (avec un 's') comme vu précédemment
+            defaults={
+                'quantity': quantity,
+                'unit_price': pack_obj.prix,
+            }
+        )
+
+        if not created:
+            item.quantity += quantity
+            item.save()
+
+        # 5. On renvoie le panier mis à jour
+        response = Response(
+            {
+                'data': CartSerializer(cart).data,
+                'message': 'Pack ajouté au panier avec succès !'
+            },
+            status=status.HTTP_200_OK
+        )
+        
+        # 6. Optionnel mais recommandé, on maintient la logique de cookie
         return set_cart_cookie_if_needed(request, response)
 
 class CartItemUpdateView(APIView):
@@ -317,20 +388,20 @@ class CheckoutView(APIView):
 
         # Création de la commande
         order = Order.objects.create(
-            user        =request.user if request.user.is_authenticated else None,
-            guest       =guest,
+            user=request.user if request.user.is_authenticated else None,
+            guest=guest,
             total_amount=total,
         )
 
-        # Création des lignes de commande
         order_items = []
         
-        for item in cart.items.select_related('contrat', 'pro', 'customed_contract'):
+        # NOUVEAU : On ajoute 'packs' au select_related pour optimiser la DB
+        for item in cart.items.select_related('contrat', 'pro', 'customed_contract', 'packs'):
             
-            # 2️⃣ On prépare les trois variables séparément
             c_title = None
             p_name = None
             customized_name = None
+            pack_title = None # NOUVEAU
             
             if item.contrat:
                 c_title = item.contrat.title
@@ -339,25 +410,26 @@ class CheckoutView(APIView):
                 p_name = f"{item.pro.first_name} {item.pro.last_name} - {pro_title}"
             elif item.customed_contract:
                 customized_name = item.customed_contract.subject or f"Contrat sur mesure #{item.customed_contract.id}"
+            elif item.packs:
+                pack_title = item.packs.title # NOUVEAU
 
             order_items.append(
                 OrderItem(
-                    order             =order,
-                    contrat           =item.contrat,
-                    pro               =item.pro,
-                    contrat_customed  =item.customed_contract,
-                    contrat_title     =c_title,
-                    customised_contract = customized_name,
-                    pro_name          =p_name,
-                    unit_price        =item.unit_price,
-                    quantity          =item.quantity,
+                    order=order,
+                    contrat=item.contrat,
+                    pro=item.pro,
+                    contrat_customed=item.customed_contract,
+                    pack=item.packs, # NOUVEAU : On transfère l'objet pack
+                    contrat_title=c_title,
+                    customised_contract=customized_name,
+                    pro_name=p_name,
+                    pack_title=pack_title, # NOUVEAU : On fige le nom
+                    unit_price=item.unit_price,
+                    quantity=item.quantity,
                 )
             )
             
-        # Enregistrement en masse
         OrderItem.objects.bulk_create(order_items)
-
-        # 4️⃣ CORRECTION : On vide le panier une fois la commande passée !
         cart.clear()
 
         return order

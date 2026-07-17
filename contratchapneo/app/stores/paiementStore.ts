@@ -67,8 +67,17 @@ export const usePaiementStore = defineStore('paiement', () => {
             const cartStore = useCartStore();
             const orderStore = useOrderStore(); // 👈 Instancié à l'intérieur de l'action (évite la dépendance circulaire)
             
-            const email = orderStore.currentOrder?.guest?.email;
-            if (!email) throw new Error("Email manquant pour le téléchargement.");
+            // 🚨 AJOUT CONTRATCHAP : On récupère dynamiquement le bon email (sans adresse en dur !)
+            // ✅ À UTILISER
+            const backupEmailCookie = useCookie('backup_checkout_email');
+
+            const email = orderStore.currentOrder?.guest?.email 
+                    || orderStore.currentOrder?.user?.email 
+                    || backupEmailCookie.value;
+
+            if (!email) {
+                throw new Error("Impossible de récupérer l'email de sécurité pour cette action.");
+            }
 
             // Boucle d'essais pour attendre le Webhook de Ngrok
             for (let i = 0; i < maxRetries; i++) {
@@ -167,9 +176,18 @@ export const usePaiementStore = defineStore('paiement', () => {
 
             if (!orderId) throw new Error("Impossible de trouver l'ID de la commande à mettre à jour.");
 
-            const email = orderStore.currentOrder?.guest?.email;
-            
-            await $api.raw(`/ecommerce/orders/${orderId}/`, {
+            // 🚨 AJOUT CONTRATCHAP : On récupère dynamiquement le bon email (sans adresse en dur !)
+            // ✅ À UTILISER
+            const backupEmailCookie = useCookie('backup_checkout_email');
+
+            const email = orderStore.currentOrder?.guest?.email 
+                    || orderStore.currentOrder?.user?.email 
+                    || backupEmailCookie.value;
+
+            if (!email) {
+                throw new Error("Impossible de récupérer l'email de sécurité pour cette action.");
+            }
+            await $api.raw(`/ecommerce/orders/${orderId}/?email=${email}`, {
                 method: 'PUT',
                 query: email ? { email } : undefined,
                 body: { user_inputs: userInputs ?? {} },
@@ -192,10 +210,27 @@ export const usePaiementStore = defineStore('paiement', () => {
             const orderStore = useOrderStore();
             const targetOrderId = orderId || orderStore.currentOrder?.id;
 
-            if (!targetOrderId) throw new Error("Impossible de trouver l'ID de la commande.");
+            if (!targetOrderId) {
+                throw new Error("Impossible de trouver l'ID de la commande pour le téléchargement.");
+            }
 
-            const email = orderStore.currentOrder?.guest?.email;
-            
+            // 2. Gestion de l'email pour les invités
+            // ⚠️ Pense à enlever l'email en dur quand tu seras en vraie production !
+            // 🚨 AJOUT CONTRATCHAP : On récupère dynamiquement le bon email (sans adresse en dur !)
+            // ✅ À UTILISER
+            const backupEmailCookie = useCookie('backup_checkout_email');
+
+            const email = orderStore.currentOrder?.guest?.email 
+                    || orderStore.currentOrder?.user?.email 
+                    || backupEmailCookie.value;
+
+            if (!email) {
+                throw new Error("Impossible de récupérer l'email de sécurité pour cette action.");
+            }
+
+            console.log(`Lancement du téléchargement pour la commande ${targetOrderId}...`);
+
+            // 3. Appel API avec `responseType: 'blob'` pour dire à ofetch qu'on attend un fichier physique
             const response = await $api.raw(`/ecommerce/orders/${targetOrderId}/download/`, {
                 method: 'GET',
                 responseType: 'blob',

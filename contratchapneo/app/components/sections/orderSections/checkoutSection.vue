@@ -115,7 +115,7 @@ export default {
         };
 
         const handlePaymentConfirmed = () => {
-            console.log('✅ [CheckoutSection] Paiement confirmé, affichage de l’écran de succès');
+            console.log('✅ [CheckoutSection] Paiement confirmé, affichage de l\'écran de succès');
             isSuccess.value = true;
             isPaiementModale.value = false;
             isXpayeModale.value = false;

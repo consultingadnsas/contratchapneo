@@ -1,31 +1,92 @@
 <template>
-    <section class="main-section">
+    <section class="h-full flex flex-col gap-2">
+
+        <contractCardSkeleton v-if="profileStore.isLoading" />
+
+        <emptyState 
+            v-else-if="!profileStore.isLoading && profileStore.userPacks.length === 0"
+            title="Aucun pack acheté"
+            description="Vous n'avez aucun pack disponible"
+            textAction="Acheter pack"
+        />
+
+        <div v-else class="pack-container">
+            
+            <pack-buying-card 
+                v-for="(pack, index) in profileStore.userPacks" 
+                :key="pack.id || index"
+                :title="pack.title" 
+                :price="pack.prix"
+                :description="pack.description"
+                @buy="addToCart(pack.id)"
+            />
+            
+        </div>
 
     </section>
 </template>
 
 <script lang="ts">
 import { useProfileStore } from '../../../stores/profileStore'
-import {ref, onMounted} from 'vue'
+import { useCartStore } from '../../../stores/cartStore';
+import { onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 
-export default{
+import contractCardSkeleton from '../../cards/contractCardSkeleton.vue';
+import emptyState from '../../tools/emptyState.vue'
+import packBuyingCard from '../../cards/packBuyingCard.vue'
 
-    setup(){
+export default {
+    components: {
+        contractCardSkeleton,
+        emptyState,
+        packBuyingCard
+    },
 
+    setup() {
+        const cartStore = useCartStore();
         const profileStore = useProfileStore();
 
-        /*onMounted(async()=>{
+        const router = useRouter();
 
-            profileStore.getProfile();
+        const addToCart = async(packId:string)=> {
 
-        })*/
+            await cartStore.addPackToCart(packId);
 
-        return {
+            router.push('/order/checkout/')
 
-            profileStore,
         }
 
-    }
+        onMounted(async () => {
+            await profileStore.fetchPacks();
+        });
 
+        return {
+            cartStore,
+            profileStore,
+            router,
+            addToCart
+        }
+    }
 }
 </script>
+
+<style scoped>
+.pack-container {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 1rem;
+    gap: 0.5rem;
+}
+
+@media(min-width: 768px) {
+    .pack-container {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+    }
+}
+</style>

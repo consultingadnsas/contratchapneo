@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from .models import Category, Contrat, CustomedContract, Pack, UserPack
+from account.models import CustomUser
 
 class CategorySerializer(serializers.ModelSerializer):
 
@@ -89,3 +90,16 @@ class PackSerializer(serializers.ModelSerializer):
 
         model = UserPack
         fields = '__all__'
+
+# Dans contrat/serializers.py
+class PackModelSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Pack  # le modèle original
+        fields = [
+            'id', 
+            'title', 
+            'description', 
+            'prix', 
+            'picture', 
+            'created_at'
+        ]  # adaptez

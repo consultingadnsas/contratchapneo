@@ -4,7 +4,8 @@ from .views import (
     LoginView, 
     LogoutView,
     CSRFTokenView,
-    UserProfileView
+    UserProfileView,
+    UserPackView
 )
 from rest_framework_simplejwt.views import (
     TokenObtainPairView,
@@ -27,4 +28,7 @@ urlpatterns = [
 
     # Csrf
     path('csrf/', CSRFTokenView.as_view(), name='api-csrf'),
+
+    # Packs & Contract
+    path('pack/', UserPackView.as_view(), name="packs"),
 ]

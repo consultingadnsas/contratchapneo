@@ -8,16 +8,18 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import AllowAny, IsAuthenticated, IsAdminUser
 from rest_framework.pagination import PageNumberPagination
+from rest_framework.generics import ListAPIView
 
 from django.db import transaction
 from django.shortcuts import get_object_or_404
 from django.db.models import Q, F
-from .models import Category, Contrat, CustomedContract
+from .models import Category, Contrat, CustomedContract, Pack, UserPack
 from .serializers import (
     CategorySerializer, 
     ContratSerializer, 
     CategoryWithContractsSerializer,
     CustomedContractSerializer,
+    PackModelSerializer
 )
 
 from docx import Document
@@ -100,8 +102,6 @@ class CategoryOperationsView(APIView):
             )
         
 """ About our contrat """
-
-from rest_framework.generics import ListAPIView
 
 class ContractListView(ListAPIView):
     """
@@ -295,6 +295,23 @@ class ContractTagsView(APIView):
 
         except Exception as e:
             return Response({"error": str(e)}, status=500)
+
+
+class PacksView(APIView):
+
+    permission_classes = [AllowAny]
+    authentication_classes = []
+
+    def get(self, request):
+
+        """ Vue pour récupérer tous les packs que nous proposons"""
+
+        pack = Pack.objects.all()
+
+        serializer = PackModelSerializer(pack, many=True)
+
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
 
 
 

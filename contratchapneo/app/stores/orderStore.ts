@@ -30,6 +30,7 @@ export interface OrderItem {
 }
 
 export const useOrderStore = defineStore('order', () => {
+    
     const { $api } = useNuxtApp();
 
     const isLoading = ref(false);
@@ -73,7 +74,6 @@ export const useOrderStore = defineStore('order', () => {
         isLoading.value = true;
         error.value = null;
         
-        // 💡 1. On vérifie CE QUE le composant Vue a envoyé au store
         console.log("📦 Payload envoyé au store :", JSON.stringify(payload, null, 2));
 
         try {
@@ -85,10 +85,22 @@ export const useOrderStore = defineStore('order', () => {
             const order = response?.data ?? response ?? null;
             currentOrder.value = order;
             console.log("✅ Réponse du backend :", currentOrder.value);
+            
+            // 🚨 AJOUT CONTRATCHAP : On sauvegarde l'email en local pour le retour de paiement !
+            if (typeof window !== 'undefined') {
+                const backupEmail = order?.guest?.email || order?.user?.email || payload?.email;
+                if (backupEmail) {
+                    localStorage.setItem('backup_checkout_email', backupEmail);
+                    console.log("🔒 Email sauvegardé en local :", backupEmail);
+                } else{
+                    console.warn("L'email n'a pas été sauvegardé", backupEmail);
+                }
+            }
+            // 🚨 FIN AJOUT
+            
             return order;
             
         } catch (err: any) {
-            // 💡 2. On capture la VRAIE erreur renvoyée par Django
             const backendError = err.response?._data || err.data || err.message;
             console.error("🚨 CRASH du Checkout. Erreur détaillée :", backendError);
             
