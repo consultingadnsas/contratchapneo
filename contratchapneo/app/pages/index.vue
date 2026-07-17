@@ -27,7 +27,9 @@
             @close="isOpen = false"
         />
 
-        <cartBubble @open-cart="openModal()" />
+        <cartBubble 
+            @open-cart="openModal()" 
+        />
 
     </div>
     
@@ -47,7 +49,7 @@ import FooterSection from '../components/sections/footerSection.vue';
 import cartBubble from '../components/modale/cartBubble.vue';
 import cartModale from '../components/modale/cartModale.vue'
 
-import { ref, onMounted, watch } from 'vue'
+import { ref } from 'vue'
 
 export default {
     name: 'HomePage',
@@ -67,12 +69,16 @@ export default {
     },
     setup() {
 
-         const isOpen = ref<boolean>(false);
+        const isOpen = ref<boolean>(false);
 
-         const openModal = ()=> {
+        const openModal = ()=> {
             isOpen.value = true;
         }
-        return{openModal, isOpen}
+        
+        return{
+            openModal, 
+            isOpen
+        }
     }
 }
 

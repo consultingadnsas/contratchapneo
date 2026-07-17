@@ -44,12 +44,14 @@
 
         <!-- Le composant de notification injecté dans le body pour éviter les problèmes d'affichage -->
         <Teleport to="body">
+            
             <BaseNotification 
                 v-model:show="notify.show"
                 :type="notify.type"
                 :title="notify.title"
                 :message="notify.message"
             />
+            
         </Teleport>
     </form>
 </template>

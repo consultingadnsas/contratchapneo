@@ -151,9 +151,15 @@ export default {
     };
 
     // Bloc de gestion du scroll
-    watch(() => props.isOpen, (newValue) => {
-      if (newValue) document.body.classList.add('overflow-hidden');
-      else document.body.classList.remove('overflow-hidden');
+    watch(() => props.isOpen, async (newValue) => {
+      if (newValue) {
+        document.body.classList.add('overflow-hidden');
+        // 🔥 On lance la requête uniquement quand la modale passe à "true" (ouverte)
+        await cartStore.fetchCart();
+        console.log("Votre panier", cartStore.cart.items);
+      } else {
+        document.body.classList.remove('overflow-hidden');
+      }
     });
 
     onMounted(async () => {
