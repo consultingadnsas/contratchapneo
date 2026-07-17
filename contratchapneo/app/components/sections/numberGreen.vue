@@ -104,7 +104,7 @@ export default {
 
 .trust-container {
   min-width: 100%;
-  background: #f8fafc;
+  background: #cfe4f8;
   border-radius: 24px;
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.04);
   display: flex;
@@ -161,8 +161,8 @@ span {
 
 /* Cartes Numéros */
 .phone-item {
-  background: #acbfd164;
-  border: 3px solid #e2e8f0;
+  background: var(--color-primary-light);
+  border: 3px solid #ffffff;
   min-width: 100%;
   border-radius: 16px;
   padding: 1.2rem;

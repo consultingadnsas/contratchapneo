@@ -57,8 +57,8 @@
         </form>
 
         <div class="purchase-section">
-          <p>Vous n'avez pas de pack ?</p>
-          <a href="#" @click.prevent="$router.push('/achat-pack')" class="buy-link">Achetez-en un !</a>
+          <p>Vous n'avez pas de compte ?</p>
+          <a href="#" @click.prevent="$router.push('/achat-pack')" class="buy-link">créez-en un !</a>
         </div>
 
       </div>
@@ -157,7 +157,7 @@ export default {
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 1rem; /* Padding réduit */
+  padding: 0.1rem; /* Padding réduit */
   font-family: 'Inter', sans-serif;
   
   background: 
@@ -168,9 +168,10 @@ export default {
 /* --- WRAPPER DU DOSSIER --- */
 .dossier-wrapper {
   width: 100%;
-  max-width: 440px; /* Légèrement réduit pour être plus proportionné sans scroll */
+  max-width: 420px; /* Légèrement réduit pour être plus proportionné sans scroll */
   position: relative;
   z-index: 10;
+  overflow: auto;
 }
 
 /* --- L'ONGLET DU DOSSIER --- */
@@ -200,7 +201,7 @@ export default {
 .dossier-body {
   background-color: #ffffff;
   border-radius: 0 20px 20px 20px;
-  padding: 0.8rem 0.8rem 0.8rem 0.8rem; /* 👈 Marges internes réduites pour gagner de la place */
+  padding: 0.5rem 0.5rem 0.5rem 0.5rem; /* 👈 Marges internes réduites pour gagner de la place */
   position: relative;
   z-index: 1;
 }
@@ -211,7 +212,7 @@ export default {
 
 /* --- EN-TÊTE DU FORMULAIRE --- */
 .dossier-header {
-  margin-bottom: 1.5rem; /* Réduit */
+  margin-bottom: 0.1rem; /* Réduit */
 }
 
 .dossier-header h2 {
@@ -233,7 +234,7 @@ export default {
 .dossier-form {
   display: flex;
   flex-direction: column;
-  gap: 0.85rem; /* Réduit (était à 1rem) */
+  gap: 0.7rem; /* Réduit (était à 1rem) */
 }
 
 .input-group {
@@ -268,7 +269,7 @@ export default {
 /* --- OPTIONS --- */
 .form-options {
   display: flex;
-  flex-direction: row; /* 👈 Changé de column à row pour être sur 1 seule ligne */
+  flex-direction: column; /* 👈 Changé de column à row pour être sur 1 seule ligne */
   justify-content: space-between;
   align-items: center;
   font-size: 0.85rem;
