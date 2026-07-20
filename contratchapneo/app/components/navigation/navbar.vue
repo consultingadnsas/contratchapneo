@@ -14,7 +14,7 @@
                 </NuxtLink>
 
                 <!-- Si l'utilisateur EST connecté -->
-                <NuxtLink v-else to="/dashboard" class="cta-desktop user-dashboard-btn">
+                <NuxtLink v-else to="/profile/dashboard" class="cta-desktop user-dashboard-btn">
                     <span class="user-initials">{{ userInitials }}</span>
                     <span>Dashboard</span>
                 </NuxtLink>
@@ -40,7 +40,7 @@ import MobileMenu from './navMobile.vue';
 
 import { useContratStore } from '../../stores/contratStore'; 
 import { useProStore } from '../../stores/proStore';
-import { useAuthStore } from '../../stores/authStore'; // <-- Ton store d'auth
+import { useAuthStore } from '../../stores/authStore'; 
 
 export default {
     name: 'MainHeader',
@@ -61,25 +61,32 @@ export default {
         const closeMenu = () => { isMenuOpen.value = false; };
         const handleScroll = () => { isScrolled.value = window.scrollY > 20; };
 
-        // ── LOGIQUE D'AUTHENTIFICATION ──
-        
-        // Vérifie si l'utilisateur est connecté en regardant si l'ID ou l'email est rempli
+        // ── NOUVEAU : Fonction utilitaire pour extraire l'utilisateur proprement ──
+        const getSafeUser = () => {
+            // Si l'API a imbriqué l'utilisateur dans une clé "user" (ex: { user: { email: ... } })
+            if (authStore.user && authStore.user.user) {
+                return authStore.user.user;
+            }
+            // Sinon on retourne l'objet standard
+            return authStore.user || {};
+        };
+
+        // ── LOGIQUE D'AUTHENTIFICATION CORRIGÉE ──
         const isAuthenticated = computed(() => {
-            return !!authStore.user.id || !!authStore.user.email;
+            const u = getSafeUser();
+            // On vérifie l'email ou le username plutôt que l'ID (car ton backend l'appelle parfois 'user' au lieu de 'id')
+            return !!u.email || !!u.username;
         });
 
-        // Calcul des initiales (ex: Yvan Angui -> YA)
         const userInitials = computed(() => {
-            const u = authStore.user;
-            // 1. Priorité au prénom et nom
+            const u = getSafeUser();
+            
             if (u.first_name && u.last_name) {
                 return (u.first_name.charAt(0) + u.last_name.charAt(0)).toUpperCase();
             } 
-            // 2. Sinon, on prend les 2 premières lettres du username
             else if (u.username) {
                 return u.username.substring(0, 2).toUpperCase();
             }
-            // 3. Fallback par défaut
             return 'DB'; 
         });
 
@@ -87,16 +94,14 @@ export default {
             window.addEventListener('scroll', handleScroll);
             handleScroll();
 
-            // Tente de récupérer le profil pour savoir si on est déjà connecté (ex: F5)
             try {
                 if (!isAuthenticated.value) {
                     await authStore.getProfile();
                 }
             } catch (e) {
-                // L'utilisateur n'est pas connecté ou le token a expiré, on ignore l'erreur
+                // Silencieux
             }
 
-            // On charge les listes pour toute la Navbar en une seule fois
             if (contratStore.categories.length === 0) {
                 await contratStore.getCategories();
             }

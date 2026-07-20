@@ -32,6 +32,7 @@
             type="password"
             v-model="loginForm.password"
             :errorMessage="errors.password"
+            showPasswordToggle
         />
 
 
