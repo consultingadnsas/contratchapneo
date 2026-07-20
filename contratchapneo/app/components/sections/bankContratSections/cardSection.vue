@@ -374,11 +374,12 @@ export default {
 .action-buttons {
     display: flex;
     flex-direction: row; 
-    gap: 1rem;
-    justify-content: center;
+    gap: 3rem;
+    justify-content: space-between;
     align-items: center;
     width: 100%;
     max-width: 850px;
+    margin-top: 2.5rem
 }
 
 .btn-inline {

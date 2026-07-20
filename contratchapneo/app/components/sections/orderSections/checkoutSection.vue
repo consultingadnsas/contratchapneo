@@ -2,7 +2,7 @@
     
     <section class="checkout-section">
         <div class="sides" v-if="!isPaiementModale && !isXpayeModale">
-            <itemsListVue/>
+            <itemsListVue :isCheckout="true"/>
             <checkoutFormVue 
                 :formTitle="dynamicFormTitle" 
                 @success="handlePaiementSuccess"

@@ -53,7 +53,7 @@
                 <stat-cards class="floating-card card-top-left"    title="Contrats" @click="router.push('/contractBank')" />
                 <stat-cards class="floating-card card-top-right"   title="Calcul de droits" @click="router.push('/lawCalcul')" />
                 
-                <stat-cards class="floating-card card-bottom-left"  title="Centre d'appel" @click="router.push('/services')" />
+                <stat-cards class="floating-card card-bottom-left"  title="Centre d'aide" @click="router.push('/services')" />
                 <stat-cards class="floating-card card-bottom-right" title="Experts" @click="router.push('/pro')" />
             </div>
         </div>

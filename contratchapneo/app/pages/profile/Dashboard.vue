@@ -47,7 +47,6 @@ export default {
 
     onMounted(()=> {
       authStore.getProfile();
-      authStore.getUserPacks();
     })
 
     return {

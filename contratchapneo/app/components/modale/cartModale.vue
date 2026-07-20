@@ -12,7 +12,7 @@
           </h2>
           <span class="item-count">{{ cartStore.totalItems }} Contrat{{ cartStore.totalItems > 1 ? 's' : '' }}</span>
         </div>
-        <button class="close-icon" @click="closeModal">x</button>
+        <button class="close-icon" type="button" @click.prevent="closeModal">x</button>
       </div>
 
       <div class="cart-body">
@@ -28,64 +28,66 @@
             <div class="items-list">
               <div v-for="item in cartStore.cart.items" :key="item.id" class="cart-item">
                 
+                <!-- CAS 1: CONTRAT -->
                 <template v-if="item.contrat">
-                  <img
-                    :src="item.contrat.picture || picture"
-                    :alt="item.contrat.title"
-                    class="item-image"
-                  >
+                  <img :src="item.contrat.picture || picture" :alt="item.contrat.title" class="item-image">
                   <div class="item-details">
                     <h4 class="item-name">{{ item.contrat.title }}</h4>
                     <p class="item-price">{{ Number(item.unit_price).toLocaleString('fr-FR') }} FCFA</p>
                     
                     <div class="quantity-controls">
-                      <button
-                        class="qty-btn"
-                        :disabled="item.quantity <= 1 || cartStore.isLoading"
-                        @click="handleUpdateQuantity(item.id, item.quantity - 1)"
-                      >-</button>
+                      <button type="button" class="qty-btn" :disabled="item.quantity <= 1 || cartStore.isLoading" @click.prevent="handleUpdateQuantity(item.contrat.id, item.quantity - 1)">-</button>
                       <span class="quantity">{{ item.quantity }}</span>
-                      <button
-                        class="qty-btn"
-                        :disabled="cartStore.isLoading"
-                        @click="handleUpdateQuantity(item.id, item.quantity + 1)"
-                      >+</button>
+                      <button type="button" class="qty-btn" :disabled="cartStore.isLoading" @click.prevent="handleUpdateQuantity(item.contrat.id, item.quantity + 1)">+</button>
                     </div>
+                  </div>
+                  <!-- 🔥 CORRECTION : On remet item.id pour la suppression -->
+                  <div class="item-total">
+                    <span class="total-price">{{ Number(item.subtotal).toLocaleString('fr-FR') }} FCFA</span>
+                    <button type="button" class="remove-btn" :disabled="cartStore.isLoading" @click.prevent="handleRemove(item.id)">🗑️</button>
                   </div>
                 </template>
 
+                <!-- CAS 2: PROFESSIONNEL -->
                 <template v-else-if="item.pro">
-                  <img
-                    :src="item.pro.profile_picture || picture"
-                    :alt="item.pro.first_name"
-                    class="item-image"
-                    style="border-radius: 50%; object-fit: cover;" 
-                  >
+                  <img :src="item.pro.profile_picture || picture" :alt="item.pro.first_name" class="item-image" style="border-radius: 50%; object-fit: cover;">
                   <div class="item-details">
                     <h4 class="item-name">{{ item.pro.first_name }} {{ item.pro.last_name }}</h4>
                     <p style="font-size: 0.85em; color: gray;">{{ item.pro.title_display }}</p>
                     <p class="item-price">{{ Number(item.unit_price).toLocaleString('fr-FR') }} FCFA</p>
                     
                     <div class="quantity-controls">
-                      <button
-                        class="qty-btn"
-                        :disabled="item.quantity <= 1 || cartStore.isLoading"
-                        @click="handleUpdateQuantity(item.id, item.quantity - 1)"
-                      >-</button>
+                      <button type="button" class="qty-btn" :disabled="item.quantity <= 1 || cartStore.isLoading" @click.prevent="handleUpdateQuantity(item.pro.id, item.quantity - 1)">-</button>
                       <span class="quantity">{{ item.quantity }}</span>
-                      <button
-                        class="qty-btn"
-                        :disabled="cartStore.isLoading"
-                        @click="handleUpdateQuantity(item.id, item.quantity + 1)"
-                      >+</button>
+                      <button type="button" class="qty-btn" :disabled="cartStore.isLoading" @click.prevent="handleUpdateQuantity(item.pro.id, item.quantity + 1)">+</button>
                     </div>
+                  </div>
+                  <!-- 🔥 CORRECTION : On remet item.id pour la suppression -->
+                  <div class="item-total">
+                    <span class="total-price">{{ Number(item.subtotal).toLocaleString('fr-FR') }} FCFA</span>
+                    <button type="button" class="remove-btn" :disabled="cartStore.isLoading" @click.prevent="handleRemove(item.id)">🗑️</button>
                   </div>
                 </template>
 
-                <div class="item-total">
-                  <span class="total-price">{{ Number(item.subtotal).toLocaleString('fr-FR') }} FCFA</span>
-                  <button class="remove-btn" :disabled="cartStore.isLoading" @click="handleRemove(item.id)">🗑️</button>
-                </div>
+                <!-- CAS 3: PACKS -->
+                <template v-else-if="item.packs">
+                  <img :src="item.packs.picture || picture" :alt="item.packs.title" class="item-image">
+                  <div class="item-details">
+                    <h4 class="item-name">Pack : {{ item.packs.title }}</h4>
+                    <p class="item-price">{{ Number(item.unit_price).toLocaleString('fr-FR') }} FCFA</p>
+                    
+                    <div class="quantity-controls">
+                      <button type="button" class="qty-btn" :disabled="item.quantity <= 1 || cartStore.isLoading" @click.prevent="handleUpdateQuantity(item.packs.id, item.quantity - 1)">-</button>
+                      <span class="quantity">{{ item.quantity }}</span>
+                      <button type="button" class="qty-btn" :disabled="cartStore.isLoading" @click.prevent="handleUpdateQuantity(item.packs.id, item.quantity + 1)">+</button>
+                    </div>
+                  </div>
+                  <!-- 🔥 CORRECTION : On remet item.id pour la suppression -->
+                  <div class="item-total">
+                    <span class="total-price">{{ Number(item.subtotal).toLocaleString('fr-FR') }} FCFA</span>
+                    <button type="button" class="remove-btn" :disabled="cartStore.isLoading" @click.prevent="handleRemove(item.id)">🗑️</button>
+                  </div>
+                </template>
                 
               </div>
             </div>
@@ -93,7 +95,30 @@
 
           <div class="order-summary">
             <div class="summary-line"><span>Sous-total</span><span>{{ cartStore.formattedTotalPrice }} FCFA</span></div>
-            <div class="summary-line"><span>J'ai un code promo</span><input type="checkbox" checked="checked" class="toggle" /></div>
+            
+            <!-- 🔥 MODIFICATION : Liaison de la case à cocher avec v-model -->
+            <div class="summary-line">
+              <span>J'ai un code promo</span>
+              <input type="checkbox" v-model="hasPromoCode" class="toggle" />
+            </div>
+
+            <!-- 🔥 NOUVEAU : L'espace qui apparaît quand la case est cochée -->
+            <div v-if="hasPromoCode" class="promo-code-container">
+              <input 
+                type="text" 
+                v-model="promoCode" 
+                placeholder="Entrez votre code" 
+                class="promo-input" 
+              />
+              <button 
+                type="button" 
+                class="promo-apply-btn" 
+                @click="applyPromoCode"
+              >
+                Appliquer
+              </button>
+            </div>
+
             <div class="summary-line total"><span>Total</span><span class="final-price">{{ cartStore.formattedTotalPrice }} FCFA</span></div>
           </div>
         </template>
@@ -107,7 +132,7 @@
 </template>
 
 <script lang="ts">
-import { watch, onMounted, onUnmounted } from 'vue';
+import { watch, onMounted, onUnmounted,ref } from 'vue';
 import { useRouter } from '#app';
 import { useCartStore } from '../../stores/cartStore';
 
@@ -133,6 +158,16 @@ export default {
     const cartStore = useCartStore();
 
     const picture = placeholder;
+
+    const hasPromoCode = ref(false); 
+    const promoCode = ref('');
+    const applyPromoCode = async () => {
+      if (!promoCode.value.trim()) return;
+      
+      console.log("Application du code promo :", promoCode.value);
+      // Plus tard, tu pourras appeler ton store ici :
+      // await cartStore.applyPromo(promoCode.value);
+    };
 
     const closeModal = () => emit('close');
 
@@ -172,6 +207,9 @@ export default {
     return {
       cartStore,
       picture,
+      hasPromoCode,
+      promoCode,
+      applyPromoCode,
       closeModal,
       handleRemove,
       handleUpdateQuantity,

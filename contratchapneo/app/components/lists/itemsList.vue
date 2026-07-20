@@ -2,30 +2,52 @@
     <div class="cart-items">
       <div class="items-list">
         <div v-for="item in cartItems" :key="item.id" class="cart-item">
-        <img :src="item.image || placeholder" :alt="item.name" class="item-image">
-      <div class="item-details">
-        <h4 class="item-name">{{ item.name }}</h4>
-        <p class="item-price">{{ item.price }} FCFA</p>
-        <div class="quantity-controls">
-          <button class="qty-btn" @click="decrease(item.id, item.quantity)" :disabled="item.quantity <= 1">-</button>
-          <span class="quantity">{{ item.quantity }}</span>
-          <button class="qty-btn" @click="increase(item.id, item.quantity)">+</button>
+          <img :src="item.image || placeholder" :alt="item.name" class="item-image">
+          <div class="item-details">
+            <h4 class="item-name">{{ item.name }}</h4>
+            <p class="item-price">{{ item.price }} FCFA</p>
+            <div class="quantity-controls">
+              <!-- Tu peux aussi utiliser v-if="!isCheckout" ici si tu veux bloquer le changement de quantité -->
+              <button 
+                type="button" 
+                class="qty-btn" 
+                @click.prevent="decrease(item.id, item.quantity)" 
+                :disabled="item.quantity <= 1 || cartStore.isLoading"
+              >-</button>
+              
+              <span class="quantity">{{ item.quantity }}</span>
+              
+              <button 
+                type="button" 
+                class="qty-btn" 
+                @click.prevent="increase(item.id, item.quantity)"
+                :disabled="cartStore.isLoading"
+              >+</button>
+            </div>
+          </div>
+          <div class="item-total">
+              <span class="total-price">{{ (Number(item.price) * item.quantity).toLocaleString('fr-FR') }} FCFA</span>
+              
+              <!-- ⚡️ NOUVEAU : Le bouton n'apparaît que si on N'EST PAS dans le checkout -->
+              <button 
+                v-if="!isCheckout"
+                type="button" 
+                class="remove-btn" 
+                :disabled="cartStore.isLoading" 
+                @click.prevent="removeFromCart(item.cartItemId)"
+              >🗑️</button>
+          </div>
         </div>
       </div>
-      <div class="item-total">
-          <span class="total-price">{{ (Number(item.price) * item.quantity).toLocaleString('fr-FR') }} FCFA</span>
-          <button class="remove-btn" @click="removeFromCart(item.id)">🗑️</button>
-      </div>
-      </div>
-    </div>
 
-        <div class="order-summary">
-            <div class="summary-line"><span>Sous-total</span><span>{{ formattedTotalPrice }} FCFA</span></div>
-            <div class="summary-line"><span>J'ai un code promo</span><span>Gratuite</span></div>
-            <div class="summary-line total"><span>Total</span><span class="final-price">{{ formattedTotalPrice }} FCFA</span></div>
-        </div>
+      <div class="order-summary">
+          <div class="summary-line"><span>Sous-total</span><span>{{ formattedTotalPrice }} FCFA</span></div>
+          <div class="summary-line"><span>J'ai un code promo</span><span>Gratuite</span></div>
+          <div class="summary-line total"><span>Total</span><span class="final-price">{{ formattedTotalPrice }} FCFA</span></div>
+      </div>
     </div>
 </template>
+
 <script lang="ts">
 import { computed } from 'vue';
 import { useCartStore } from '../../stores/cartStore';
@@ -33,35 +55,41 @@ import placeholder from '@/assets/pictures/ContratChap/pexels-thirdman-5060819.j
 
 export default {
   name: 'Itemslist',
-  setup(){
+  // ⚡️ NOUVEAU : Déclaration de la prop
+  props: {
+    isCheckout: {
+      type: Boolean,
+      default: false
+    }
+  },
+  setup() {
     const cartStore = useCartStore();
 
     const cartItems = computed(() => (
       (cartStore.cart?.items ?? []).map(i => {
-        
-        // On prépare des variables par défaut
         let itemName = 'Article inconnu';
         let itemImage = null;
+        let targetId = i.id; 
 
-        // Si c'est un contrat
         if (i.contrat) {
           itemName = i.contrat.title;
           itemImage = i.contrat.picture;
+          targetId = i.contrat.id; 
         } 
-        // Si c'est un professionnel
         else if (i.pro) {
           itemName = `${i.pro.first_name} ${i.pro.last_name}`; 
           itemImage = i.pro.profile_picture;
+          targetId = i.pro.id; 
         }
-        // 💡 NOUVEAU : Si c'est un pack !
-        else if (i.pack) {
-          // Assure-toi que ton modèle Pack utilise bien 'title' (ou change pour 'name' si besoin)
-          itemName = `Pack : ${i.pack.title}`; 
-          itemImage = i.pack.picture; 
+        else if (i.packs) {
+          itemName = `Pack : ${i.packs.title || i.packs.name || 'Inconnu'}`; 
+          itemImage = i.packs.picture;
+          targetId = i.packs.id; 
         }
 
         return {
-          id: i.id,
+          cartItemId: i.id,
+          id: targetId,
           name: itemName,
           price: Number(i.unit_price || 0), 
           subtotal: Number(i.subtotal || 0), 
@@ -74,19 +102,32 @@ export default {
     const formattedTotalPrice = computed(() => cartStore.formattedTotalPrice);
 
     const removeFromCart = async (id: string) => {
-      await cartStore.removeFromCart(id);
+      try {
+        await cartStore.removeFromCart(id);
+      } catch (e) {
+        console.error("Erreur lors de la suppression:", e);
+      }
     };
 
     const decrease = async (id: string, qty: number) => {
       if (qty <= 1) return;
-      await cartStore.updateQuantity(id, qty - 1);
+      try {
+        await cartStore.updateQuantity(id, qty - 1);
+      } catch (e) {
+        console.error("Erreur lors de la diminution:", e);
+      }
     };
 
     const increase = async (id: string, qty: number) => {
-      await cartStore.updateQuantity(id, qty + 1);
+      try {
+        await cartStore.updateQuantity(id, qty + 1);
+      } catch (e) {
+        console.error("Erreur lors de l'augmentation:", e);
+      }
     };
 
     return {
+      cartStore,
       cartItems,
       formattedTotalPrice,
       removeFromCart,
@@ -160,11 +201,14 @@ export default {
   cursor: pointer;
   font-size: 1rem;
   font-weight: 500;
+  transition: all 0.2s;
 }
 
+/* ⚡️ Amélioration visuelle quand le bouton est désactivé (pendant le chargement API) */
 .qty-btn:disabled {
   opacity: 0.3;
   cursor: not-allowed;
+  background: #f1f5f9;
 }
 
 .quantity {
@@ -193,6 +237,12 @@ export default {
   font-size: 1rem;
   opacity: 0.6;
   padding: 0.25rem;
+  transition: opacity 0.2s;
+}
+
+.remove-btn:disabled {
+  opacity: 0.2;
+  cursor: not-allowed;
 }
 
 /* Résumé de commande */
