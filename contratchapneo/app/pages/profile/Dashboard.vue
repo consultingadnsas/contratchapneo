@@ -7,20 +7,28 @@
     <main class="main-content">
       
       <header class="dashboard-header">
+        
         <div v-if="authStore.user">
           <h1 class="greeting">Bonjour, {{ authStore.user.user?.username ?? 'invité' }}</h1>
           <p class="subtitle">Voici un résumé de votre activité juridique.</p>
         </div>
+        
         <div v-else>
           <p>Chargement...</p>
         </div>
-        <mainButton/>
+        
+        <dashboard-btn/>
+
       </header>
       
       <div class="dashboard-grid">
+
         <profile-section/>
+
       </div>
+
     </main>
+    
   </div>
 
 </template>
@@ -30,7 +38,9 @@ import { ref, onMounted } from 'vue';
 import sidebar from '../../components/navigation/sidebar.vue'; 
 import cardSection from '../../components/sections/bankContratSections/cardSection.vue'
 import mainButton from '../../components/buttons/secondButton.vue';
+import dashboardBtn from '../../components/buttons/dashboardBtn.vue'
 import profileSection from '../../components/sections/userSection/profileSection.vue'
+import BaseResearchInput from '../../components/input/BaseResearchInput.vue'
 import {useAuthStore} from '../../stores/authStore'
 
 export default {
@@ -39,7 +49,9 @@ export default {
     sidebar,
     cardSection,
     mainButton,
-    profileSection
+    profileSection,
+    dashboardBtn,
+    BaseResearchInput
   },
   setup() {
 
@@ -87,7 +99,7 @@ export default {
 ========================================= */
 .main-content {
   flex: 1; /* Prend toute la place restante à côté de la sidebar */
-  padding: 1.5rem;
+  padding: 0.5rem;
   overflow-y: auto; 
   overflow-x: hidden; 
 }
@@ -122,7 +134,6 @@ export default {
   display: flex; 
   flex-direction: column; 
   gap: 1rem; 
-  margin-bottom: 2rem; 
 }
 .greeting { 
   font-size: 1.8rem; 

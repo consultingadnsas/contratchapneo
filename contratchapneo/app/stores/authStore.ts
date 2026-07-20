@@ -120,9 +120,45 @@ export const useAuthStore = defineStore('auth', () => {
 
   }
 
-  const logout = async()=>{
-    
-  }
+  const logout = async () => {
+    isLoading.value = true;
+
+    try {
+      // 1. Avertir le backend de fermer la session
+      await $api('/account/logout/', {
+        method: 'POST'
+      });
+
+      // 2. Supprimer le(s) cookie(s) d'authentification
+      // Assure-toi que le nom 'token' correspond bien à celui que tu utilises lors du login
+      const token = useCookie('token');
+      token.value = null; 
+      
+      // Si tu stockais les infos de l'utilisateur, supprime-les aussi :
+      // const userCookie = useCookie('user');
+      // userCookie.value = null;
+
+      // 3. Vider les stores Pinia (Très important pour le panier hybride !)
+      /* const cartStore = useCartStore();
+      cartStore.clearCart(); // On vide le panier pour repasser en mode "Invité"
+      */
+
+      console.log('✅ Déconnexion réussie !');
+
+      // 4. Rediriger l'utilisateur vers la page de connexion ou la page d'accueil
+      // replace: true empêche l'utilisateur de faire "Retour" et de retomber sur une page connectée
+      await navigateTo('/auth/login', { replace: true }); 
+
+    } catch (err: any) {
+      console.error('❌ Erreur lors de la déconnexion :', err);
+      // Même si le backend renvoie une erreur, on force la déconnexion locale par sécurité
+      const token = useCookie('token');
+      token.value = null;
+      await navigateTo('/auth/login', { replace: true });
+    } finally {
+      isLoading.value = false;
+    }
+  };
 
   return {
     user,
@@ -130,6 +166,7 @@ export const useAuthStore = defineStore('auth', () => {
     error,
     register,
     login,
-    getProfile
+    getProfile,
+    logout
   }
 })
