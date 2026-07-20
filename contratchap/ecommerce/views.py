@@ -325,7 +325,6 @@ class CheckoutView(APIView):
     5. Retourne la commande créée
     """
     permission_classes = [AllowAny]
-    authentication_classes = []
 
     def post(self, request):
         cart = get_or_create_cart(request)
@@ -464,7 +463,6 @@ class OrderDetailView(APIView):
         Accessible au user connecté propriétaire OU à l'invité via son email.
     """
     permission_classes = [AllowAny]
-    authentication_classes = []
 
     def get(self, request, order_id):
         order = get_object_or_404(
