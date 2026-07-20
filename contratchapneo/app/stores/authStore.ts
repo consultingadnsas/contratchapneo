@@ -120,8 +120,30 @@ export const useAuthStore = defineStore('auth', () => {
 
   }
 
-  const logout = async()=>{
-    
+  const logout = async()=> {
+
+    isLoading.value = true;
+
+    try {
+
+      const response = await $api(`/auth/logout/`, {
+        method: 'POST'
+      })
+
+      if (response) {
+
+        return response;
+
+      }
+
+    } catch (err:any) {
+
+      console.error("Erreur lors de la déconnexion", error);
+
+    } finally {
+      isLoading.value;
+    }
+
   }
 
   return {
@@ -130,6 +152,7 @@ export const useAuthStore = defineStore('auth', () => {
     error,
     register,
     login,
-    getProfile
+    getProfile,
+    logout
   }
 })
