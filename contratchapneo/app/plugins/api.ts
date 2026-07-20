@@ -1,12 +1,22 @@
 export default defineNuxtPlugin(async () => {
+  
   const config = useRuntimeConfig()
+  
+  // 🛠️ CORRECTION 1 : Récupérer le token depuis les cookies Nuxt
+  const token = useCookie('token') 
 
   const api = $fetch.create({
     baseURL: config.public.apiBase || 'http://localhost:8000',
-    credentials: 'include', // ✅ Le navigateur enverra ton cookie HttpOnly tout seul !
+    credentials: 'include', // ✅ Laisse ça, c'est très bien pour le CSRF et les sessions
 
     onRequest({ options }) {
-      // ❌ Plus besoin d'injecter manuellement Authorization: Bearer !
+      // 🛠️ CORRECTION 2 : Réinjecter le token JWT pour authentifier l'utilisateur
+      if (token.value) {
+        options.headers = {
+          ...options.headers,
+          Authorization: `Bearer ${token.value}`
+        }
+      }
 
       const method = options.method?.toUpperCase() || 'GET'
       if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(method)) {
