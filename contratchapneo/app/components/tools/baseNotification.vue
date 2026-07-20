@@ -185,6 +185,9 @@ export default {
 }
 
 .toast-message {
+  width: 200px;
+  display: flex;
+  flex-direction: row;
   margin: 0;
   font-size: 0.9rem;
   color: #64748b;

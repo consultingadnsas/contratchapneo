@@ -36,12 +36,6 @@
 
 
           <div class="form-options">
-            <label class="checkbox-container">
-              <input type="checkbox" v-model="rememberMe" />
-              <span class="checkmark"></span>
-              Se souvenir de moi
-            </label>
-            
             <a href="#" v-if="loginFailed" class="forgot-link fade-in">Code perdu ?</a>
           </div>
 

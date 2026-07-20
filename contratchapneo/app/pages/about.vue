@@ -91,14 +91,23 @@
 
             <!-- SECTION 3 : Qui sommes-nous (Inspiration : "Our journey: key milestones") -->
             <section class="navis-section about-us-section">
-                <div class="about-us-header">
-                    <h2 class="section-title">Qui sommes-nous ?</h2>
-                    <p class="description muted-text">
-                        ADN CONSULTING SAS est un cabinet juridique innovant fondé en 2017 qui à travers un positionnement particulier, 
-                        une équipe compétente et smart et des offres répondant aux besoins et réalité des PME's et startups, 
-                        s'est donné pour mission, depuis sa date de création de faire en sorte que dans toutes les actions et engagements, 
-                        les PMEs/startups voient leurs intérêts grandement protégés et grandissent sainement.
-                    </p>
+                <!-- NOUVEAU : Conteneur Flex pour le texte à gauche et le logo à droite -->
+                <div class="about-us-top">
+                    <div class="about-us-header">
+                        <h2 class="section-title">Qui sommes-nous ?</h2>
+                        <p class="description muted-text">
+                            ADN CONSULTING SAS est un cabinet juridique innovant fondé en 2017 qui à travers un positionnement particulier, 
+                            une équipe compétente et smart et des offres répondant aux besoins et réalité des PME's et startups, 
+                            s'est donné pour mission, depuis sa date de création de faire en sorte que dans toutes les actions et engagements, 
+                            les PMEs/startups voient leurs intérêts grandement protégés et grandissent sainement.
+                        </p>
+                    </div>
+
+                    <!-- NOUVEAU : Le logo à droite -->
+                    <div class="about-us-logo">
+                        <!-- Remplace "logo-cabinet.png" par le chemin exact de ton image -->
+                        <img src="/ADN.jpg" alt="Logo ADN Consulting SAS" class="cabinet-logo">
+                    </div>
                 </div>
 
                 <!-- Les 3 cartes avec la première en bleu pour attirer l'oeil -->
@@ -130,7 +139,7 @@
                         <p>Sécurité, croissance, inclusion, innovation, efficacité </p>
                     </div>
                 </div>
-            </section>  
+            </section>
         </main>
     </div>
     <Footer />
@@ -173,20 +182,6 @@ export default {
     box-shadow: 0 50px 100px rgba(0, 0, 0, 0.05);
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     color: #1a1a1a;
-}
-
-/* ── TYPOGRAPHIE ET ELEMENTS COMMUNS ── */
-.pill-badge {
-    display: inline-block;
-    border: 1px solid #e2e8f0;
-    color: #64748b;
-    padding: 6px 16px;
-    border-radius: 50px;
-    font-size: 0.75rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    margin-bottom: 1.5rem;
 }
 
 .main-title {
@@ -417,6 +412,34 @@ export default {
 .secondary-card p {
     color: #64748b;
 }
+/* ── SECTION QUI SOMMES-NOUS (Nouvelle disposition) ── */
+.about-us-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 4rem;
+    width: 100%;
+}
+
+.about-us-header {
+    flex: 1; /* Le texte prendra l'espace nécessaire */
+    max-width: 650px;
+}
+
+.about-us-logo {
+    flex-shrink: 0; /* Empêche le logo de s'écraser */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 250px; /* Ajuste cette valeur selon la taille souhaitée pour ton logo */
+    height: auto;
+}
+
+.cabinet-logo {
+    width: 100%;
+    height: auto;
+    object-fit: contain; /* S'assure que le logo ne soit pas déformé */
+}
 
 /* ── RESPONSIVE ── */
 @media (max-width: 1024px) {
@@ -451,7 +474,17 @@ export default {
     .cards-grid {
         grid-template-columns: 1fr;
     }
+    .about-us-top {
+        flex-direction: column-reverse; /* Met le logo au-dessus du texte sur mobile */
+        gap: 2rem;
+        text-align: center;
+    }
+
+    .about-us-logo {
+        width: 180px; /* Logo un peu plus petit sur mobile */
+    }
 }
+
 
 @media (max-width: 640px) {
     .features-grid {

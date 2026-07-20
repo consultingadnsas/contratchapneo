@@ -42,10 +42,10 @@
 
                 <li class="mobile-accordion">
                     <div class="mobile-accordion__trigger-wrapper">
-                        <NuxtLink to="/services" @click="close">Centre d'appel</NuxtLink>
+                        <NuxtLink to="/services" @click="close">Centre d'aide</NuxtLink>
                     </div>
                 </li>
-                <li><NuxtLink to="/etudeContrat" @click="close">Révision de contrats</NuxtLink></li>
+                <li><NuxtLink to="/etudeContrat" @click="close">Revise ton contrats</NuxtLink></li>
                 <li><NuxtLink to="/about" @click="close">À propos</NuxtLink></li>
             </ul>
             <a href="#" class="cta-mobile" @click="close">Connexion</a>

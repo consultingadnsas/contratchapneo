@@ -37,7 +37,7 @@
         />
 
         <CheckoutButton
-            label="Payer"
+            label="Confirmer"
             type="submit"
             :isLoading="cartStore.isLoading"
         />

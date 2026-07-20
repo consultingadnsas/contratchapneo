@@ -3,7 +3,10 @@
     <section class="checkout-section">
         <div class="sides" v-if="!isPaiementModale && !isXpayeModale">
             <itemsListVue/>
-            <checkoutFormVue @success="handlePaiementSuccess"/>
+            <checkoutFormVue 
+                :formTitle="dynamicFormTitle" 
+                @success="handlePaiementSuccess"
+            />
         </div>
         <paiementModale
             :isOpen="isPaiementModale"
@@ -34,7 +37,7 @@
 </template>
 
 <script lang="ts">
-import { ref, defineAsyncComponent } from 'vue'
+import { ref, computed ,defineAsyncComponent } from 'vue'
 import checkoutFormVue from '../../forms/checkoutForm.vue'
 import succesFormVue from '../../forms/succesForm.vue'
 import itemsListVue from '../../lists/itemsList.vue'
@@ -62,11 +65,25 @@ export default {
         const isXpayeModale = ref<boolean>(false);
         const selectedPaymentMethod = ref<string>('');
         const isSuccess = ref<boolean>(false);
+        const cartStore = useCartStore();
+
+        // ⚡️ LOGIQUE DYNAMIQUE POUR LE TITRE
+        const dynamicFormTitle = computed(() => {
+            const items = cartStore.cart?.items || [];
+            
+            // Vérifie s'il y a au moins un élément dans le panier qui possède
+            // soit la propriété `pro`, soit la propriété `packs` (c'est-à-dire un service).
+            const hasService = items.some((item) => item.pro != null || item.packs != null);
+
+            if (hasService) {
+                return "Confirmer votre transaction";
+            }
+            return "Confirmer votre achat"; // Valeur par défaut pour les contrats
+        });
 
         const handlePaiementSuccess = (data: any) => {
             console.log('💳 [CheckoutSection] handlePaiementSuccess appelé avec:', data);
             const paiementStore = usePaiementStore();
-            const cartStore = useCartStore();
             const orderStore = useOrderStore();
 
             console.log('📊 [CheckoutSection] CartStore state:', {
@@ -126,8 +143,10 @@ export default {
             isXpayeModale,
             selectedPaymentMethod,
             isSuccess,
+            dynamicFormTitle,
             handlePaiementSuccess,
             handlePaymentConfirmed,
+            
         }
 
 

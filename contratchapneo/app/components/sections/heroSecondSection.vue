@@ -400,7 +400,7 @@ export default defineComponent({
 .pic-container::before {
     content: '';
     position: absolute;
-    top: 22%; left: -2%; width: 100%; aspect-ratio: 1 / 1;
+    top: 20%; left: 1%; width: 100%; aspect-ratio: 1 / 1;
     border-radius: 50%; 
     background: radial-gradient(circle at 40% 65%, #3197f5 0%, #1a62cc 55%, #082d73 100%);
     box-shadow: 0 0 60px 20px rgba(11, 16, 12, 0.4); 
@@ -458,6 +458,7 @@ export default defineComponent({
     .pic-wrapper { padding: 80px 40px; }
     .pic-container { width: 300px; }
     .pic-container img { min-width: 350px; }
+    .pic-container::before { top: 14%; left: 0%; width: 100%; }
     .floating-card { width: 160px !important; }
     .card-top-left, .card-top-right       { --ty-base: -180px; }
     .card-bottom-left, .card-bottom-right { --ty-base: 100px; }
@@ -487,8 +488,11 @@ export default defineComponent({
     .final-phrase { font-size: clamp(3rem, 5vw, 5.5rem); }
 
     .pic-wrapper { width: 50%; padding: 60px 40px; justify-content: flex-end; }
-    .pic-container { width: 350px; }
-    .pic-container img { min-width: 450px; }
+    .pic-container { width: 400px; }
+    .pic-container img { min-width: 400px; }
+    .pic-container::before {
+    top: 20%; left: 10%; width: 80%;
+}
     
     .floating-card { width: 140px !important; min-height: 110px; }
     .floating-card:hover {

@@ -45,11 +45,11 @@
 
         <li class="dropdown-item">
             <NuxtLink to="/services" class="dropdown-trigger">
-                Centre d'appel
+                Centre d'aide
             </NuxtLink>
         </li>
 
-        <li><NuxtLink to="/etudeContrat">Révision de contrats</NuxtLink></li>
+        <li><NuxtLink to="/etudeContrat">Revise ton contrats</NuxtLink></li>
 
         <li class="nav-divider"></li>
 
@@ -122,10 +122,15 @@ export default {
     .nav-divider {
         width: 1px;
         height: 20px;
-        background-color: transparent; /* S'adapte au thème clair/sombre automatiquement */
+        background-color: transparent; 
         opacity: 0.3;
         margin-right: 1.5rem;
-        margin-left: auto; /* 👈 C'est ceci qui pousse tout le groupe de droite vers la droite de l'écran */
+        margin-left: auto; 
+    }
+
+    /* ── CORRECTION DU BUG D'ALIGNEMENT ICI ── */
+    .dropdown-item {
+        position: relative; /* Retient le sous-menu exactement en dessous de cet élément */
     }
 
     .dropdown-menu {
@@ -143,7 +148,7 @@ export default {
     .dropdown-fade-enter-active, .dropdown-fade-leave-active { transition: all 0.2s ease; }
     .dropdown-fade-enter-from, .dropdown-fade-leave-to { opacity: 0; transform: translateX(-50%) translateY(-6px); }
 
-    /* Thèmes et Scroll (Adaptés pour cibler le wrapper nav-links-desktop directement) */
+    /* Thèmes et Scroll */
     .nav-links-desktop.theme-dark li a, .nav-links-desktop.theme-dark li .dropdown-trigger { color: white; }
     .nav-links-desktop.theme-light li a, .nav-links-desktop.theme-light li .dropdown-trigger { color: var(--primary-color); }
     .nav-links-desktop.theme-light li a:hover, .nav-links-desktop.theme-light li .dropdown-trigger:hover {
