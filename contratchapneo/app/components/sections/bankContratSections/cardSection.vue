@@ -337,7 +337,7 @@ export default {
     font-weight: 700;
     line-height: 1.2;
     letter-spacing: -0.02em;
-    color: var(--primary-color-dark); 
+    color: #ffffff; 
     margin-bottom: 0.5rem;
 }
 
