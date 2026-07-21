@@ -2,6 +2,7 @@ from docxtpl import DocxTemplate
 from django.http import FileResponse
 import tempfile
 import os
+import io
 
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -261,6 +262,7 @@ class ContractTagsView(APIView):
         return Response({"tags": tags})
     
     def post(self, request, contrat_id):
+        
         try:
             # 1. Récupération du contrat
             contrat = get_object_or_404(Contrat, id=contrat_id)
@@ -296,6 +298,9 @@ class ContractTagsView(APIView):
         except Exception as e:
             return Response({"error": str(e)}, status=500)
 
+# ==========================================
+# 1 Manage all about packs
+# ==========================================
 
 class PacksView(APIView):
 
@@ -312,10 +317,106 @@ class PacksView(APIView):
 
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+# ==========================================
+# 1- Download contract once authenticated
+# ==========================================
 
+class DownloadContractFromPack(APIView):
 
+    permission_classes = [IsAuthenticated]
 
-# Manage contracts and categories with proper permissions and error handling.
+    def post(self, request, contract_id):
+        # 1. Récupération du contrat
+        contrat = get_object_or_404(Contrat, id=contract_id)
+        user = request.user
+
+        # 2. Vérification du pack de l'utilisateur
+        user_pack = UserPack.objects.filter(user=user, is_active=True).first()
+
+        if not user_pack:
+            return Response(
+                {"error": "Vous n'avez aucun pack actif pour télécharger ce contrat."},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        # 3. Vérification préalable du modèle (avant de toucher aux crédits)
+        if not contrat.fichier_modele or not contrat.fichier_modele.path:
+            return Response(
+                {"error": "Ce contrat ne possède pas de modèle disponible pour la génération."},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        already_unlocked = contrat in user_pack.contrats_choisis.all()
+
+        # On vérifie les crédits AVANT de générer, pour échouer vite si besoin
+        if not already_unlocked and user_pack.credits_restants <= 0:
+            return Response(
+                {"error": "Vous n'avez plus de crédits disponibles dans votre pack."},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        # 4. Génération dynamique du fichier — AVANT tout débit de crédit
+        with tempfile.TemporaryDirectory() as temp_dir:
+            try:
+                user_inputs = request.data.get('user_inputs', {})
+
+                # Remplissage du template Word
+                doc = DocxTemplate(contrat.fichier_modele.path)
+                doc.render(user_inputs)
+
+                tmp_docx_path = os.path.join(temp_dir, f"temp_{contrat.id}.docx")
+                doc.save(tmp_docx_path)
+
+                # Conversion en PDF — même signature que OrderDownloadView
+                convert_docx_to_pdf(tmp_docx_path, temp_dir)
+                generated_temp_pdf = os.path.join(temp_dir, f"temp_{contrat.id}.pdf")
+
+                if not os.path.exists(generated_temp_pdf):
+                    return Response(
+                        {"error": "Erreur lors de la conversion du document en PDF."},
+                        status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                    )
+
+                # On lit les bytes du PDF AVANT que le TemporaryDirectory ne soit nettoyé
+                with open(generated_temp_pdf, 'rb') as f:
+                    pdf_bytes = f.read()
+
+            except Exception as e:
+                return Response(
+                    {"error": f"Erreur lors de la génération du document : {str(e)}"},
+                    status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                )
+
+        # 5. La génération a réussi : on débloque et on décrémente le crédit, de façon atomique
+        if not already_unlocked:
+            with transaction.atomic():
+                # On reverrouille la ligne pour éviter une race condition sur credits_restants
+                locked_pack = UserPack.objects.select_for_update().get(pk=user_pack.pk)
+
+                if locked_pack.credits_restants <= 0:
+                    return Response(
+                        {"error": "Vous n'avez plus de crédits disponibles dans votre pack."},
+                        status=status.HTTP_403_FORBIDDEN
+                    )
+
+                locked_pack.contrats_choisis.add(contrat)
+                locked_pack.credits_restants = F('credits_restants') - 1
+                locked_pack.save(update_fields=['credits_restants'])
+
+        # 6. Envoi du fichier en réponse (depuis les bytes déjà lus en mémoire)
+        buffer = io.BytesIO(pdf_bytes)
+        buffer.seek(0)
+
+        safe_title = "".join(c for c in contrat.title if c.isalnum() or c in " _-").rstrip()
+        response = FileResponse(
+            buffer,
+            as_attachment=True,
+            filename=f"contrat_{safe_title}.pdf",
+            content_type='application/pdf'
+        )
+        response['Access-Control-Expose-Headers'] = 'Content-Disposition'
+
+        return response
 
 # ==========================================
 # 1. URL: /api/admin/contracts/

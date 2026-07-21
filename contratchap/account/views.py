@@ -180,3 +180,4 @@ class UserPackView(APIView):
         packs = UserPack.objects.filter(user=request.user)
         serializer = PackSerializer(packs, many=True, context={'request': request})
         return Response(serializer.data, status=status.HTTP_200_OK)
+    

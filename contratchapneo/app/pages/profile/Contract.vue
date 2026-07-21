@@ -1,48 +1,49 @@
 <template>
-  
-  <div class="dashboard-container">
-    
-    <sidebar />
-    
-    <main class="main-content">
-      
-      <header class="dashboard-header">
-        
-        <div v-if="authStore.user">
-          <h1 class="greeting">Bonjour, {{ authStore.user.user?.username ?? 'invité' }}</h1>
-          <p class="subtitle">Voici un résumé de votre activité juridique.</p>
-        </div>
-        
-        <div v-else>
-          <p>Chargement...</p>
-        </div>
-        
-        <dashboard-btn/>
 
-      </header>
-      
-      <div class="dashboard-grid">
+    <div class="dashboard-container">
 
-        <profile-section/>
+        <sidebar />
 
-      </div>
+        <main class="main-content">
+            
+            <header class="dashboard-header">
+            
+                <div v-if="authStore.user">
+                    <h1 class="greeting">Bonjour, {{ authStore.user.user?.username ?? 'invité' }}</h1>
+                    <p class="subtitle">Voici un résumé de votre activité juridique.</p>
+                </div>
+            
+                <div v-else>
+                    <p>Chargement...</p>
+                </div>
+                
+                <dashboard-btn/>
 
-    </main>
-    
-  </div>
+            </header>
+            
+            <div class="dashboard-grid">
+
+                <user-contrat-section/>
+
+            </div>
+
+        </main>
+
+    </div>
 
 </template>
 
 <script lang="ts">
 import { ref, onMounted } from 'vue';
+import {useAuthStore} from '../../stores/authStore'
+
+
 import sidebar from '../../components/navigation/sidebar.vue'; 
 import cardSection from '../../components/sections/bankContratSections/cardSection.vue'
 import mainButton from '../../components/buttons/secondButton.vue';
 import dashboardBtn from '../../components/buttons/dashboardBtn.vue'
 import profileSection from '../../components/sections/userSection/profileSection.vue'
-import BaseResearchInput from '../../components/input/BaseResearchInput.vue'
-import {useAuthStore} from '../../stores/authStore'
-
+import userContratSection from '../../components/sections/userSection/userContratSection.vue'
 export default {
   name: 'DashboardLayout',
   components: {
@@ -51,7 +52,8 @@ export default {
     mainButton,
     profileSection,
     dashboardBtn,
-    BaseResearchInput
+    userContratSection
+
   },
   setup() {
 
@@ -98,10 +100,16 @@ export default {
    CONTENU PRINCIPAL (ZONE BLANCHE)
 ========================================= */
 .main-content {
-  flex: 1; /* Prend toute la place restante à côté de la sidebar */
+  flex: 1;
+  min-width: 0; /* 🔥 Empêche le contenu de forcer la largeur */
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  height: 100%;
   padding: 0.5rem;
-  overflow-y: auto; 
-  overflow-x: hidden; 
+  overflow-y: auto;
+  overflow-x: hidden;
+  box-sizing: border-box;
 }
 
 @media (min-width: 1024px) {
@@ -156,15 +164,15 @@ export default {
   align-self: flex-start; 
 }
 
-.dashboard-grid { 
-  display: grid; 
-  grid-template-columns: 1fr; 
-  gap: 1.5rem; 
-  width: 100%; 
-  height: 100%;
-  display: flex;
-  justify-content: center;
+.dashboard-grid {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  display: flex;           /* Si tu veux centrer un seul élément */
+  flex-direction: column;
   align-items: center;
+  gap: 1.5rem;
+  height: 100%;
 }
 
 @media (min-width: 1024px) {

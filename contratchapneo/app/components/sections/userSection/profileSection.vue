@@ -1,5 +1,5 @@
 <template>
-    <section class="h-full flex flex-col gap-2">
+    <section class="h-full flex flex-col justify-center items-center gap-2">
 
         <contractCardSkeleton v-if="profileStore.isLoading" />
 
@@ -12,14 +12,19 @@
 
         <div v-else class="pack-container">
             
-            <pack-buying-card 
-                v-for="(pack, index) in profileStore.userPacks" 
-                :key="pack.id || index"
-                :title="pack.title" 
-                :price="pack.prix"
-                :description="pack.description"
-                @buy="addToCart(pack.id)"
-            />
+            <!--
+                <pack-buying-card 
+                    v-for="(pack, index) in profileStore.userPacks" 
+                    :key="pack.id || index"
+                    :title="pack.title" 
+                    :price="pack.prix"
+                    :description="pack.description"
+                    @buy="addToCart(pack.id)"
+                />
+            -->
+             
+                <dash-board-input label="Je recherche mon contrat"/>
+            
             
         </div>
 
@@ -35,12 +40,16 @@ import { useRouter } from 'vue-router'
 import contractCardSkeleton from '../../cards/contractCardSkeleton.vue';
 import emptyState from '../../tools/emptyState.vue'
 import packBuyingCard from '../../cards/packBuyingCard.vue'
+import dashboardInput from '../../input/dashboardInput.vue'
+import DashBoardInput from '../../input/dashBoardInput.vue';
 
 export default {
     components: {
         contractCardSkeleton,
         emptyState,
-        packBuyingCard
+        packBuyingCard,
+        dashboardInput,
+        DashBoardInput
     },
 
     setup() {
@@ -59,6 +68,8 @@ export default {
 
         onMounted(async () => {
             await profileStore.fetchPacks();
+
+            await profileStore.getPacks();
         });
 
         return {
@@ -77,7 +88,7 @@ export default {
     height: 100%;
     display: flex;
     flex-direction: column;
-    justify-content: center;
+    justify-content: normal;
     align-items: center;
     padding: 1rem;
     gap: 0.5rem;
@@ -85,8 +96,7 @@ export default {
 
 @media(min-width: 768px) {
     .pack-container {
-        display: grid;
-        grid-template-columns: 1fr 1fr 1fr;
+        
     }
 }
 </style>
