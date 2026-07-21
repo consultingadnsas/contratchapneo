@@ -259,9 +259,9 @@ export default {
     flex-direction: column;
     align-items: center;
     gap: 1.5rem;
-    padding: 5.5rem 1rem 1rem 1rem;
+    padding: 10rem 1rem 1rem 1rem;
     overflow: hidden; 
-    background:#FDFCFC; 
+    background:linear-gradient(to bottom, #050e1b, #4b4545); 
 }
 
 .contrat-card-section > * {
@@ -304,7 +304,7 @@ export default {
 }
 
 .packages-header p {
-    color: #575d67;
+    color: #cbd5e1;
     font-size: 1.05rem;
 }
 
@@ -343,7 +343,7 @@ export default {
 
 .hero-header p {
     font-size: 1.1rem;
-    color: #4b525c; 
+    color: #cbd5e1; 
     max-width: 550px;
     margin: 0 auto;
     line-height: 1.5;
@@ -361,7 +361,7 @@ export default {
     border-radius: 50px;
     font-size: 1.2rem;
     width: 100%;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
     background: #ffffff;
     transition: box-shadow 0.2s ease, border-color 0.2s ease;
 }
@@ -385,11 +385,12 @@ export default {
 .btn-inline {
     flex: 1; 
     max-width: 250px; 
+    font-weight: 600;
 }
 
 .btn-secondary {
     background: rgba(255, 255, 255, 0.05); 
-    color: var(--primary-color);
+    color: #ffffff;
     border: 1px solid rgba(0, 0, 0, 0.2);
     padding: 0 24px;
     height: 48px;
@@ -410,7 +411,7 @@ export default {
     color: #10b981;
     background: rgba(255, 255, 255, 0.1);
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(52, 211, 153, 0.15);
+    box-shadow: 0 4px 15px rgba(52, 211, 153, 0.2);
 }
 
 /* ==========================================

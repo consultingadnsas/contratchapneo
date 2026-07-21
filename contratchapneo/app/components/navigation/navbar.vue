@@ -2,7 +2,7 @@
     <header :class="['main-header', `theme-${theme}`, { 'is-scrolled': isScrolled }]">
         <nav class="nav-container">
             <NuxtLink to="/" class="pic__container" @click="closeMenu">
-                <img src="/CONTRATCHAP.png" alt="ContratchapNeo">
+                <img src="/LOGO_CONTRATCHAP.png" alt="ContratchapNeo">
             </NuxtLink>
 
             <DesktopMenu :theme="theme" :isScrolled="isScrolled" />
@@ -137,7 +137,7 @@ export default {
 }
 
 .nav-container { display: flex; justify-content: space-between; align-items: center; height: 70px; padding: 0 1.5rem; }
-.pic__container img { width: 70px; height: 60px; }
+.pic__container img { width: 200px; height: 90px; }
 .cta-desktop { display: none; }
 .mobile-only { display: flex; }
 
@@ -152,7 +152,7 @@ export default {
     .main-header.is-scrolled {
         top: 8px; background: rgba(255, 255, 255, 0.65); border: 1px solid rgba(255, 255, 255, 0.45); box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.06);
     }
-    .pic__container img { width: 75px; height: 60px; }
+    .pic__container img { width: 170px; height: 80px; margin-bottom:5px }
     .nav-container { padding: 0 2rem; width: 100%; gap: 1rem; flex: 1; }
     
     .desktop-only { display: block; flex-shrink: 0; }
