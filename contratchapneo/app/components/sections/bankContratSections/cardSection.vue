@@ -12,7 +12,7 @@
             <Basefilter class="toolbar__filter" />
             <BaseSearchInput 
                 class="toolbar__search" 
-                placeholder="Trouver un contrat..."
+                placeholder="Trouver un contrat..." 
                 v-model="searchQuery"
                 theme="light"
             />
@@ -30,7 +30,7 @@
 
         <template v-else>
             
-         <div class="cards-container">
+            <div class="cards-container">
                 <contratCards 
                     v-for="(contrat, index) in contratStore.contracts" 
                     :key="contrat.id || index"

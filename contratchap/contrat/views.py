@@ -261,6 +261,7 @@ class ContractTagsView(APIView):
         return Response({"tags": tags})
     
     def post(self, request, contrat_id):
+        
         try:
             # 1. Récupération du contrat
             contrat = get_object_or_404(Contrat, id=contrat_id)
@@ -296,6 +297,9 @@ class ContractTagsView(APIView):
         except Exception as e:
             return Response({"error": str(e)}, status=500)
 
+# ==========================================
+# 1 Manage all about packs
+# ==========================================
 
 class PacksView(APIView):
 
@@ -312,10 +316,87 @@ class PacksView(APIView):
 
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+# ==========================================
+# 1- Download contract once authenticated
+# ==========================================
 
+class DownloadContractFromPack(APIView):
+    
+    permission_classes = [IsAuthenticated]
 
+    def post(self, request, contract_id):
+        # 1. Récupération du contrat
+        contrat = get_object_or_404(Contrat, id=contract_id)
+        user = request.user
 
-# Manage contracts and categories with proper permissions and error handling.
+        # 2. Vérification du pack de l'utilisateur
+        # On cherche le premier pack actif de l'utilisateur
+        user_pack = UserPack.objects.filter(user=user, is_active=True).first()
+
+        if not user_pack:
+            return Response(
+                {"error": "Vous n'avez aucun pack actif pour télécharger ce contrat."},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        # 3. Logique de déblocage / Utilisation des crédits
+        # Si le contrat n'est pas encore dans les contrats débloqués du pack
+        if contrat not in user_pack.contrats_choisis.all():
+            # On vérifie s'il reste des crédits
+            if user_pack.credits_restants <= 0:
+                return Response(
+                    {"error": "Vous n'avez plus de crédits disponibles dans votre pack."},
+                    status=status.HTTP_403_FORBIDDEN
+                )
+            
+            # Tout est bon : on débloque le contrat et on décrémente un crédit
+            user_pack.contrats_choisis.add(contrat)
+            user_pack.credits_restants = F('credits_restants') - 1
+            user_pack.save()
+            
+            # Optionnel : Tu peux rafraîchir l'objet si tu as besoin de renvoyer le nouveau solde
+            # user_pack.refresh_from_db()
+
+        # 4. Génération dynamique du fichier (Identique à ContractTagsView)
+        try:
+            # Récupération des données du formulaire (si l'utilisateur a rempli les tags)
+            user_inputs = request.data.get('user_inputs', {})
+
+            # Remplissage du template Word
+            doc = DocxTemplate(contrat.fichier_modele.path)
+            doc.render(user_inputs)
+
+            # Création d'un fichier temporaire
+            with tempfile.NamedTemporaryFile(delete=False, suffix=".docx") as tmp_docx:
+                doc.save(tmp_docx.name)
+                tmp_docx_path = tmp_docx.name
+
+            # Conversion en PDF
+            pdf_path = convert_docx_to_pdf(tmp_docx_path)
+
+            # 5. Envoi du fichier en réponse
+            pdf_file = open(pdf_path, 'rb')
+            response = FileResponse(pdf_file, content_type='application/pdf')
+            
+            # Nom du fichier sécurisé
+            safe_title = "".join(c for c in contrat.title if c.isalnum() or c in " _-").rstrip()
+            response['Content-Disposition'] = f'attachment; filename="contrat_{safe_title}.pdf"'
+            
+            # TRÈS IMPORTANT POUR NUXT : Exposer le header
+            response['Access-Control-Expose-Headers'] = 'Content-Disposition'
+
+            # 🧹 Nettoyage différé à envisager pour les gros volumes :
+            # os.remove(tmp_docx_path)
+            # os.remove(pdf_path)
+
+            return response
+
+        except Exception as e:
+            return Response(
+                {"error": f"Erreur lors de la génération du document : {str(e)}"}, 
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
 
 # ==========================================
 # 1. URL: /api/admin/contracts/
