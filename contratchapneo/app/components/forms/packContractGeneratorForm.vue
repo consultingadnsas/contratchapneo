@@ -17,7 +17,7 @@
             :type="getInputType(currentTag)"
             :placeholder="'Entrez : ' + formatLabel(currentTag).toLowerCase()"
             :disabled="store.isLoading"
-            @focus="scrollToField(currentTag)"
+            @focus="emit('focus-field', currentTag)"
           />
           <div class="progress-indicator">
             {{ currentTagIndex + 1 }} / {{ uniqueTags.length }}
@@ -66,7 +66,7 @@ import BaseInputContract from '../input/BaseInputContract.vue'
 import generatorButton from '.././buttons/generatorButton.vue'
 
 // Les mêmes événements : le parent gérera l'appel à l'API de génération finale
-const emit = defineEmits(['submit-data', 'update-data', 'scroll-to-field'])
+const emit = defineEmits(['update-data', 'submit-data', 'focus-field']);
 
 // Initialisation
 const store = useContratStore() 
@@ -114,11 +114,6 @@ const prevTag = () => {
   if (currentTagIndex.value > 0) {
     currentTagIndex.value--
   }
-}
-
-// 🔹 Scroll visuel côté document (si tu as la prévisualisation A4 à droite)
-const scrollToField = (tagName: string) => {
-  emit('scroll-to-field', tagName)
 }
 
 // 🔹 Mise à jour en temps réel pour le composant parent

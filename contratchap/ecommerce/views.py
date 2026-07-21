@@ -581,7 +581,7 @@ class OrderDownloadView(APIView):
                     user_inputs = item.user_inputs or {} 
                     
                     if not contrat.fichier_modele or not contrat.fichier_modele.path:
-                        continue 
+                        continue  
                         
                     filled_docx_path = os.path.join(temp_dir, f"temp_{item.id}.docx")
                     fill_docx_template(contrat.fichier_modele.path, user_inputs, filled_docx_path)

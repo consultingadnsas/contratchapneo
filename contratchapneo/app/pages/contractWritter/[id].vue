@@ -15,12 +15,13 @@
             <packContractGeneratorForm 
                 :contractId="contractId"
                 @update-data="syncData"
-                @submit-data="handleModale" 
+                @submit-data="handleModale"
+                @focus-field="handleFocusField" 
             />
         </aside>
 
         <div class="preview-section w-2/3 h-full p-8 overflow-y-auto flex justify-center items-start">
-            <contratPreviewPage ref="previewRef" :contractId="contractId" />
+            <packsPagesPreview ref="previewRef" :contractId="contractId" />
         </div>
 
         <confirmModale 
@@ -40,12 +41,16 @@ import contractGeneratorForm from '../../components/forms/contractGeneratorForm.
 import contratPreviewPage from '../../components/tools/contratPreviewPage.vue';
 import confirmModale from '../../components/modale/confirmModale.vue';
 import packContractGeneratorForm from '../../components/forms/packContractGeneratorForm.vue'
+import packsPagesPreview from '../../components/tools/packsPagesPreview.vue'
 // Import de ton store
 import { useContratStore } from '../../stores/contratStore'; 
+import {useProfileStore} from '../../stores/profileStore'
+
 
 const route = useRoute();
 const router = useRouter();
 const contratStore = useContratStore();
+const profileStore = useProfileStore();
 
 // 🔥 CORRECTION ICI : On utilise un 'computed' pour être sûr à 100% que l'ID est toujours à jour
 const contractId = computed(() => route.params.id as string);
@@ -81,7 +86,7 @@ const submitAndDownload = async () => {
     
     try {
         // 🚀 Ici on utilise bien contractId.value pour l'envoyer au backend !
-        // await contratStore.downloadContractFromPack(contractId.value, formDataToSubmit.value);
+        await profileStore.downloadContractFromPack(contractId.value, formDataToSubmit.value);
         console.log("Envoi des données pour le contrat ID :", contractId.value);
         console.log("Votre contrat va être téléchargé...");
 
@@ -91,6 +96,12 @@ const submitAndDownload = async () => {
     } finally {
         isDownloading.value = false;
     }
+};
+
+const handleFocusField = (tagName: string) => {
+  if (previewRef.value) {
+    previewRef.value.scrollToField(tagName);
+  }
 };
 </script>
 
