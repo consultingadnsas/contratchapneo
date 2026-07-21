@@ -15,8 +15,8 @@
           v-for="item in group" 
           :key="item.id"
           class="nav-item" 
-          :class="{ 'active': item.isActive }"
-          @click="$emit('navigate', item.id)"
+          :class="{ 'active': route.path === item.route }"
+          @click="navigate(item.route)"
         >
           <component :is="item.icon" class="icon" />
           <span class="nav-label" v-if="!isReduced">{{ item.label }}</span>
@@ -37,12 +37,14 @@
 
 <script lang="ts">
 import { ref, computed, PropType, Component } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 
+// 🔥 MODIFICATION : On remplace isActive par route
 export interface MenuItem {
   id: string;
   label: string;
   icon: Component;  
-  isActive: boolean;
+  route: string; 
   category?: string;
 }
 
@@ -51,10 +53,17 @@ export default {
   props: {
     menuItems: { type: Array as PropType<MenuItem[]>, required: true }
   },
-  emits: ['navigate', 'logout'],
+  emits: ['logout'],
   setup(props) {
+    const route = useRoute();
+    const router = useRouter();
     const isReduced = ref(false);
+    
     const toggleReduce = () => isReduced.value = !isReduced.value;
+
+    const navigate = (path: string) => {
+      router.push(path);
+    };
 
     const groupedMenu = computed(() => {
       const groups: Record<string, MenuItem[]> = {};
@@ -66,7 +75,13 @@ export default {
       return groups;
     });
 
-    return { isReduced, toggleReduce, groupedMenu };
+    return { 
+      isReduced, 
+      toggleReduce, 
+      groupedMenu, 
+      route, 
+      navigate 
+    };
   }
 }
 </script>

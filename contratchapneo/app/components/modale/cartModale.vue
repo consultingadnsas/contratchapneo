@@ -463,6 +463,54 @@ export default {
   border-radius: 2px;
 }
 
-/* Responsive */
+/* 🔥 NOUVEAU : Styles pour le code promo */
+.promo-code-container {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  animation: slideDown 0.3s ease-out;
+}
+
+.promo-input {
+  flex: 1;
+  padding: 0.6rem 0.8rem;
+  border: 1px solid #ddd;
+  border-radius: 0.5rem;
+  font-size: 0.9rem;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.promo-input:focus {
+  border-color: #007bff;
+}
+
+.promo-apply-btn {
+  background: #1a1a1a;
+  color: white;
+  border: none;
+  padding: 0 1rem;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 0.9rem;
+  transition: background 0.2s;
+}
+
+.promo-apply-btn:hover {
+  background: #333;
+}
+
+/* Petite animation d'apparition douce */
+@keyframes slideDown {
+  from { 
+    opacity: 0; 
+    transform: translateY(-10px); 
+  }
+  to { 
+    opacity: 1; 
+    transform: translateY(0); 
+  }
+}
 
 </style>
