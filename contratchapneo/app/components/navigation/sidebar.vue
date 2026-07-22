@@ -14,7 +14,6 @@
     <nav class="nav-menu">
       
       <!-- Vue d'ensemble -->
-      <!-- ⚡️ CORRECTION : Le click est sur le bouton et la classe est dynamique -->
       <button 
         class="nav-item" 
         :class="{ active: route.path.includes('/profile/Dashboard') }"
@@ -24,7 +23,7 @@
           <path stroke-linecap="round" stroke-linejoin="round" d="m2.25 12 8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
         </svg>
         <span class="nav-label" v-if="!isReduced">Dashboard</span>
-      </NuxtLink>
+      </button> <!-- ⚡️ CORRECTION : C'était un </NuxtLink> -->
 
       <!-- Mes Contrats -->
       <button 
@@ -36,7 +35,7 @@
           <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12.75V12A2.25 2.25 0 0 1 4.5 9.75h15A2.25 2.25 0 0 1 21.75 12v.75m-8.69-6.44l-2.12-2.12a1.5 1.5 0 0 0-1.061-.44H4.5A2.25 2.25 0 0 0 2.25 6v12a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9a2.25 2.25 0 0 0-2.25-2.25h-5.379a1.5 1.5 0 0 1-1.06-.44z" />
         </svg>
         <span class="nav-label" v-if="!isReduced">Mes Contrats</span>
-      </NuxtLink>
+      </button> <!-- ⚡️ CORRECTION -->
 
       <!-- Mes packs -->
       <button 
@@ -48,7 +47,7 @@
           <path stroke-linecap="round" stroke-linejoin="round" d="M12 21v-8.25M15.75 21v-8.25M8.25 21v-8.25M3 9l9-6 9 6m-1.5 12V10.332A48.36 48.36 0 0012 9.75c-2.551 0-5.056.2-7.5.582V21M3 21h18M12 6.75h.008v.008H12V6.75z" />
         </svg>
         <span class="nav-label" v-if="!isReduced">Experts</span>
-      </NuxtLink>
+      </button> <!-- ⚡️ CORRECTION -->
 
       <!-- Support client -->
       <button 
@@ -60,7 +59,7 @@
           <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487zm0 0L19.5 7.125" />
         </svg>
         <span class="nav-label" v-if="!isReduced">Support client</span>
-      </NuxtLink>
+      </button> <!-- ⚡️ CORRECTION -->
 
       <!-- Paramètres -->
       <button 
@@ -73,7 +72,7 @@
           <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
         </svg>
         <span class="nav-label" v-if="!isReduced">Paramètres</span>
-      </NuxtLink>
+      </button> <!-- ⚡️ CORRECTION -->
     </nav>
 
     <!-- DÉCONNEXION -->
@@ -106,14 +105,14 @@ export default {
       isReduced.value = !isReduced.value;
     };
 
-    const auhtStore = useAuthStore();
+    const authStore = useAuthStore();
 
     return { 
       isReduced, 
       router,
       route, // ⚡️ AJOUT : On l'expose au template
       toggleReduce,
-      auhtStore
+      authStore
     };
   }
 }

@@ -1,9 +1,11 @@
 <template>
     <div class="profile-wrapper" ref="wrapperRef">
           <button class="profile-button" @click="toggleDropdown">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M12 18v-5.25m0 0a6.01 6.01 0 0 0 1.5-.189m-1.5.189a6.01 6.01 0 0 1-1.5-.189m3.75 7.478a12.06 12.06 0 0 1-4.5 0m3.75 2.383a14.406 14.406 0 0 1-3 0M14.25 18v-.192c0-.983.658-1.823 1.508-2.316a7.5 7.5 0 1 0-7.517 0c.85.493 1.509 1.333 1.509 2.316V18" />
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="icon-size">
+              <path d="M12 22C6.47715 22 2 17.5228 2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12C22 17.5228 17.5228 22 12 22ZM12 6.5L7.5 11V13L12 17.5L16.5 13V11L12 6.5Z"></path>
             </svg>
+            
+            <span class="credits-text">{{ userCredits }} Crédits</span>
           </button>
 
           <Transition name="fade">
@@ -24,6 +26,9 @@ import { ref, onMounted, onUnmounted } from 'vue'
 // État local
 const isOpen = ref(false)
 const wrapperRef = ref(null)
+
+// ⚡️ NOUVEAU : Variable pour stocker les crédits (à relier à ton store Pinia)
+const userCredits = ref(15) 
 
 // Fonctions
 const toggleDropdown = () => {
@@ -58,7 +63,6 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-/* (les mêmes styles que précédemment) */
 .profile-wrapper {
   position: relative;
   display: inline-block;
@@ -70,20 +74,35 @@ onUnmounted(() => {
   align-items: center;
   justify-content: center;
   width: fit-content;
-  gap: 1rem;
+  gap: 0.5rem; /* Rapproché pour que l'icône et le texte soient liés */
   border: none;
-  border-radius: 50%;
+  
+  /* ⚡️ CORRECTION : On passe d'un cercle (50%) à un rectangle arrondi (8px ou 12px) */
+  border-radius: 8px; 
   cursor: pointer;
   color: var(--background-white-color);
-  font-size: 0.9rem;
-  font-weight: 600;
-  padding: 0.9rem;
+  
+  /* ⚡️ CORRECTION : Padding asymétrique parfait pour un bouton rectangulaire */
+  padding: 0.6rem 1.2rem; 
   transition: 0.4s;
 }
 
 .profile-button:hover {
   transform: translateY(-2px);
   transition: 0.2s;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); /* Petit ajout d'ombre au survol */
+}
+
+/* ⚡️ NOUVEAU : Tailles gérées pour l'icône et le texte */
+.icon-size {
+  width: 22px;
+  height: 22px;
+}
+
+.credits-text {
+  font-size: 0.95rem;
+  font-weight: 600;
+  white-space: nowrap; /* Empêche le texte de passer à la ligne sur mobile */
 }
 
 .dropdown {
