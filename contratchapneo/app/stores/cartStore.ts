@@ -335,6 +335,13 @@ export const useCartStore = defineStore('cart', () => {
         }
     };
 
+    const clearLocalCart = () => {
+        cart.value = { items: [] };
+        error.value = null;
+        stripeReady.value = false;
+        console.log('[CartStore] Panier local vidé suite à la déconnexion.');
+    };
+
     return {
         isLoading,
         error,
@@ -357,7 +364,8 @@ export const useCartStore = defineStore('cart', () => {
         clearCart,
         checkout,
         initiatePayment,
-        addCustomizedContract
+        addCustomizedContract,
+        clearLocalCart
     };
 },
     {persist: true}

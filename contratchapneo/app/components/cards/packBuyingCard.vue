@@ -40,7 +40,7 @@ export default defineComponent({
         },
         price: { 
             type: String, 
-            default: '25000.00' 
+            default: '25000.00 FCFA' 
         },   
         buttonLabel: { 
             type: String, 
@@ -181,7 +181,13 @@ export default defineComponent({
 }
 
 /* --- BOUTONS --- */
+.btn-dark {
+    width: 100%;
+    box-sizing: border-box;
+}
+
 :deep(.btn-dark button) {
+    box-sizing: border-box; /* ⚡️ LA CORRECTION EST ICI : Le padding est maintenant inclus dans les 100% */
     background: #111827 !important;
     color: #ffffff !important;
     font-weight: 600;

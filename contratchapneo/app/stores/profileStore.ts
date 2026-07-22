@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
-import { useNuxtApp } from '#imports'; // Ajout recommandé pour Nuxt 3
+import { useNuxtApp } from '#imports';
 
 export interface Mypacks {
     id?: string;
@@ -19,25 +19,23 @@ export const useProfileStore = defineStore('profile', () => {
     // UX
     const isLoading = ref<boolean>(false);
 
-    // State
+    // ⚡️ CORRECTION : On sépare les packs possédés et les packs de la boutique
     const myPacks = ref<Mypacks | null>(null);
-    
-    // 🔴 CORRECTION 1 : Renommé avec un "s" pour matcher avec ton composant Vue
-    const userPacks = ref<Mypacks[]>([]); 
+    const userPacks = ref<Mypacks[]>([]); // Packs ACHETÉS par l'utilisateur
+    const availablePacks = ref<Mypacks[]>([]); // Packs DISPONIBLES dans la boutique
 
     // Actions
     const fetchPacks = async () => {
-        // 🔴 CORRECTION 2 : On lance le chargement à "true"
         isLoading.value = true; 
-
         try {
             const response = await $api<Mypacks[]>('/contrat/packs/', {
                 method: 'GET'
             });
 
             if (response) {
-                userPacks.value = response;
-                console.log("Les packs disponibles :", userPacks.value);
+                // ⚡️ CORRECTION : On assigne aux packs de la boutique
+                availablePacks.value = response;
+                console.log("Les packs disponibles :", availablePacks.value);
             }
         } catch (err: any) {
             console.error("Erreur lors de la récupération des packs :", err);
@@ -47,7 +45,6 @@ export const useProfileStore = defineStore('profile', () => {
     }
 
     const getPacks = async () => {
-        // 🔴 CORRECTION 2 : On lance le chargement à "true"
         isLoading.value = true; 
 
         try {
@@ -56,6 +53,7 @@ export const useProfileStore = defineStore('profile', () => {
             });
 
             if (response) {
+                // ⚡️ CORRECTION : On assigne aux packs de l'utilisateur
                 userPacks.value = response;
                 
                 if (userPacks.value.length > 0) {
@@ -75,31 +73,16 @@ export const useProfileStore = defineStore('profile', () => {
         try {
             const response = await $api(`/contrat/packs/downloads/${contrat_id}/`, {
                 method: 'POST',
-                // ATTENTION : Votre backend Django s'attend à recevoir 'user_inputs' !
                 body: { user_inputs: payload },
-                
-                // INDISPENSABLE : Indiquer à l'outil réseau de traiter la réponse comme un fichier binaire
-                // Si $api utilise Axios :
                 responseType: 'blob' 
-                // Si $api est un wrapper de Fetch (ex: Nuxt), cela pourrait être : responseType: 'blob' ou il faudra faire await response.blob()
             });
 
             if (response) {
-                // 1. Création d'un objet Blob (le fichier) depuis la réponse
-                // (Si votre $api renvoie déjà un Blob, la ligne suivante suffit)
                 const blob = new Blob([response as any], { type: 'application/pdf' });
-                
-                // 2. Création d'une URL temporaire pour ce fichier
                 const url = window.URL.createObjectURL(blob);
-                
-                // 3. Création d'un lien HTML invisible
                 const link = document.createElement('a');
                 link.href = url;
-                
-                // 4. On tente de récupérer le nom du fichier depuis les headers, sinon nom par défaut
                 link.setAttribute('download', 'contrat_genere.pdf'); 
-                
-                // 5. Ajout au document, clic forcé, puis nettoyage
                 document.body.appendChild(link);
                 link.click();
                 document.body.removeChild(link);
@@ -109,22 +92,29 @@ export const useProfileStore = defineStore('profile', () => {
             }
         } catch (err: any) {
             console.error('Une erreur est survenue lors du téléchargement :', err);
-            throw err; // Important de propager l'erreur pour que le try/catch de votre vue puisse l'attraper
+            throw err; 
         } finally {
             isLoading.value = false;
         }
     };
 
+    const clearLocalProfile = () => {
+        userPacks.value = [];
+        myPacks.value = null;
+        // On ne vide pas availablePacks car c'est la vitrine publique
+        console.log('[ProfileStore] Données profil local vidées suite à la déconnexion.');
+    };
+
     return {
-        // State
-        isLoading, // N'oublie pas de l'exporter pour pouvoir l'utiliser dans ton v-if !
+        isLoading, 
         myPacks,
-        userPacks, // Exporté avec le "s"
+        userPacks, 
+        availablePacks, // 👈 NOUVEAU : On exporte la liste de la boutique
         
-        // Actions
         fetchPacks,
         getPacks,
-        downloadContractFromPack
+        downloadContractFromPack,
+        clearLocalProfile
     }
 
 }, { persist: true })

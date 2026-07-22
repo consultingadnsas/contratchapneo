@@ -1,5 +1,7 @@
 import { defineStore } from "pinia";
 import { ref } from "vue";
+import { useCartStore } from './cartStore';
+import { useProfileStore } from './profileStore';
 
 export interface User {
   id?: string | number;
@@ -124,39 +126,45 @@ export const useAuthStore = defineStore('auth', () => {
     isLoading.value = true;
 
     try {
-      // 1. Avertir le backend de fermer la session
+      // 1. Avertir le backend de fermer la session (invalider le token côté serveur)
       await $api('/account/logout/', {
         method: 'POST'
       });
+    } catch (err: any) {
+      // On capture l'erreur mais on ne bloque pas la suite. 
+      // Si le backend échoue (ex: token déjà expiré), on DOIT quand même déconnecter l'utilisateur localement.
+      console.error('❌ Erreur lors de la déconnexion backend :', err);
+    } finally {
+      // 2. Vider le state utilisateur localement (CRUCIAL)
+      user.value = {
+        id: '',
+        username: '',
+        first_name: '',
+        last_name: '',
+        password: '',
+        email: '',
+        phone_number: '',
+        user_type: ''
+      };
 
-      // 2. Supprimer le(s) cookie(s) d'authentification
-      // Assure-toi que le nom 'token' correspond bien à celui que tu utilises lors du login
+      // 3. Supprimer le(s) cookie(s) d'authentification
       const token = useCookie('token');
       token.value = null; 
       
-      // Si tu stockais les infos de l'utilisateur, supprime-les aussi :
-      // const userCookie = useCookie('user');
-      // userCookie.value = null;
+      //4. Vider les autres stores (Panier et Profil)
+      // Importe ces stores en haut de ton fichier si ce n'est pas fait
+      const cartStore = useCartStore();
+      const profileStore = useProfileStore();
+      
+      // On utilise nos nouvelles fonctions personnalisées !
+      cartStore.clearLocalCart();
+      profileStore.clearLocalProfile();
 
-      // 3. Vider les stores Pinia (Très important pour le panier hybride !)
-      /* const cartStore = useCartStore();
-      cartStore.clearCart(); // On vide le panier pour repasser en mode "Invité"
-      */
-
-      console.log('✅ Déconnexion réussie !');
-
-      // 4. Rediriger l'utilisateur vers la page de connexion ou la page d'accueil
-      // replace: true empêche l'utilisateur de faire "Retour" et de retomber sur une page connectée
-      await navigateTo('/auth/login', { replace: true }); 
-
-    } catch (err: any) {
-      console.error('❌ Erreur lors de la déconnexion :', err);
-      // Même si le backend renvoie une erreur, on force la déconnexion locale par sécurité
-      const token = useCookie('token');
-      token.value = null;
-      await navigateTo('/auth/login', { replace: true });
-    } finally {
+      console.log('✅ Déconnexion locale réussie et state purgé !');
       isLoading.value = false;
+
+      // 5. Rediriger l'utilisateur vers la page de connexion
+      await navigateTo('/auth/login', { replace: true }); 
     }
   };
 

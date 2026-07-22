@@ -96,11 +96,11 @@ export default {
       {
         title: 'MENU',
         links: [
-          { label: 'Banque de contrats', path: '/contractBank' },
+          { label: 'Contrats', path: '/contractBank' },
           { label: 'Contrat sur mesure', path: '/contractBank/customContrat' },
           { label: 'Experts', path: '/pro' },
           { label: 'Outils de calculs', path: '/lawCalcul' },
-          { label: 'Services Juridiques', path: '/services' }
+          { label: 'Centre d\'aide', path: '/services' }
         ]
       },
       {

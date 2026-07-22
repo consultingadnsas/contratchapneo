@@ -31,7 +31,7 @@ DEBUG = True
 ALLOWED_HOSTS = [
     '.ngrok-free.app', 
     '.ngrok-free.dev', 
-    'kettle-diploma-lifter.ngrok-free.dev', 
+    'https://parameter-garage-pencil.ngrok-free.dev', 
     '127.0.0.1',
     'localhost',
     '172.30.144.1',
@@ -47,7 +47,7 @@ CSRF_TRUSTED_ORIGINS = [
     "http://127.0.0.1:3000",
     "http://localhost:5173",
     "http://127.0.0.1:5173",
-    "https://kettle-diploma-lifter.ngrok-free.dev", # Ajouté au cas où vous testez via ngrok
+    "https://parameter-garage-pencil.ngrok-free.dev", # Ajouté au cas où vous testez via ngrok
 ]
 
 # Application definition
