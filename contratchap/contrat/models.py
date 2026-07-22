@@ -2,6 +2,9 @@ from django.db import models
 from django.conf import settings
 import uuid
 from account.models import CustomUser
+from django.utils import timezone
+from datetime import timedelta
+from pro.models import LegalProfessional
 # Create your models here.
 
 class Category(models.Model):
@@ -107,10 +110,17 @@ class Pack(models.Model):
         default=0,
         help_text="Pourcentage de réduction sur les requêtes 'CustomedContract' (ex: 20 pour 20%)"
     )
+
     consultation_pro_incluse = models.BooleanField(
         default=False,
         help_text="Cochez si ce pack offre une mise en relation/consultation gratuite avec un pro."
     )
+
+    nombre_cartes_pro = models.PositiveIntegerField(
+        default=1,
+        help_text="Nombre de cartes de visite de professionnels téléchargeables avec ce pack (1 pour le pack Basique, plus pour les offres supérieures)."
+    )
+
     duree_validite_jours = models.PositiveIntegerField(
         default=365,
         help_text="Durée de validité du pack en jours (ex: 365 pour 1 an)."
@@ -127,9 +137,6 @@ class Pack(models.Model):
     def __str__(self):
         return f'Pack {self.title} ({self.contrats.count()} fixes, {self.nombre_credits} crédits)'
 
-
-from django.utils import timezone
-from datetime import timedelta
 
 class UserPack(models.Model):
     """ L'ACHAT (Le portefeuille de l'utilisateur) """
@@ -151,6 +158,20 @@ class UserPack(models.Model):
         help_text="Les contrats que l'utilisateur a choisi de débloquer avec ses crédits."
     )
 
+    # 🆕 NOUVEAU : solde de cartes de pro
+    cartes_pro_restantes = models.PositiveIntegerField(
+        default=0,
+        help_text="Combien de cartes de pro il reste à télécharger pour ce pack."
+    )
+
+    # 🆕 NOUVEAU : historique — quels pros ont déjà été débloqués
+    pros_debloques = models.ManyToManyField(
+        LegalProfessional,  # adapte le chemin selon ton app
+        blank=True,
+        related_name='debloque_par',
+        help_text="Les professionnels dont la carte a déjà été débloquée avec ce pack."
+    )
+
     is_active = models.BooleanField(default=True) 
     expires_at = models.DateTimeField(null=True, blank=True)
     purchased_at = models.DateTimeField(auto_now_add=True)
@@ -163,6 +184,7 @@ class UserPack(models.Model):
         if not self.pk: 
             # On copie le nombre de crédits initiaux du catalogue
             self.credits_restants = self.pack.nombre_credits
+            self.cartes_pro_restantes = self.pack.nombre_cartes_pro
             
             # On calcule la date d'expiration
             if self.pack.duree_validite_jours:

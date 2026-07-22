@@ -1,6 +1,8 @@
 from django.db import models
 from django.contrib.auth import get_user_model
 import uuid
+from django.conf import settings
+
 
 User = get_user_model()
 
@@ -91,3 +93,23 @@ class LegalProfessional(models.Model):
 
     def __str__(self):
         return f"{self.get_title_display()} {self.first_name} {self.last_name}"
+
+class ProCardDownload(models.Model):
+    """
+    Trace qu'un user a déjà payé un crédit pour la carte d'un pro donné.
+    Permet un re-téléchargement gratuit ensuite.
+    """
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='pro_card_downloads'
+    )
+    pro = models.ForeignKey(
+        'LegalProfessional',
+        on_delete=models.CASCADE,
+        related_name='downloads'
+    )
+    downloaded_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('user', 'pro')
