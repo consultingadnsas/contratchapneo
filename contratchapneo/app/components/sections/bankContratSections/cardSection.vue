@@ -261,7 +261,7 @@ export default {
     gap: 1.5rem;
     padding: 10rem 1rem 1rem 1rem;
     overflow: hidden; 
-    background:linear-gradient(to bottom, #050e1b, #4b4545); 
+    background:linear-gradient(to bottom, #050e1b, #657f94); 
 }
 
 .contrat-card-section > * {
@@ -299,7 +299,7 @@ export default {
 .packages-header h3 {
     font-size: 2rem;
     font-weight: 700;
-    color: var(--primary-color-dark);
+    color: #ffffff;
     margin-bottom: 0.5rem;
 }
 
