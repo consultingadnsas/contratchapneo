@@ -10,7 +10,7 @@
             :subtitle="pro.title_display"
             :image="pro.profile_picture || undefined"
             @view="checkProfile(pro)"
-            @pro-checkout="Download(pro)"
+            @pro-checkout="Download(pro.id)"
             class="clickable-card"
         />
 
@@ -38,11 +38,11 @@ export default {
         const router = useRouter();
 
         // Actions
-        async function Download(contract_id: string) {
+        async function Download(pro_id: string) {
             try {
                 // 🚀 MODIFICATION ICI : On passe l'ID dans l'URL
                 // Cela va rediriger vers une URL du type /contractwritter/1234-5678-...
-                router.push(`/contractwritter/${contract_id}`);
+                proStore.downloadProCard(pro_id)
                 
                 console.log("Navigation vers le générateur avec l'id :", contract_id);
             } catch(err: any) {

@@ -137,6 +137,64 @@ export const useProStore = defineStore('proStore', () => {
         } 
     };
 
+    const downloadProCard = async (proId: string) => {
+        isLoading.value = true;
+        error.value = null;
+
+        try {
+            // 🚨 Modifie l'URL ci-dessous pour qu'elle corresponde exactement à celle de ton `urls.py` Django
+            const response = await $api.raw(`/pro/professionals/download/${proId}/`, {
+                method: 'POST',
+                responseType: 'blob', // TRÈS IMPORTANT: On dit à Nuxt qu'on attend un fichier physique !
+            });
+
+            // 1. Extraire le nom du fichier depuis les headers de la réponse
+            let filename = `Carte_visite.pdf`; // Nom par défaut
+            const contentDisposition = response.headers.get('content-disposition');
+            if (contentDisposition && contentDisposition.includes('filename=')) {
+                const filenameMatch = contentDisposition.match(/filename="?([^"]+)"?/);
+                if (filenameMatch && filenameMatch.length === 2) {
+                    filename = filenameMatch[1];
+                }
+            }
+
+            // 2. Créer une URL Blob en mémoire et lancer le téléchargement
+            const blob = response._data as Blob;
+            const url = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', filename);
+            document.body.appendChild(link);
+            link.click();
+
+            // 3. Nettoyer le DOM pour libérer la mémoire
+            link.remove();
+            window.URL.revokeObjectURL(url);
+
+            return true;
+
+        } catch (err: any) {
+            console.error('Erreur lors du téléchargement de la carte:', err);
+            
+            // Puisqu'on a demandé un "blob", si le serveur renvoie une erreur JSON (ex: Plus de crédits), 
+            // il faut re-transformer ce Blob d'erreur en texte pour lire le message.
+            if (err.response && err.response._data instanceof Blob) {
+                try {
+                    const errorText = await err.response._data.text();
+                    const errorJson = JSON.parse(errorText);
+                    error.value = errorJson.error || "Erreur lors du téléchargement.";
+                } catch (e) {
+                    error.value = "Une erreur inattendue est survenue.";
+                }
+            } else {
+                error.value = err.message || "Erreur de connexion.";
+            }
+            return false;
+        } finally {
+            isLoading.value = false;
+        }
+    };
+
     return {
         // 🚨 CRITIQUE : J'AI SUPPRIMÉ `cartStore` D'ICI !
         isLoading,
@@ -147,6 +205,7 @@ export const useProStore = defineStore('proStore', () => {
         domains,
         getProfessionals,
         getFilters,
-        getSpecificProfessional
+        getSpecificProfessional,
+        downloadProCard
     };
 });
