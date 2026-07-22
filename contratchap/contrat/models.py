@@ -2,6 +2,8 @@ from django.db import models
 from django.conf import settings
 import uuid
 from account.models import CustomUser
+from django.utils import timezone
+from datetime import timedelta
 # Create your models here.
 
 class Category(models.Model):
@@ -127,9 +129,6 @@ class Pack(models.Model):
     def __str__(self):
         return f'Pack {self.title} ({self.contrats.count()} fixes, {self.nombre_credits} crédits)'
 
-
-from django.utils import timezone
-from datetime import timedelta
 
 class UserPack(models.Model):
     """ L'ACHAT (Le portefeuille de l'utilisateur) """

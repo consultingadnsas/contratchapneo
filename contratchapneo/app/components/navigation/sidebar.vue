@@ -13,51 +13,53 @@
     <!-- NAVIGATION PRINCIPALE -->
     <nav class="nav-menu">
       
-      <!-- Vue d'ensemble -->
-      <button class="nav-item active">
+      <!-- Dashboard -->
+      <!-- Remplacez le 'to' par la route exacte de votre tableau de bord -->
+      <NuxtLink to="/profile/Dashboard" class="nav-item" active-class="active">
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="icon">
           <path stroke-linecap="round" stroke-linejoin="round" d="m2.25 12 8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
         </svg>
         <span class="nav-label" v-if="!isReduced">Dashboard</span>
-      </button>
+      </NuxtLink>
 
-      <!-- Mes Dossiers -->
-      <button class="nav-item">
+      <!-- Mes Contrats -->
+      <NuxtLink to="/profile/contract" class="nav-item" active-class="active">
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="icon">
           <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12.75V12A2.25 2.25 0 0 1 4.5 9.75h15A2.25 2.25 0 0 1 21.75 12v.75m-8.69-6.44l-2.12-2.12a1.5 1.5 0 0 0-1.061-.44H4.5A2.25 2.25 0 0 0 2.25 6v12a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9a2.25 2.25 0 0 0-2.25-2.25h-5.379a1.5 1.5 0 0 1-1.06-.44z" />
         </svg>
         <span class="nav-label" v-if="!isReduced">Mes Contrats</span>
-      </button>
+      </NuxtLink>
 
-      <!-- Banque de modèles -->
-      <button class="nav-item">
+      <!-- Experts -->
+      <NuxtLink to="/profile/experts" class="nav-item" active-class="active">
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="icon">
           <path stroke-linecap="round" stroke-linejoin="round" d="M12 21v-8.25M15.75 21v-8.25M8.25 21v-8.25M3 9l9-6 9 6m-1.5 12V10.332A48.36 48.36 0 0012 9.75c-2.551 0-5.056.2-7.5.582V21M3 21h18M12 6.75h.008v.008H12V6.75z" />
         </svg>
-        <span class="nav-label" v-if="!isReduced">Mes packs</span>
-      </button>
+        <span class="nav-label" v-if="!isReduced">Experts</span>
+      </NuxtLink>
 
-      <!-- Signatures -->
-      <button class="nav-item">
+      <!-- Support client -->
+      <NuxtLink to="/support" class="nav-item" active-class="active">
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="icon">
           <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487zm0 0L19.5 7.125" />
         </svg>
         <span class="nav-label" v-if="!isReduced">Support client</span>
-      </button>
+      </NuxtLink>
 
       <!-- Paramètres -->
-      <button class="nav-item">
+      <NuxtLink to="/paramètres" class="nav-item" active-class="active">
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="icon">
           <path stroke-linecap="round" stroke-linejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 0 1 1.37.49l1.296 2.247a1.125 1.125 0 0 1-.26 1.43l-1.003.767c-.3.23-.452.617-.432.998.003.074.005.147.005.22s-.002.146-.005.22c-.02.381.13.768.432.998l1.003.767a1.125 1.125 0 0 1 .26 1.43l-1.296 2.247a1.125 1.125 0 0 1-1.37.49l-1.216-.456c-.356-.133-.751-.072-1.076.124a6.57 6.57 0 0 1-.22.128c-.331.183-.581.495-.644.869l-.213 1.28c-.09.543-.56.941-1.11.941h-2.594c-.55 0-1.02-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 0 1-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 0 1-1.369-.49l-1.297-2.247a1.125 1.125 0 0 1 .26-1.43l1.004-.767c.301-.23.452-.617.432-.998-.003-.074-.005-.147-.005-.22s.002-.146.005-.22c.02-.381-.13-.768-.432-.998L2.26 9.17a1.125 1.125 0 0 1-.26-1.43l1.297-2.247a1.125 1.125 0 0 1 1.37-.49l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.087.22-.128.332-.183.582-.495.644-.869l.214-1.28Z" />
           <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
         </svg>
         <span class="nav-label" v-if="!isReduced">Paramètres</span>
-      </button>
+      </NuxtLink>
     </nav>
 
     <!-- DÉCONNEXION -->
     <div class="logout">
-      <button class="nav-item" @click="auhtStore.logout" >
+      <!-- On garde <button> ici car ce n'est pas une route, mais une fonction -->
+      <button class="nav-item" @click="authStore.logout">
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="icon">
           <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15M12 9l-3 3m0 0 3 3m-3-3h12.75" />
         </svg>
@@ -69,29 +71,24 @@
 
 <script lang="ts">
 import { ref } from 'vue';
-import { useAuthStore } from '../../stores/authStore'
+import { useAuthStore } from '../../stores/authStore' // Vérifiez bien ce chemin
 
 export default {
-  
   name: 'Sidebar',
-  
   setup() {
-    
     const isReduced = ref(false);
 
     const toggleReduce = () => {
       isReduced.value = !isReduced.value;
     };
 
-    // ================ About ===========
-
-    const auhtStore = useAuthStore();
+    // Correction de "auhtStore" en "authStore"
+    const authStore = useAuthStore();
 
     return { 
       isReduced, 
       toggleReduce,
-      //
-      auhtStore
+      authStore
     };
   }
 }
@@ -102,10 +99,10 @@ export default {
    VARIABLES DE THÈME CONTRATCHAP
    ========================================= */
 .sidebar {
-  --sb-bg: #0f172a;           /* Bleu nuit profond */
-  --sb-text: #94a3b8;         /* Gris ardoise (Texte inactif) */
+  --sb-bg: #e8e8e8;          /* Bleu nuit profond */
+  --sb-text: #4845ef;        /* Gris ardoise (Texte inactif) */
   --sb-text-active: #ffffff;  /* Blanc éclatant */
-  --sb-accent: #34d399;       /* Vert émeraude */
+  --sb-accent: #5452f4;      /* Vert émeraude */
   --sb-border: rgba(255, 255, 255, 0.08); /* Bordure subtile */
   --sb-hover-bg: rgba(255, 255, 255, 0.05); /* Fond au survol */
 }
@@ -126,34 +123,27 @@ export default {
   align-items: center;
   padding-bottom: env(safe-area-inset-bottom);
   z-index: 100;
-  /* Ombre inversée pour que la barre se détache du fond blanc du dashboard */
   box-shadow: 0 -4px 20px rgba(15, 23, 42, 0.1); 
 }
 
 .nav-menu {
   display: flex;
   width: 100%;
-  /* 1. On aligne au début au lieu de répartir l'espace */
   justify-content: flex-start; 
   align-items: center;
-  
-  /* 2. La magie du Scroll Horizontal */
   overflow-x: auto;
   overflow-y: hidden;
-  -webkit-overflow-scrolling: touch; /* Rendu fluide sur iOS */
-  
-  /* 3. On ajoute un petit espace entre les boutons et sur les bords */
+  -webkit-overflow-scrolling: touch; 
   gap: 0.5rem;
   padding: 0 1rem;
-  
-  /* 4. On cache la barre de défilement (très important pour le design) */
-  scrollbar-width: none; /* Pour Firefox */
+  scrollbar-width: none; 
 }
 
 .nav-menu::-webkit-scrollbar{
     display: none;
 }
 
+/* NuxtLink s'affiche par défaut comme un élément 'a'. On garde les mêmes styles que pour le bouton */
 .nav-item {
   background: none;
   border: none;
@@ -170,6 +160,7 @@ export default {
   font-size: 0.65rem;
   font-weight: 500;
   transition: all 0.2s ease;
+  text-decoration: none; /* Enlève le souligné par défaut des liens <a> */
 }
 
 .icon {
@@ -212,26 +203,24 @@ export default {
     position: relative;
     bottom: auto;
     left: auto;
-    width: 260px; /* Largeur par défaut déployée */
+    width: 260px;
     height: 100vh;
     flex-direction: column;
     justify-content: flex-start;
     align-items: stretch;
     padding: 1.5rem 1rem;
     border-top: none;
-    border-right: 1px solid var(--sb-border); /* La bordure passe à DROITE de la sidebar */
+    border-right: 1px solid var(--sb-border);
     box-shadow: none;
     gap: 2.5rem;
     transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
-  /* État Réduit sur Desktop */
   .sidebar.is-reduced {
     width: 88px;
     padding: 1.5rem 0.5rem;
   }
 
-  /* Alignement Logo & Bouton Hamburger */
   .logo {
     display: flex;
     align-items: center;
@@ -263,7 +252,6 @@ export default {
     color: var(--sb-accent);
   }
 
-  /* Menu vertical & Items */
   .nav-menu {
     flex-direction: column;
     width: 100%;
@@ -281,22 +269,20 @@ export default {
     font-size: 0.95rem;
   }
 
-  /* Redéfinition des hovers pour Desktop */
   .nav-item:hover {
     background-color: var(--sb-hover-bg);
     color: var(--sb-text-active);
   }
   
   .nav-item.active {
-    background-color: rgba(52, 211, 153, 0.1); /* Vert transparent très léger */
+    background-color: rgba(60, 106, 221, 0.1);
     color: var(--sb-accent);
   }
 
   .nav-item.active .icon {
-    transform: none; /* Annule l'effet mobile */
+    transform: none;
   }
 
-  /* Ajustements en mode réduit */
   .sidebar.is-reduced .nav-item {
     justify-content: center;
     padding: 0.8rem 0;
@@ -307,18 +293,16 @@ export default {
     animation: fadeIn 0.2s ease forwards;
   }
 
-  /* Bouton de déconnexion */
   .logout {
     margin-top: auto;
     width: 100%;
     border-top: 1px solid var(--sb-border);
     padding-top: 1rem;
   }
-
   
   .logout .nav-item:hover {
-    background-color: rgba(239, 68, 68, 0.1); /* Rouge très léger */
-    color: #ef4444; /* Rouge pour symboliser la sortie */
+    background-color: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
   }
 }
 

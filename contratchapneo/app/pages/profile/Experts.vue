@@ -23,7 +23,7 @@
         
       <div class="dashboard-grid">
 
-        <user-contrat-section/>
+        <userProSection/>
 
       </div>
 
@@ -43,7 +43,7 @@ import cardSection from '../../components/sections/bankContratSections/cardSecti
 import mainButton from '../../components/buttons/secondButton.vue';
 import dashboardBtn from '../../components/buttons/dashboardBtn.vue'
 import profileSection from '../../components/sections/userSection/profileSection.vue'
-import userContratSection from '../../components/sections/userSection/userContratSection.vue'
+import userProSection from '../../components/sections/userSection/userProSection.vue'
 export default {
   name: 'DashboardLayout',
   components: {
@@ -52,7 +52,7 @@ export default {
     mainButton,
     profileSection,
     dashboardBtn,
-    userContratSection
+    userProSection
 
   },
   setup() {
