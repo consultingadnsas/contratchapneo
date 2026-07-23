@@ -79,9 +79,9 @@ class DownloadProCardFromPack(APIView):
     un crédit du pack actif de l'utilisateur.
 
     Règles :
-    - Si le user a déjà téléchargé la carte de ce pro, pas de nouveau crédit débité.
-    - Le crédit n'est déduit que si le fichier est confirmé lisible.
-    - La déduction + création du log sont atomiques (select_for_update).
+        - Si le user a déjà téléchargé la carte de ce pro, pas de nouveau crédit débité.
+        - Le crédit n'est déduit que si le fichier est confirmé lisible.
+        - La déduction + création du log sont atomiques (select_for_update).
     """
     permission_classes = [IsAuthenticated]
 
