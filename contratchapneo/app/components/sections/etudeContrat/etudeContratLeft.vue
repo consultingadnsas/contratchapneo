@@ -84,8 +84,7 @@ export default {
 .info-card {
     display: flex;
     align-items: center;
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: transparent;
     padding: 1rem 1.2rem;
     border-radius: 16px;
     transition: all 0.3s ease;

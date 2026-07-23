@@ -45,11 +45,11 @@
 
         <li class="dropdown-item">
             <NuxtLink to="/services" class="dropdown-trigger">
-                Centre d'aide
+                Centre d'appel
             </NuxtLink>
         </li>
 
-        <li><NuxtLink to="/etudeContrat">Revise ton contrats</NuxtLink></li>
+        <li><NuxtLink to="/etudeContrat">Revise ton contrat</NuxtLink></li>
 
         <li class="nav-divider"></li>
 

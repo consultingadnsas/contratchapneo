@@ -3,6 +3,7 @@
         
         <header class="hero-header">
             <h2>Découvrez tous nos contrats</h2>
+            <p>Télécharger vos contrats en un clic !</p>
             <div class="search-container-large">
                 <BaseSearchInput 
                     class="large-search" 
@@ -13,11 +14,10 @@
             </div>
 
             <div class="action-buttons">
-                <mainButton 
-                    label="Contrat sur mesure" 
-                    class="btn-inline"
-                    @click="router.push('/contractBank/customContrat')"
-                />
+                <button class="btn-primary btn-inline" @click="router.push('/contractBank/customContrat')">
+                    Contrat sur mesure
+                </button>
+                
                 <button class="btn-secondary btn-inline" @click="router.push('/etudeContrat')">
                     Révision de contrat
                 </button>
@@ -261,7 +261,7 @@ export default {
     gap: 1.5rem;
     padding: 10rem 1rem 1rem 1rem;
     overflow: hidden; 
-    background:linear-gradient(to bottom, #050e1b, #657f94); 
+    background:linear-gradient(to bottom, #000000, #61a2d7); 
 }
 
 .contrat-card-section > * {
@@ -387,8 +387,8 @@ export default {
 .action-buttons {
     display: flex;
     flex-direction: row; 
-    gap: 3rem;
-    justify-content: space-between;
+    gap: 0.5rem;
+    justify-content: center;
     align-items: center;
     width: 100%;
     max-width: 850px;
@@ -400,11 +400,33 @@ export default {
     max-width: 250px; 
     font-weight: 600;
 }
+.btn-primary{
+    background: transparent;
+    color: var(--primary-color);
+    padding: 0 24px;
+    height: 48px;
+    border-radius: 50px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    backdrop-filter: blur(10px);
+    white-space: nowrap;
+}
+
+.btn-primary:hover{
+    color:#ffffff;
+    background: rgba(255, 255, 255, 0.1);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(52, 211, 153, 0.2);
+}
 
 .btn-secondary {
-    background: rgba(255, 255, 255, 0.05); 
+    background: transparent; 
     color: #ffffff;
-    border: 1px solid rgba(0, 0, 0, 0.2);
     padding: 0 24px;
     height: 48px;
     border-radius: 50px;

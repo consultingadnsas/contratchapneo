@@ -29,20 +29,21 @@
 
             <!-- Corps -->
             <div class="modal-body">
-            <!-- Icône danger -->
+            
+            <!-- ⚡️ NOUVELLE ICÔNE : Document avec validation (couleur du thème) -->
             <div class="icon-wrapper">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-12">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="m20.25 7.5-.625 10.632a2.25 2.25 0 0 1-2.247 2.118H6.622a2.25 2.25 0 0 1-2.247-2.118L3.75 7.5m8.25 3v6.75m0 0-3-3m3 3 3-3M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125Z" />
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="info-icon">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M10.125 2.25h-4.5c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125v-9M10.125 2.25h.375a9 9 0 0 1 9 9v.375M10.125 2.25A3.375 3.375 0 0 1 13.5 5.625v1.5c0 .621.504 1.125 1.125 1.125h1.5a3.375 3.375 0 0 1 3.375 3.375M9 15l2.25 2.25L15 12" />
                 </svg>
             </div>
 
             <!-- Message principal -->
             <p class="confirmation-message">
-                Assurez-vous que vous informations soient correctes 
+                Assurez-vous que vos informations soient correctes 
                 avant la génération du contrat.
             </p>
 
-            <!-- Détail de l'élément (évite les erreurs) -->
+            <!-- Détail de l'élément -->
             <div v-if="itemName" class="item-details">
                 <span class="item-label">Élément concerné :</span>
                 <strong class="item-name">{{ itemName }}</strong>
@@ -50,16 +51,28 @@
             </div>
 
             <!-- Actions -->
-            <div class="modal-actions w-full flex flex-col justify-center">
-
-                <mainButton 
-                    btn_label="Archiver"
-                    :isloading="isLoading"
+            <div class="modal-actions">
+                
+                <!-- ⚡️ NOUVEAU BOUTON : Télécharger -->
+                <button
+                    class="btn btn-primary action-btn"
                     @click="$emit('confirm')"
-                />
+                    :disabled="isLoading || isDeleting"
+                >
+                    <!-- Icône de téléchargement (masquée si chargement) -->
+                    <svg v-if="!isLoading" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="btn-icon">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
+                    </svg>
+                    
+                    <!-- Spinner de chargement -->
+                    <div v-else class="loading-spinner"></div>
+                    
+                    <!-- Texte dynamique -->
+                    <span>{{ isLoading ? 'Génération en cours...' : 'Télécharger votre contrat' }}</span>
+                </button>
 
                 <button
-                    class="btn btn-secondary"
+                    class="btn btn-secondary action-btn"
                     @click="handleClose"
                     :disabled="isDeleting"
                     ref="cancelButton"
@@ -75,7 +88,6 @@
 
 <script lang="ts">
 import { defineComponent, computed, ref, watch, nextTick, type PropType } from 'vue'
-import mainButton from '../buttons/mainButton.vue'
 
 interface OperationRow {
   created_at: string
@@ -97,10 +109,9 @@ export default defineComponent({
       type: Object as PropType<OperationRow | null>,
       default: null,
     },
-    // État de chargement géré par le parent
     isLoading: {
       type: Boolean,
-      default: true,
+      default: false,
     },
     title:{
       type:String,
@@ -112,7 +123,6 @@ export default defineComponent({
     }
   },
   components:{
-    mainButton,
   },
   emits: ['close', 'confirm'],
   setup(props, { emit }) {
@@ -120,19 +130,16 @@ export default defineComponent({
     const modalContainer = ref<HTMLElement | null>(null)
     const isDeleting = ref(false)
 
-    // Nom de l'élément à afficher (priorité au titre, sinon description)
     const itemName = computed(() => {
       if (!props.selectedItem) return ''
       return props.selectedItem.title || props.selectedItem.description || 'cet élément'
     })
 
-    // Gestion de la fermeture
     const handleClose = () => {
       if (isDeleting.value) return
       emit('close')
     }
 
-    // Gestion de la confirmation
     const handleConfirm = async () => {
       if (isDeleting.value) return
       isDeleting.value = true
@@ -143,14 +150,12 @@ export default defineComponent({
       }
     }
 
-    // Focus management : focus sur le bouton Annuler à l'ouverture
     watch(
       () => props.isOpen,
       async (newVal) => {
         if (newVal) {
           await nextTick()
           cancelButton.value?.focus()
-          // Piège du focus : empêche de sortir de la modale
           document.body.style.overflow = 'hidden'
         } else {
           document.body.style.overflow = ''
@@ -212,6 +217,7 @@ export default defineComponent({
 }
 
 .modal-title {
+  min-width: fit-content;
   font-size: 1.25rem;
   font-weight: 600;
   color: #111827;
@@ -219,12 +225,13 @@ export default defineComponent({
 }
 
 .close-button {
+  width: fit-content;
   background: transparent;
   border: none;
   padding: 0.25rem;
   cursor: pointer;
-  color: #6b7280;
-  border-radius: 9999px;
+  color: #f30606;
+  border-radius: 10px;
   transition: all 0.2s;
   display: flex;
   align-items: center;
@@ -232,8 +239,8 @@ export default defineComponent({
 }
 
 .close-button:hover:not(:disabled) {
-  background-color: #f3f4f6;
-  color: #111827;
+  background-color: rgb(230, 14, 14);
+  color: #ffffff;
 }
 
 .close-button:disabled {
@@ -258,10 +265,11 @@ export default defineComponent({
   justify-content: center;
 }
 
-.danger-icon {
-  width: 3rem;
-  height: 3rem;
-  color: #dc2626;
+/* ⚡️ STYLE DE LA NOUVELLE ICÔNE */
+.info-icon {
+  width: 3.5rem;
+  height: 3.5rem;
+  color: #202b4a; /* Couleur bleue foncée classique pour l'info */
   stroke-width: 1.5;
 }
 
@@ -290,38 +298,55 @@ export default defineComponent({
   word-break: break-word;
 }
 
-.warning-message {
-  font-size: 0.875rem;
-  color: #6b7280;
-  margin-top: 0.75rem;
-}
-
 /* Actions */
 .modal-actions {
+  width: 100%;
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
   padding: 1rem 1.5rem 1.5rem;
 }
 
-.btn {
-  flex: 1;
-  padding: 0.625rem 1rem;
+/* ⚡️ CORRECTION DES TAILLES DE BOUTONS */
+.action-btn {
+  width: 100%;
+}
+
+/* Cette règle force le bouton interne de mainButton et ton bouton annuler à faire la même taille */
+.modal-actions button {
+  width: 100%;
+  height: 48px; /* Hauteur fixe pour symétrie parfaite */
+  padding: 0;
   border-radius: 0.5rem;
-  font-weight: 500;
-  font-size: 0.875rem;
-  cursor: pointer;
-  transition: all 0.2s;
-  border: none;
+  font-weight: 600;
+  font-size: 0.95rem;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 0.5rem;
+  gap: 0.5rem; /* Espace entre l'icône et le texte */
+  cursor: pointer;
+  transition: all 0.2s;
+  box-sizing: border-box;
+  border: none;
 }
 
-.btn:disabled {
+.modal-actions button:disabled {
   opacity: 0.6;
   cursor: not-allowed;
+}
+
+.btn-primary {
+  background-color: #202b4a; /* Bleu Contratchap */
+  color: #ffffff;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background-color: #2c3a61;
+}
+
+.btn-icon {
+  width: 1.25rem;
+  height: 1.25rem;
 }
 
 .btn-secondary {
@@ -335,44 +360,20 @@ export default defineComponent({
   border-color: #9ca3af;
 }
 
-.btn-danger {
-  background-color: #dc2626;
-  color: white;
-}
-
-.btn-danger:hover:not(:disabled) {
-  background-color: #b91c1c;
-}
-
-/* Spinner de chargement */
 .loading-spinner {
-  width: 1rem;
-  height: 1rem;
+  width: 1.25rem;
+  height: 1.25rem;
   border: 2px solid rgba(255, 255, 255, 0.3);
-  border-top-color: white;
+  border-top-color: #ffffff;
   border-radius: 50%;
-  animation: spin 0.6s linear infinite;
-}
-
-/* Animations */
-@keyframes modalEnter {
-  from {
-    opacity: 0;
-    transform: scale(0.95);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
+  animation: spin 0.8s linear infinite;
 }
 
 @keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
+  to { transform: rotate(360deg); }
 }
 
-/* Transition Vue */
+/* Animations */
 .modal-enter-active,
 .modal-leave-active {
   transition: opacity 0.2s ease;
@@ -402,7 +403,7 @@ export default defineComponent({
     background-color: #1f2937;
   }
 
-  .modal-title {
+  .modal-title, .confirmation-message, .item-name {
     color: #f9fafb;
   }
 
@@ -410,17 +411,8 @@ export default defineComponent({
     border-bottom-color: #374151;
   }
 
-  .close-button {
-    color: #9ca3af;
-  }
-
-  .close-button:hover:not(:disabled) {
-    background-color: #374151;
-    color: #f9fafb;
-  }
-
-  .confirmation-message {
-    color: #f9fafb;
+  .info-icon {
+    color: #60a5fa; /* Bleu clair pour mode sombre */
   }
 
   .item-details {
@@ -428,14 +420,6 @@ export default defineComponent({
   }
 
   .item-label {
-    color: #9ca3af;
-  }
-
-  .item-name {
-    color: #f9fafb;
-  }
-
-  .warning-message {
     color: #9ca3af;
   }
 
@@ -467,10 +451,6 @@ export default defineComponent({
   .modal-actions {
     padding-left: 1rem;
     padding-right: 1rem;
-  }
-
-  .confirmation-message {
-    font-size: 1rem;
   }
 }
 </style>

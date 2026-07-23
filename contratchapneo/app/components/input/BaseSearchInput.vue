@@ -159,8 +159,9 @@ export default {
 /* --- INPUT --- */
 .search-input {
   width: 100%;
-  padding: 0.65rem 2.5rem 0.65rem 2.6rem; 
-  font-size: 0.95rem; /* Taille standard pour la toolbar */
+  /* ⚡️ MODIFIÉ : padding-left passe à 3.2rem (au lieu de 2.6rem) pour faire de la place au rond */
+  padding: 0.65rem 2.5rem 0.65rem 3.2rem; 
+  font-size: 0.95rem; 
   
   background-color: var(--bg-color, #ffffff);
   color: var(--text-color, #111827);
@@ -197,8 +198,19 @@ export default {
 
 .internal-icon {
   position: absolute;
-  left: 1rem;
+  /* ⚡️ MODIFIÉ : Ajustement de la position et création du cercle */
+  left: 0.4rem; /* Collé un peu plus à gauche pour un bel effet "pilule" */
   pointer-events: none;
+  
+  background-color: var(--primary-color); /* Le rond bleu */
+  color: #ffffff !important; /* La loupe en blanc (le !important empêche le thème sombre de la griser au clic) */
+  border-radius: 50%; /* Création du rond */
+  padding: 0.4rem; /* Espace interne pour que la loupe respire */
+  
+  /* Taille globale du cercle */
+  width: 2.2rem;
+  height: 2.2rem;
+  box-sizing: border-box; /* S'assure que le padding ne déforme pas le rond */
 }
 
 /* --- LE BOUTON X --- */

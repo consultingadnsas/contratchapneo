@@ -1,5 +1,6 @@
 <template>
-    <form @submit.prevent="submitForm" class="contrat-form">
+    <!-- ⚡️ CORRECTION 1 : On utilise une nouvelle fonction handleFormSubmit pour gérer la touche "Entrée" -->
+    <form @submit.prevent="handleFormSubmit" class="contrat-form">
         <div v-if="store.isLoading" class="loading-state">
           <p>Analyse du document et extraction des balises en cours...</p>
         </div>
@@ -41,10 +42,19 @@
               type="button"
               @click="nextTag"
               class="nav-btn next-btn"
+              :disabled="!isCurrentFieldValid" 
             >
+            <!-- ⚡️ CORRECTION 2 : :disabled="!isCurrentFieldValid" grise le bouton si le champ est vide -->
               Suivant
             </button>
-            <generatorButton label="Générer" @click="submitForm" v-else/>
+            
+            <!-- On désactive aussi le bouton générer si le dernier champ est vide -->
+            <generatorButton 
+              label="Générer" 
+              @click="submitForm" 
+              v-else 
+              :disabled="!isCurrentFieldValid"
+            />
           </div>
         </div>
 
@@ -81,6 +91,14 @@ const uniqueTags = computed(() => {
 
 const currentTag = computed(() => uniqueTags.value[currentTagIndex.value])
 
+// ⚡️ NOUVEAU : Propriété calculée qui vérifie si le champ actuel est rempli
+const isCurrentFieldValid = computed(() => {
+  if (!currentTag.value) return false;
+  const value = formData.value[currentTag.value];
+  // Vérifie que la valeur n'est ni undefined, ni null, ni composée uniquement d'espaces vides
+  return value !== undefined && value !== null && String(value).trim() !== '';
+});
+
 onMounted(async () => {
   await store.editContract()
   if (uniqueTags.value.length > 0) {
@@ -100,6 +118,21 @@ const prevTag = () => {
     currentTagIndex.value--
   }
 }
+
+// ⚡️ NOUVEAU : Gère intelligemment la touche "Entrée" du clavier
+const handleFormSubmit = () => {
+  // Si le champ est vide, on bloque l'action (ne fait rien)
+  if (!isCurrentFieldValid.value) return; 
+
+  // Si on n'est pas à la dernière étape, "Entrée" passe au champ suivant
+  if (currentTagIndex.value < uniqueTags.value.length - 1) {
+    nextTag();
+  } 
+  // Si on est à la toute dernière étape, "Entrée" valide le contrat
+  else {
+    submitForm();
+  }
+};
 
 // 🔹 Scroll vers le champ dans le document
 const scrollToField = (tagName: string) => {
@@ -122,11 +155,15 @@ const getInputType = (tagName: string) => {
 }
 
 const submitForm = () => {
-  emit('submit-data', formData.value)
+  // Petite sécurité supplémentaire au cas où
+  if (isCurrentFieldValid.value) {
+    emit('submit-data', formData.value)
+  }
 }
 </script>
 
 <style scoped>
+/* Les styles restent exactement les mêmes ! */
 .contrat-form {
   display: flex;
   flex-direction: column;
@@ -150,7 +187,7 @@ const submitForm = () => {
 }
 .submit-btn {
   padding: 0.75rem 1.5rem;
-  background-color: #202b4a; /* Les couleurs Contratchap ! */
+  background-color: #202b4a; 
   color: white;
   border: none;
   border-radius: 6px;
