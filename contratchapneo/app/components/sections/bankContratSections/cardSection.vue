@@ -387,7 +387,6 @@ export default {
 .action-buttons {
     display: flex;
     flex-direction: row; 
-    gap: 0.5rem;
     justify-content: center;
     align-items: center;
     width: 100%;
@@ -402,7 +401,7 @@ export default {
 }
 .btn-primary{
     background: transparent;
-    color: var(--primary-color);
+    color: #39acff;
     padding: 0 24px;
     height: 48px;
     border-radius: 50px;
