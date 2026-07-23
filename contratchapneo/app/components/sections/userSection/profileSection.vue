@@ -27,7 +27,7 @@
     
         <div v-else class="pack-section">
             
-            <dash-board-input label="Je recherche mon contrat" class="search-bar" />
+            <dashboard-input label="Je recherche mon contrat" class="search-bar" />
             
             <div class="packs-grid">
                 <pack-buying-card 
@@ -92,6 +92,7 @@ export default {
             }
             return 'basique'; 
         };
+
         const getFullPackInfo = (packId: string) => {
             const foundPack = profileStore.availablePacks.find(p => p.id === packId);
             
