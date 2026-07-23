@@ -1,7 +1,5 @@
 <template>
   <aside class="sidebar" :class="{ 'is-reduced': isReduced }">
-
-    <!-- LOGO ET BOUTON DE RÉDUCTION (Desktop) -->
     <div class="logo hidden-mobile">
       <span class="logo-text" v-if="!isReduced">Contratchap</span>
       <!-- Bouton Menu (Hamburger) pour réduire/agrandir -->
@@ -10,10 +8,8 @@
       </svg>
     </div>
 
-    <!-- NAVIGATION PRINCIPALE -->
     <nav class="nav-menu">
       
-      <!-- Vue d'ensemble -->
       <button 
         class="nav-item" 
         :class="{ active: route.path.includes('/profile/Dashboard') }"
@@ -23,7 +19,7 @@
           <path stroke-linecap="round" stroke-linejoin="round" d="m2.25 12 8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
         </svg>
         <span class="nav-label" v-if="!isReduced">Dashboard</span>
-      </button> <!-- ⚡️ CORRECTION : C'était un </NuxtLink> -->
+      </button>
 
       <!-- Mes Contrats -->
       <button 
@@ -35,21 +31,20 @@
           <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12.75V12A2.25 2.25 0 0 1 4.5 9.75h15A2.25 2.25 0 0 1 21.75 12v.75m-8.69-6.44l-2.12-2.12a1.5 1.5 0 0 0-1.061-.44H4.5A2.25 2.25 0 0 0 2.25 6v12a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9a2.25 2.25 0 0 0-2.25-2.25h-5.379a1.5 1.5 0 0 1-1.06-.44z" />
         </svg>
         <span class="nav-label" v-if="!isReduced">Mes Contrats</span>
-      </button> <!-- ⚡️ CORRECTION -->
+      </button>
 
       <!-- Mes packs -->
       <button 
         class="nav-item"
-        :class="{ active: route.path.includes('/profile/Packs') }"
+        :class="{ active: route.path.includes('/profile/Experts') }"
         @click="router.push('/profile/Packs')"
       >
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="icon">
           <path stroke-linecap="round" stroke-linejoin="round" d="M12 21v-8.25M15.75 21v-8.25M8.25 21v-8.25M3 9l9-6 9 6m-1.5 12V10.332A48.36 48.36 0 0012 9.75c-2.551 0-5.056.2-7.5.582V21M3 21h18M12 6.75h.008v.008H12V6.75z" />
         </svg>
         <span class="nav-label" v-if="!isReduced">Experts</span>
-      </button> <!-- ⚡️ CORRECTION -->
+      </button>
 
-      <!-- Support client -->
       <button 
         class="nav-item"
         :class="{ active: route.path.includes('/profile/Support') }"
@@ -59,9 +54,8 @@
           <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487zm0 0L19.5 7.125" />
         </svg>
         <span class="nav-label" v-if="!isReduced">Support client</span>
-      </button> <!-- ⚡️ CORRECTION -->
+      </button>
 
-      <!-- Paramètres -->
       <button 
         class="nav-item"
         :class="{ active: route.path.includes('/profile/Settings') }"
@@ -72,12 +66,10 @@
           <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
         </svg>
         <span class="nav-label" v-if="!isReduced">Paramètres</span>
-      </button> <!-- ⚡️ CORRECTION -->
+      </button>
     </nav>
 
-    <!-- DÉCONNEXION -->
     <div class="logout">
-      <!-- On garde <button> ici car ce n'est pas une route, mais une fonction -->
       <button class="nav-item" @click="authStore.logout">
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="icon">
           <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15M12 9l-3 3m0 0 3 3m-3-3h12.75" />
@@ -91,7 +83,6 @@
 <script lang="ts">
 import { ref } from 'vue';
 import { useAuthStore } from '../../stores/authStore'
-// ⚡️ AJOUT : On importe useRoute en plus de useRouter
 import { useRouter, useRoute } from 'vue-router'; 
 
 export default {
@@ -99,7 +90,7 @@ export default {
   setup() {
     const isReduced = ref(false);
     const router = useRouter();
-    const route = useRoute(); // ⚡️ AJOUT : On initialise la route actuelle
+    const route = useRoute();
 
     const toggleReduce = () => {
       isReduced.value = !isReduced.value;
@@ -110,7 +101,7 @@ export default {
     return { 
       isReduced, 
       router,
-      route, // ⚡️ AJOUT : On l'expose au template
+      route,
       toggleReduce,
       authStore
     };
@@ -119,9 +110,6 @@ export default {
 </script>
 
 <style scoped>
-/* =========================================
-   VARIABLES DE THÈME CONTRATCHAP
-   ========================================= */
 .sidebar {
   --sb-bg: #e8e8e8;          /* Bleu nuit profond */
   --sb-text: #4845ef;        /* Gris ardoise (Texte inactif) */
@@ -131,9 +119,6 @@ export default {
   --sb-hover-bg: rgba(255, 255, 255, 0.05); /* Fond au survol */
 }
 
-/* =========================================
-   1. STRUCTURE MOBILE (Barre en bas)
-   ========================================= */
 .sidebar {
   position: fixed;
   bottom: 0;
@@ -167,7 +152,6 @@ export default {
     display: none;
 }
 
-/* NuxtLink s'affiche par défaut comme un élément 'a'. On garde les mêmes styles que pour le bouton */
 .nav-item {
   background: none;
   border: none;
@@ -215,9 +199,7 @@ export default {
     color: #ef4444;
 }
 
-/* =========================================
-   2. STRUCTURE DESKTOP (À gauche, extensible)
-   ========================================= */
+
 @media (min-width: 1024px) {
   .hidden-mobile { 
     display: flex; 
