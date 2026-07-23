@@ -53,6 +53,7 @@ class CategoryListView(APIView):
         return Response(data, status=status.HTTP_200_OK)
     
 class CategoryDetailWithContractsView(APIView):
+
     permission_classes = [AllowAny]
     authentication_classes = []
 
@@ -417,6 +418,10 @@ class DownloadContractFromPack(APIView):
         response['Access-Control-Expose-Headers'] = 'Content-Disposition'
 
         return response
+
+class CustomContractFromPack(APIView):
+
+    permission_classes = [IsAuthenticated]
 
 # ==========================================
 # 1. URL: /api/admin/contracts/
