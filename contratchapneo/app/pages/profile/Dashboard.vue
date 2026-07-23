@@ -7,7 +7,7 @@
       
       <header class="dashboard-header">
         <div v-if="authStore.user">
-          <h1 class="greeting">Bonjour, {{ authStore.user.user?.username ?? 'invité' }}</h1>
+          <p class="greeting">Bonjour, {{ authStore.user.user?.username ?? 'invité' }}</p>
         </div>
         <div v-else>
           <p>Chargement...</p>
@@ -110,8 +110,8 @@ export default {
 }
 
 .greeting { 
-  font-size: 1.8rem; 
-  font-weight: 700; 
+  font-size: 1.2rem; 
+  font-weight: 500; 
   color: var(--text-night); 
   margin-bottom: 0.25rem; 
 }

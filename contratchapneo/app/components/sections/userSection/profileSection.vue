@@ -26,6 +26,7 @@
         </div>
     
         <div v-else class="pack-section">
+            
             <dash-board-input label="Je recherche mon contrat" class="search-bar" />
             
             <div class="packs-grid">
@@ -35,7 +36,7 @@
                     :title="pack.title" 
                     :price="pack.prix"
                     :description="pack.description"
-                    :planType="getPlanType(pack.title)"
+                    
                     @buy="addToCart(pack.id)"
                 />
             </div>
@@ -54,7 +55,6 @@ import contractCardSkeleton from '../../cards/contractCardSkeleton.vue';
 import emptyState from '../../tools/emptyState.vue'
 import packBuyingCard from '../../cards/packBuyingCard.vue'
 import dashboardInput from '../../input/dashboardInput.vue'
-import DashBoardInput from '../../input/dashBoardInput.vue';
 
 export default {
     components: {
@@ -62,7 +62,6 @@ export default {
         emptyState,
         packBuyingCard,
         dashboardInput,
-        DashBoardInput
     },
 
     setup() {
@@ -196,15 +195,14 @@ export default {
         grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
         overflow-x: visible; 
         padding: 0; 
-        gap: 2rem;
+        gap: 1rem;
         width: 100%;
     }
     .packs-grid > * {
         flex: auto; 
         /* Force la carte à ne jamais dépasser la taille de sa colonne */
-        max-width: 100%; 
+        max-width: 320px; 
         width: 100%;
-        margin: 0 auto;
     }
 }
 </style>
