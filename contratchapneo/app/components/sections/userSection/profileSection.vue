@@ -30,13 +30,15 @@
             
             <div class="packs-grid">
                 <pack-buying-card 
-                    v-for="(pack, index) in profileStore.userPacks" 
-                    :key="pack.id || index"
-                    :title="pack.title" 
-                    :price="pack.prix"
-                    :description="pack.description"
-                    :planType="getPlanType(pack.title)"
-                    @buy="addToCart(pack.id)"
+                    v-for="(item, index) in profileStore.userPacks" 
+                    :key="item.id || index"
+                    
+                    :title="getFullPackInfo(item.pack).title" 
+                    :price="getFullPackInfo(item.pack).prix"
+                    :description="getFullPackInfo(item.pack).description"
+                    :planType="getPlanType(getFullPackInfo(item.pack).title)" 
+                    :isActive="true"
+                    @buy="addToCart(item.pack)"
                 />
             </div>
         </div>
@@ -79,14 +81,27 @@ export default {
 
         }
 
-        const getPlanType = (title: string) => {
+        const getPlanType = (title?: string) => {
+            // Si title n'existe pas (undefined ou null), on renvoie le type par défaut sans crasher
+            if (!title) return 'basique'; 
+
             const lowerTitle = title.toLowerCase();
             if (lowerTitle.includes('pro')) {
                 return 'business-pro';
             } else if (lowerTitle.includes('business')) {
                 return 'business';
             }
-            return 'basique'; // Valeur par défaut
+            return 'basique'; 
+        };
+        const getFullPackInfo = (packId: string) => {
+            const foundPack = profileStore.availablePacks.find(p => p.id === packId);
+            
+            // Si on trouve le pack, on le renvoie. Sinon on renvoie des valeurs par défaut pour éviter les crashs.
+            return foundPack || { 
+                title: 'Pack inconnu', 
+                prix: '0', 
+                description: 'Description indisponible' 
+            };
         };
 
         onMounted(async () => {
@@ -100,7 +115,8 @@ export default {
             profileStore,
             router,
             addToCart,
-            getPlanType
+            getPlanType,
+            getFullPackInfo
         }
     }
 }

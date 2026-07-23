@@ -100,8 +100,8 @@ const submitToBackend = async () => {
 .main-wrapper {
     display: flex;
     flex-direction: column; /* Sur mobile : on empile */
-    gap: 2rem;
-    padding: 1rem;
+    gap: 3rem;
+    padding: 2rem;
     max-width: 1400px;
     margin: 0 auto;
     background-color: #f4f6f9; /* Petit fond gris léger pour contraster avec la page A4 */
@@ -115,12 +115,18 @@ const submitToBackend = async () => {
         align-items: flex-start;
         padding: 2rem;
     }
+    .form-section {
+        width: 100%;
+        height: auto;
+    }
 }
 
 /* =========================================
    FORMULAIRE (Gauché/Haut)
    ========================================= */
 .form-section {
+    width: 100%;
+    min-height: fit-content;
     flex: 1;
     background: #ffffff;
     padding: 2rem;
@@ -193,6 +199,7 @@ const submitToBackend = async () => {
    FAUX DOCUMENT A4 (Droite/Bas)
    ========================================= */
 .preview-section {
+    width: 100%;
     flex: 2; /* Prend deux fois plus de place que le formulaire sur PC */
     display: flex;
     justify-content: center;

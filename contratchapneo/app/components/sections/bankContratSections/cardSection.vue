@@ -355,15 +355,28 @@ export default {
     align-items: center;
 }
 
-.search-container-large :deep(input),
-.search-container-large :deep(.search-container) {
+.search-container-large :deep(.search-container),
+.search-container-large :deep(input) {
     height: 75px; 
     border-radius: 50px;
-    font-size: 1.2rem;
     width: 100%;
+}
+
+/* Styles spécifiques à la boîte englobante */
+.search-container-large :deep(.search-container) {
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
     background: #ffffff;
     transition: box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+/* Styles spécifiques au champ de texte */
+.search-container-large :deep(input) {
+    font-size: 1.2rem;
+    background: transparent;
+    border: none;
+    outline: none;
+    /* ⚡️ C'EST ICI QUE LA MAGIE OPÈRE : On pousse le texte vers la droite */
+    padding-left: 4rem; /* Ajuste cette valeur (ex: 3.5rem ou 4.5rem) selon la taille de l'icône */
 }
 
 .search-container-large :deep(input:focus) {
@@ -444,11 +457,25 @@ export default {
 /* ==========================================
    === MEDIA QUERIES (RESPONSIVE DESIGN) ===
 ========================================== */
-
 /* 📱 SMARTPHONES (Max 767px) */
 @media (max-width: 767px) {
     .hero-header { padding: 0 1rem; }
     
+    /* ⚡️ NOUVEAU : On réduit la hauteur et la police de la barre de recherche */
+    .search-container-large {
+        min-width: 100%; /* S'assure qu'elle prend toute la largeur dispo sur mobile */
+    }
+    
+    .search-container-large :deep(.search-container),
+    .search-container-large :deep(input) {
+        height: 55px; /* Hauteur beaucoup moins massive */
+    }
+
+    .search-container-large :deep(input) {
+        font-size: 1rem; /* Texte légèrement plus petit */
+        padding-left: 3.5rem; /* On réduit aussi un peu le décalage sur mobile */
+    }
+
     .action-buttons {
         gap: 0.5rem; 
     }
@@ -461,7 +488,14 @@ export default {
     }
 
     .filter-toolbar { justify-content: center; }
+
+    .btn-inline {
+        flex: 1; 
+        width: 50px; 
+        font-weight: 600;
+    }
 }
+
 
 /* 💊 TABLETTES (De 768px à 1023px) */
 @media (min-width: 768px) and (max-width: 1023px) {

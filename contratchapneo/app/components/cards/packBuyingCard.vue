@@ -10,7 +10,15 @@
 
             <p class="description">{{ description }}</p>
 
-            <mainButton :label="buttonLabel" class="btn-dark" @click="$emit('buy')"/>
+            <!-- ⚡️ NOUVEAU : Condition pour afficher soit le badge, soit le bouton -->
+            <div v-if="isActive" class="active-pack-badge">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="check-icon-large">
+                    <path fill-rule="evenodd" d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12Zm13.36-1.814a.75.75 0 1 0-1.22-.872l-3.236 4.53L9.53 12.22a.75.75 0 0 0-1.06 1.06l2.25 2.25a.75.75 0 0 0 1.14-.094l3.75-5.25Z" clip-rule="evenodd" />
+                </svg>
+                Pack Actif
+            </div>
+            
+            <mainButton v-else :label="buttonLabel" class="btn-dark" @click="$emit('buy')"/>
         </div>
     </article>
 </template>
@@ -24,7 +32,6 @@ export default defineComponent({
     name: 'LegendaryCard',
     components: { mainButton },
     props: {
-        // Nouvelle prop pour gérer les déclinaisons de couleurs
         planType: {
             type: String as PropType<'basique' | 'business' | 'business-pro'>,
             default: 'basique',
@@ -45,13 +52,16 @@ export default defineComponent({
         buttonLabel: { 
             type: String, 
             default: 'Acheter' 
+        },
+        // ⚡️ NOUVEAU : La prop pour déterminer si le pack est déjà acheté
+        isActive: {
+            type: Boolean,
+            default: false
         }
     },
     emits:['buy'],
     setup(){
-        
         const router = useRouter();
-
         return{
             router,
         }
@@ -87,22 +97,21 @@ export default defineComponent({
     display: flex;
     flex-direction: column;
     gap: 1rem;
-    padding: 1.5rem; /* Augmenté légèrement pour mieux voir la couleur */
+    padding: 1.5rem; 
     border-radius: 1.5rem;
     transition: background 0.3s ease;
 }
 
 /* --- DÉCLINAISONS DE COULEURS DU HEADER --- */
 .header-basique {
-    background: #f3f4f6; /* Gris très clair, discret */
+    background: #f3f4f6; 
 }
 
 .header-business {
-    background: #e0f2fe; /* Bleu très doux (ex: Tailwind sky-100) */
+    background: #e0f2fe; 
 }
 
 .header-business-pro {
-    /* Dégradé premium inspiré de la carte B de ton image précédente */
     background: linear-gradient(135deg, #e0f2fe 0%, #65e17e 100%);
 }
 
@@ -119,7 +128,7 @@ export default defineComponent({
     display: flex;
     flex-direction: column;
     gap: 1.5rem;
-    padding: 0 1rem 1rem 1rem; /* Ajout d'un peu de padding interne */
+    padding: 0 1rem 1rem 1rem; 
 }
 
 .price-section {
@@ -129,7 +138,7 @@ export default defineComponent({
 }
 
 .price-main {
-    font-size: 1.8rem; /* Ajusté pour correspondre au design épuré */
+    font-size: 1.8rem; 
     font-weight: 800;
     color: #111827;
     line-height: 1;
@@ -137,7 +146,7 @@ export default defineComponent({
 
 .price-suffix {
     font-size: 0.95rem;
-    color: #4b5563; /* Légèrement plus foncé pour contraster avec le fond coloré */
+    color: #4b5563; 
     margin-left: 4px;
     font-weight: 500;
 }
@@ -180,6 +189,28 @@ export default defineComponent({
     flex-shrink: 0;
 }
 
+/* --- NOUVEAU : STYLE DU BADGE ACTIF --- */
+.active-pack-badge {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    width: 100%;
+    box-sizing: border-box;
+    background: rgba(22, 163, 74, 0.1); /* Fond vert transparent */
+    color: #16a34a; /* Texte vert Contratchap */
+    font-weight: 700;
+    border-radius: 999px;
+    padding: 14px 28px;
+    font-size: 1rem;
+    border: 1px solid rgba(22, 163, 74, 0.2);
+}
+
+.check-icon-large {
+    width: 22px;
+    height: 22px;
+}
+
 /* --- BOUTONS --- */
 .btn-dark {
     width: 100%;
@@ -187,7 +218,7 @@ export default defineComponent({
 }
 
 :deep(.btn-dark button) {
-    box-sizing: border-box; /* ⚡️ LA CORRECTION EST ICI : Le padding est maintenant inclus dans les 100% */
+    box-sizing: border-box; 
     background: #111827 !important;
     color: #ffffff !important;
     font-weight: 600;
