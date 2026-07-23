@@ -1,10 +1,11 @@
 <template>
-    <!-- ⚡️ CORRECTION : Remplacement de min-h-screen par w-full. Le parent gère la hauteur. -->
+
     <section class="w-full flex flex-col items-center gap-4 py-4">
 
         <contractCardSkeleton v-if="profileStore.isLoading" />
 
         <div v-else-if="profileStore.userPacks.length === 0" class="pack-section">
+            
             <emptyState 
                 title="Aucun pack acheté"
                 description="Vous n'avez aucun pack disponible. Découvrez nos offres ci-dessous."
@@ -13,6 +14,7 @@
             />
             
             <div class="packs-grid">
+                
                 <pack-buying-card 
                     v-for="(pack, index) in profileStore.availablePacks" 
                     :key="pack.id || index"
@@ -22,6 +24,7 @@
                     :planType="getPlanType(pack.title)"
                     @buy="addToCart(pack.id)"
                 />
+
             </div>
         </div>
     
@@ -30,10 +33,10 @@
             <dashboard-input label="Je recherche mon contrat" class="search-bar" />
             
             <div class="packs-grid">
+                
                 <pack-buying-card 
                     v-for="(item, index) in profileStore.userPacks" 
                     :key="item.id || index"
-                    
                     :title="getFullPackInfo(item.pack).title" 
                     :price="getFullPackInfo(item.pack).prix"
                     :description="getFullPackInfo(item.pack).description"
@@ -41,6 +44,7 @@
                     :isActive="true"
                     @buy="addToCart(item.pack)"
                 />
+
             </div>
         </div>
 
