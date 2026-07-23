@@ -153,26 +153,30 @@ class UserPack(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='mes_packs')
     pack = models.ForeignKey(Pack, on_delete=models.PROTECT, related_name='purchasers')
     
-    # 💰 NOUVEAU : Le solde de crédits
+    # 💰 NOUVEAU : Le solde de crédits pour les contrats
     credits_restants = models.PositiveIntegerField(
         default=0,
         help_text="Combien de crédits il reste à l'utilisateur pour ce pack."
     )
     
-    # 🗂️ NOUVEAU : Historique des choix
+    # NOUVEAU : Historique des choix
     contrats_choisis = models.ManyToManyField(
         Contrat, 
         blank=True, 
         help_text="Les contrats que l'utilisateur a choisi de débloquer avec ses crédits."
     )
 
-    # 🆕 NOUVEAU : solde de cartes de pro
     cartes_pro_restantes = models.PositiveIntegerField(
         default=0,
         help_text="Combien de cartes de pro il reste à télécharger pour ce pack."
     )
 
-    # 🆕 NOUVEAU : historique — quels pros ont déjà été débloqués
+    # Pour les crédits restant des contrats sur mesure
+    customs_restants = models.PositiveIntegerField(
+        default=0,
+        help_text="Nombre de contrats sur mesure restants à utiliser pour ce pack."
+    )
+
     pros_debloques = models.ManyToManyField(
         LegalProfessional,  # adapte le chemin selon ton app
         blank=True,
@@ -188,16 +192,12 @@ class UserPack(models.Model):
         return f'{self.user.email} - {self.pack.title} ({self.credits_restants} crédits restants)'
 
     def save(self, *args, **kwargs):
-        # Initialisation automatique lors de la création (achat du pack)
-        if not self.pk: 
-            # On copie le nombre de crédits initiaux du catalogue
+        if not self.pk:
             self.credits_restants = self.pack.nombre_credits
             self.cartes_pro_restantes = self.pack.nombre_cartes_pro
-            
-            # On calcule la date d'expiration
+            self.customs_restants = self.pack.nombre_customed_contract
             if self.pack.duree_validite_jours:
                 self.expires_at = timezone.now() + timedelta(days=self.pack.duree_validite_jours)
-                
         super().save(*args, **kwargs)
 
     @property
