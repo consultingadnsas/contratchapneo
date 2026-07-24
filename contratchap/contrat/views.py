@@ -419,9 +419,96 @@ class DownloadContractFromPack(APIView):
 
         return response
 
+# ==========================================
+# 2. URL: /contract/packs/custom_contract/
+# ==========================================
+
 class CustomContractFromPack(APIView):
 
     permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        """
+        Crée une demande de contrat sur mesure en utilisant un crédit
+        'customs_restants' d'un pack actif de l'utilisateur.
+        """
+        user = request.user
+
+        # 1. Récupération du pack actif de l'utilisateur qui inclut le sur-mesure
+        user_pack = UserPack.objects.filter(
+            user=user,
+            is_active=True,
+            pack__custom_contract_included=True
+        ).select_related('pack').order_by('-purchased_at').first()
+
+        if not user_pack:
+            return Response(
+                {"error": "Vous n'avez aucun pack actif incluant les contrats sur mesure."},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        # 2. Vérification de la validité (expiration incluse)
+        if not user_pack.is_valid:
+            return Response(
+                {"error": "Votre pack a expiré ou n'est plus actif."},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        # 3. Vérification des crédits sur mesure restants
+        if user_pack.customs_restants <= 0:
+            return Response(
+                {"error": "Vous n'avez plus de crédits disponibles pour un contrat sur mesure."},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        # 4. Validation des données de la demande
+        serializer = CustomedContractSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(
+                {
+                    'errors': serializer.errors,
+                    'message': 'Impossible de créer la demande sur mesure.'
+                },
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # 5. Création + débit du crédit, de façon atomique
+        try:
+            with transaction.atomic():
+                # On reverrouille la ligne pour éviter une race condition
+                locked_pack = UserPack.objects.select_for_update().get(pk=user_pack.pk)
+
+                if locked_pack.customs_restants <= 0:
+                    return Response(
+                        {"error": "Vous n'avez plus de crédits disponibles pour un contrat sur mesure."},
+                        status=status.HTTP_403_FORBIDDEN
+                    )
+
+                custom_contract = serializer.save(
+                    user=user,
+                    user_pack=locked_pack,
+                )
+
+                locked_pack.customs_restants = F('customs_restants') - 1
+                locked_pack.save(update_fields=['customs_restants'])
+
+        except Exception as e:
+            return Response(
+                {
+                    'message': 'Erreur lors de la création de la demande sur mesure.',
+                    'error': str(e)
+                },
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+        return Response(
+            {
+                'data': CustomedContractSerializer(custom_contract).data,
+                'message': 'Votre demande de contrat sur mesure a été envoyée avec succès. '
+                           f'Il vous reste {locked_pack.customs_restants} crédit(s) sur mesure.'
+            },
+            status=status.HTTP_201_CREATED
+        )
 
 # ==========================================
 # 1. URL: /api/admin/contracts/
