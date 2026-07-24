@@ -14,13 +14,31 @@
             </div>
 
             <div class="action-buttons">
-                <button class="btn-primary btn-inline" @click="router.push('/contractBank/customContrat')">
-                    Contrat sur mesure
-                </button>
+                <!-- Groupe : Contrat sur mesure -->
+                <div class="action-wrapper">
+                    <div class="icon-bubble bubble-primary" @click="router.push('/contractBank/customContrat')">
+                        <!-- Icône : Document avec stylo -->
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
+                        </svg>
+                    </div>
+                    <button class="btn-primary btn-inline" @click="router.push('/contractBank/customContrat')">
+                        Contrat sur mesure
+                    </button>
+                </div>
                 
-                <button class="btn-secondary btn-inline" @click="router.push('/etudeContrat')">
-                    Révision de contrat
-                </button>
+                <!-- Groupe : Révision de contrat -->
+                <div class="action-wrapper">
+                    <div class="icon-bubble bubble-secondary" @click="router.push('/etudeContrat')">
+                        <!-- Icône : Document avec loupe -->
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M10.125 2.25h-4.5c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125v-9M10.125 2.25h.375a9 9 0 0 1 9 9v.375M10.125 2.25A3.375 3.375 0 0 1 13.5 5.625v1.5c0 .621.504 1.125 1.125 1.125h1.5a3.375 3.375 0 0 1 3.375 3.375M9 15l2.25 2.25L15 12" />
+                        </svg>
+                    </div>
+                    <button class="btn-secondary btn-inline" @click="router.push('/etudeContrat')">
+                        Révision de contrat
+                    </button>
+                </div>
             </div>
         </header>
 
@@ -388,15 +406,60 @@ export default {
     display: flex;
     flex-direction: row; 
     justify-content: center;
-    align-items: center;
+    align-items: flex-end; /* Aligne les boutons vers le bas */
+    gap: 2.5rem; /* Espace entre les deux blocs */
     width: 100%;
     max-width: 850px;
-    margin-top: 2.5rem
+    margin-top: 2.5rem;
+}
+
+.action-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    flex: 1;
+    max-width: 280px; 
+}
+
+/* ⚡️ STYLE DES BULLES */
+.icon-bubble {
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.15); /* Fond transparent léger */
+    backdrop-filter: blur(10px); /* Effet verre */
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    cursor: pointer;
+}
+
+.icon-bubble svg {
+    width: 32px;
+    height: 32px;
+    transition: all 0.3s ease;
+}
+
+.bubble-primary svg { color: #39acff; }
+.bubble-secondary svg { color: #ffffff; }
+
+/* Animations au survol du groupe complet */
+.action-wrapper:hover .icon-bubble {
+    transform: translateY(-8px);
+    background: rgba(255, 255, 255, 0.15);
+}
+
+.action-wrapper:hover .bubble-secondary svg {
+    color: #10b981; /* Devient vert comme la bordure du bouton */
 }
 
 .btn-inline {
     flex: 1; 
-    max-width: 250px; 
+    max-width: none; 
     font-weight: 600;
 }
 .btn-primary{
@@ -429,7 +492,7 @@ export default {
     padding: 0 24px;
     height: 48px;
     border-radius: 50px;
-    font-weight: 600;
+    font-weight: 400;
     font-size: 0.95rem;
     cursor: pointer;
     display: flex;
@@ -498,7 +561,22 @@ export default {
     }
 
     .action-buttons {
-        gap: 0.5rem; 
+        gap: 1rem; /* Moins d'espace sur mobile */
+        margin-top: 1.5rem;
+    }
+
+    .icon-bubble {
+        width: 50px;
+        height: 50px;
+    }
+
+    .icon-bubble svg {
+        width: 24px;
+        height: 24px;
+    }
+
+    .action-wrapper {
+        gap: 0.5rem;
     }
 
     .btn-secondary, :deep(.main-btn) {

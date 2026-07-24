@@ -1,14 +1,14 @@
 <template>
-    
     <form @submit.prevent="submitForm">
         
         <h3>Ouvrir un compte</h3>
 
         <BaseInput
-            label="Nom d'utilisateur/nom entreprise"
+            label="Nom d'utilisateur"
             v-model="registrationForm.username"
-            placeholder="Entrer votre nom d'utilisateur"
+            placeholder="Ex: mon_entreprise"
             :errorMessage="errors.username"
+            :disabled="isSubmitting"
         />
 
         <BaseInput
@@ -16,13 +16,15 @@
             v-model="registrationForm.email"
             placeholder="Entrer votre email"
             :errorMessage="errors.email"
+            :disabled="isSubmitting"
         />
 
         <BaseInput
             label="N° de téléphone"
             v-model="registrationForm.phone_number"
-            placeholder="Entrer un mot de passe"
-            :errorMessage="errors.password"
+            placeholder="Ex: +225 0102030405"
+            :errorMessage="errors.phone_number"
+            :disabled="isSubmitting"
         />
 
         <BaseInput
@@ -31,16 +33,19 @@
             placeholder="Entrer un mot de passe"
             :errorMessage="errors.password"
             type="password"
+            :disabled="isSubmitting"
         />
 
+        <!-- ⚡️ CORRECTION : btn_label et isloading en minuscules, branchés sur la variable locale -->
         <mainButton 
             type="submit" 
             label="S'inscrire"
-            :isLoading="useAuthStore.isLoading"
+            :isloading="isSubmitting"
         />
 
-        <div class="error-message" v-if="useAuthStore.error">
-            <p>{{ useAuthStore.error }}</p>
+        <!-- Affichage de l'erreur renvoyée par le backend -->
+        <div class="error-message" v-if="authStore.error">
+            <p>{{ authStore.error }}</p>
         </div>
 
     </form>
@@ -62,6 +67,9 @@ export default {
     setup() {
         const authStore = useAuthStore();
 
+        // ⚡️ État de chargement 100% local, initialisé à false
+        const isSubmitting = ref(false);
+
         const registrationForm = ref<User>({
             username: "",
             password: "",
@@ -69,34 +77,32 @@ export default {
             phone_number: ""
         });
 
-        // 1. On crée un objet réactif pour stocker nos erreurs
         const errors = ref({
             username: "",
             email: "",
-            phone_number:"",
+            phone_number: "",
             password: "",
         });
 
-        // 2. La fonction de validation
         function validate(): boolean {
-            
             let isValid = true;
             
-            // On réinitialise les erreurs à chaque validation
             errors.value = {
                 username: "",
                 email: "",
                 password: "",
-                phone_number:"  "
+                phone_number: ""
             };
 
-            // Validation du Nom d'utilisateur
+            const usernameRegex = /^[\w.@+-]+$/; 
             if (!registrationForm.value.username.trim()) {
                 errors.value.username = "Le nom d'utilisateur est requis.";
                 isValid = false;
+            } else if (!usernameRegex.test(registrationForm.value.username)) {
+                errors.value.username = "Pas d'espaces autorisés (utilisez _ ou -).";
+                isValid = false;
             }
 
-            // Validation de l'Email
             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
             if (!registrationForm.value.email.trim()) {
                 errors.value.email = "L'email est requis.";
@@ -106,7 +112,11 @@ export default {
                 isValid = false;
             }
 
-            // Validation du Mot de passe
+            if (!registrationForm.value.phone_number.trim()) {
+                errors.value.phone_number = "Le numéro de téléphone est requis.";
+                isValid = false;
+            }
+
             if (!registrationForm.value.password) {
                 errors.value.password = "Le mot de passe est requis.";
                 isValid = false;
@@ -118,43 +128,45 @@ export default {
             return isValid;
         }
 
-        // 3. Soumission du formulaire
         const submitForm = async () => {
-            // On appelle validate() en premier
             if (validate()) {
-                console.log("Les données sont valides, on envoie au backend :", registrationForm.value);
+                
+                isSubmitting.value = true; // Allume le bouton
                 
                 try {
-                    // Exemple d'appel à ton store
                     await authStore.register(registrationForm.value);
-                    
                 } catch (error) {
-                    console.error("Erreur lors de l'inscription", error);
+                    console.error("L'inscription a échoué.");
+                } finally {
+                    isSubmitting.value = false; // Éteint le bouton
                 }
-            } else {
-                console.log("Le formulaire contient des erreurs.");
             }
         }
 
         onMounted(() => {
-            console.log("Registration form monté", registrationForm.value)
+            console.log("Formulaire monté, prêt à l'emploi.");
         })
 
         return {
             authStore,
             registrationForm,
             errors,
-            submitForm
+            submitForm,
+            isSubmitting // ⚡️ Très important : on l'exporte pour le template
         }
     }
 }
 </script>
 
 <style scoped>
-.error-message{
-    background: #ef4c4c;
-    color: red;
-    padding: 0.5rem;
+.error-message {
+    background: #fef2f2;
+    color: #dc2626;
+    border: 1px solid #f87171;
+    padding: 0.75rem;
     border-radius: 0.5rem;
+    margin-top: 1rem;
+    text-align: center;
+    font-size: 0.9rem;
 }
 </style>

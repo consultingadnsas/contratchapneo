@@ -199,7 +199,7 @@ export default {
 .internal-icon {
   position: absolute;
   /* ⚡️ MODIFIÉ : Ajustement de la position et création du cercle */
-  left: 0.4rem; /* Collé un peu plus à gauche pour un bel effet "pilule" */
+  left: 0.7rem; /* Collé un peu plus à gauche pour un bel effet "pilule" */
   pointer-events: none;
   
   background-color: var(--primary-color); /* Le rond bleu */
