@@ -407,7 +407,7 @@ export default {
     flex-direction: row; 
     justify-content: center;
     align-items: flex-end; /* Aligne les boutons vers le bas */
-    gap: 2.5rem; /* Espace entre les deux blocs */
+    gap: 0.5rem; /* Espace entre les deux blocs */
     width: 100%;
     max-width: 850px;
     margin-top: 2.5rem;
