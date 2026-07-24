@@ -33,31 +33,46 @@ export const useAuthStore = defineStore('auth', () => {
 
   const { $api } = useNuxtApp()
 
-  // Actions
+ // Actions
   const register = async (payload: Omit<User, 'id'>) => {
     
     isLoading.value = true;
-    error.value = '';
+    error.value = null; // ⚡️ On réinitialise l'erreur proprement
 
     try {
-      
       const response = await $api('/account/register/', {
         method: 'POST',
         body: payload
       })
 
       if (response) {
-        isLoading.value = false;
-        //Debuging
-        console.log('reponse de création', response)
-        navigateTo('/login');
+        // Debuging
+        console.log('Réponse de création', response)
+        await navigateTo('/auth/login'); // ⚡️ N'oublie pas le await pour la navigation
       }
 
-    } catch (err:any) {
-      console.error(err)
-      throw new Error("Un soucis est intervenu");
+    } catch (err: any) {
+      console.error("Détails de l'erreur backend :", err.response?._data);
+      
+      // ⚡️ CORRECTION : Extraction des vraies erreurs renvoyées par Django
+      if (err.response && err.response._data) {
+          const data = err.response._data;
+          if (data.errors) {
+              // Récupère la première erreur (ex: username déjà pris)
+              const firstKey = Object.keys(data.errors)[0];
+              error.value = data.errors[firstKey][0];
+          } else {
+              error.value = data.message || "Erreur lors de l'inscription.";
+          }
+      } else {
+          error.value = "Impossible de joindre le serveur.";
+      }
+      
+      // On lève l'erreur pour que le formulaire puisse arrêter son traitement si besoin
+      throw err; 
 
     } finally {
+      // ⚡️ Ça arrête le spinner quoi qu'il arrive
       isLoading.value = false;
     }
   }

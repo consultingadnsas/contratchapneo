@@ -53,7 +53,7 @@
 
         <div class="purchase-section">
           <p>Vous n'avez pas de compte ?</p>
-          <a href="#" @click.prevent="$router.push('/achat-pack')" class="buy-link">créez-en un !</a>
+          <a href="#" @click.prevent="$router.push('/auth/registration')" class="buy-link">créez-en un !</a>
         </div>
 
       </div>
