@@ -23,6 +23,7 @@ class RegisterView(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request, *args, **kwargs):
+
         serializer = UserSerializer(data=request.data)
         
         # raise_exception=True intercepte automatiquement les erreurs et renvoie un 400 propre

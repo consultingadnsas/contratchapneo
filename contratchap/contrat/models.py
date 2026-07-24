@@ -55,34 +55,6 @@ class Contrat(models.Model):
 
     def __str__(self):
         return f'Contrat {self.title}'
-
-class CustomedContract(models.Model):
-    
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    category = models.ForeignKey(
-        Category,
-        on_delete=models.SET_NULL,
-        blank=True,
-        null=True,
-        related_name='customised_contracts'
-    )
-    subject = models.CharField(max_length=225)
-    phone_number = models.CharField(max_length=12)
-    email = models.EmailField()
-    description = models.TextField()
-    #
-    price = models.FloatField(default=25000.00)
-    promo_price = models.FloatField(default=0.0)
-
-    is_wrotten = models.BooleanField(default = False)
-
-    # Timestamps
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    def __str__(self):
-        return f'Contrat sur mesure de {self.email}'
-
     
 class Pack(models.Model):
 
@@ -208,3 +180,43 @@ class UserPack(models.Model):
         if self.expires_at and timezone.now() > self.expires_at:
             return False
         return True
+
+class CustomedContract(models.Model):
+    
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    category = models.ForeignKey(
+        Category,
+        on_delete=models.SET_NULL,
+        blank=True,
+        null=True,
+        related_name='customised_contracts'
+    )
+    user = models.ForeignKey(
+        CustomUser,
+        on_delete=models.SET_NULL,
+        null=True, blank=True,
+        related_name='customed_contracts'
+    )
+    # 🆕 Lien vers le pack utilisé pour débloquer cette demande
+    user_pack = models.ForeignKey(
+        UserPack,
+        on_delete=models.SET_NULL,
+        null=True, blank=True,
+        related_name='customed_contracts'
+    )
+    subject = models.CharField(max_length=225)
+    phone_number = models.CharField(max_length=12)
+    email = models.EmailField()
+    description = models.TextField()
+    #
+    price = models.FloatField(default=25000.00)
+    promo_price = models.FloatField(default=0.0)
+
+    is_wrotten = models.BooleanField(default = False)
+
+    # Timestamps
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f'Contrat sur mesure de {self.email}'

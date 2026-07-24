@@ -43,10 +43,12 @@ class CustomedContractSerializer(serializers.ModelSerializer):
             'description',
             'price',
             'is_wrotten',
+            'user',
+            'user_pack',
             'created_at',
-            'updated_at'
+            'updated_at',
         ]
-        read_only_fields = ['id', 'is_wrotten', 'created_at', 'updated_at']
+        read_only_fields = ['id', 'is_wrotten', 'user', 'user_pack', 'created_at', 'updated_at']
 
     def validate_subject(self, value):
         if len(value.strip()) < 5:
