@@ -1,17 +1,48 @@
 <template>
     <section class="custom-contrat">
 
-        <add-button/>
+        <add-button 
+            v-if="!isVisible"
+            @click="setIsVisible"
+        />
+
+        <pack-custom-contract 
+            v-else
+        />
 
     </section>
 </template>
 
 <script>
+import {ref} from 'vue'
 import addButton from '../../buttons/addButton.vue'
+import packCustomContract from '../../forms/packCustomContract.vue'
+
 export default {
 
     components:{
-        addButton
+        addButton,
+        packCustomContract
+    },
+
+    setup(){
+
+        const isVisible = ref(false);
+
+        const setIsVisible = ()=>{
+            if( isVisible.value === false ){
+                isVisible.value = true;
+            } else{
+                isVisible.value = false;
+            }
+        }
+
+
+        return {
+            isVisible,
+            setIsVisible
+        }
+
     }
 
 }

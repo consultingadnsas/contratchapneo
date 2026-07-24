@@ -424,91 +424,75 @@ class DownloadContractFromPack(APIView):
 # ==========================================
 
 class CustomContractFromPack(APIView):
-
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
         """
-        Crée une demande de contrat sur mesure en utilisant un crédit
-        'customs_restants' d'un pack actif de l'utilisateur.
+        Vue pour soumettre une demande de contrat sur mesure via un pack.
+        Valide les données avec CustomedContractSerializer.
         """
         user = request.user
 
-        # 1. Récupération du pack actif de l'utilisateur qui inclut le sur-mesure
-        user_pack = UserPack.objects.filter(
-            user=user,
-            is_active=True,
-            pack__custom_contract_included=True
-        ).select_related('pack').order_by('-purchased_at').first()
+        # 1. Vérification du pack de l'utilisateur
+        user_pack = UserPack.objects.filter(user=user, is_active=True).first()
 
         if not user_pack:
             return Response(
-                {"error": "Vous n'avez aucun pack actif incluant les contrats sur mesure."},
+                {"error": "Vous n'avez aucun pack actif pour demander un contrat sur mesure."},
                 status=status.HTTP_403_FORBIDDEN
             )
 
-        # 2. Vérification de la validité (expiration incluse)
-        if not user_pack.is_valid:
-            return Response(
-                {"error": "Votre pack a expiré ou n'est plus actif."},
-                status=status.HTTP_403_FORBIDDEN
-            )
-
-        # 3. Vérification des crédits sur mesure restants
+        # Vérification rapide des crédits avant de traiter les données
         if user_pack.customs_restants <= 0:
             return Response(
-                {"error": "Vous n'avez plus de crédits disponibles pour un contrat sur mesure."},
+                {"error": "Vous n'avez plus de crédits disponibles dans votre pack."},
                 status=status.HTTP_403_FORBIDDEN
             )
 
-        # 4. Validation des données de la demande
+        # 2. On passe les données au sérialiseur pour profiter de tes validations (téléphone, email, etc.)
         serializer = CustomedContractSerializer(data=request.data)
+        
         if not serializer.is_valid():
-            return Response(
-                {
-                    'errors': serializer.errors,
-                    'message': 'Impossible de créer la demande sur mesure.'
-                },
-                status=status.HTTP_400_BAD_REQUEST
-            )
+            # Si les données sont invalides (ex: téléphone mal formaté, sujet trop court)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-        # 5. Création + débit du crédit, de façon atomique
+        # 3. Traitement atomique : Création de la demande ET débit du crédit
         try:
             with transaction.atomic():
-                # On reverrouille la ligne pour éviter une race condition
+                # Verrouillage de la ligne du pack pour éviter les Race Conditions
                 locked_pack = UserPack.objects.select_for_update().get(pk=user_pack.pk)
 
-                if locked_pack.customs_restants <= 0:
+                if locked_pack.credits_restants <= 0:
                     return Response(
-                        {"error": "Vous n'avez plus de crédits disponibles pour un contrat sur mesure."},
+                        {"error": "Vous n'avez plus de crédits disponibles dans votre pack."},
                         status=status.HTTP_403_FORBIDDEN
                     )
 
+                # Création du contrat via le sérialiseur ! 
+                # On lui passe les champs en read_only (user et user_pack)
                 custom_contract = serializer.save(
-                    user=user,
-                    user_pack=locked_pack,
+                    user=user, 
+                    user_pack=locked_pack
                 )
 
+                # Décrémentation du crédit
                 locked_pack.customs_restants = F('customs_restants') - 1
                 locked_pack.save(update_fields=['customs_restants'])
 
-        except Exception as e:
+            # 4. Réponse de succès avec les données propres
             return Response(
                 {
-                    'message': 'Erreur lors de la création de la demande sur mesure.',
-                    'error': str(e)
+                    "message": "Votre demande de contrat sur mesure a été enregistrée avec succès. Un crédit a été débité.",
+                    "data": serializer.data  # On renvoie l'objet formaté au front
                 },
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                status=status.HTTP_201_CREATED
             )
 
-        return Response(
-            {
-                'data': CustomedContractSerializer(custom_contract).data,
-                'message': 'Votre demande de contrat sur mesure a été envoyée avec succès. '
-                           f'Il vous reste {locked_pack.customs_restants} crédit(s) sur mesure.'
-            },
-            status=status.HTTP_201_CREATED
-        )
+        except Exception as e:
+            return Response(
+                {"error": f"Erreur lors de la création de la demande : {str(e)}"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
 # ==========================================
 # 1. URL: /api/admin/contracts/

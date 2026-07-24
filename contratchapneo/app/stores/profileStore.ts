@@ -26,7 +26,9 @@ export const useProfileStore = defineStore('profile', () => {
 
     // Actions
     const fetchPacks = async () => {
+        
         isLoading.value = true; 
+        
         try {
             const response = await $api<Mypacks[]>('/contrat/packs/', {
                 method: 'GET'
@@ -45,6 +47,7 @@ export const useProfileStore = defineStore('profile', () => {
     }
 
     const getPacks = async () => {
+        
         isLoading.value = true; 
 
         try {
@@ -68,6 +71,7 @@ export const useProfileStore = defineStore('profile', () => {
     }
 
     const downloadContractFromPack = async (contrat_id: string, payload: object) => {
+        
         isLoading.value = true;
 
         try {
@@ -105,6 +109,28 @@ export const useProfileStore = defineStore('profile', () => {
         console.log('[ProfileStore] Données profil local vidées suite à la déconnexion.');
     };
 
+    const customContract = async (payload: object)=> {
+
+        isLoading.value = true;
+
+        try{
+            const response = await $api('/contrat/packs/custom_contract/',{
+                method: 'POST',
+                body:payload
+            })
+
+            if(response){
+                console.log("Formulaire soumis avec succès!")
+            }
+        } catch(error){
+            console.error('Un problème est survenu lors de la soumission du formulaire');
+            throw error
+        } finally {
+            isLoading.value = false;
+        }
+
+    }
+
     return {
         isLoading, 
         myPacks,
@@ -114,7 +140,8 @@ export const useProfileStore = defineStore('profile', () => {
         fetchPacks,
         getPacks,
         downloadContractFromPack,
-        clearLocalProfile
+        clearLocalProfile,
+        customContract
     }
 
 }, { persist: true })
