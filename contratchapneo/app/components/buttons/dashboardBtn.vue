@@ -1,19 +1,53 @@
 <template>
     <div class="profile-wrapper" ref="wrapperRef">
           <button class="profile-button" @click="toggleDropdown">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="icon-size">
-              <path d="M12 22C6.47715 22 2 17.5228 2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12C22 17.5228 17.5228 22 12 22ZM12 6.5L7.5 11V13L12 17.5L16.5 13V11L12 6.5Z"></path>
-            </svg>
             
-            <span class="credits-text">{{ userCredits }} Crédits</span>
+            <!-- ⚡️ NOUVELLE ICÔNE (Avec la classe icon-size pour garder les bonnes proportions) -->
+            <img 
+              class="icon-size" 
+              src="https://img.icons8.com/arcade/64/coins--v1.png" 
+              alt="coins--v1"
+            />
+            
+            <!-- ⚡️ Les crédits s'affichent dynamiquement -->
+            <span class="credits-text">{{ activeCredits }} Crédits</span>
           </button>
 
           <Transition name="fade">
             <div v-if="isOpen" class="dropdown">
               <ul class="dropdown-menu">
-                <span>Crédit contrats</span>
-                <span>Statut</span>
-                <span>Date Expiration</span>
+                
+                <li>
+                    <span class="menu-item">
+                        <small>Contrats standards</small>
+                        <strong>{{ activeCredits }} restants</strong>
+                    </span>
+                </li>
+
+                <li>
+                    <span class="menu-item">
+                        <small>Contrats sur mesure</small>
+                        <strong>{{ activeCustoms }} restants</strong>
+                    </span>
+                </li>
+                
+                <li>
+                    <span class="menu-item">
+                        <small>Statut du pack</small>
+                        <!-- ⚡️ Pastille de couleur selon le statut -->
+                        <span :class="['status-badge', activePack ? 'active' : 'inactive']">
+                            {{ activePack ? 'Actif' : 'Aucun pack actif' }}
+                        </span>
+                    </span>
+                </li>
+
+                <li v-if="activePack?.date_expiration">
+                    <span class="menu-item">
+                        <small>Date d'expiration</small>
+                        <strong>{{ formattedExpirationDate }}</strong>
+                    </span>
+                </li>
+
               </ul>
             </div>
           </Transition>
@@ -21,16 +55,38 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { useProfileStore } from '~/stores/profileStore' // Vérifie que ce chemin est correct
 
-// État local
+// 1. Initialisation du store
+const profileStore = useProfileStore()
+
+// 2. Récupération dynamique du pack actif
+// On cherche dans userPacks le premier pack qui a isActive = true
+const activePack = computed(() => {
+    // ⚡️ CORRECTION : On cherche "is_active" (Django) 
+    return profileStore.userPacks.find(pack => pack.is_active === true) || null
+})
+
+// 3. Calculs des valeurs à afficher
+const activeCredits = computed(() => activePack.value?.credits_restants || 0)
+const activeCustoms = computed(() => activePack.value?.customs_restants || 0)
+
+// 4. Formatage propre de la date (ex: 24 Oct 2024)
+const formattedExpirationDate = computed(() => {
+    if (!activePack.value?.date_expiration) return 'N/A'
+    const date = new Date(activePack.value.date_expiration)
+    return date.toLocaleDateString('fr-FR', { 
+        day: 'numeric', 
+        month: 'short', 
+        year: 'numeric' 
+    })
+})
+
+// === LOGIQUE DE LA MODALE DU BOUTON ===
 const isOpen = ref(false)
 const wrapperRef = ref(null)
 
-// ⚡️ NOUVEAU : Variable pour stocker les crédits (à relier à ton store Pinia)
-const userCredits = ref(15) 
-
-// Fonctions
 const toggleDropdown = () => {
   isOpen.value = !isOpen.value
 }
@@ -39,22 +95,18 @@ const closeDropdown = () => {
   isOpen.value = false
 }
 
-// Gestion du clic en dehors
 const handleClickOutside = (event) => {
   if (wrapperRef.value && !wrapperRef.value.contains(event.target)) {
     closeDropdown()
   }
 }
 
-// Déconnexion (à remplacer par ta logique)
-const logout = () => {
-  console.log('Déconnexion')
-  // Appel API, redirection, etc.
-  closeDropdown()
-}
-
 onMounted(() => {
   document.addEventListener('click', handleClickOutside)
+  // Optionnel : Si tes packs ne sont pas encore chargés au moment où ce composant s'affiche
+  if (profileStore.userPacks.length === 0) {
+      profileStore.getPacks();
+  }
 })
 
 onUnmounted(() => {
@@ -69,20 +121,16 @@ onUnmounted(() => {
 }
 
 .profile-button {
-  background-color: var(--primary-color);
+  background-color: #000e2ddd;
   display: flex;
   align-items: center;
   justify-content: center;
   width: fit-content;
-  gap: 0.5rem; /* Rapproché pour que l'icône et le texte soient liés */
+  gap: 0.5rem;
   border: none;
-  
-  /* ⚡️ CORRECTION : On passe d'un cercle (50%) à un rectangle arrondi (8px ou 12px) */
   border-radius: 8px; 
   cursor: pointer;
-  color: var(--background-white-color);
-  
-  /* ⚡️ CORRECTION : Padding asymétrique parfait pour un bouton rectangulaire */
+  color: #ffffff;
   padding: 0.6rem 1.2rem; 
   transition: 0.4s;
 }
@@ -90,10 +138,9 @@ onUnmounted(() => {
 .profile-button:hover {
   transform: translateY(-2px);
   transition: 0.2s;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); /* Petit ajout d'ombre au survol */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
-/* ⚡️ NOUVEAU : Tailles gérées pour l'icône et le texte */
 .icon-size {
   width: 22px;
   height: 22px;
@@ -102,17 +149,18 @@ onUnmounted(() => {
 .credits-text {
   font-size: 0.95rem;
   font-weight: 600;
-  white-space: nowrap; /* Empêche le texte de passer à la ligne sur mobile */
+  white-space: nowrap;
 }
 
 .dropdown {
   position: absolute;
   top: calc(100% + 0.5rem);
   right: 0;
-  min-width: 180px;
+  min-width: 220px; /* Un peu plus large pour afficher les infos proprement */
   background: white;
   border-radius: 8px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  border: 1px solid #eaeaea;
   z-index: 1000;
   overflow: hidden;
 }
@@ -124,35 +172,62 @@ onUnmounted(() => {
 }
 
 .dropdown-menu li {
-  padding: 0;
+  border-bottom: 1px solid #f0f0f0;
 }
 
-.dropdown-menu span,
-.dropdown-menu button {
-  display: block;
-  width: 100%;
-  padding: 10px 16px;
-  text-decoration: none;
+.dropdown-menu li:last-child {
+  border-bottom: none;
+}
+
+.menu-item {
+  display: flex;
+  flex-direction: column;
+  padding: 12px 16px;
   color: #333;
-  background: none;
-  border: none;
   text-align: left;
-  cursor: pointer;
-  font-size: 0.9rem;
 }
 
-.dropdown-menu a:hover,
-.dropdown-menu button:hover {
-  background-color: #f5f5f5;
+.menu-item small {
+    color: #6b7280;
+    font-size: 0.75rem;
+    margin-bottom: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.menu-item strong {
+    font-size: 0.95rem;
+    color: #111827;
+}
+
+/* ⚡️ STYLE DU STATUT DYNAMIQUE */
+.status-badge {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 50px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    width: fit-content;
+}
+
+.status-badge.active {
+    background-color: #d1fae5;
+    color: #065f46;
+}
+
+.status-badge.inactive {
+    background-color: #fee2e2;
+    color: #991b1b;
 }
 
 /* Animation */
 .fade-enter-active,
 .fade-leave-active {
-  transition: opacity 0.2s ease;
+  transition: opacity 0.2s ease, transform 0.2s ease;
 }
 .fade-enter-from,
 .fade-leave-to {
   opacity: 0;
+  transform: translateY(-10px);
 }
 </style>

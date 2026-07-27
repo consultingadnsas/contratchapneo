@@ -9,7 +9,10 @@ export interface Mypacks {
     prix: number;
     views?: number;
     download?: number;
-    isActive: boolean;
+    is_active: boolean; 
+    credits_restants?: number;
+    customs_restants?: number;
+    date_expiration?: string;
 }
 
 export const useProfileStore = defineStore('profile', () => {

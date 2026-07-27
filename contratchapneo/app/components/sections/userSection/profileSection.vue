@@ -136,9 +136,7 @@ export default {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 2rem;
-    
-    /* ⚡️ Empêche le conteneur de s'étirer au-delà de l'écran (évite le débordement horizontal) */
+    gap: 5rem;
     min-width: 0; 
 }
 

@@ -78,7 +78,7 @@ export default defineComponent({
     height: auto;
     max-width: 420px;
     padding: 0.5rem;
-    border-radius: 8px;
+    border-radius: 20px;
     box-sizing: border-box;
     background: #ffffff;
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);

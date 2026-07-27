@@ -10,7 +10,6 @@
       
         <div v-if="authStore.user">
           <h1 class="greeting">Bonjour, {{ authStore.user.user?.username ?? 'invité' }}</h1>
-          <p class="subtitle">Voici un résumé de votre activité juridique.</p>
         </div>
     
         <div v-else>
@@ -148,10 +147,6 @@ export default {
   font-weight: 700; 
   color: var(--text-night); 
   margin-bottom: 0.25rem; 
-}
-.subtitle { 
-  color: var(--text-muted); 
-  font-size: 1rem; 
 }
 .primary-btn { 
   background-color: var(--text-night); 

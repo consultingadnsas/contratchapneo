@@ -20,8 +20,9 @@
 import contratCards from '../../cards/contratCards.vue';
 import contractCardProfile from '../../cards/contractCardProfile.vue';
 import { useContratStore } from '../../../stores/contratStore';
-import { onMounted } from 'vue';
-import { useRouter } from 'vue-router';
+// ⚡️ AJOUT : on importe watch et useRoute
+import { onMounted, watch } from 'vue'; 
+import { useRouter, useRoute } from 'vue-router'; 
 
 export default {
     components: {
@@ -32,22 +33,35 @@ export default {
     setup() {
         const contratStore = useContratStore();
         const router = useRouter();
+        const route = useRoute(); // ⚡️ AJOUT : pour lire l'URL
 
         // Actions
         async function fillContract(contract_id: string) {
             try {
-                // 🚀 MODIFICATION ICI : On passe l'ID dans l'URL
-                // Cela va rediriger vers une URL du type /contractwritter/1234-5678-...
                 router.push(`/contractwritter/${contract_id}`);
-                
                 console.log("Navigation vers le générateur avec l'id :", contract_id);
             } catch(err: any) {
                 console.warn("Un avertissement est survenu lors de la redirection", err);
             }
         }
 
+        // ⚡️ NOUVEAU : On surveille l'URL. Si la barre de recherche change l'URL, on filtre.
+        watch(() => route.query.q, (newQuery) => {
+            if (newQuery) {
+                // J'utilise fetchContracts en supposant que c'est ta méthode de recherche dans le store
+                contratStore.fetchContracts(1, '', newQuery as string);
+            } else {
+                contratStore.getContracts(1);
+            }
+        });
+
+        // ⚡️ MODIFICATION : Au chargement, on vérifie s'il y a déjà une recherche dans l'URL
         onMounted(() => {
-            contratStore.getContracts(1);
+            if (route.query.q) {
+                contratStore.fetchContracts(1, '', route.query.q as string);
+            } else {
+                contratStore.getContracts(1);
+            }
         });
 
         return {
