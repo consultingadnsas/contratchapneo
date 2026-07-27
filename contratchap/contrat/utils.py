@@ -3,7 +3,10 @@ import re
 import os
 import subprocess
 import shutil
+import threading
 from docxtpl import DocxTemplate
+from django.core.mail import EmailMessage
+from django.conf import settings
 
 def extract_tags_grouped_by_paragraph(file_path):
     doc = docx.Document(file_path)
@@ -129,7 +132,40 @@ def fill_docx_template(template_path, user_inputs, output_path):
     
     return output_path
 
-def user_has_free_access_to_contract(user, contrat_id):
+def _send_email_task_with_bytes(subject, message, to_email, attachments_data):
     """
-        Vérifie si l'utilisateur possède un pack actif 
+    Fonction interne qui envoie l'e-mail avec des fichiers chargés en mémoire.
     """
+    try:
+        email = EmailMessage(
+            subject=subject,
+            body=message,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            to=[to_email],
+        )
+        
+        # On attache les fichiers depuis la mémoire RAM
+        for att in attachments_data:
+            # email.attach(nom_fichier, contenu_brut, type_mime)
+            email.attach(att['filename'], att['content'], att['mimetype'])
+                
+        email.send(fail_silently=False)
+        print(f"✅ Email asynchrone envoyé avec succès à {to_email}")
+        
+    except Exception as e:
+        print(f"❌ Erreur lors de l'envoi de l'email à {to_email}: {str(e)}")
+
+def send_documents_by_email_async(subject, message, to_email, attachments_data=None):
+    """
+    Lance l'envoi de l'e-mail en arrière-plan (non-bloquant).
+    :param attachments_data: Liste de dictionnaires [{'filename': '...', 'content': b'...', 'mimetype': '...'}]
+    """
+    if attachments_data is None:
+        attachments_data = []
+        
+    email_thread = threading.Thread(
+        target=_send_email_task_with_bytes,
+        args=(subject, message, to_email, attachments_data)
+    )
+    email_thread.daemon = True 
+    email_thread.start()

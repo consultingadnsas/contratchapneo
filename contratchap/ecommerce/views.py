@@ -25,7 +25,7 @@ from .helpers import (get_or_create_cart, set_cart_cookie_if_needed)
 from contrat.models import Contrat, CustomedContract, Pack
 from pro.models import LegalProfessional
 
-from contrat.utils import fill_docx_template, convert_docx_to_pdf
+from contrat.utils import fill_docx_template, convert_docx_to_pdf, send_documents_by_email_async
 
 # ─────────────────────────────────────────
 # CART VIEWS
@@ -538,22 +538,16 @@ class OrderDetailView(APIView):
         )
     
 class OrderDownloadView(APIView):
-    """
-    GET /orders/<order_id>/download/
-    Génère et télécharge les contrats ET/OU les cartes de visite d'une commande.
-    Si 1 document -> retourne le PDF.
-    Si > 1 document -> retourne un ZIP contenant les PDFs.
-    """
     permission_classes = [AllowAny]
 
     def get(self, request, order_id):
-        # 1. Récupération de la commande (On précharge aussi 'pro' pour éviter les requêtes N+1)
+        # 1. Récupération de la commande
         order = get_object_or_404(
             Order.objects.prefetch_related('order_items__contrat', 'order_items__pro'), 
             id=order_id
         )
 
-        # 2. Vérification des accès et du nombre de téléchargements
+        # 2. Vérification des accès
         if not self._can_access(request, order):
             return Response(
                 {'message': 'Accès non autorisé à ce téléchargement.'},
@@ -563,19 +557,19 @@ class OrderDownloadView(APIView):
         if order.download_count >= 3:
             raise PermissionDenied("Limite atteinte : Vous avez déjà téléchargé ces documents 3 fois. Veuillez contacter le support si besoin.")
 
+        # 🎯 L'ASTUCE EST ICI : On vérifie si c'est le tout premier essai (compteur à 0)
+        is_first_download = (order.download_count == 0)
+
+        # On incrémente le compteur pour la base de données
         order.download_count = F('download_count') + 1
         order.save(update_fields=['download_count'])
 
-        # 🚨 ON SUPPRIME LA VÉRIFICATION 404 ICI (on la fera après avoir inspecté tous les items)
-
-        # 3. Magie Contratchap : Génération ou récupération des fichiers
+        # 3. Génération ou récupération des fichiers
         with tempfile.TemporaryDirectory() as temp_dir:
-            generated_files = [] # Liste de tuples (nom_du_fichier.pdf, chemin_absolu)
+            generated_files = [] 
 
-            # On boucle sur TOUS les items du panier
             for item in order.order_items.all():
-                
-                # --- CAS A : C'est un CONTRAT dynamique ---
+                # --- CAS A : Contrat ---
                 if item.contrat:
                     contrat = item.contrat
                     user_inputs = item.user_inputs or {} 
@@ -590,16 +584,14 @@ class OrderDownloadView(APIView):
                     pdf_path = os.path.join(temp_dir, pdf_filename)
                     
                     convert_docx_to_pdf(filled_docx_path, temp_dir)
-                    
                     generated_temp_pdf = os.path.join(temp_dir, f"temp_{item.id}.pdf")
                     
                     if os.path.exists(generated_temp_pdf):
                         os.rename(generated_temp_pdf, pdf_path)
                         generated_files.append((pdf_filename, pdf_path))
 
-                # --- CAS B : C'est un PROFESSIONNEL (Carte de visite / Fiche) ---
+                # --- CAS B : Professionnel ---
                 elif item.pro:
-                    # ⚠️ Remplace 'fichier_pdf' par le vrai nom de ton champ dans LegalProfessional !
                     if item.pro.visiting_card and hasattr(item.pro.visiting_card, 'path'):
                         pdf_path = item.pro.visiting_card.path
                         
@@ -607,20 +599,44 @@ class OrderDownloadView(APIView):
                             prenom = getattr(item.pro, 'first_name', 'Pro')
                             nom = getattr(item.pro, 'last_name', '')
                             pdf_filename = f"Carte_Visite_{prenom}_{nom}.pdf".replace(" ", "_")
-                            
-                            # On ajoute directement le fichier existant à la liste !
                             generated_files.append((pdf_filename, pdf_path))
 
-            # 4. Si après avoir cherché on n'a vraiment trouvé aucun fichier (ni contrat ni carte)
             if not generated_files:
                 return Response(
-                    {'message': 'Aucun document trouvé pour cette commande (PDF manquant ou erreur).'}, 
+                    {'message': 'Aucun document trouvé pour cette commande.'}, 
                     status=status.HTTP_404_NOT_FOUND
                 )
 
-            # 5. Renvoyer le fichier (PDF unique ou ZIP en mémoire RAM)
+            # 🚀 4. ENVOI EMAIL CONDITIONNEL
+            # On n'exécute ce bloc lourd en RAM que si c'est le premier téléchargement
+            if is_first_download:
+                email_attachments = []
+                for filename, path in generated_files:
+                    with open(path, 'rb') as f:
+                        email_attachments.append({
+                            'filename': filename,
+                            'content': f.read(),
+                            'mimetype': 'application/pdf'
+                        })
+                
+                to_email = order.guest.email if order.guest else request.user.email
+                sujet = f"Vos documents juridiques Contratchap - Commande {str(order.id)[:8]}"
+                message_body = f"""Bonjour,
+
+                    Merci pour votre confiance !
+                    Vous trouverez en pièce jointe les documents de votre commande.
+
+                    L'équipe Contratchap."""
+
+                send_documents_by_email_async(
+                    subject=sujet, 
+                    message=message_body, 
+                    to_email=to_email, 
+                    attachments_data=email_attachments
+                )
+
+            # 5. Renvoyer le fichier au navigateur (exécuté à chaque fois, jusqu'à 3)
             if len(generated_files) == 1:
-                # --- PDF UNIQUE ---
                 filename, path = generated_files[0]
                 with open(path, 'rb') as f:
                     pdf_bytes = f.read()
@@ -631,11 +647,9 @@ class OrderDownloadView(APIView):
                 response = FileResponse(buffer, as_attachment=True, filename=filename)
                 response['Content-Type'] = 'application/pdf'
             else:
-                # --- DOSSIER ZIP ---
                 zip_buffer = io.BytesIO()
                 with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_file:
                     for filename, path in generated_files:
-                        # arcname évite de recréer toute l'arborescence des dossiers du serveur dans le ZIP
                         zip_file.write(path, arcname=filename)
                 
                 zip_buffer.seek(0)
@@ -644,13 +658,10 @@ class OrderDownloadView(APIView):
                 response = FileResponse(zip_buffer, as_attachment=True, filename=zip_filename)
                 response['Content-Type'] = 'application/zip'
 
-            # Autorise le front à lire le nom du fichier
             response['Access-Control-Expose-Headers'] = 'Content-Disposition'
-            
             return response
 
     def _can_access(self, request, order):
-        """Même logique de sécurité que pour OrderDetailView"""
         if request.user.is_authenticated:
             return order.user == request.user
         email = request.query_params.get('email', '').lower().strip()
