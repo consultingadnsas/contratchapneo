@@ -164,12 +164,17 @@ class UserPack(models.Model):
         return f'{self.user.email} - {self.pack.title} ({self.credits_restants} crédits restants)'
 
     def save(self, *args, **kwargs):
-        if not self.pk:
+        # 🚨 CORRECTION ICI : self._state.adding garantit que c'est une création
+        if self._state.adding: 
             self.credits_restants = self.pack.nombre_credits
             self.cartes_pro_restantes = self.pack.nombre_cartes_pro
             self.customs_restants = self.pack.nombre_customed_contract
+            
             if self.pack.duree_validite_jours:
+                from datetime import timedelta
+                from django.utils import timezone
                 self.expires_at = timezone.now() + timedelta(days=self.pack.duree_validite_jours)
+                
         super().save(*args, **kwargs)
 
     @property
