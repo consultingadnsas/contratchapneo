@@ -30,6 +30,13 @@
                         <strong>{{ activeCustoms }} restants</strong>
                     </span>
                 </li>
+
+                <li>
+                    <span class="menu-item">
+                        <small>Experts</small>
+                        <strong>{{ activePro }} restants</strong>
+                    </span>
+                </li>
                 
                 <li>
                     <span class="menu-item">
@@ -71,6 +78,7 @@ const activePack = computed(() => {
 // 3. Calculs des valeurs à afficher
 const activeCredits = computed(() => activePack.value?.credits_restants || 0)
 const activeCustoms = computed(() => activePack.value?.customs_restants || 0)
+const activePro = computed(() => activePack.value?.cartes_pro_restantes || 0 )
 
 // 4. Formatage propre de la date (ex: 24 Oct 2024)
 const formattedExpirationDate = computed(() => {

@@ -12,6 +12,7 @@ export interface Mypacks {
     is_active: boolean; 
     credits_restants?: number;
     customs_restants?: number;
+    cartes_pro_restantes?: number;
     date_expiration?: string;
 }
 

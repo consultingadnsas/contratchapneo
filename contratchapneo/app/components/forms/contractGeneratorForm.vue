@@ -1,5 +1,4 @@
 <template>
-    <!-- ⚡️ CORRECTION 1 : On utilise une nouvelle fonction handleFormSubmit pour gérer la touche "Entrée" -->
     <form @submit.prevent="handleFormSubmit" class="contrat-form">
         <div v-if="store.isLoading" class="loading-state">
           <p>Analyse du document et extraction des balises en cours...</p>
@@ -44,11 +43,9 @@
               class="nav-btn next-btn"
               :disabled="!isCurrentFieldValid" 
             >
-            <!-- ⚡️ CORRECTION 2 : :disabled="!isCurrentFieldValid" grise le bouton si le champ est vide -->
               Suivant
             </button>
             
-            <!-- On désactive aussi le bouton générer si le dernier champ est vide -->
             <generatorButton 
               label="Générer" 
               @click="submitForm" 
@@ -64,7 +61,7 @@
     </form>
 </template>
 
-<script setup lang="ts">
+<script lang="ts">
 import { ref, computed, onMounted, watch } from 'vue'
 import { useContratStore } from '../../stores/contratStore'
 import { useRoute } from 'vue-router'
@@ -72,92 +69,109 @@ import BaseInputContract from '../input/BaseInputContract.vue'
 import generatorButton from '.././buttons/generatorButton.vue'
 import { usePaiementStore } from '../../stores/paiementStore'
 
-const emit = defineEmits(['submit-data', 'update-data', 'scroll-to-field'])
-const store = usePaiementStore()
-const formData = ref<Record<string, string>>({})
-const route = useRoute()
-const currentTagIndex = ref(0) // Index du champ actuel
+export default {
+  components: {
+    BaseInputContract,
+    generatorButton
+  },
+  emits: ['submit-data', 'update-data', 'focus-field'],
+  setup(props, { emit }) {
+    const store = usePaiementStore()
+    const formData = ref<Record<string, string>>({})
+    const route = useRoute()
+    const currentTagIndex = ref(0) 
 
-const uniqueTags = computed(() => {
-  if (!store.tags || store.tags.length === 0) return [];
-  const allTags = new Set<string>();
-  store.tags.forEach((block: any) => {
-    if (block.tags && Array.isArray(block.tags)) {
-      block.tags.forEach((tag: string) => allTags.add(tag));
+    const uniqueTags = computed(() => {
+      if (!store.tags || store.tags.length === 0) return [];
+      const allTags = new Set<string>();
+      store.tags.forEach((block: any) => {
+        if (block.tags && Array.isArray(block.tags)) {
+          block.tags.forEach((tag: string) => allTags.add(tag));
+        }
+      });
+      return Array.from(allTags);
+    });
+
+    const currentTag = computed(() => uniqueTags.value[currentTagIndex.value])
+
+    const isCurrentFieldValid = computed(() => {
+      if (!currentTag.value) return false;
+      const value = formData.value[currentTag.value];
+      return value !== undefined && value !== null && String(value).trim() !== '';
+    });
+
+    onMounted(async () => {
+      await store.editContract()
+      if (uniqueTags.value.length > 0) {
+        uniqueTags.value.forEach(tagName => { formData.value[tagName] = '' })
+      }
+    });
+
+    // 🔹 Navigation
+    const nextTag = () => {
+      if (currentTagIndex.value < uniqueTags.value.length - 1) {
+        currentTagIndex.value++
+      }
     }
-  });
-  return Array.from(allTags);
-});
 
-const currentTag = computed(() => uniqueTags.value[currentTagIndex.value])
+    const prevTag = () => {
+      if (currentTagIndex.value > 0) {
+        currentTagIndex.value--
+      }
+    }
 
-// ⚡️ NOUVEAU : Propriété calculée qui vérifie si le champ actuel est rempli
-const isCurrentFieldValid = computed(() => {
-  if (!currentTag.value) return false;
-  const value = formData.value[currentTag.value];
-  // Vérifie que la valeur n'est ni undefined, ni null, ni composée uniquement d'espaces vides
-  return value !== undefined && value !== null && String(value).trim() !== '';
-});
+    const handleFormSubmit = () => {
+      if (!isCurrentFieldValid.value) return; 
 
-onMounted(async () => {
-  await store.editContract()
-  if (uniqueTags.value.length > 0) {
-    uniqueTags.value.forEach(tagName => { formData.value[tagName] = '' })
-  }
-});
+      if (currentTagIndex.value < uniqueTags.value.length - 1) {
+        nextTag();
+      } else {
+        submitForm();
+      }
+    };
 
-// 🔹 Navigation
-const nextTag = () => {
-  if (currentTagIndex.value < uniqueTags.value.length - 1) {
-    currentTagIndex.value++
-  }
-}
+    // 🔹 Scroll vers le champ dans le document
+    // ⚡️ CORRECTION : Émission du bon nom d'événement
+    const scrollToField = (tagName: string) => {
+      emit('focus-field', tagName)
+    }
 
-const prevTag = () => {
-  if (currentTagIndex.value > 0) {
-    currentTagIndex.value--
-  }
-}
+    // 🔹 Mise à jour en temps réel
+    watch(formData, (newValues) => {
+      emit('update-data', newValues)
+    }, { deep: true })
 
-// ⚡️ NOUVEAU : Gère intelligemment la touche "Entrée" du clavier
-const handleFormSubmit = () => {
-  // Si le champ est vide, on bloque l'action (ne fait rien)
-  if (!isCurrentFieldValid.value) return; 
+    const formatLabel = (tagName: string) =>
+      tagName.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
 
-  // Si on n'est pas à la dernière étape, "Entrée" passe au champ suivant
-  if (currentTagIndex.value < uniqueTags.value.length - 1) {
-    nextTag();
-  } 
-  // Si on est à la toute dernière étape, "Entrée" valide le contrat
-  else {
-    submitForm();
-  }
-};
+    const getInputType = (tagName: string) => {
+      if (tagName.startsWith('date_')) return 'date'
+      if (tagName.startsWith('num_')) return 'number'
+      if (tagName.startsWith('email_')) return 'email'
+      return 'text'
+    }
 
-// 🔹 Scroll vers le champ dans le document
-const scrollToField = (tagName: string) => {
-  emit('scroll-to-field', tagName)
-}
+    const submitForm = () => {
+      if (isCurrentFieldValid.value) {
+        emit('submit-data', formData.value)
+      }
+    }
 
-// 🔹 Mise à jour en temps réel
-watch(formData, (newValues) => {
-  emit('update-data', newValues)
-}, { deep: true })
-
-const formatLabel = (tagName: string) =>
-  tagName.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
-
-const getInputType = (tagName: string) => {
-  if (tagName.startsWith('date_')) return 'date'
-  if (tagName.startsWith('num_')) return 'number'
-  if (tagName.startsWith('email_')) return 'email'
-  return 'text'
-}
-
-const submitForm = () => {
-  // Petite sécurité supplémentaire au cas où
-  if (isCurrentFieldValid.value) {
-    emit('submit-data', formData.value)
+    return {
+      store,
+      formData,
+      currentTagIndex,
+      uniqueTags,
+      currentTag,
+      isCurrentFieldValid,
+      nextTag,
+      prevTag,
+      handleFormSubmit,
+      scrollToField,
+      formatLabel,
+      getInputType,
+      submitForm
+    }
   }
 }
 </script>

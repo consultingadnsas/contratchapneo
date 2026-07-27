@@ -71,7 +71,7 @@ export default{
     font-size: clamp(0.85rem, 2.5vw, 1.1rem); /* fluid, jamais trop petit ni trop grand */
     line-height: 1.3;
     font-weight: 600;
-    font-size: 0.6rem;
+    font-size: 0.5rem;
     color: #fff;
     text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
     /* évite que le texte chevauche le bouton */
@@ -92,16 +92,16 @@ export default{
     background: none;
     border-top-left-radius: 2rem;
     border-bottom-right-radius: 1.5rem;
-    width: 45px;
-    height: 45px;
+    width: 50px;
+    height: 40px;
 }
 
 .features-cards button {
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 20px;
-    height: 20px;
+    width: 15px;
+    height: 15px;
     border-radius: 50%;
     border: none;
     cursor: pointer;
@@ -191,19 +191,19 @@ export default{
     }
 
     .features-cards h4 {
-        font-size: 0.9rem;
+        font-size: 0.8rem;
         margin-left: 2.5rem;
         margin-bottom: 0.5rem;
     }
 
     .btn-container {
-        width: 50px;
-        height: 50px;
+        width: 45px;
+        height: 45px;
     }
 
     .features-cards button {
-        width: 28px;
-        height: 28px;
+        width: 20px;
+        height: 20px;
     }
 }
 </style>

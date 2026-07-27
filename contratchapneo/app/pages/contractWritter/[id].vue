@@ -140,6 +140,7 @@ const handleFocusField = (tagName: string) => {
    FORMULAIRE (Gauche)
    ========================================= */
 .form-section {
+    width: fit-content;
     flex: 1;
     background: #ffffff;
     padding: 2rem;

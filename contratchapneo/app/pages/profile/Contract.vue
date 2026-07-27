@@ -21,6 +21,11 @@
       </header>
         
       <div class="dashboard-grid">
+        
+        <!-- ⚡️ AJOUT : La barre de recherche -->
+        <div class="search-section">
+          <dashBoardInput placeholder="Rechercher un contrat dans votre pack..." />
+        </div>
 
         <user-contrat-section/>
 
@@ -36,13 +41,15 @@
 import { ref, onMounted } from 'vue';
 import {useAuthStore} from '../../stores/authStore'
 
-
 import sidebar from '../../components/navigation/sidebar.vue'; 
 import cardSection from '../../components/sections/bankContratSections/cardSection.vue'
 import mainButton from '../../components/buttons/secondButton.vue';
 import dashboardBtn from '../../components/buttons/dashboardBtn.vue'
 import profileSection from '../../components/sections/userSection/profileSection.vue'
 import userContratSection from '../../components/sections/userSection/userContratSection.vue'
+// ⚡️ AJOUT : Import de la barre de recherche (Ajustez le chemin si nécessaire)
+import dashBoardInput from '../../components/input/dashBoardInput.vue' 
+
 export default {
   name: 'DashboardLayout',
   components: {
@@ -51,8 +58,8 @@ export default {
     mainButton,
     profileSection,
     dashboardBtn,
-    userContratSection
-
+    userContratSection,
+    dashBoardInput // ⚡️ AJOUT
   },
   setup() {
 
@@ -78,7 +85,6 @@ export default {
   --text-night: #0f172a;      
   --text-muted: #64748b;      
   
-  /* C'EST ICI LA MAGIE : On met flex en colonne pour le mobile... */
   display: flex;
   flex-direction: column;
   height: 100vh;
@@ -88,7 +94,6 @@ export default {
   overflow: hidden; 
 }
 
-/* ... ET ON PASSE EN LIGNE (CÔTE À CÔTE) SUR PC ! */
 @media (min-width: 1024px) {
   .dashboard-container {
     flex-direction: row;
@@ -100,7 +105,7 @@ export default {
 ========================================= */
 .main-content {
   flex: 1;
-  min-width: 0; /* 🔥 Empêche le contenu de forcer la largeur */
+  min-width: 0; 
   display: flex;
   flex-direction: column;
   gap: 1rem;
@@ -117,7 +122,14 @@ export default {
   }
 }
 
-/* Bouton menu temporaire sur mobile */
+/* ⚡️ AJOUT : Style pour la section de recherche */
+.search-section {
+  width: 100%;
+  max-width: 800px; /* Limite la largeur pour que ce soit élégant sur PC */
+  margin: 0 auto 2rem auto;
+}
+
+/* ... (Le reste de vos styles existants reste inchangé) ... */
 .mobile-menu-btn {
   background: none;
   border: none;
@@ -134,9 +146,6 @@ export default {
   }
 }
 
-/* =========================================
-   LE RESTE DU DESIGN (Header, Widgets, etc.)
-========================================= */
 .dashboard-header { 
   display: flex; 
   flex-direction: column; 
@@ -163,7 +172,7 @@ export default {
   width: 100%;
   max-width: 100%;
   box-sizing: border-box;
-  display: flex;           /* Si tu veux centrer un seul élément */
+  display: flex;           
   flex-direction: column;
   align-items: center;
   gap: 1.5rem;
@@ -180,46 +189,8 @@ export default {
     align-self: center; 
   }
   .dashboard-grid { 
-    grid-template-columns: 2fr 1fr; 
+    /* grid-template-columns retiré car vous voulez tout empiler proprement */
     gap: 2rem; 
   }
 }
-
-.left-column, .right-column { 
-  display: flex; 
-  flex-direction: column; 
-  gap: 1.5rem; 
-}
-
-.glass-widget {
-  background: rgba(255, 255, 255, 0.7);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.8);
-  border-radius: 16px;
-  padding: 1.5rem;
-  box-shadow: 0 4px 20px rgba(15, 23, 42, 0.03);
-}
-
-.section-header { 
-  display: flex; 
-  justify-content: space-between; 
-  align-items: center; 
-  margin-bottom: 1.5rem; 
-  padding-bottom: 0.75rem; 
-  border-bottom: 1px solid rgba(15, 23, 42, 0.06); 
-}
-.title-wrapper { display: flex; align-items: center; gap: 0.75rem; }
-.section-header h2 { font-size: 1.15rem; font-weight: 600; margin: 0; }
-
-.status-badge { font-size: 0.7rem; font-weight: 600; color: #3b82f6; background: rgba(59, 130, 246, 0.1); padding: 0.2rem 0.6rem; border-radius: 50px; }
-.notification-dot { background: #ef4444; color: white; font-size: 0.75rem; font-weight: 700; width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
-
-.list-layout { display: flex; flex-direction: column; gap: 1rem; }
-.contract-item, .action-item { display: flex; align-items: center; gap: 1rem; padding: 0.75rem; border-radius: 12px; background: rgba(255, 255, 255, 0.5); }
-.action-item { justify-content: space-between; border-bottom: 1px solid rgba(15, 23, 42, 0.05); padding-bottom: 0.75rem; background: none; border-radius: 0; }
-.contract-details h3, .action-text h4 { font-size: 0.95rem; font-weight: 600; margin: 0 0 0.2rem 0; }
-.contract-details p, .action-text p { font-size: 0.8rem; color: var(--text-muted); margin: 0; }
-.badge-draft { background: #f1f5f9; color: #475569; font-size: 0.75rem; padding: 0.25rem 0.6rem; border-radius: 50px; }
-.action-btn { background: white; border: 1px solid rgba(15, 23, 42, 0.1); color: var(--text-night); padding: 0.4rem 0.8rem; border-radius: 6px; font-size: 0.8rem; cursor: pointer; }
 </style>

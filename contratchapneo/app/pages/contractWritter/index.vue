@@ -118,7 +118,7 @@ const handleFocusField = (tagName: string) => {
 }
 
 /* Écrans de tablette et PC : on met côte à côte */
-@media (min-width: 992px) {
+@media (min-width: 1028px) {
     .main-wrapper {
         /* ⚡️ Sur PC, on remet côte à côte dans l'ordre normal (Formulaire à gauche, Aperçu à droite) */
         flex-direction: row;
@@ -135,7 +135,7 @@ const handleFocusField = (tagName: string) => {
    FORMULAIRE (Gauché/Haut)
    ========================================= */
 .form-section {
-    width: 100%;
+    width: fit-content;
     min-height: fit-content;
     flex: 1;
     background: #ffffff;

@@ -419,7 +419,8 @@ export default defineComponent({
 .floating-card {
     position: absolute;
     z-index: 5;
-    width: 110px !important;
+    width: 90px !important;
+    min-height: 80px;
     top: 50%;
     transform: translateX(var(--tx)) translateY(var(--ty-base));
     animation: float 4s ease-in-out infinite;
@@ -440,15 +441,7 @@ export default defineComponent({
 .card-bottom-left { animation-delay: 1.6s; }
 .card-bottom-right { animation-delay: 2.4s; }
 
-@media (min-width: 480px) {
-    .pic-container { width: 250px; }
-    .pic-container img { min-width: 300px; }
-    .floating-card { width: 130px !important; }
-    .card-top-left, .card-top-right       { --ty-base: -150px; }
-    .card-bottom-left, .card-bottom-right { --ty-base: 80px; }
-    .card-top-left, .card-bottom-left   { --tx: -55%; }
-    .card-top-right, .card-bottom-right { --tx: 55%; }
-}
+
 
 /* ── 平板 Tablettes (A partir de 768px) ───────────────────────── */
 @media (min-width: 768px) {
@@ -494,7 +487,7 @@ export default defineComponent({
     top: 20%; left: 10%; width: 80%;
 }
     
-    .floating-card { width: 140px !important; min-height: 110px; }
+    .floating-card { width: 120px !important; min-height: 100px; }
     .floating-card:hover {
         animation-play-state: paused; cursor: pointer;
         transform: translateX(var(--tx)) translateY(var(--ty-base)) scale(1.05);
