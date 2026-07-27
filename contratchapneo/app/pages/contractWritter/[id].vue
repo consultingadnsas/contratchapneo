@@ -6,7 +6,8 @@
             <p class="text-[#202b4a] font-bold text-lg">Génération de votre contrat en cours...</p>
         </div>
 
-        <aside class="form-section w-1/3 h-full p-6 overflow-y-auto bg-white shadow-2xl z-10 relative">
+        <!-- ⚡️ MODIFICATION : w-full sur mobile, lg:w-1/3 sur PC -->
+        <aside class="form-section w-full lg:w-1/3 h-full p-6 overflow-y-auto bg-white shadow-2xl z-10 relative">
             <div class="mb-6">
                 <h2 class="form-title">Génération sur-mesure</h2>
                 <p class="form-subtitle">Remplissez les informations ci-dessous pour personnaliser ce contrat via votre pack.</p>
@@ -20,7 +21,8 @@
             />
         </aside>
 
-        <div class="preview-section w-2/3 h-full p-8 overflow-y-auto flex justify-center items-start">
+        <!-- ⚡️ MODIFICATION : w-full sur mobile, lg:w-2/3 sur PC -->
+        <div class="preview-section w-full lg:w-2/3 h-full p-8 overflow-y-auto flex justify-center items-start">
             <packsPagesPreview ref="previewRef" :contractId="contractId" />
         </div>
 
@@ -111,7 +113,8 @@ const handleFocusField = (tagName: string) => {
    ========================================= */
 .main-wrapper {
     display: flex;
-    flex-direction: column;
+    /* ⚡️ MODIFICATION : column-reverse place l'aperçu au-dessus du formulaire sur mobile */
+    flex-direction: column-reverse;
     gap: 2rem;
     padding: 1rem;
     max-width: 1400px;
@@ -120,11 +123,16 @@ const handleFocusField = (tagName: string) => {
     min-height: 100vh;
 }
 
-@media (min-width: 992px) {
+@media (min-width: 1028px) {
     .main-wrapper {
+        /* ⚡️ Sur PC, on remet côte à côte dans le bon ordre */
         flex-direction: row;
         align-items: flex-start;
         padding: 2rem;
+    }
+    .form-section {
+        width: 100%;
+        height: auto;
     }
 }
 
