@@ -1,14 +1,17 @@
 <template>
     <div class="main-wrapper flex h-screen w-full overflow-hidden bg-gray-200">
         
-        <aside class="form-section w-1/3 h-full p-6 overflow-y-auto bg-white shadow-2xl z-10 relative">
+        <!-- ⚡️ MODIFICATION : w-full sur mobile, lg:w-1/3 sur PC -->
+        <aside class="form-section w-full lg:w-1/3 h-full p-6 overflow-y-auto bg-white shadow-2xl z-10 relative">
             <contract-generator-form 
                 @update-data="syncData"
-                @submit-data="handleModale" 
+                @submit-data="handleModale"
+                @focus-field="handleFocusField"
             />
         </aside>
 
-        <div class="preview-section w-2/3 h-full p-8 overflow-y-auto flex justify-center items-start">
+        <!-- ⚡️ MODIFICATION : w-full sur mobile, lg:w-2/3 sur PC -->
+        <div class="preview-section w-full lg:w-2/3 h-full p-8 overflow-y-auto flex justify-center items-start">
             <contratPreviewPage ref="previewRef" />
         </div>
 
@@ -91,6 +94,11 @@ const submitToBackend = async () => {
         console.error('Une erreur est survenue lors de l\'enregistrement des données', err);
     }
 };
+const handleFocusField = (tagName: string) => {
+  if (previewRef.value) {
+    previewRef.value.scrollToField(tagName);
+  }
+};
 </script>
 
 <style scoped>
@@ -99,18 +107,20 @@ const submitToBackend = async () => {
    ========================================= */
 .main-wrapper {
     display: flex;
-    flex-direction: column; /* Sur mobile : on empile */
+    /* ⚡️ LA MAGIE EST ICI : column-reverse place le 2ème élément (aperçu) au-dessus du 1er (formulaire) */
+    flex-direction: column-reverse; 
     gap: 3rem;
     padding: 2rem;
     max-width: 1400px;
     margin: 0 auto;
-    background-color: #f4f6f9; /* Petit fond gris léger pour contraster avec la page A4 */
+    background-color: #f4f6f9;
     min-height: 100vh;
 }
 
 /* Écrans de tablette et PC : on met côte à côte */
 @media (min-width: 992px) {
     .main-wrapper {
+        /* ⚡️ Sur PC, on remet côte à côte dans l'ordre normal (Formulaire à gauche, Aperçu à droite) */
         flex-direction: row;
         align-items: flex-start;
         padding: 2rem;
@@ -132,7 +142,7 @@ const submitToBackend = async () => {
     padding: 2rem;
     border-radius: 12px;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
-    position: sticky; /* Reste visible quand on scroll le document sur PC */
+    position: sticky;
     top: 2rem;
 }
 
@@ -200,10 +210,10 @@ const submitToBackend = async () => {
    ========================================= */
 .preview-section {
     width: 100%;
-    flex: 2; /* Prend deux fois plus de place que le formulaire sur PC */
+    flex: 2;
     display: flex;
     justify-content: center;
-    overflow-x: auto; /* Permet de scroller horizontalement sur mobile si nécessaire */
+    overflow-x: auto;
 }
 
 .a4-document {
