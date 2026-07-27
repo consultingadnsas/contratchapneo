@@ -24,7 +24,7 @@ from .serializers import (
 )
 
 from docx import Document
-from .utils import extract_tags_grouped_by_paragraph, convert_docx_to_pdf
+from .utils import extract_tags_grouped_by_paragraph, convert_docx_to_pdf, send_documents_by_email_async
 
 class ContratPagination(PageNumberPagination):
     page_size = 10  # 10 éléments par page
@@ -323,7 +323,6 @@ class PacksView(APIView):
 # ==========================================
 
 class DownloadContractFromPack(APIView):
-
     permission_classes = [IsAuthenticated]
 
     def post(self, request, contract_id):
@@ -347,16 +346,21 @@ class DownloadContractFromPack(APIView):
                 status=status.HTTP_404_NOT_FOUND
             )
 
-        already_unlocked = contrat in user_pack.contrats_choisis.all()
-
-        # On vérifie les crédits AVANT de générer, pour échouer vite si besoin
-        if not already_unlocked and user_pack.credits_restants <= 0:
+        # 🚨 CORRECTION : On vérifie simplement s'il a des crédits (On supprime already_unlocked)
+        if user_pack.credits_restants <= 0:
             return Response(
                 {"error": "Vous n'avez plus de crédits disponibles dans votre pack."},
                 status=status.HTTP_403_FORBIDDEN
             )
 
         # 4. Génération dynamique du fichier — AVANT tout débit de crédit
+        import tempfile
+        import os
+        import io
+        from django.db import transaction
+        from django.db.models import F
+        from django.http import FileResponse
+
         with tempfile.TemporaryDirectory() as temp_dir:
             try:
                 user_inputs = request.data.get('user_inputs', {})
@@ -368,7 +372,7 @@ class DownloadContractFromPack(APIView):
                 tmp_docx_path = os.path.join(temp_dir, f"temp_{contrat.id}.docx")
                 doc.save(tmp_docx_path)
 
-                # Conversion en PDF — même signature que OrderDownloadView
+                # Conversion en PDF
                 convert_docx_to_pdf(tmp_docx_path, temp_dir)
                 generated_temp_pdf = os.path.join(temp_dir, f"temp_{contrat.id}.pdf")
 
@@ -388,21 +392,22 @@ class DownloadContractFromPack(APIView):
                     status=status.HTTP_500_INTERNAL_SERVER_ERROR
                 )
 
-        # 5. La génération a réussi : on débloque et on décrémente le crédit, de façon atomique
-        if not already_unlocked:
-            with transaction.atomic():
-                # On reverrouille la ligne pour éviter une race condition sur credits_restants
-                locked_pack = UserPack.objects.select_for_update().get(pk=user_pack.pk)
+        # 5. La génération a réussi : ON DÉBITE LE CRÉDIT (À chaque fois !)
+        with transaction.atomic():
+            locked_pack = UserPack.objects.select_for_update().get(pk=user_pack.pk)
 
-                if locked_pack.credits_restants <= 0:
-                    return Response(
-                        {"error": "Vous n'avez plus de crédits disponibles dans votre pack."},
-                        status=status.HTTP_403_FORBIDDEN
-                    )
+            if locked_pack.credits_restants <= 0:
+                return Response(
+                    {"error": "Vous n'avez plus de crédits disponibles dans votre pack."},
+                    status=status.HTTP_403_FORBIDDEN
+                )
 
-                locked_pack.contrats_choisis.add(contrat)
-                locked_pack.credits_restants = F('credits_restants') - 1
-                locked_pack.save(update_fields=['credits_restants'])
+            # On l'ajoute à l'historique juste pour garder une trace des modèles utilisés
+            locked_pack.contrats_choisis.add(contrat)
+            
+            # 🚨 ON DÉBITE DE FAÇON SYSTÉMATIQUE
+            locked_pack.credits_restants = F('credits_restants') - 1
+            locked_pack.save(update_fields=['credits_restants'])
 
         # 6. Envoi du fichier en réponse (depuis les bytes déjà lus en mémoire)
         buffer = io.BytesIO(pdf_bytes)
