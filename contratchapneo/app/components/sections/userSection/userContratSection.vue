@@ -35,7 +35,7 @@
                     @buy="()=>{fillContract(contrat.id)}"
                 />
             </div>
-            <div class="pagination-wrapper" v-if="contratStore.totalPages > 1">
+            <div class="pagination-wrapper">
                 <Paginator 
                     :currentPage="contratStore.currentPage"
                     :totalCount="contratStore.totalCount"

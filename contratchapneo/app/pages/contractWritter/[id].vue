@@ -92,6 +92,9 @@ const submitAndDownload = async () => {
         console.log("Envoi des données pour le contrat ID :", contractId.value);
         console.log("Votre contrat va être téléchargé...");
 
+        // ⚡️ LA CORRECTION : On force le rafraîchissement pour déduire le crédit de l'interface
+        await profileStore.getPacks();
+
     } catch (err: any) {
         console.error('Erreur lors de la génération du contrat via le pack', err);
         alert(err.message || "Une erreur est survenue lors de la génération du document.");

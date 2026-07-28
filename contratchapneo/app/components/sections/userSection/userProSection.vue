@@ -20,28 +20,38 @@
             :title="notifTitle"
             :message="notifMessage"
         />
-
+    </div>
+    <div class="paginator">
+        <Paginator 
+            :currentPage="proStore.currentPage" 
+            :totalCount="proStore.totalCount" 
+            :pageSize="proStore.pageSize" 
+            @page-changed="handlePageChange"
+        />
     </div>
 </template>
 
 <script lang="ts">
 import proCards from '../../cards/proCards.vue'
 // ⚡️ AJOUT : Import du composant (Vérifie le chemin exact dans ton projet)
-import BaseNotification from '../../tools/baseNotification.vue' 
+import BaseNotification from '../../tools/baseNotification.vue'
+import Paginator from '../../tools/Paginator.vue';
 import { useProStore } from '../../../stores/proStore';
 import { useProfileStore } from '../../../stores/profileStore'; 
 import { onMounted, ref } from 'vue'; // ⚡️ AJOUT : Import de 'ref'
-import { useRouter } from 'vue-router';
+import { useRouter, useRoute } from 'vue-router';
 
 export default {
     components: {
         proCards,
-        BaseNotification // ⚡️ AJOUT : Déclaration du composant
+        BaseNotification,
+        Paginator
     },
 
     setup() {
         const proStore = useProStore();
         const profileStore = useProfileStore(); 
+        const route = useRoute();
         const router = useRouter();
 
         // ⚡️ VARIABLES DE NOTIFICATION
@@ -49,6 +59,11 @@ export default {
         const notifType = ref('success');
         const notifTitle = ref('');
         const notifMessage = ref('');
+
+        const activeDomainSlug = ref((route.query.domaine as string) || '');
+        const activeCountryCode = ref('');
+        const searchQuery = ref('');
+        const currentPage = ref(1); // 👈 Ajout : On suit la page locale
 
         async function Download(pro_id: string) {
             const activePack = profileStore.userPacks.find((pack: any) => pack.is_active === true);
@@ -96,6 +111,17 @@ export default {
             } 
         }
 
+        const fetchPros = (page = 1) => {
+            currentPage.value = page; // On garde en mémoire la page actuelle
+            // On suppose que ton store a une fonction qui prend (page, domaine, pays, recherche)
+            // Adapte le nom de la fonction selon ton store (fetchProfessionals ou getProfessionals)
+            proStore.getProfessionals(page, activeDomainSlug.value, activeCountryCode.value, searchQuery.value);
+        }
+
+         const handlePageChange = (page: number) => {
+            fetchPros(page);
+        };
+
         onMounted(() => {
             proStore.getProfessionals();
         });
@@ -105,8 +131,8 @@ export default {
             proStore,
             profileStore,
             Download,
+            handlePageChange,
             checkProfile,
-            // ⚡️ EXPOSITION DES VARIABLES POUR LE TEMPLATE
             notifShow,
             notifType,
             notifTitle,
