@@ -1,5 +1,4 @@
 <template>
-
     <div class="cards-container">
 
         <proCards
@@ -14,52 +13,87 @@
             class="clickable-card"
         />
 
-    </div>
+        <!-- ⚡️ AJOUT : Le composant de notification -->
+        <BaseNotification 
+            v-model:show="notifShow"
+            :type="notifType"
+            :title="notifTitle"
+            :message="notifMessage"
+        />
 
+    </div>
 </template>
 
 <script lang="ts">
-import contratCards from '../../cards/contratCards.vue';
-import contractCardProfile from '../../cards/contractCardProfile.vue';
 import proCards from '../../cards/proCards.vue'
-import { useProStore} from '../../../stores/proStore';
-import { onMounted } from 'vue';
+// ⚡️ AJOUT : Import du composant (Vérifie le chemin exact dans ton projet)
+import BaseNotification from '../../tools/baseNotification.vue' 
+import { useProStore } from '../../../stores/proStore';
+import { useProfileStore } from '../../../stores/profileStore'; 
+import { onMounted, ref } from 'vue'; // ⚡️ AJOUT : Import de 'ref'
 import { useRouter } from 'vue-router';
 
 export default {
     components: {
-        contratCards,
-        contractCardProfile,
-        proCards
+        proCards,
+        BaseNotification // ⚡️ AJOUT : Déclaration du composant
     },
 
     setup() {
         const proStore = useProStore();
+        const profileStore = useProfileStore(); 
         const router = useRouter();
 
-        // Actions
+        // ⚡️ VARIABLES DE NOTIFICATION
+        const notifShow = ref(false);
+        const notifType = ref('success');
+        const notifTitle = ref('');
+        const notifMessage = ref('');
+
         async function Download(pro_id: string) {
+            const activePack = profileStore.userPacks.find((pack: any) => pack.is_active === true);
+            const proCredits = activePack?.cartes_pro_restantes || 0;
+
+            // ⚡️ LE VERROU AVEC NOTIFICATION
+            if (proCredits <= 0) {
+                notifType.value = 'error';
+                notifTitle.value = 'Action impossible';
+                notifMessage.value = "Vous n'avez plus de crédits expert. Veuillez mettre à jour votre pack.";
+                notifShow.value = true;
+                return; 
+            }
+
             try {
-                // 🚀 MODIFICATION ICI : On passe l'ID dans l'URL
-                // Cela va rediriger vers une URL du type /contractwritter/1234-5678-...
-                proStore.downloadProCard(pro_id)
+                const success = await proStore.downloadProCard(pro_id);
                 
-                console.log("Navigation vers le générateur avec l'id :", contract_id);
+                if (success) {
+                    await profileStore.getPacks(); 
+                    
+                    // ⚡️ OPTIONNEL : Petite notification de succès
+                    notifType.value = 'success';
+                    notifTitle.value = 'Succès';
+                    notifMessage.value = 'La carte expert a été téléchargée avec succès.';
+                    notifShow.value = true;
+                }
+                
             } catch(err: any) {
-                console.warn("Un avertissement est survenu lors de la redirection", err);
+                console.warn("Erreur lors du téléchargement :", err);
+                
+                // ⚡️ NOTIFICATION EN CAS D'ERREUR (ex: 500 Backend)
+                notifType.value = 'error';
+                notifTitle.value = 'Erreur serveur';
+                notifMessage.value = "Le téléchargement a échoué. Veuillez réessayer plus tard.";
+                notifShow.value = true;
             }
         }
 
-        async function checkProfile(){
-
+        async function checkProfile(pro: any){
             try {
-
+                console.log("Consultation du profil de :", pro.first_name);
+                // Ta logique pour ouvrir la modale ou la page profil
             } catch(err:any) {
-
-            } finally {
-                
-            }
-
+                console.error("Erreur", err);
+            } 
         }
 
         onMounted(() => {
@@ -69,8 +103,14 @@ export default {
         return {
             router,
             proStore,
+            profileStore,
             Download,
-            checkProfile
+            checkProfile,
+            // ⚡️ EXPOSITION DES VARIABLES POUR LE TEMPLATE
+            notifShow,
+            notifType,
+            notifTitle,
+            notifMessage
         }
     }
 }

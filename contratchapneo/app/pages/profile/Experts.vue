@@ -10,7 +10,7 @@
       
         <div v-if="authStore.user">
           <h1 class="greeting">Bonjour, {{ authStore.user.user?.username ?? 'invité' }}</h1>
-          <p class="subtitle">Voici un résumé de votre activité juridique.</p>
+          <p class="subtitle"></p>
         </div>
     
         <div v-else>

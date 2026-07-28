@@ -6,31 +6,37 @@
           <div class="item-details">
             <h4 class="item-name">{{ item.name }}</h4>
             <p class="item-price">{{ item.price }} FCFA</p>
+            
             <div class="quantity-controls">
-              <!-- Tu peux aussi utiliser v-if="!isCheckout" ici si tu veux bloquer le changement de quantité -->
+              <!-- ⚡️ Les boutons +/- n'apparaissent que si CE N'EST PAS un pack -->
               <button 
+                v-if="!item.isPack"
                 type="button" 
                 class="qty-btn" 
-                @click.prevent="decrease(item.id, item.quantity)" 
+                @click.prevent="decrease(item.cartItemId, item.quantity)" 
                 :disabled="item.quantity <= 1 || cartStore.isLoading"
               >-</button>
               
+              <!-- La quantité s'affiche toujours -->
               <span class="quantity">{{ item.quantity }}</span>
               
               <button 
+                v-if="!item.isPack"
                 type="button" 
                 class="qty-btn" 
-                @click.prevent="increase(item.id, item.quantity)"
+                @click.prevent="increase(item.cartItemId, item.quantity)"
                 :disabled="cartStore.isLoading"
               >+</button>
             </div>
           </div>
+
           <div class="item-total">
               <span class="total-price">{{ (Number(item.price) * item.quantity).toLocaleString('fr-FR') }} FCFA</span>
               
-              <!-- ⚡️ NOUVEAU : Le bouton n'apparaît que si on N'EST PAS dans le checkout -->
+              <!-- ⚡️ LOGIQUE CORBEILLE : S'affiche si on n'est PAS dans le checkout, 
+                   OU ALORS si c'est explicitement un pack. -->
               <button 
-                v-if="!isCheckout"
+                v-if="!isCheckout || item.isPack"
                 type="button" 
                 class="remove-btn" 
                 :disabled="cartStore.isLoading" 
@@ -81,10 +87,10 @@ export default {
           itemImage = i.pro.profile_picture;
           targetId = i.pro.id; 
         }
-        else if (i.packs) {
-          itemName = `Pack : ${i.packs.title || i.packs.name || 'Inconnu'}`; 
-          itemImage = i.packs.picture;
-          targetId = i.packs.id; 
+        else if (i.pack) {
+          itemName = `Pack : ${i.pack.title || i.pack.name || 'Inconnu'}`; 
+          itemImage = i.pack.picture;
+          targetId = i.pack.id; 
         }
 
         return {
@@ -94,7 +100,8 @@ export default {
           price: Number(i.unit_price || 0), 
           subtotal: Number(i.subtotal || 0), 
           quantity: i.quantity,
-          image: itemImage
+          image: itemImage,
+          isPack: !!i.pack // ⚡️ AJOUT : On crée un flag pour simplifier le template
         };
       })
     ));
