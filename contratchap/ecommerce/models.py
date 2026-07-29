@@ -1,10 +1,30 @@
 from django.db import models
 from django.conf import settings
 import uuid
+from django.utils import timezone
 
 # About relation
 from contrat.models import (Contrat, CustomedContract, Pack)
 from pro.models import LegalProfessional
+
+class Coupon(models.Model):
+    class DiscountType(models.TextChoices):
+        PERCENTAGE = 'percentage', 'Pourcentage (%)'
+        FIXED = 'fixed', 'Montant fixe (FCFA)'
+
+    code = models.CharField(max_length=50, unique=True, help_text="Ex: BIENTOT_AVOCAT_2026")
+    discount_type = models.CharField(max_length=20, choices=DiscountType.choices)
+    discount_value = models.DecimalField(max_digits=10, decimal_places=2, help_text="Valeur de la réduction")
+    
+    valid_from = models.DateTimeField()
+    valid_to = models.DateTimeField()
+    active = models.BooleanField(default=True)
+    max_usages = models.PositiveIntegerField(default=100, help_text="Combien de fois ce code peut-il être utilisé en tout ?")
+    used_count = models.PositiveIntegerField(default=0)
+
+    def is_valid(self):
+        now = timezone.now()
+        return self.active and self.valid_from <= now <= self.valid_to and self.used_count < self.max_usages
 
 class Cart(models.Model):
     """
@@ -29,6 +49,14 @@ class Cart(models.Model):
         null=True,
         unique=True,
         help_text="Clé de session Django pour les invités"
+    )
+
+    # Code promo du panier
+    coupon = models.ForeignKey(
+        Coupon,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True
     )
 
     # Timestamps
@@ -75,6 +103,16 @@ class Cart(models.Model):
                 item.cart = user_cart
                 item.save()
         self.delete()
+
+    def get_total_with_discount(self):
+        subtotal = self.get_total()
+        if self.coupon and self.coupon.is_valid():
+            if self.coupon.discount_type == 'percentage':
+                discount = (self.coupon.discount_value / 100) * subtotal
+                return subtotal - discount
+            elif self.coupon.discount_type == 'fixed':
+                return max(subtotal - self.coupon.discount_value, 0)
+        return subtotal
 
 
 class CartItem(models.Model):
@@ -231,7 +269,19 @@ class Order(models.Model):
     # les prix peuvent avoir changé
     total_amount = models.DecimalField(max_digits=10, decimal_places=2)
 
-    download_count = models.PositiveIntegerField(default=0, help_text="Nombre de fois que l'acheteur a télécharger le contrat")
+    download_count = models.PositiveIntegerField(
+        default=0, 
+        help_text="Nombre de fois que l'acheteur a télécharger le contrat"
+    )
+
+    # Code pour la réduction
+    coupon = models.ForeignKey(Coupon, on_delete=models.SET_NULL, null=True, blank=True)
+    discount_amount = models.DecimalField(
+        max_digits=10, 
+        decimal_places=2, 
+        default=0.00, 
+        help_text="Montant exact déduit via le coupon"
+    )
 
     # Timestamps
     created_at = models.DateTimeField(auto_now_add=True)

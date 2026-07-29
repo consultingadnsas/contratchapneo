@@ -10,7 +10,9 @@ from .views import (
     OrderListView,
     OrderDetailView,
     OrderCancelView,
-    OrderDownloadView
+    OrderDownloadView,
+    ApplyCouponView,
+    RemoveCouponView
 )
 
 urlpatterns = [
@@ -28,4 +30,8 @@ urlpatterns = [
     path('orders/<uuid:order_id>/',        OrderDetailView.as_view(), name='order-detail'),
     path('orders/<uuid:order_id>/download/', OrderDownloadView.as_view(), name='order-download'),
     path('orders/<uuid:order_id>/cancel/', OrderCancelView.as_view(), name='order-cancel'),
+
+    # Coupon
+    path('cart/apply-coupon/', ApplyCouponView.as_view(), name='apply-coupon'),
+    path('cart/remove-coupon/', RemoveCouponView.as_view(), name='remove-coupon'),
 ]
