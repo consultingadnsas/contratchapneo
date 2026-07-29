@@ -137,8 +137,13 @@ class CartItemSerializer(serializers.ModelSerializer):
 
 class CartSerializer(serializers.ModelSerializer):
     items = CartItemSerializer(many=True, read_only=True)
-    total = serializers.SerializerMethodField()
     is_guest = serializers.BooleanField(read_only=True)
+    
+    # 🎁 NOUVEAU : Champs dynamiques pour les coupons
+    subtotal = serializers.SerializerMethodField()
+    discount = serializers.SerializerMethodField()
+    total = serializers.SerializerMethodField()
+    coupon_code = serializers.SerializerMethodField()
 
     class Meta:
         model = Cart
@@ -146,6 +151,9 @@ class CartSerializer(serializers.ModelSerializer):
             'id',
             'is_guest',
             'items',
+            'subtotal',    # <- Ajouté
+            'discount',    # <- Ajouté
+            'coupon_code', # <- Ajouté
             'total',
             'created_at',
             'updated_at',
@@ -156,9 +164,31 @@ class CartSerializer(serializers.ModelSerializer):
             'updated_at'
         ]
 
-    def get_total(self, obj):
+    def get_subtotal(self, obj):
+        # Prix normal sans réduction
         return obj.get_total()
 
+    def get_discount(self, obj):
+        # On calcule la différence entre l'ancien et le nouveau total
+        # (Assure-toi d'avoir bien créé la méthode get_total_with_discount dans models.py comme vu précédemment !)
+        if hasattr(obj, 'get_total_with_discount'):
+            return obj.get_total() - obj.get_total_with_discount()
+        return 0
+
+    def get_total(self, obj):
+        # Le total renvoie désormais le prix final (avec ou sans réduction)
+        if hasattr(obj, 'get_total_with_discount'):
+            return obj.get_total_with_discount()
+        return obj.get_total()
+
+    def get_coupon_code(self, obj):
+        # Renvoie le texte du code promo s'il y en a un
+        if obj.coupon:
+            return obj.coupon.code
+        return None
+
+    def get_total_with_discount(self, obj):
+        return obj.get_total_with_discount()
 
 # ─────────────────────────────────────────
 # GUEST INFO
@@ -230,6 +260,9 @@ class OrderSerializer(serializers.ModelSerializer):
         read_only=True
     )
     buyer_email  = serializers.EmailField(read_only=True)
+    
+    # 🎁 NOUVEAU : Récupérer le nom du coupon utilisé pour l'historique
+    coupon_code  = serializers.SerializerMethodField()
 
     class Meta:
         model  = Order
@@ -238,12 +271,20 @@ class OrderSerializer(serializers.ModelSerializer):
             'status',
             'status_label',
             'total_amount',
+            'discount_amount', # 🚨 Ajoute ce champ si tu l'as créé dans ton models.py
+            'coupon_code',     # <- Ajouté
             'buyer_email',
             'order_items',
             'created_at',
             'updated_at',
         ]
         read_only_fields = fields
+
+    def get_coupon_code(self, obj):
+        # Si la commande est liée à un coupon, on renvoie son nom
+        if hasattr(obj, 'coupon') and obj.coupon:
+            return obj.coupon.code
+        return None
 
 
 class CheckoutSerializer(serializers.Serializer):

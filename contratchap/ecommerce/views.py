@@ -13,7 +13,7 @@ from django.shortcuts import get_object_or_404
 from django.db import transaction
 from django.db.models import F
 
-from .models import CartItem, Order, OrderItem, GuestInfo
+from .models import CartItem, Order, OrderItem, GuestInfo, Coupon
 from .serializers import (
     CartSerializer,
     CartItemSerializer,
@@ -30,6 +30,65 @@ from contrat.utils import fill_docx_template, convert_docx_to_pdf, send_document
 # ─────────────────────────────────────────
 # CART VIEWS
 # ─────────────────────────────────────────
+
+class ApplyCouponView(APIView):
+    """
+    POST /cart/apply-coupon/
+    Applique un code promo au panier de l'utilisateur.
+    """
+    permission_classes = [AllowAny]
+    authentication_classes = []
+
+    def post(self, request):
+        cart = get_or_create_cart(request)
+        code = request.data.get('code')
+
+        if not code:
+            return Response(
+                {"error": "Veuillez fournir un code promo."}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            coupon = Coupon.objects.get(code__iexact=code)
+            
+            # 🚨 VÉRIFICATION STRICTE : actif, dates et nombre d'utilisations
+            if not coupon.is_valid():
+                return Response(
+                    {"error": "Ce code promo est invalide, expiré ou a atteint sa limite d'utilisation."}, 
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+        except Coupon.DoesNotExist:
+            return Response(
+                {"error": "Ce code promo n'existe pas."}, 
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        # On applique le coupon au panier
+        cart.coupon = coupon
+        cart.save()
+
+        # On renvoie le panier mis à jour (avec les nouveaux sous-totaux !)
+        serializer = CartSerializer(cart)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+class RemoveCouponView(APIView):
+    """
+    POST /cart/remove-coupon/
+    Retire le code promo du panier.
+    """
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        cart = get_or_create_cart(request)
+        
+        # On vide le champ coupon
+        cart.coupon = None
+        cart.save()
+
+        serializer = CartSerializer(cart)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 class CartDetailView(APIView):
     """
@@ -382,14 +441,18 @@ class CheckoutView(APIView):
                 phone_number=guest_data.get('phone_number', '') 
             )
 
-        # Snapshot du total depuis le panier
-        total = cart.get_total()
+        # 1. Calcul des montants avec et sans réduction
+        subtotal = cart.get_total()
+        final_total = cart.get_total_with_discount()
+        discount = subtotal - final_total
 
-        # Création de la commande
+        # 2. Création de la commande avec le snapshot complet du coupon
         order = Order.objects.create(
             user=request.user if request.user.is_authenticated else None,
             guest=guest,
-            total_amount=total,
+            total_amount=final_total,
+            coupon=cart.coupon,           # 👈 On lie le coupon utilisé
+            discount_amount=discount,     # 👈 On fige l'économie réalisée
         )
 
         order_items = []
