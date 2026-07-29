@@ -53,7 +53,12 @@ export const useCartStore = defineStore('cart', () => {
   // 🔥 CORRECTION CRITIQUE : On conserve total, discount et coupon_code envoyés par Django !
   const normalizeCart = (data: any): Cart => {
     const payload = data?.data ?? data;
-    const rawItems = Array.isArray(payload?.items) ? payload.items : [];
+    
+    // ⚡️ SÉCURITÉ : Si payload.items n'est pas un tableau (ex: réponse {"success": true}),
+    // on garde les items actuellement présents dans cart.value au lieu d'écraser avec []
+    const rawItems = Array.isArray(payload?.items) 
+      ? payload.items 
+      : (cart.value?.items ?? []);
 
     const items = rawItems.map((it: any) => {
       const normalizedItem = { ...it };
@@ -84,10 +89,10 @@ export const useCartStore = defineStore('cart', () => {
 
     return {
       items,
-      subtotal: payload?.subtotal,
-      discount: payload?.discount,
-      total: payload?.total,
-      coupon_code: payload?.coupon_code
+      subtotal: payload?.subtotal ?? cart.value?.subtotal,
+      discount: payload?.discount ?? 0, // Remet la réduction à 0 si non spécifiée
+      total: payload?.total ?? cart.value?.total,
+      coupon_code: payload?.coupon_code ?? null
     };
   };
 
@@ -149,15 +154,19 @@ export const useCartStore = defineStore('cart', () => {
     isLoading.value = true;
     error.value = null;
     try {
-      const response = await $api('/cart/remove-coupon/', {
-        method: 'POST'
+      const response = await $api('/ecommerce/cart/remove-coupon/', {
+        method: 'POST',
+        body: {} // DRF attend un body JSON valide pour une requête POST
       });
 
+      // Maintenant que Django renvoie le bon panier, cette ligne remettra à jour
+      // le total sans jamais perdre tes articles ni bloquer les ID !
       cart.value = normalizeCart(response);
+
       return true;
     } catch (err: any) {
       console.error("❌ Erreur lors de la suppression du code :", err);
-      error.value = "Une erreur est survenue.";
+      error.value = err.data?.error || err.message || "Impossible de retirer le code promo.";
       return false;
     } finally {
       isLoading.value = false;
@@ -226,7 +235,7 @@ export const useCartStore = defineStore('cart', () => {
       }
     } catch (err: any) {
       error.value = err.message;
-      console.error("l'erreur rencontrée", error);
+      console.error("l'erreur rencontrée", err);
       throw err;
     } finally {
       isLoading.value = false;

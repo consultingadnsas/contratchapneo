@@ -214,11 +214,21 @@ export default {
       couponError.value = null;
       couponSuccess.value = null;
 
-      const success = await cartStore.removeCoupon();
-      if (success) {
-        couponSuccess.value = "Code promo retiré.";
-      } else {
-        couponError.value = "Erreur lors de la suppression du code.";
+      try {
+        const success = await cartStore.removeCoupon();
+        if (success) {
+          couponSuccess.value = "Code promo retiré.";
+          promoCode.value = '';
+          
+          setTimeout(() => {
+            couponSuccess.value = null;
+          }, 3000);
+        } else {
+          couponError.value = cartStore.error || "Erreur lors de la suppression du code.";
+        }
+      } catch (e) {
+        console.error("Erreur critique lors de la suppression :", e);
+        couponError.value = "Une erreur est survenue. Veuillez réessayer.";
       }
     };
 

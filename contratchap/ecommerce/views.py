@@ -79,6 +79,7 @@ class RemoveCouponView(APIView):
     Retire le code promo du panier.
     """
     permission_classes = [AllowAny]
+    authentication_classes = []  # ⚡️ CORRECTION : Uniformiser avec ApplyCouponView !
 
     def post(self, request):
         cart = get_or_create_cart(request)
