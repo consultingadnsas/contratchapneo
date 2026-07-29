@@ -11,6 +11,7 @@
     <div v-else-if="uniqueTags.length > 0" class="contract-prev-form">
       <transition name="fade" mode="out-in">
         <div v-if="currentTagIndex < uniqueTags.length" :key="currentTag" class="input-group">
+          <!-- ⚡️ AJOUT : @keydown.enter.prevent="handleEnterKey" -->
           <BaseInputContract
             v-model="formData[currentTag]"
             :label="formatLabel(currentTag)"
@@ -18,6 +19,7 @@
             :placeholder="'Entrez : ' + formatLabel(currentTag).toLowerCase()"
             :disabled="store.isLoading"
             @focus="emit('focus-field', currentTag)"
+            @keydown.enter.prevent="handleEnterKey"
           />
           <div class="progress-indicator">
             {{ currentTagIndex + 1 }} / {{ uniqueTags.length }}
@@ -35,16 +37,24 @@
           Précédent
         </button>
 
+        <!-- ⚡️ AJOUT : :disabled="isCurrentFieldEmpty" -->
         <button
           v-if="currentTagIndex < uniqueTags.length - 1"
           type="button"
           @click="nextTag"
+          :disabled="isCurrentFieldEmpty"
           class="nav-btn next-btn"
         >
           Suivant
         </button>
 
-        <generatorButton label="Générer mon contrat" @click="submitForm" v-else />
+        <!-- ⚡️ AJOUT : :disabled="isCurrentFieldEmpty" sur le bouton de fin aussi -->
+        <generatorButton 
+          v-else 
+          label="Générer mon contrat" 
+          @click="submitForm" 
+          :disabled="isCurrentFieldEmpty"
+        />
       </div>
     </div>
 
@@ -58,23 +68,18 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
-// 🚨 CHANGEMENT ICI : On utilise le store des contrats ou des packs, pas de paiement !
 import { useContratStore } from '../../stores/contratStore' 
-// import { usePackStore } from '../../stores/packStore' // Alternative si tes tags sont gérés ici
 
 import BaseInputContract from '../input/BaseInputContract.vue'
 import generatorButton from '.././buttons/generatorButton.vue'
 
-// Les mêmes événements : le parent gérera l'appel à l'API de génération finale
 const emit = defineEmits(['update-data', 'submit-data', 'focus-field']);
 
-// Initialisation
 const store = useContratStore() 
 const route = useRoute()
 const formData = ref<Record<string, string>>({})
 const currentTagIndex = ref(0) 
 
-// 🔹 Extraction intelligente des tags uniques
 const uniqueTags = computed(() => {
   if (!store.tags || store.tags.length === 0) return [];
   const allTags = new Set<string>();
@@ -87,24 +92,30 @@ const uniqueTags = computed(() => {
   return Array.from(allTags);
 });
 
-// Tag actuellement affiché
 const currentTag = computed(() => uniqueTags.value[currentTagIndex.value])
 
+// ⚡️ AJOUT : Vérifie de manière réactive si le champ courant est vide
+const isCurrentFieldEmpty = computed(() => {
+  if (!currentTag.value) return true;
+  const val = formData.value[currentTag.value];
+  return !val || val.toString().trim() === '';
+});
+
 onMounted(async () => {
-  // 🚨 CHANGEMENT ICI : On charge les balises du contrat débloqué via l'ID dans l'URL
   const contractId = route.params.id as string
   if (contractId) {
-    await store.fetchContractTags(contractId) // Assure-toi d'avoir cette fonction dans ton contratStore
+    await store.fetchContractTags(contractId) 
   }
 
-  // Initialiser l'objet formData avec des chaînes vides
   if (uniqueTags.value.length > 0) {
     uniqueTags.value.forEach(tagName => { formData.value[tagName] = '' })
   }
 });
 
-// 🔹 Navigation séquentielle
 const nextTag = () => {
+  // ⚡️ SÉCURITÉ : Empêche l'action si le champ est vide
+  if (isCurrentFieldEmpty.value) return;
+
   if (currentTagIndex.value < uniqueTags.value.length - 1) {
     currentTagIndex.value++
   }
@@ -116,12 +127,24 @@ const prevTag = () => {
   }
 }
 
-// 🔹 Mise à jour en temps réel pour le composant parent
+// ⚡️ AJOUT : Gestionnaire pour la touche Entrée
+const handleEnterKey = () => {
+  // 1. Si le champ est vide, on ignore la touche Entrée
+  if (isCurrentFieldEmpty.value) return;
+
+  // 2. Si on n'est pas sur le dernier champ, on passe au suivant comme un clic sur "Suivant"
+  if (currentTagIndex.value < uniqueTags.value.length - 1) {
+    nextTag();
+  } else {
+    // 3. Si on est sur le TOUT DERNIER champ et qu'il est rempli, on soumet
+    submitForm();
+  }
+};
+
 watch(formData, (newValues) => {
   emit('update-data', newValues)
 }, { deep: true })
 
-// 🔹 Formatage de l'UX
 const formatLabel = (tagName: string) =>
   tagName.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
 
@@ -132,9 +155,9 @@ const getInputType = (tagName: string) => {
   return 'text'
 }
 
-// 🔹 Soumission
 const submitForm = () => {
-  // Le parent va récupérer ça et appeler directement l'API de génération finale
+  // ⚡️ SÉCURITÉ : On bloque aussi la soumission directe par le bouton si le dernier champ est vide
+  if (isCurrentFieldEmpty.value) return;
   emit('submit-data', formData.value)
 }
 </script>

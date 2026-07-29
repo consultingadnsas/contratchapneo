@@ -60,7 +60,7 @@
 
             <template v-else>
                 <div class="cards-container">
-                    <contratCards 
+                    <contratCardsDynamic 
                         v-for="(contrat, index) in contratStore.contracts" 
                         :key="contrat.id || index"
                         :title="contrat.title"
@@ -68,7 +68,8 @@
                         :price="contrat.prix"
                         :image="contrat.picture || undefined"
                         @view="openViewModal(contrat.id)" 
-                        @buy="()=>{addTocart(contrat.id)}"
+                        @buy="addTocart(contrat.id)"
+                        @generate="fillContract(contrat.id)"
                     />
                 </div>
                 
@@ -135,15 +136,17 @@ import viewModale from '../../modale/viewModale.vue'
 import cartBubble from '../../modale/cartBubble.vue'
 import notifications from '../../tools/notifications.vue'
 import mainButton from '../../buttons/mainButton.vue'
+import contratCardsDynamic from '../../cards/contratCardsDynamic.vue'
 
 import { ref, onMounted, watch } from 'vue'
 import { useContratStore } from '../../../stores/contratStore'
 import { useCartStore } from '../../../stores/cartStore'
+import { useProfileStore } from '../../../stores/profileStore'
 import { useRouter, useRoute } from 'vue-router'
 
 export default {
     components: {
-        packCards, // 👈 Ajout dans les composants déclarés
+        packCards, contratCardsDynamic,
         contratCards, Basefilter, Paginator, BaseSearchInput,
         contractCardSkeleton, emptyState, cartModale, viewModale,
         cartBubble, notifications, mainButton
@@ -154,6 +157,7 @@ export default {
         const route = useRoute();
         const contratStore = useContratStore();
         const cartStore = useCartStore();
+        const profileStore = useProfileStore();
 
         const activeCategoryId = ref((route.query.category as string) || '');
         const searchQuery = ref((route.query.q as string) || '');
@@ -219,6 +223,15 @@ export default {
             }
         }
 
+        const fillContract = async (contractId: string) => {
+            try {
+                router.push(`/contractwritter/${contractId}`);
+                console.log("Redirection directe vers la génération :", contractId);
+            } catch (err: any) {
+                console.warn("Erreur lors de la redirection :", err);
+            }
+        }
+
         const isViewOpen = ref<boolean>(false);
         const textToShow = ref<string | null>(null);
         
@@ -247,6 +260,12 @@ export default {
         });
 
         onMounted(() => {
+            // ⚡️ AJOUT INDISPENSABLE : On charge les packs de l'utilisateur s'ils ne sont pas en mémoire
+            if (profileStore.userPacks.length === 0) {
+                profileStore.getPacks();
+            }
+
+            // Ton code de recherche existant :
             if (searchQuery.value) {
                 contratStore.fetchContracts(1, activeCategoryId.value, searchQuery.value);
             } else {
@@ -256,8 +275,8 @@ export default {
 
         return {
             router, activeCategoryId, handlePageChange, searchQuery,
-            contratStore, cartStore, textToShow, isOpen, openModal,
-            isViewOpen, openViewModal, addTocart,
+            contratStore, cartStore, profileStore, textToShow, isOpen, openModal,
+            isViewOpen, openViewModal, addTocart, fillContract,
             packagesList // 👈 Exposer la liste au template
         }
     }

@@ -6,6 +6,8 @@ from .serializers import UserSerializer
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from django.utils.translation import gettext_lazy as _
 from django.contrib.auth import authenticate
+from django.utils import timezone
+from django.db.models import Q, F
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.exceptions import TokenError
 from django.middleware.csrf import get_token
@@ -178,7 +180,29 @@ class UserPackView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        packs = UserPack.objects.filter(user=request.user)
+        now = timezone.now()
+        
+        # 1️⃣ DÉSACTIVATION AUTOMATIQUE DES PACKS EXPIRÉS OU VIDES
+        # On passe is_active=False en base de données si :
+        # - La date d'expiration est dépassée
+        # - OU (credits_restants == 0 ET customs_restants == 0 ET cartes_pro_restantes == 0)
+        UserPack.objects.filter(
+            user=request.user,
+            is_active=True
+        ).filter(
+            Q(expires_at__lte=now) |
+            Q(
+                credits_restants__lte=0,
+                customs_restants__lte=0,
+                cartes_pro_restantes__lte=0
+            )
+        ).update(is_active=False)
+
+        # 2️⃣ ON RÉCUPÈRE TOUS LES PACKS DE L'UTILISATEUR (Actifs et Expirés)
+        # ⚡️ CORRECTION : On enlève "is_active=True" pour envoyer l'historique complet au front !
+        packs = UserPack.objects.filter(
+            user=request.user
+        ).order_by('-id')  # Optionnel : met le pack le plus récent en premier
+        
         serializer = PackSerializer(packs, many=True, context={'request': request})
         return Response(serializer.data, status=status.HTTP_200_OK)
-    

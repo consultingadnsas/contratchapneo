@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 import { useNuxtApp } from '#imports';
 
 export interface Mypacks {
@@ -25,21 +25,30 @@ export const useProfileStore = defineStore('profile', () => {
 
     // ⚡️ CORRECTION : On sépare les packs possédés et les packs de la boutique
     const myPacks = ref<Mypacks | null>(null);
-    const userPacks = ref<Mypacks[]>([]); // Packs ACHETÉS par l'utilisateur
-    const availablePacks = ref<Mypacks[]>([]); // Packs DISPONIBLES dans la boutique
+    const userPacks = ref<Mypacks[]>([]); // 👈 Stocke TOUS les packs achetés (actifs + historique)
+    const availablePacks = ref<Mypacks[]>([]); // Packs de la boutique
+    // ==========================================
+    // ⚡️ NOUVEAU : GETTERS PINIA REUTILISABLES
+    // ==========================================
+    const activePacks = computed(() => {
+        return userPacks.value.filter(pack => pack.is_active === true);
+    });
+
+    const expiredPacks = computed(() => {
+        return userPacks.value
+            .filter(pack => pack.is_active === false)
+            .slice(0, 1); // Retourne un tableau avec au maximum 1 seul pack !
+    });
 
     // Actions
     const fetchPacks = async () => {
-        
         isLoading.value = true; 
-        
         try {
             const response = await $api<Mypacks[]>('/contrat/packs/', {
                 method: 'GET'
             });
 
             if (response) {
-                // ⚡️ CORRECTION : On assigne aux packs de la boutique
                 availablePacks.value = response;
                 console.log("Les packs disponibles :", availablePacks.value);
             }
@@ -51,7 +60,6 @@ export const useProfileStore = defineStore('profile', () => {
     }
 
     const getPacks = async () => {
-        
         isLoading.value = true; 
 
         try {
@@ -60,11 +68,15 @@ export const useProfileStore = defineStore('profile', () => {
             });
 
             if (response) {
-                // ⚡️ CORRECTION : On assigne aux packs de l'utilisateur
+                // ⚡️ CORRECTION : On enregistre tout l'historique renvoyé par Django !
                 userPacks.value = response;
                 
-                if (userPacks.value.length > 0) {
-                    console.log("Vous avez au moins un pack dans votre abonnement", userPacks.value);
+                if (activePacks.value.length > 0) {
+                    console.log("Vous avez au moins un pack actif :", activePacks.value);
+                } else if (expiredPacks.value.length > 0) {
+                    console.log("Abonnement expiré, packs à renouveler :", expiredPacks.value);
+                } else {
+                    console.log("Aucun pack acheté pour le moment.");
                 }
             }
         } catch (err: any) {
@@ -140,6 +152,8 @@ export const useProfileStore = defineStore('profile', () => {
         myPacks,
         userPacks, 
         availablePacks, // 👈 NOUVEAU : On exporte la liste de la boutique
+        activePacks,   // 👈 NOUVEAU : Exporter les packs actifs
+        expiredPacks,  // 👈 NOUVEAU : Exporter les packs expirés
         
         fetchPacks,
         getPacks,
