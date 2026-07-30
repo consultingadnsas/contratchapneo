@@ -114,23 +114,44 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   const getProfile = async () => {
+    isLoading.value = true;
+
+    try {
+      const response = await $api<{ user: User }>('/account/me/', {
+        method: 'GET',
+      });
+
+      console.log("Réponse brute", response);
+
+      if (response?.user) {
+        user.value = response.user; // ✅ extrait l'objet user
+        console.log('Vos informations utilisateurs', user.value);
+      }
+    } catch (err: any) {
+      throw err;
+    } finally {
+      isLoading.value = false;
+    }
+  };
+
+  const updateProfile = async (payload:User) => {
 
     isLoading.value = true;
 
     try {
-      const response = await $api<User>('/account/me/',{
-        method: 'GET',
-      });
+
+      const response = await $api('/account/me/',{
+        method:'PATCH',
+        body:payload
+      })
 
       if(response){
 
-        user.value = response;
-
-        console.log(user.value);
-
+        console.log("Mise à jour résussie", response)
       }
-    } catch (err: any) {
-      throw err
+
+    } catch(err:any){
+      console.error("Une erreur esrt survenue lors de la mise à jour", err)
     } finally {
       isLoading.value = false;
     }
@@ -190,6 +211,7 @@ export const useAuthStore = defineStore('auth', () => {
     register,
     login,
     getProfile,
-    logout
+    logout,
+    updateProfile
   }
 })

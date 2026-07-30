@@ -7,7 +7,7 @@
       
       <header class="dashboard-header">
         <div v-if="authStore.user">
-          <p class="greeting">Bonjour, {{ authStore.user.user?.username ?? 'invité' }}</p>
+          <p class="greeting">Bonjour, {{ authStore.user?.username ?? 'invité' }}</p>
         </div>
         <div v-else>
           <p>Chargement...</p>

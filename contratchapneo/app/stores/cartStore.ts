@@ -149,7 +149,7 @@ export const useCartStore = defineStore('cart', () => {
     isLoading.value = true;
     error.value = null;
     try {
-      const response = await $api('/cart/remove-coupon/', {
+      const response = await $api('/ecommerce/cart/remove-coupon/', {
         method: 'POST'
       });
 

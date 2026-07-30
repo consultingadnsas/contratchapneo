@@ -158,16 +158,68 @@ class CSRFTokenView(APIView):
         )
 
 class UserProfileView(APIView):
-
+    """
+    Vue permettant à un utilisateur connecté de consulter, 
+    mettre à jour ou supprimer son profil.
+    """
     permission_classes = [IsAuthenticated]
 
+    # READ : Récupérer ses informations
     def get(self, request):
-
         serializer = UserSerializer(request.user)
-
         return Response(
             {'user': serializer.data},
             status=status.HTTP_200_OK
+        )
+
+    # UPDATE (Complet) : Mettre à jour toutes les informations
+    def put(self, request):
+        # On passe l'instance de l'utilisateur actuel et les nouvelles données
+        serializer = UserSerializer(request.user, data=request.data)
+        
+        if serializer.is_valid():
+            serializer.save()
+            return Response(
+                {
+                    'user': serializer.data,
+                    'message': _('Profil mis à jour avec succès.')
+                },
+                status=status.HTTP_200_OK
+            )
+            
+        return Response(
+            {'errors': serializer.errors},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    # UPDATE (Partiel) : Mettre à jour seulement quelques champs (ex: juste le nom)
+    def patch(self, request):
+        # partial=True permet de ne pas exiger tous les champs obligatoires du modèle
+        serializer = UserSerializer(request.user, data=request.data, partial=True)
+        
+        if serializer.is_valid():
+            serializer.save()
+            return Response(
+                {
+                    'user': serializer.data,
+                    'message': _('Profil partiellement mis à jour.')
+                },
+                status=status.HTTP_200_OK
+            )
+            
+        return Response(
+            {'errors': serializer.errors},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    # DELETE : Supprimer son propre compte
+    def delete(self, request):
+        user = request.user
+        user.delete() # Supprime l'utilisateur de la base de données
+        
+        return Response(
+            {'message': _('Votre compte a été supprimé avec succès.')},
+            status=status.HTTP_204_NO_CONTENT
         )
 
 # ===========================================
