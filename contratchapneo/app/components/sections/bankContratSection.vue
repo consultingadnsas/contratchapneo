@@ -16,7 +16,7 @@
                 <div class="divider"></div>
                 
                 <div class="cards-container">
-                    <ContratCards 
+                    <ContratCardsDynamic 
                         v-for="(contrat, index) in topDownloadedContracts" 
                         :key="contrat.id || index"
                         :ref="setCardRef"
@@ -26,7 +26,8 @@
                         :image="contrat.picture || undefined"
                         :data-index="index"
                         @view="openViewModal(contrat.id)" 
-                        @buy="()=>{addTocart(contrat.id)}"
+                        @buy="() => addTocart(contrat.id)"
+                        @generate="() => editContract(contrat.id)" 
                     />
                 </div>
 
@@ -57,17 +58,21 @@ import { useRouter } from 'vue-router';
 
 import MainButton from '../buttons/mainButton.vue';
 import ContratCards from '../cards/contratCards.vue';
+import ContratCardsDynamic from '../cards/contratCardsDynamic.vue';
 import ContratCategoryCards from '../cards/contratCategoryCards.vue';
 import CartModale from '../modale/cartModale.vue';
 import ViewModale from '../modale/viewModale.vue';
 import { useContratStore } from '../../stores/contratStore';
 import { useCartStore } from '../../stores/cartStore';
+import { useProfileStore } from '../../stores/profileStore';
+import { useAuthStore } from '../../stores/authStore';
 
 export default {
     name: 'OrdinarySection',
     components: { 
         MainButton, 
         ContratCards,
+        ContratCardsDynamic,
         ContratCategoryCards,
         CartModale,
         ViewModale,
@@ -76,6 +81,8 @@ export default {
         const router = useRouter();
         const contratStore = useContratStore();
         const cartStore = useCartStore();
+        const profileStore = useProfileStore();
+        const authStore = useAuthStore();
 
         const topDownloadedContracts = computed(() => {
             return [...contratStore.contracts]
@@ -131,7 +138,7 @@ export default {
             isViewOpen.value = true; 
         }
 
-        onMounted(() => {            
+        onMounted(async () => {            
             observer = new IntersectionObserver((entries) => {
                 entries.forEach(entry => {
                     if (entry.isIntersecting) {
@@ -146,7 +153,19 @@ export default {
                 });
             }, { threshold: 0.2, rootMargin: '0px 0px -20px 0px' });
             
+            // 1. On charge la liste de tous les contrats
             contratStore.getContracts();
+
+            // ⚡️ 2. AJOUT : Si l'utilisateur est connecté et qu'on n'a pas encore ses packs, on les charge
+            if (authStore.isAuthenticated && (!profileStore.userPacks || profileStore.userPacks.length === 0)) {
+                try {
+                    await profileStore.getPacks();
+                    console.log("[OrdinarySection] Packs utilisateur chargés pour la vérification des crédits.");
+                } catch (error) {
+                    // Échec silencieux s'il n'a pas de pack ou s'il y a un souci réseau
+                    console.error("[OrdinarySection] Erreur de chargement des packs :", error);
+                }
+            }
         });
 
         watch(() => contratStore.contracts, async () => {
