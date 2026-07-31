@@ -228,7 +228,7 @@ export const useAuthStore = defineStore('auth', () => {
 
       const response = await $api('/account/password-reseting/', {
         method:'POST',
-        body:{email: payload},
+        body: payload,
       })
 
       if(response){
@@ -253,7 +253,7 @@ export const useAuthStore = defineStore('auth', () => {
 
       const response = await $api('/account/password-reset/verify-token/', {
         method:'POST',
-        body:{token: payload},
+        body: payload,
       })
 
       if(response){
