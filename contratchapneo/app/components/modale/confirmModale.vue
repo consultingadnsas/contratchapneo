@@ -120,6 +120,10 @@ export default defineComponent({
     success:{
       type:Boolean,
       default: false
+    },
+    description: { 
+      type: String, 
+      default: '' 
     }
   },
   components:{

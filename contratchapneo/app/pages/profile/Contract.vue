@@ -9,7 +9,7 @@
       <header class="dashboard-header">
       
         <div v-if="authStore.user">
-          <h1 class="greeting">Bonjour, {{ authStore.user?.username ?? 'invité' }}</h1>
+          <h1 class="greeting">Bonjour, {{ authStore.displayName }}</h1>
         </div>
     
         <div v-else>

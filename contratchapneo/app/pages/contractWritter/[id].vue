@@ -8,6 +8,7 @@
 
         <!-- ⚡️ MODIFICATION : w-full sur mobile, lg:w-1/3 sur PC -->
         <aside class="form-section w-full lg:w-1/3 h-full p-6 overflow-y-auto bg-white shadow-2xl z-10 relative">
+
             <div class="mb-6">
                 <h2 class="form-title">Génération sur-mesure</h2>
                 <p class="form-subtitle">Remplissez les informations ci-dessous pour personnaliser ce contrat via votre pack.</p>
@@ -19,6 +20,12 @@
                 @submit-data="handleModale"
                 @focus-field="handleFocusField" 
             />
+            <button class="back-dashboard-btn" @click="router.push('/profile/Dashboard')">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="back-icon">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18" />
+                </svg>
+                <span>Retour au dashboard</span>
+            </button>
         </aside>
 
         <!-- ⚡️ MODIFICATION : w-full sur mobile, lg:w-2/3 sur PC -->
@@ -173,5 +180,37 @@ const handleFocusField = (tagName: string) => {
     display: flex;
     justify-content: center;
     overflow-x: auto;
+}
+/* =========================================
+   BOUTON RETOUR DASHBOARD
+   ========================================= */
+.back-dashboard-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: none;
+    border: none;
+    color: #64748b; /* Gris ardoise discret */
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 0.4rem 0.8rem 0.4rem 0;
+    margin-bottom: 1rem;
+    transition: color 0.2s ease;
+}
+
+.back-icon {
+    width: 18px;
+    height: 18px;
+    transition: transform 0.2s ease;
+}
+
+/* Effet au survol : le texte fonce et la flèche recule légèrement */
+.back-dashboard-btn:hover {
+    color: #202b4a; /* Bleu nuit profond du thème */
+}
+
+.back-dashboard-btn:hover .back-icon {
+    transform: translateX(-4px);
 }
 </style>

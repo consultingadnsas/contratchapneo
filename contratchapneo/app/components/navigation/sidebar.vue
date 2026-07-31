@@ -80,12 +80,20 @@
       </button>
     </nav>
 
-    <div class="logout">
-      <button class="nav-item" @click="authStore.logout">
+    <!-- ⚡️ NOUVELLE SECTION PIED DE SIDEBAR : Déconnexion en haut, Accueil en bas -->
+    <div class="sidebar-footer">
+      <button class="nav-item logout-btn" @click="authStore.logout">
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="icon">
           <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15M12 9l-3 3m0 0 3 3m-3-3h12.75" />
         </svg>
         <span class="nav-label" v-if="!isReduced">Déconnexion</span>
+      </button>
+
+      <button class="nav-item home-btn" @click="router.push('/')">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="icon">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 15 3 9m0 0 6-6M3 9h12a6 6 0 0 1 0 12h-3" />
+        </svg>
+        <span class="nav-label" v-if="!isReduced">Retour à l'accueil</span>
       </button>
     </div>
   </aside>
@@ -123,13 +131,16 @@ export default {
 <style scoped>
 .sidebar {
   --sb-bg: #000e2ddd;          /* Bleu nuit profond */
-  --sb-text: #ffffff;        /* Gris ardoise (Texte inactif) */
-  --sb-text-active: #000e2d;  /* Blanc éclatant */
-  --sb-accent: #5452f4;      /* Vert émeraude */
+  --sb-text: #ffffff;          /* Blanc ardoise (Texte inactif) */
+  --sb-text-active: #000e2d;   /* Bleu foncé */
+  --sb-accent: #5452f4;        /* Violet/Bleu accent */
   --sb-border: rgba(255, 255, 255, 0.08); /* Bordure subtile */
-  --sb-hover-bg: #000e2d44; /* Fond au survol */
+  --sb-hover-bg: #000e2d44;    /* Fond au survol */
 }
 
+/* =========================================
+   STYLE MOBILE (BARRE EN BAS)
+========================================= */
 .sidebar {
   position: fixed;
   bottom: 0;
@@ -159,8 +170,8 @@ export default {
   scrollbar-width: none; 
 }
 
-.nav-menu::-webkit-scrollbar{
-    display: none;
+.nav-menu::-webkit-scrollbar {
+  display: none;
 }
 
 .nav-item {
@@ -179,7 +190,7 @@ export default {
   font-size: 0.5rem;
   font-weight: 500;
   transition: all 0.2s ease;
-  text-decoration: none; /* Enlève le souligné par défaut des liens <a> */
+  text-decoration: none;
 }
 
 .icon {
@@ -203,14 +214,28 @@ export default {
 .hidden-mobile { 
   display: none; 
 }
-.logout span{
-    color:#ef4444
+
+/* --- FOOTER MOBILE --- */
+.sidebar-footer {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
 }
-.logout .nav-item{
-    color: #ef4444;
+
+.logout-btn,
+.logout-btn span {
+  color: #ef4444;
+}
+
+.home-btn,
+.home-btn span {
+  color: var(--sb-text);
 }
 
 
+/* =========================================
+   STYLE DESKTOP (SIDEBAR DE GAUCHE)
+========================================= */
 @media (min-width: 1024px) {
   .hidden-mobile { 
     display: flex; 
@@ -255,7 +280,7 @@ export default {
     font-size: 1.25rem;
     color: var(--secondary-light-color);
     letter-spacing: -0.02em;
-    margin: 1rem
+    margin: 1rem;
   }
 
   .toggle-icon {
@@ -311,16 +336,25 @@ export default {
     animation: fadeIn 0.2s ease forwards;
   }
 
-  .logout {
+  /* --- FOOTER DESKTOP --- */
+  .sidebar-footer {
     margin-top: auto;
     width: 100%;
     border-top: 1px solid var(--sb-border);
     padding-top: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
   }
-  
-  .logout .nav-item:hover {
-    background-color: rgba(239, 68, 68, 0.1);
+
+  .logout-btn:hover {
+    background-color: rgba(239, 68, 68, 0.15);
     color: #ef4444;
+  }
+
+  .home-btn:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: #ffffff;
   }
 }
 

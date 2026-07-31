@@ -42,15 +42,14 @@ export const useAuthStore = defineStore('auth', () => {
     email: '',
     phone_number: '',
     user_type: ''
-  });
+  })
 
-  const isLoading = ref(false);
-  const error = ref<string | null>(null);
+  const isLoading = ref(false)
+  const error = ref<string | null>(null)
 
-  const { $api } = useNuxtApp();
+  const { $api } = useNuxtApp()
 
-  // --- Getters ---
-  // Fonction utilitaire interne pour extraire l'objet utilisateur quelle que soit l'imbrication de l'API
+  // --- Getters (Réintégrés pour le Middleware, la Navbar et le Dashboard) ---
   const getSafeUser = () => {
     if (user.value && (user.value as any).user) {
       return (user.value as any).user;
@@ -58,7 +57,6 @@ export const useAuthStore = defineStore('auth', () => {
     return user.value || {};
   };
 
-  // ⚡️ Source unique de vérité : Vérifie si le compte est authentifié et ignore "AnonymousUser"
   const isAuthenticated = computed(() => {
     const u = getSafeUser();
     return Boolean(
@@ -67,7 +65,6 @@ export const useAuthStore = defineStore('auth', () => {
     );
   });
 
-  // ⚡️ Calcul automatique des initiales pour la Navbar et le Dashboard
   const userInitials = computed(() => {
     const u = getSafeUser();
     if (u.first_name && u.last_name) {
@@ -76,6 +73,18 @@ export const useAuthStore = defineStore('auth', () => {
       return u.username.substring(0, 2).toUpperCase();
     }
     return 'DB';
+  });
+
+  const displayName = computed(() => {
+    const u = getSafeUser();
+    if (u.first_name && u.first_name !== '') {
+      return u.first_name;
+    } else if (u.username && u.username !== '' && u.username !== 'AnonymousUser') {
+      return u.username;
+    } else if (u.email && u.email !== '') {
+      return u.email.split('@')[0];
+    }
+    return 'invité';
   });
 
   // --- Actions ---
@@ -87,10 +96,10 @@ export const useAuthStore = defineStore('auth', () => {
       const response = await $api('/account/register/', {
         method: 'POST',
         body: payload
-      });
+      })
 
       if (response) {
-        console.log('Réponse de création', response);
+        console.log('Réponse de création', response)
         await navigateTo('/auth/login');
       }
 
@@ -98,65 +107,83 @@ export const useAuthStore = defineStore('auth', () => {
       console.error("Détails de l'erreur backend :", err.response?._data);
       
       if (err.response && err.response._data) {
-        const data = err.response._data;
-        if (data.errors) {
-          const firstKey = Object.keys(data.errors)[0];
-          error.value = data.errors[firstKey][0];
-        } else {
-          error.value = data.message || "Erreur lors de l'inscription.";
-        }
+          const data = err.response._data;
+          if (data.errors) {
+              const firstKey = Object.keys(data.errors)[0];
+              error.value = data.errors[firstKey][0];
+          } else {
+              error.value = data.message || "Erreur lors de l'inscription.";
+          }
       } else {
-        error.value = "Impossible de joindre le serveur.";
+          error.value = "Impossible de joindre le serveur.";
       }
       
       throw err; 
+
     } finally {
       isLoading.value = false;
     }
-  };
+  }
 
+  // Action pour le Login avec enregistrement du token + chargement du profil
   const login = async (credentials: Pick<User, 'email' | 'username' | 'password'>) => {
-    isLoading.value = true;
-    error.value = null;
+    isLoading.value = true
+    error.value = null
 
-    console.log('[AuthStore] login() → credentials envoyés :', credentials);
+    console.log('[AuthStore] login() → credentials envoyés :', credentials)
 
     try {
       const response = await $api('/account/login/', {
         method: 'POST',
         body: credentials,
-      });
+      })
 
       if (response) {
-        console.log('[AuthStore] login() → réponse reçue :', response);
-        user.value = (response as any).data?.user || {};
-        return response;
+        console.log('[AuthStore] login() → réponse reçue :', response)
+
+        // 1. Enregistrer le token dans les cookies Nuxt (Indispensable pour le SSR & Middleware)
+        const resData = (response as any).data || response;
+        const tokenCookie = useCookie('token', {
+          maxAge: 60 * 60 * 24 * 7, // 7 jours
+          sameSite: 'lax'
+        });
+        
+        tokenCookie.value = resData.token || resData.access || resData.key;
+        console.log('[AuthStore] ✅ Cookie token enregistré :', tokenCookie.value);
+
+        // 2. Charger directement le profil complet via getProfile()
+        await getProfile();
+
+        return response
       } else {
-        console.log('[AuthStore] login() → erreur :', response);
-        error.value = "Identifiants incorrects";
-        throw new Error("Identifiants incorrects");
+        console.log('[AuthStore] login() → erreur :', response)
+        error.value = "Identifiants incorrects"
+        throw new Error("Identifiants incorrects")
       }
 
     } catch (err: any) {
-      console.error('[AuthStore] login() → erreur :', err);
-      error.value = err.message;
-      throw err;
+      console.error('[AuthStore] login() → erreur :', err)
+      error.value = err.message
+      throw err
     } finally {
-      isLoading.value = false;
+      isLoading.value = false
     }
-  };
+  }
 
+  // Ton getProfile fusionné et respecté à 100% (avec le { user: User })
   const getProfile = async () => {
     isLoading.value = true;
 
     try {
-      const response = await $api<User>('/account/me/', {
+      const response = await $api<{ user: User }>('/account/me/', {
         method: 'GET',
       });
 
-      if (response) {
-        user.value = response;
-        console.log(user.value);
+      console.log("Réponse brute", response);
+
+      if (response?.user) {
+        user.value = response.user; // ✅ extrait l'objet user
+        console.log('Vos informations utilisateurs', user.value);
       }
     } catch (err: any) {
       throw err;
@@ -165,28 +192,24 @@ export const useAuthStore = defineStore('auth', () => {
     }
   };
 
-  const updateProfile = async (payload:User) => {
-
+  const updateProfile = async (payload: User) => {
     isLoading.value = true;
 
     try {
-
-      const response = await $api('/account/me/',{
-        method:'PATCH',
-        body:payload
+      const response = await $api('/account/me/', {
+        method: 'PATCH',
+        body: payload
       })
 
-      if(response){
-
-        console.log("Mise à jour résussie", response)
+      if (response) {
+        console.log("Mise à jour réussie", response)
       }
 
-    } catch(err:any){
-      console.error("Une erreur esrt survenue lors de la mise à jour", err)
+    } catch (err: any) {
+      console.error("Une erreur est survenue lors de la mise à jour", err)
     } finally {
       isLoading.value = false;
     }
-
   }
 
   const logout = async () => {
@@ -226,54 +249,44 @@ export const useAuthStore = defineStore('auth', () => {
     }
   };
 
-  const resetPassword = async(payload: ForgotPasswordPayload) => {
-    
+  const resetPassword = async (payload: ForgotPasswordPayload) => {
     isLoading.value = true;
 
-    try{
-
+    try {
       const response = await $api('/account/password-reseting/', {
-        method:'POST',
+        method: 'POST',
         body: payload,
       })
 
-      if(response){
+      if (response) {
         console.log("Votre reponse", response)
       }
 
-    } catch(err:any) {
-
+    } catch (err: any) {
       console.log("Erreur survenue", err)
-
     } finally {
       isLoading.value = false;
     }
-
   }
 
-  const ConfirmToken = async(payload:VerifyTokenPayload) => {
-    
+  const ConfirmToken = async (payload: VerifyTokenPayload) => {
     isLoading.value = true;
 
-    try{
-
+    try {
       const response = await $api('/account/password-reset/verify-token/', {
-        method:'POST',
+        method: 'POST',
         body: payload,
       })
 
-      if(response){
+      if (response) {
         console.log("Votre reponse", response)
       }
 
-    } catch(err:any) {
-
+    } catch (err: any) {
       console.log("Erreur survenue", err)
-
     } finally {
       isLoading.value = false;
     }
-
   }
 
   const ChangePassword = async (payload: ChangePasswordPayload) => {
@@ -301,6 +314,7 @@ export const useAuthStore = defineStore('auth', () => {
     error,
     isAuthenticated,
     userInitials,
+    displayName,
     register,
     login,
     getProfile,
@@ -309,5 +323,5 @@ export const useAuthStore = defineStore('auth', () => {
     resetPassword,
     ConfirmToken,
     ChangePassword
-  };
-});
+  }
+})

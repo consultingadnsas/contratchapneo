@@ -1,5 +1,11 @@
 <template>
   <div class="login-hero-page">
+    <button class="back-home-btn" @click="$router.push('/')">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="back-home-icon">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18" />
+      </svg>
+      <span>Retour à l'accueil</span>
+    </button>
     
     <div class="dossier-wrapper">
       
@@ -381,6 +387,51 @@ export default {
   color: #0f4c78;
   text-decoration: underline;
 }
+.back-home-btn {
+  width: fit-content;
+  position: absolute;
+  top: 2rem;
+  left: 2rem;
+  z-index: 50;
+  
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  
+  /* Fond blanc éclatant pour une visibilité maximale sur fond sombre */
+  background-color:transparent;
+  color: #ffffff;
+  border: 2px solid transparent;
+  border-radius: 50px;
+  
+  padding: 0.7rem 1.3rem;
+  font-size: 0.95rem;
+  font-weight: 800;
+  cursor: pointer;
+  
+  /* Ombre prononcée pour détacher le bouton du fond */
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.2);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.back-home-icon {
+  width: 20px;
+  height: 20px;
+  color: #156ca9; /* Bleu accentué pour rappeler l'onglet du dossier */
+  transition: transform 0.25s ease;
+}
+
+/* --- ÉTATS AU SURVOL --- */
+.back-home-btn:hover {
+  color: #ffffff;
+  transform: translateY(-3px);
+  box-shadow: 0 15px 30px rgba(21, 108, 169, 0.35);
+}
+
+.back-home-btn:hover .back-home-icon {
+  color: #ffffff;
+  transform: translateX(-5px); /* La flèche recule nettement vers la gauche */
+}
 
 /* --- RESPONSIVE MOBILE --- */
 @media (max-width: 480px) {
@@ -393,6 +444,17 @@ export default {
   }
   .dossier-header h2 {
     font-size: 1.3rem;
+  }
+  .back-home-btn {
+    top: 1rem;
+    left: 1rem;
+    padding: 0.55rem 1rem;
+    font-size: 0.85rem;
+  }
+  
+  .back-home-icon {
+    width: 18px;
+    height: 18px;
   }
 }
 </style>
