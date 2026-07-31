@@ -165,6 +165,30 @@ export const useAuthStore = defineStore('auth', () => {
     }
   };
 
+  const updateProfile = async (payload:User) => {
+
+    isLoading.value = true;
+
+    try {
+
+      const response = await $api('/account/me/',{
+        method:'PATCH',
+        body:payload
+      })
+
+      if(response){
+
+        console.log("Mise à jour résussie", response)
+      }
+
+    } catch(err:any){
+      console.error("Une erreur esrt survenue lors de la mise à jour", err)
+    } finally {
+      isLoading.value = false;
+    }
+
+  }
+
   const logout = async () => {
     isLoading.value = true;
 
@@ -281,6 +305,7 @@ export const useAuthStore = defineStore('auth', () => {
     login,
     getProfile,
     logout,
+    updateProfile,
     resetPassword,
     ConfirmToken,
     ChangePassword
