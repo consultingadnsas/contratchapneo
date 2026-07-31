@@ -5,7 +5,10 @@ from .views import (
     LogoutView,
     CSRFTokenView,
     UserProfileView,
-    UserPackView
+    UserPackView,
+    PasswordResetConfirmView,
+    PasswordResetTokenVerifyView,
+    PasswordResetRequestView,
 )
 from rest_framework_simplejwt.views import (
     TokenObtainPairView,
@@ -31,4 +34,9 @@ urlpatterns = [
 
     # Packs & Contract
     path('pack/', UserPackView.as_view(), name="packs"),
+
+    # Password reset
+    path('password-reseting/', PasswordResetRequestView.as_view(), name="password-reseting"),
+    path('password-reset/confirm/', PasswordResetConfirmView.as_view(), name='password-reset-confirm'),
+    path('password-reset/verify-token/', PasswordResetTokenVerifyView.as_view(), name='verify-token'),
 ]

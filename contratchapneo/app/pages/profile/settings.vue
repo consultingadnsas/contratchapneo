@@ -9,21 +9,18 @@
       <header class="dashboard-header">
       
         <div v-if="authStore.user">
-          <h1 class="greeting">Bonjour, {{ authStore.user?.username ?? 'invité' }}</h1>
-          <p class="subtitle"></p>
+          <p class="greeting">Profile, {{ authStore.user?.username ?? 'invité' }}</p>
         </div>
     
         <div v-else>
             <p>Chargement...</p>
         </div>
-        
-        <dashboard-btn/>
 
       </header>
         
       <div class="dashboard-grid">
 
-        <userProSection/>
+        <profile-form/>
 
       </div>
 
@@ -41,9 +38,9 @@ import {useAuthStore} from '../../stores/authStore'
 import sidebar from '../../components/navigation/sidebar.vue'; 
 import cardSection from '../../components/sections/bankContratSections/cardSection.vue'
 import mainButton from '../../components/buttons/secondButton.vue';
-import dashboardBtn from '../../components/buttons/dashboardBtn.vue'
 import profileSection from '../../components/sections/userSection/profileSection.vue'
 import userProSection from '../../components/sections/userSection/userProSection.vue'
+import profileForm from '../../components/forms/profileForm.vue'
 export default {
   name: 'DashboardLayout',
   components: {
@@ -51,8 +48,8 @@ export default {
     cardSection,
     mainButton,
     profileSection,
-    dashboardBtn,
-    userProSection
+    userProSection,
+    profileForm
 
   },
   setup() {
@@ -144,8 +141,8 @@ export default {
   gap: 1rem; 
 }
 .greeting { 
-  font-size: 1.8rem; 
-  font-weight: 700; 
+  font-size: 1.2rem; 
+  font-weight: 500; 
   color: var(--text-night); 
   margin-bottom: 0.25rem; 
 }
@@ -166,7 +163,6 @@ export default {
 
 .dashboard-grid {
   width: 100%;
-  max-width: 100%;
   box-sizing: border-box;
   display: flex;           /* Si tu veux centrer un seul élément */
   flex-direction: column;

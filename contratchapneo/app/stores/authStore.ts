@@ -14,6 +14,22 @@ export interface User {
   user_type?: string;
 }
 
+interface ForgotPasswordPayload {
+  email: string
+}
+
+export interface VerifyTokenPayload {
+  email: string
+  token: string
+}
+
+export interface ChangePasswordPayload {
+  email: string
+  token: string
+  new_password: string
+  confirm_password: string
+}
+
 export const useAuthStore = defineStore('auth', () => {
 
   // --- State ---
@@ -185,6 +201,75 @@ export const useAuthStore = defineStore('auth', () => {
       await navigateTo('/auth/login', { replace: true }); 
     }
   };
+
+  const resetPassword = async(payload: ForgotPasswordPayload) => {
+    
+    isLoading.value = true;
+
+    try{
+
+      const response = await $api('/account/password-reseting/', {
+        method:'POST',
+        body:{email: payload},
+      })
+
+      if(response){
+        console.log("Votre reponse", response)
+      }
+
+    } catch(err:any) {
+
+      console.log("Erreur survenue", err)
+
+    } finally {
+      isLoading.value = false;
+    }
+
+  }
+
+  const ConfirmToken = async(payload:VerifyTokenPayload) => {
+    
+    isLoading.value = true;
+
+    try{
+
+      const response = await $api('/account/password-reset/verify-token/', {
+        method:'POST',
+        body:{token: payload},
+      })
+
+      if(response){
+        console.log("Votre reponse", response)
+      }
+
+    } catch(err:any) {
+
+      console.log("Erreur survenue", err)
+
+    } finally {
+      isLoading.value = false;
+    }
+
+  }
+
+  const ChangePassword = async (payload: ChangePasswordPayload) => {
+    isLoading.value = true
+    try {
+      const response = await $api('/account/password-reset/confirm/', {
+        method: 'POST',
+        body: payload   // déjà au bon format, pas de ré-enveloppement
+      })
+      if (response) {
+        console.log("Votre reponse", response)
+      }
+      return response
+    } catch (err: any) {
+      console.log("Erreur survenue", err)
+      throw err
+    } finally {
+      isLoading.value = false
+    }
+  }
 
   return {
     user,

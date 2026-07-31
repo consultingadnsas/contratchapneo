@@ -1,7 +1,7 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from .models import CustomUser
+from .models import CustomUser, PasswordResetToken
 from .serializers import UserSerializer
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from django.utils.translation import gettext_lazy as _
@@ -11,6 +11,10 @@ from django.db.models import Q, F
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.exceptions import TokenError
 from django.middleware.csrf import get_token
+from django.utils import timezone
+from django.contrib.auth.hashers import make_password
+from .utils import generate_password_reset_token, send_password_reset_email, send_welcome_email, send_password_change_confirmation
+from django.conf import settings
 
 # ===========================================
 # Relation
@@ -160,16 +164,68 @@ class CSRFTokenView(APIView):
         )
 
 class UserProfileView(APIView):
-
+    """
+    Vue permettant à un utilisateur connecté de consulter, 
+    mettre à jour ou supprimer son profil.
+    """
     permission_classes = [IsAuthenticated]
 
+    # READ : Récupérer ses informations
     def get(self, request):
-
         serializer = UserSerializer(request.user)
-
         return Response(
             {'user': serializer.data},
             status=status.HTTP_200_OK
+        )
+
+    # UPDATE (Complet) : Mettre à jour toutes les informations
+    def put(self, request):
+        # On passe l'instance de l'utilisateur actuel et les nouvelles données
+        serializer = UserSerializer(request.user, data=request.data)
+        
+        if serializer.is_valid():
+            serializer.save()
+            return Response(
+                {
+                    'user': serializer.data,
+                    'message': _('Profil mis à jour avec succès.')
+                },
+                status=status.HTTP_200_OK
+            )
+            
+        return Response(
+            {'errors': serializer.errors},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    # UPDATE (Partiel) : Mettre à jour seulement quelques champs (ex: juste le nom)
+    def patch(self, request):
+        # partial=True permet de ne pas exiger tous les champs obligatoires du modèle
+        serializer = UserSerializer(request.user, data=request.data, partial=True)
+        
+        if serializer.is_valid():
+            serializer.save()
+            return Response(
+                {
+                    'user': serializer.data,
+                    'message': _('Profil partiellement mis à jour.')
+                },
+                status=status.HTTP_200_OK
+            )
+            
+        return Response(
+            {'errors': serializer.errors},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    # DELETE : Supprimer son propre compte
+    def delete(self, request):
+        user = request.user
+        user.delete() # Supprime l'utilisateur de la base de données
+        
+        return Response(
+            {'message': _('Votre compte a été supprimé avec succès.')},
+            status=status.HTTP_204_NO_CONTENT
         )
 
 # ===========================================
@@ -206,3 +262,114 @@ class UserPackView(APIView):
         
         serializer = PackSerializer(packs, many=True, context={'request': request})
         return Response(serializer.data, status=status.HTTP_200_OK)
+    
+class PasswordResetConfirmView(APIView):
+    authentication_classes = []
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        token = request.data.get('token')
+        new_password = request.data.get('new_password')
+
+        if not token or not new_password:
+            return Response(
+                {'error': 'Token et nouveau mot de passe requis.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            reset_token = PasswordResetToken.objects.get(
+                token=token,
+                expires_at__gt=timezone.now()  # Vérifie que le token n'a pas expiré
+            )
+        except PasswordResetToken.DoesNotExist:
+            return Response(
+                {'error': 'Lien invalide ou expiré.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Mettre à jour le mot de passe
+        user = reset_token.user
+        user.password = make_password(new_password)  # Hash le mot de passe
+        user.save()
+
+        # ENVOI DE L'EMAIL DE CONFIRMATION DE CHANGEMENT
+        send_password_change_confirmation(user)
+
+        # Supprimer le token utilisé (empêche la réutilisation)
+        reset_token.delete()
+
+        return Response(
+            {'message': 'Mot de passe réinitialisé avec succès.'},
+            status=status.HTTP_200_OK
+        )
+
+class PasswordResetRequestView(APIView):
+    authentication_classes = []
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        email = request.data.get('email')
+        if not email:
+            return Response(
+                {'error': 'Veuillez fournir une adresse e-mail.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            user = CustomUser.objects.get(email=email)
+        except CustomUser.DoesNotExist:
+            # Pour des raisons de sécurité, on ne révèle pas si l'email existe
+            return Response(
+                {'message': 'Si un compte existe, un email a été envoyé.'},
+                status=status.HTTP_200_OK
+            )
+
+        # Génération et envoi délégués aux utils
+        token = generate_password_reset_token(user)
+        reset_link = f'{settings.FRONTEND_URL}/reset-password/{token}'
+        
+        # ENVOI DE L'EMAIL DE RÉINITIALISATION (déjà présent)
+        send_password_reset_email(user, reset_link)
+
+        return Response(
+            {'message': 'Si un compte existe, un email a été envoyé.'},
+            status=status.HTTP_200_OK
+        )
+
+class PasswordResetTokenVerifyView(APIView):
+    """
+    Vérifie la validité d'un token de réinitialisation
+    Exemple de requête : POST /api/password-reset/verify-token/
+    {
+        "token": "abc123..."
+    }
+    """
+    authentication_classes = []
+    permission_classes = []
+
+    def post(self, request):
+        token = request.data.get('token')
+        
+        if not token:
+            return Response(
+                {"valid": False, "message": "Token requis"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            reset_token = PasswordResetToken.objects.get(
+                token=token,
+                expires_at__gt=timezone.now()  # Vérifie que le token n'a pas expiré
+            )
+            return Response({
+                "valid": True,
+                "message": "Token valide",
+                "email": reset_token.user.email  # Optionnel : pour confirmation frontend
+            })
+            
+        except PasswordResetToken.DoesNotExist:
+            return Response({
+                "valid": False,
+                "message": "Token invalide ou expiré"
+            }, status=status.HTTP_400_BAD_REQUEST)
