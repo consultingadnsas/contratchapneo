@@ -7,10 +7,14 @@
             @keydown.esc="handleClose"
             role="dialog"
             aria-modal="true"
-            :aria-label="`Confirmation de suppression - ${itemName}`"
+            :aria-label="`Confirmation - ${itemName}`"
         >
-        <div class="modal-container" ref="modalContainer" >
-        <template v-if="!success">
+        <div class="modal-container" ref="modalContainer">
+        
+        <!-- ==========================================
+             1. ÉCRAN DE CONFIRMATION INITIAL
+             ========================================== -->
+        <template v-if="!isLoading && !success">
             <!-- En-tête -->
             <div class="modal-header">
                 <h2 class="modal-title">{{ title }}</h2>
@@ -21,54 +25,42 @@
                     :disabled="isDeleting"
                 >
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="close-icon">
-                    <line x1="18" y1="6" x2="6" y2="18"></line>
-                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
                     </svg>
                 </button>
             </div>
 
             <!-- Corps -->
             <div class="modal-body">
-            
-            <!-- ⚡️ NOUVELLE ICÔNE : Document avec validation (couleur du thème) -->
-            <div class="icon-wrapper">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="info-icon">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M10.125 2.25h-4.5c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125v-9M10.125 2.25h.375a9 9 0 0 1 9 9v.375M10.125 2.25A3.375 3.375 0 0 1 13.5 5.625v1.5c0 .621.504 1.125 1.125 1.125h1.5a3.375 3.375 0 0 1 3.375 3.375M9 15l2.25 2.25L15 12" />
-                </svg>
-            </div>
+                <div class="icon-wrapper">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="info-icon">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M10.125 2.25h-4.5c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125v-9M10.125 2.25h.375a9 9 0 0 1 9 9v.375M10.125 2.25A3.375 3.375 0 0 1 13.5 5.625v1.5c0 .621.504 1.125 1.125 1.125h1.5a3.375 3.375 0 0 1 3.375 3.375M9 15l2.25 2.25L15 12" />
+                    </svg>
+                </div>
 
-            <!-- Message principal -->
-            <p class="confirmation-message">
-                Assurez-vous que vos informations soient correctes 
-                avant la génération du contrat.
-            </p>
+                <p class="confirmation-message">
+                    Assurez-vous que vos informations soient correctes 
+                    avant la génération du contrat.
+                </p>
 
-            <!-- Détail de l'élément -->
-            <div v-if="itemName" class="item-details">
-                <span class="item-label">Élément concerné :</span>
-                <strong class="item-name">{{ itemName }}</strong>
-            </div>
+                <div v-if="itemName" class="item-details">
+                    <span class="item-label">Élément concerné :</span>
+                    <strong class="item-name">{{ itemName }}</strong>
+                </div>
             </div>
 
             <!-- Actions -->
             <div class="modal-actions">
-                
-                <!-- ⚡️ NOUVEAU BOUTON : Télécharger -->
                 <button
                     class="btn btn-primary action-btn"
-                    @click="$emit('confirm')"
-                    :disabled="isLoading || isDeleting"
+                    @click="handleStartDownload"
+                    :disabled="isDeleting"
                 >
-                    <!-- Icône de téléchargement (masquée si chargement) -->
-                    <svg v-if="!isLoading" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="btn-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="btn-icon">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
                     </svg>
-                    
-                    <!-- Spinner de chargement -->
-                    <div v-else class="loading-spinner"></div>
-                    
-                    <!-- Texte dynamique -->
-                    <span>{{ isLoading ? 'Génération en cours...' : 'Télécharger votre contrat' }}</span>
+                    <span>Télécharger votre contrat</span>
                 </button>
 
                 <button
@@ -81,6 +73,100 @@
                 </button>
             </div>
         </template>
+
+        <!-- ==========================================
+             2. ⚡️ ÉCRAN DE CHARGEMENT PROGRESSIF
+             ========================================== -->
+        <template v-else-if="isLoading">
+            <div class="modal-header">
+                <h2 class="modal-title">Génération de votre contrat...</h2>
+            </div>
+
+            <div class="modal-body">
+                <!-- Icône document qui pulse -->
+                <div class="icon-wrapper">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="info-icon pulse-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                </div>
+
+                <!-- Barre de progression -->
+                <div class="progress-section">
+                    <div class="progress-track">
+                        <div 
+                            class="progress-fill" 
+                            :style="{ width: `${progress}%` }"
+                        ></div>
+                    </div>
+                    <div class="progress-text">
+                        <span>Préparation du document</span>
+                        <span class="percentage">{{ progress }}%</span>
+                    </div>
+                </div>
+
+                <p class="confirmation-message helper-text">
+                    Veuillez patienter, Contratchap rédige vos clauses sur-mesure.
+                </p>
+            </div>
+        </template>
+
+        <!-- ==========================================
+             3. ÉCRAN DE SUCCÈS APRÈS TÉLÉCHARGEMENT
+             ========================================== -->
+        <template v-else>
+            <!-- En-tête -->
+            <div class="modal-header">
+                <h2 class="modal-title">Téléchargement terminé</h2>
+                <button
+                    class="close-button"
+                    @click="handleClose"
+                    aria-label="Fermer"
+                >
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="close-icon">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Corps -->
+            <div class="modal-body">
+                <!-- Icône de succès verte -->
+                <div class="icon-wrapper">
+                    <div class="success-icon-circle">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="success-icon">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                        </svg>
+                    </div>
+                </div>
+
+                <p class="confirmation-message">
+                    Contrat téléchargé avec succès.
+                </p>
+
+                <!-- Option pour relancer le téléchargement -->
+                <p class="retry-text">
+                    Si ce n'est pas fait, 
+                    <button class="retry-link" @click="$emit('confirm')" :disabled="isLoading">
+                        télécharger ici
+                    </button>.
+                </p>
+            </div>
+
+            <!-- Actions -->
+            <div class="modal-actions">
+                <button
+                    class="btn btn-primary action-btn"
+                    @click="goToDashboard"
+                >
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="btn-icon">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 15 3 9m0 0 6-6M3 9h12a6 6 0 0 1 0 12h-3" />
+                    </svg>
+                    <span>Retour au dashboard</span>
+                </button>
+            </div>
+        </template>
+
         </div>
     </div>
     </Teleport>
@@ -88,6 +174,7 @@
 
 <script lang="ts">
 import { defineComponent, computed, ref, watch, nextTick, type PropType } from 'vue'
+import { useRouter } from 'vue-router'
 
 interface OperationRow {
   created_at: string
@@ -113,12 +200,12 @@ export default defineComponent({
       type: Boolean,
       default: false,
     },
-    title:{
-      type:String,
-      default:"Confirmation des informations"
+    title: {
+      type: String,
+      default: "Confirmation des informations"
     },
-    success:{
-      type:Boolean,
+    success: {
+      type: Boolean,
       default: false
     },
     description: { 
@@ -126,13 +213,57 @@ export default defineComponent({
       default: '' 
     }
   },
-  components:{
-  },
   emits: ['close', 'confirm'],
   setup(props, { emit }) {
+    const router = useRouter()
     const cancelButton = ref<HTMLButtonElement | null>(null)
     const modalContainer = ref<HTMLElement | null>(null)
     const isDeleting = ref(false)
+
+    // --- LOGIQUE DE PROGRESSION DU CHARGEMENT ---
+    const progress = ref(0)
+    let intervalId: ReturnType<typeof setInterval> | null = null
+
+    const startProgressSimulation = () => {
+      progress.value = 0
+      if (intervalId) clearInterval(intervalId)
+
+      intervalId = setInterval(() => {
+        if (progress.value < 50) {
+          progress.value += Math.floor(Math.random() * 15) + 5
+        } else if (progress.value < 85) {
+          progress.value += Math.floor(Math.random() * 5) + 2
+        } else if (progress.value < 98) {
+          progress.value += 1
+        }
+
+        if (progress.value > 99) {
+          progress.value = 99
+        }
+      }, 300)
+    }
+
+    const stopProgressSimulation = () => {
+      if (intervalId) {
+        clearInterval(intervalId)
+        intervalId = null
+      }
+      progress.value = 100
+    }
+
+    // Écoute des changements de l'état de chargement
+    watch(
+      () => props.isLoading,
+      (newVal) => {
+        if (newVal) {
+          startProgressSimulation()
+        } else {
+          stopProgressSimulation()
+        }
+      }
+    )
+
+    // --- FIN LOGIQUE DE PROGRESSION ---
 
     const itemName = computed(() => {
       if (!props.selectedItem) return ''
@@ -140,18 +271,18 @@ export default defineComponent({
     })
 
     const handleClose = () => {
-      if (isDeleting.value) return
+      if (isDeleting.value || props.isLoading) return
       emit('close')
     }
 
-    const handleConfirm = async () => {
-      if (isDeleting.value) return
-      isDeleting.value = true
-      try {
-        await emit('confirm')
-      } finally {
-        isDeleting.value = false
-      }
+    const handleStartDownload = () => {
+      emit('confirm')
+    }
+
+    // Redirection vers le dashboard
+    const goToDashboard = () => {
+      emit('close')
+      router.push('/profile/Dashboard')
     }
 
     watch(
@@ -163,6 +294,7 @@ export default defineComponent({
           document.body.style.overflow = 'hidden'
         } else {
           document.body.style.overflow = ''
+          stopProgressSimulation()
         }
       },
     )
@@ -176,8 +308,10 @@ export default defineComponent({
       modalContainer,
       isDeleting,
       itemName,
+      progress,
       handleClose,
-      handleConfirm,
+      handleStartDownload,
+      goToDashboard,
       onAfterLeave,
     }
   },
@@ -269,12 +403,38 @@ export default defineComponent({
   justify-content: center;
 }
 
-/* ⚡️ STYLE DE LA NOUVELLE ICÔNE */
+/* ICÔNES */
 .info-icon {
   width: 3.5rem;
   height: 3.5rem;
-  color: #202b4a; /* Couleur bleue foncée classique pour l'info */
+  color: #202b4a;
   stroke-width: 1.5;
+}
+
+.pulse-icon {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  color: #2563eb;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: .7; transform: scale(0.95); }
+}
+
+.success-icon-circle {
+  width: 4rem;
+  height: 4rem;
+  border-radius: 50%;
+  background-color: rgba(16, 185, 129, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.success-icon {
+  width: 2.2rem;
+  height: 2.2rem;
+  color: #10b981;
 }
 
 .confirmation-message {
@@ -282,6 +442,95 @@ export default defineComponent({
   font-weight: 500;
   color: #111827;
   margin-bottom: 0.75rem;
+}
+
+.helper-text {
+  font-size: 0.95rem;
+  color: #6b7280;
+}
+
+/* =========================================
+   ⚡️ STYLES DE LA BARRE DE PROGRESSION
+   ========================================= */
+.progress-section {
+  margin: 1.5rem 0 1rem;
+}
+
+.progress-track {
+  width: 100%;
+  height: 12px;
+  background-color: #e5e7eb;
+  border-radius: 9999px;
+  overflow: hidden;
+  position: relative;
+}
+
+.progress-fill {
+  height: 100%;
+  background-color: #202b4a;
+  border-radius: 9999px;
+  transition: width 0.3s ease-out;
+  background-image: linear-gradient(
+    45deg, 
+    rgba(255, 255, 255, 0.15) 25%, 
+    transparent 25%, 
+    transparent 50%, 
+    rgba(255, 255, 255, 0.15) 50%, 
+    rgba(255, 255, 255, 0.15) 75%, 
+    transparent 75%, 
+    transparent
+  );
+  background-size: 1rem 1rem;
+  animation: progress-stripes 1s linear infinite;
+}
+
+@keyframes progress-stripes {
+  from { background-position: 1rem 0; }
+  to { background-position: 0 0; }
+}
+
+.progress-text {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 0.75rem;
+  font-size: 0.875rem;
+  color: #4b5563;
+  font-weight: 500;
+}
+
+.percentage {
+  color: #202b4a;
+  font-weight: 700;
+}
+
+/* TEXTE DE RELANCE TÉLÉCHARGEMENT */
+.retry-text {
+  font-size: 0.9rem;
+  color: #6b7280;
+  margin-top: 0.5rem;
+  margin-bottom: 0;
+}
+
+.retry-link {
+  background: none;
+  border: none;
+  color: #156ca9;
+  font-weight: 700;
+  text-decoration: underline;
+  cursor: pointer;
+  padding: 0;
+  font-size: 0.9rem;
+  transition: color 0.2s ease;
+}
+
+.retry-link:hover:not(:disabled) {
+  color: #0d4a75;
+}
+
+.retry-link:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  text-decoration: none;
 }
 
 .item-details {
@@ -311,15 +560,13 @@ export default defineComponent({
   padding: 1rem 1.5rem 1.5rem;
 }
 
-/* ⚡️ CORRECTION DES TAILLES DE BOUTONS */
 .action-btn {
   width: 100%;
 }
 
-/* Cette règle force le bouton interne de mainButton et ton bouton annuler à faire la même taille */
 .modal-actions button {
   width: 100%;
-  height: 48px; /* Hauteur fixe pour symétrie parfaite */
+  height: 48px;
   padding: 0;
   border-radius: 0.5rem;
   font-weight: 600;
@@ -327,7 +574,7 @@ export default defineComponent({
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 0.5rem; /* Espace entre l'icône et le texte */
+  gap: 0.5rem;
   cursor: pointer;
   transition: all 0.2s;
   box-sizing: border-box;
@@ -340,7 +587,7 @@ export default defineComponent({
 }
 
 .btn-primary {
-  background-color: #202b4a; /* Bleu Contratchap */
+  background-color: #202b4a;
   color: #ffffff;
 }
 
@@ -364,43 +611,6 @@ export default defineComponent({
   border-color: #9ca3af;
 }
 
-.loading-spinner {
-  width: 1.25rem;
-  height: 1.25rem;
-  border: 2px solid rgba(255, 255, 255, 0.3);
-  border-top-color: #ffffff;
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
-}
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
-
-/* Animations */
-.modal-enter-active,
-.modal-leave-active {
-  transition: opacity 0.2s ease;
-}
-
-.modal-enter-active .modal-container,
-.modal-leave-active .modal-container {
-  transition: transform 0.2s ease, opacity 0.2s ease;
-}
-
-.modal-enter-from,
-.modal-leave-to {
-  opacity: 0;
-}
-
-.modal-enter-from .modal-container {
-  transform: scale(0.95);
-}
-
-.modal-leave-to .modal-container {
-  transform: scale(0.95);
-}
-
 /* Mode sombre */
 @media (prefers-color-scheme: dark) {
   .modal-container {
@@ -416,7 +626,7 @@ export default defineComponent({
   }
 
   .info-icon {
-    color: #60a5fa; /* Bleu clair pour mode sombre */
+    color: #60a5fa;
   }
 
   .item-details {

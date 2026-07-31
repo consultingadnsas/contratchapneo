@@ -33,12 +33,6 @@
                   <div class="item-details">
                     <h4 class="item-name">{{ item.contrat.title }}</h4>
                     <p class="item-price">{{ Number(item.unit_price).toLocaleString('fr-FR') }} FCFA</p>
-                    
-                    <div class="quantity-controls">
-                      <button type="button" class="qty-btn" :disabled="item.quantity <= 1 || cartStore.isLoading" @click.prevent="handleUpdateQuantity(item.contrat.id, item.quantity - 1)">-</button>
-                      <span class="quantity">{{ item.quantity }}</span>
-                      <button type="button" class="qty-btn" :disabled="cartStore.isLoading" @click.prevent="handleUpdateQuantity(item.contrat.id, item.quantity + 1)">+</button>
-                    </div>
                   </div>
                   <div class="item-total">
                     <span class="total-price">{{ Number(item.subtotal).toLocaleString('fr-FR') }} FCFA</span>
@@ -53,11 +47,6 @@
                     <p style="font-size: 0.85em; color: gray;">{{ item.pro.title_display }}</p>
                     <p class="item-price">{{ Number(item.unit_price).toLocaleString('fr-FR') }} FCFA</p>
                     
-                    <div class="quantity-controls">
-                      <button type="button" class="qty-btn" :disabled="item.quantity <= 1 || cartStore.isLoading" @click.prevent="handleUpdateQuantity(item.pro.id, item.quantity - 1)">-</button>
-                      <span class="quantity">{{ item.quantity }}</span>
-                      <button type="button" class="qty-btn" :disabled="cartStore.isLoading" @click.prevent="handleUpdateQuantity(item.pro.id, item.quantity + 1)">+</button>
-                    </div>
                   </div>
                   <div class="item-total">
                     <span class="total-price">{{ Number(item.subtotal).toLocaleString('fr-FR') }} FCFA</span>
@@ -70,12 +59,6 @@
                   <div class="item-details">
                     <h4 class="item-name">Pack : {{ item.packs.title }}</h4>
                     <p class="item-price">{{ Number(item.unit_price).toLocaleString('fr-FR') }} FCFA</p>
-                    
-                    <div class="quantity-controls">
-                      <button type="button" class="qty-btn" :disabled="item.quantity <= 1 || cartStore.isLoading" @click.prevent="handleUpdateQuantity(item.packs.id, item.quantity - 1)">-</button>
-                      <span class="quantity">{{ item.quantity }}</span>
-                      <button type="button" class="qty-btn" :disabled="cartStore.isLoading" @click.prevent="handleUpdateQuantity(item.packs.id, item.quantity + 1)">+</button>
-                    </div>
                   </div>
                   <div class="item-total">
                     <span class="total-price">{{ Number(item.subtotal).toLocaleString('fr-FR') }} FCFA</span>
@@ -418,12 +401,6 @@ export default {
   font-size: 0.9rem;
   color: #007bff;
   font-weight: 600;
-}
-
-.quantity-controls {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
 }
 
 .qty-btn {

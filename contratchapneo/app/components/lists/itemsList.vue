@@ -5,29 +5,6 @@
           <img :src="item.image || placeholder" :alt="item.name" class="item-image">
           <div class="item-details">
             <h4 class="item-name">{{ item.name }}</h4>
-            <p class="item-price">{{ item.price }} FCFA</p>
-            
-            <div class="quantity-controls">
-              <!-- ⚡️ Les boutons +/- n'apparaissent que si CE N'EST PAS un pack -->
-              <button 
-                v-if="!item.isPack"
-                type="button" 
-                class="qty-btn" 
-                @click.prevent="decrease(item.cartItemId, item.quantity)" 
-                :disabled="item.quantity <= 1 || cartStore.isLoading"
-              >-</button>
-              
-              <!-- La quantité s'affiche toujours -->
-              <span class="quantity">{{ item.quantity }}</span>
-              
-              <button 
-                v-if="!item.isPack"
-                type="button" 
-                class="qty-btn" 
-                @click.prevent="increase(item.cartItemId, item.quantity)"
-                :disabled="cartStore.isLoading"
-              >+</button>
-            </div>
           </div>
 
           <div class="item-total">
@@ -188,12 +165,6 @@ export default {
   font-size: 0.9rem;
   color: #202b4a;
   font-weight: 600;
-}
-
-.quantity-controls {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
 }
 
 .qty-btn {

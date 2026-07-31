@@ -13,6 +13,11 @@ import { useOrderStore } from '../../stores/orderStore'; // 👈 Import du store
 import footerSection from '../../components/sections/footerSection.vue';
 import succesForm from '../../components/forms/succesForm.vue';
 
+definePageMeta({
+  middleware: 'payment-guard'
+})
+
+
 export default {
     name: 'OrderSuccessPage',
     components: {
@@ -20,6 +25,7 @@ export default {
         succesForm
     },
     setup() {
+
         const router = useRouter();
         const orderStore = useOrderStore();
         

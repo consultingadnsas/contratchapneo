@@ -1,10 +1,5 @@
 <template>
     <div class="main-wrapper flex h-screen w-full overflow-hidden bg-gray-200 relative">
-        
-        <div v-if="isDownloading" class="absolute inset-0 bg-white/80 z-50 flex flex-col items-center justify-center">
-            <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-[#202b4a] mb-4"></div>
-            <p class="text-[#202b4a] font-bold text-lg">Génération de votre contrat en cours...</p>
-        </div>
 
         <!-- ⚡️ MODIFICATION : w-full sur mobile, lg:w-1/3 sur PC -->
         <aside class="form-section w-full lg:w-1/3 h-full p-6 overflow-y-auto bg-white shadow-2xl z-10 relative">
@@ -35,6 +30,8 @@
 
         <confirmModale 
             :isOpen="isOpen"
+            :isLoading="isDownloading"
+            :success="isSuccess"
             title="Valider et télécharger ?"
             description="En validant, ce contrat sera généré avec vos informations. Si ce contrat n'est pas encore débloqué, cela consommera 1 crédit de votre pack."
             @close="isOpen = false" 
@@ -60,6 +57,7 @@ const route = useRoute();
 const router = useRouter();
 const contratStore = useContratStore();
 const profileStore = useProfileStore();
+const isSuccess = ref<boolean>(false);
 
 // 🔥 CORRECTION ICI : On utilise un 'computed' pour être sûr à 100% que l'ID est toujours à jour
 const contractId = computed(() => route.params.id as string);
@@ -90,7 +88,7 @@ const handleModale = (data: Record<string, any>) => {
 
 // 3. Soumission au backend et téléchargement direct
 const submitAndDownload = async () => {
-    isOpen.value = false;
+    isSuccess.value = false;
     isDownloading.value = true;
     
     try {
@@ -99,12 +97,14 @@ const submitAndDownload = async () => {
         console.log("Envoi des données pour le contrat ID :", contractId.value);
         console.log("Votre contrat va être téléchargé...");
 
-        // ⚡️ LA CORRECTION : On force le rafraîchissement pour déduire le crédit de l'interface
         await profileStore.getPacks();
+
+        isSuccess.value = true;
 
     } catch (err: any) {
         console.error('Erreur lors de la génération du contrat via le pack', err);
         alert(err.message || "Une erreur est survenue lors de la génération du document.");
+        isOpen.value = false;
     } finally {
         isDownloading.value = false;
     }

@@ -55,11 +55,21 @@ export const useOrderStore = defineStore('order', () => {
         }
     };
 
-    const fetchOrder = async (orderId: string) => {
+    // Dans stores/orderStore.ts
+    const fetchOrder = async (orderId: string, optionalEmail?: string) => {
         isLoading.value = true;
         error.value = null;
         try {
-            const response = await $api(`/ecommerce/orders/${orderId}/`, { method: 'GET' });
+            // ⚡️ CORRECTION : On récupère l'email depuis le cookie de secours ou le paramètre
+            const backupEmailCookie = useCookie('backup_checkout_email');
+            const email = optionalEmail || currentOrder.value?.guest?.email || currentOrder.value?.user?.email || backupEmailCookie.value;
+
+            const response = await $api(`/ecommerce/orders/${orderId}/`, { 
+                method: 'GET',
+                // ⚡️ On attache l'email aux query params pour que Django autorise l'accès :
+                query: email ? { email } : undefined
+            });
+
             currentOrder.value = response?.data ?? response ?? null;
             return currentOrder.value;
         } catch (err: any) {
