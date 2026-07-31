@@ -10,7 +10,7 @@ export default defineNuxtRouteMiddleware(async (to, from) => {
 
   // 2. DÉFINITION DES ROUTES PROTÉGÉES
   // Ajoute ici tous les préfixes d'URL de ton espace client
-  const protectedRoutes = ['/dashboard', '/profile', '/contractWritter']
+  const protectedRoutes = ['/dashboard', '/profile']
   const isProtectedRoute = protectedRoutes.some(route => to.path.startsWith(route))
 
   // 3. DÉFINITION DES ROUTES D'AUTHENTIFICATION

@@ -280,6 +280,9 @@ export const useAuthStore = defineStore('auth', () => {
     register,
     login,
     getProfile,
-    logout
+    logout,
+    resetPassword,
+    ConfirmToken,
+    ChangePassword
   };
 });
