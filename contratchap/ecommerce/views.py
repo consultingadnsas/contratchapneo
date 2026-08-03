@@ -2,6 +2,8 @@ import tempfile
 import zipfile
 import io
 import os
+from PIL.DdsImagePlugin import item
+from PIL.Image import item
 from django.http import FileResponse
 from django.conf import settings
 from rest_framework.views import APIView
@@ -22,7 +24,7 @@ from .serializers import (
     CheckoutSerializer,
 )
 from .helpers import (get_or_create_cart, set_cart_cookie_if_needed)
-from contrat.models import Contrat, CustomedContract, Pack
+from contrat.models import Contrat, CustomedContract, Pack, ContractRevision
 from pro.models import LegalProfessional
 
 from contrat.utils import fill_docx_template, convert_docx_to_pdf, send_documents_by_email_async
@@ -129,12 +131,13 @@ class CartAddItemView(APIView):
         pro_id     = serializer.validated_data.get('pro_id')
         customed_contract_id = serializer.validated_data.get('customed_contract')
         pack_id = serializer.validated_data.get('pack_id') # et non get('pack')
+        contract_revision_id = serializer.validated_data.get('contract_revision_id')
         quantity   = serializer.validated_data.get('quantity', 1)
 
         # Vérification de sécurité
-        if not contrat_id and not pro_id and not customed_contract_id and not pack_id:
+        if not contrat_id and not pro_id and not customed_contract_id and not pack_id and not contract_revision_id:
              return Response(
-                {'errors': 'Vous devez fournir soit un contrat_id, soit un pro_id, soit un customed_contract.'},
+                {'errors': 'Vous devez fournir soit un contrat_id, soit un pro_id, soit un customed_contract, soit un pack_id, soit un contract_revision_id.'},
                 status=status.HTTP_400_BAD_REQUEST
             )
 
@@ -190,6 +193,20 @@ class CartAddItemView(APIView):
                 defaults={
                     'quantity'  : quantity,
                     'unit_price': pack_obj.prix,
+                }
+            )
+            if not created:
+                item.quantity += quantity
+                item.save()
+
+        elif contract_revision_id:
+            revision_request = get_object_or_404(ContractRevision, id=contract_revision_id)
+            item, created = CartItem.objects.get_or_create(
+                cart=cart,
+                contract_revision=revision_request,
+                defaults={
+                    'quantity': quantity,
+                    'unit_price': revision_request.price,
                 }
             )
             if not created:
@@ -458,12 +475,14 @@ class CheckoutView(APIView):
         order_items = []
         
         # NOUVEAU : On ajoute 'packs' au select_related pour optimiser la DB
-        for item in cart.items.select_related('contrat', 'pro', 'customed_contract', 'packs'):
+        for item in cart.items.select_related('contrat', 'pro', 'customed_contract', 'packs', 'contract_revision'):
             
             c_title = None
             p_name = None
             customized_name = None
-            pack_title = None # NOUVEAU
+            pack_title = None
+            contract_revision = None
+            revision_subject = None
             
             if item.contrat:
                 c_title = item.contrat.title
@@ -473,7 +492,10 @@ class CheckoutView(APIView):
             elif item.customed_contract:
                 customized_name = item.customed_contract.subject or f"Contrat sur mesure #{item.customed_contract.id}"
             elif item.packs:
-                pack_title = item.packs.title # NOUVEAU
+                pack_title = item.packs.title
+            elif item.contract_revision:
+                contract_revision = item.contract_revision
+                revision_subject = item.contract_revision.subject or f"Révision #{item.contract_revision.id}"
 
             order_items.append(
                 OrderItem(
@@ -481,11 +503,13 @@ class CheckoutView(APIView):
                     contrat=item.contrat,
                     pro=item.pro,
                     contrat_customed=item.customed_contract,
-                    pack=item.packs, # NOUVEAU : On transfère l'objet pack
+                    pack=item.packs,
                     contrat_title=c_title,
                     customised_contract=customized_name,
+                    contract_revision=contract_revision,
                     pro_name=p_name,
-                    pack_title=pack_title, # NOUVEAU : On fige le nom
+                    pack_title=pack_title,
+                    revision_subject=revision_subject,
                     unit_price=item.unit_price,
                     quantity=item.quantity,
                 )

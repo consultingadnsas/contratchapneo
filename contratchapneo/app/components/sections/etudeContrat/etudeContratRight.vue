@@ -124,6 +124,9 @@ import BaseSelect from '../../input/BaseSelect.vue';
 import BaseArea from '../../input/BaseArea.vue';
 import formButton from '../../buttons/formButton.vue';
 import baseNotification from '../../tools/baseNotification.vue';
+import { useCartStore } from '../../../stores/cartStore';
+
+const { $api } = useNuxtApp();
 
 export default {
     name: 'EtudeContratRight',
@@ -135,6 +138,7 @@ export default {
         baseNotification
     },
     setup() {
+        const cartStore = useCartStore();
         const formData = ref({
             name: '',
             email: '',
@@ -229,27 +233,36 @@ export default {
 
             try {
                 const payload = new FormData();
-                payload.append('name', formData.value.name);
+                payload.append('subject', formData.value.description);
                 payload.append('email', formData.value.email);
-                payload.append('phone', `${formData.value.phonePrefix} ${formData.value.phoneNumber}`);
-                payload.append('description', formData.value.description);
-                
-                // Ajout du document unique
+                payload.append('phone_number', `${formData.value.phonePrefix}${formData.value.phoneNumber}`);
+                payload.append('client_instructions', formData.value.description);
+
                 if (selectedFile.value) {
-                    payload.append('documents', selectedFile.value); // Ou 'document' en fonction de ce qu'attend ton backend
+                    payload.append('original_file', selectedFile.value);
                 }
 
-                // Simulation API
-                await new Promise(resolve => setTimeout(resolve, 1500)); 
+                const response = await $api('/contrat/revision-requests/', {
+                    method: 'POST',
+                    body: payload
+                });
 
-                showNotification('success', 'Succès !', 'Votre demande a été envoyée avec succès ! Nos experts vous contacteront rapidement.');
-                
-                // Reset form
+                const revisionId = response?.data?.id || response?.id;
+                if (!revisionId) {
+                    throw new Error('Aucun identifiant de révision n\'a été retourné par le backend.');
+                }
+
+                await cartStore.addRevisionContractToCart(revisionId);
+
+                const message = response?.message || 'Votre demande de révision a bien été ajoutée au panier.';
+                showNotification('success', 'Succès !', `${message} Vous pouvez maintenant finaliser votre commande et payer pour valider l’envoi.`);
+
                 formData.value = { name: '', email: '', type: '', description: '', phonePrefix: '+225', phoneNumber: '' };
                 selectedFile.value = null;
 
-            } catch (error) {
-                showNotification('error', 'Erreur d\'envoi', "Une erreur est survenue lors de l'envoi. Veuillez réessayer.");
+            } catch (error: any) {
+                const backendMessage = error?.response?._data?.message || error?.response?._data?.errors || error?.message;
+                showNotification('error', 'Erreur d\'envoi', backendMessage || "Une erreur est survenue lors de l'envoi. Veuillez réessayer.");
                 console.error(error);
             } finally {
                 isSubmitting.value = false;

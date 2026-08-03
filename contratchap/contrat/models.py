@@ -217,6 +217,12 @@ class CustomedContract(models.Model):
     price = models.FloatField(default=25000.00)
     promo_price = models.FloatField(default=0.0)
 
+    final_document = models.FileField(
+        upload_to='customed_contracts/completed/',
+        blank=True,
+        null=True,
+        help_text="PDF final rédigé, uploadé par le juriste une fois terminé."
+    )
     is_wrotten = models.BooleanField(default = False)
 
     # Timestamps
@@ -225,3 +231,69 @@ class CustomedContract(models.Model):
 
     def __str__(self):
         return f'Contrat sur mesure de {self.email}'
+
+class ContractRevision(models.Model):
+    
+    class RevisionStatus(models.TextChoices):
+        PENDING = 'PENDING', 'En attente'
+        IN_PROGRESS = 'IN_PROGRESS', 'En cours de révision'
+        COMPLETED = 'COMPLETED', 'Terminé'
+        REJECTED = 'REJECTED', 'Rejeté / Annulé'
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    
+    # --- Relations ---
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, # Plus sûr que CustomUser directement si tu changes d'avis plus tard
+        on_delete=models.SET_NULL,
+        null=True, blank=True,
+        related_name='contract_revisions'
+    )
+    
+    # S'il utilise un pack pour payer cette révision
+    user_pack = models.ForeignKey(
+        UserPack,
+        on_delete=models.SET_NULL,
+        null=True, blank=True,
+        related_name='contract_revisions'
+    )
+
+    # --- Informations sur la demande ---
+    subject = models.CharField(max_length=225, help_text="Titre ou nature du contrat à réviser")
+    phone_number = models.CharField(max_length=15)
+    email = models.EmailField()
+    client_instructions = models.TextField(help_text="Ce que le client souhaite que vous vérifiiez spécifiquement")
+    
+    # --- Les Fichiers ---
+    original_file = models.FileField(
+        upload_to='revisions/originals/', 
+        help_text="Le contrat envoyé par le client"
+    )
+    revised_file = models.FileField(
+        upload_to='revisions/completed/', 
+        blank=True, 
+        null=True, 
+        help_text="Le contrat révisé et renvoyé par vos juristes"
+    )
+    
+    # --- Tarification ---
+    price = models.FloatField(default=15000.00)
+    promo_price = models.FloatField(default=0.0)
+
+    # --- Suivi et Statut ---
+    status = models.CharField(
+        max_length=20,
+        choices=RevisionStatus.choices,
+        default=RevisionStatus.PENDING
+    )
+    is_revised = models.BooleanField(default=False)
+    
+    # Commentaires internes ou pour le client
+    expert_comments = models.TextField(blank=True, null=True, help_text="Notes laissées par le juriste après révision")
+
+    # --- Timestamps ---
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f'Révision: {self.subject} - {self.email} ({self.get_status_display()})'

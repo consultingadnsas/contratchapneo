@@ -14,13 +14,14 @@ from rest_framework.generics import ListAPIView
 from django.db import transaction
 from django.shortcuts import get_object_or_404
 from django.db.models import Q, F
-from .models import Category, Contrat, CustomedContract, Pack, UserPack
+from .models import Category, Contrat, CustomedContract, Pack, UserPack, ContractRevision
 from .serializers import (
     CategorySerializer, 
     ContratSerializer, 
     CategoryWithContractsSerializer,
     CustomedContractSerializer,
-    PackModelSerializer
+    PackModelSerializer,
+    ContractRevisionSerializer
 )
 
 from docx import Document
@@ -240,6 +241,31 @@ class CustomedContractRequestView(APIView):
             {
                 'errors': serializer.errors,
                 'message': 'Impossible de créer la demande sur mesure.'
+            },
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+
+class ContractRevisionRequestView(APIView):
+    permission_classes = [AllowAny]
+    authentication_classes = []
+
+    def post(self, request):
+        serializer = ContractRevisionSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(
+                {
+                    'data': serializer.data,
+                    'message': 'Demande de révision enregistrée avec succès.'
+                },
+                status=status.HTTP_201_CREATED
+            )
+
+        return Response(
+            {
+                'errors': serializer.errors,
+                'message': 'Impossible de créer la demande de révision.'
             },
             status=status.HTTP_400_BAD_REQUEST
         )
