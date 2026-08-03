@@ -12,6 +12,14 @@ export interface CartItem {
   contrat?: Contrat | null;
   pro?: ProItem | null;
   packs?: any | null;
+  // ⚡️ AJOUT : On supporte les clés de révision et de contrat sur mesure
+  customed_contract?: RevisionCustomizedContract | null;
+  customized_contract?: RevisionCustomizedContract | null;
+  contract_revision?: RevisionCustomizedContract | null;
+  revision?: RevisionCustomizedContract | null;
+  // Optionnel : au cas où l'API renvoie le titre directement à la racine de l'item
+  title?: string;
+  name?: string;
 }
 
 export interface Cart {

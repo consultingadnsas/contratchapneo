@@ -38,7 +38,6 @@ import placeholder from '@/assets/pictures/ContratChap/pexels-thirdman-5060819.j
 
 export default {
   name: 'Itemslist',
-  // ⚡️ NOUVEAU : Déclaration de la prop
   props: {
     isCheckout: {
       type: Boolean,
@@ -64,10 +63,30 @@ export default {
           itemImage = i.pro.profile_picture;
           targetId = i.pro.id; 
         }
-        else if (i.pack) {
-          itemName = `Pack : ${i.pack.title || i.pack.name || 'Inconnu'}`; 
-          itemImage = i.pack.picture;
-          targetId = i.pack.id; 
+        // ⚡️ CORRECTION : On supporte à la fois "pack" (singulier) et "packs" (pluriel)
+        else if (i.pack || i.packs) {
+          const packObj = i.pack || i.packs;
+          itemName = `Pack : ${packObj.title || packObj.name || 'Inconnu'}`; 
+          itemImage = packObj.picture;
+          targetId = packObj.id; 
+        }
+        // ⚡️ AJOUT 1 : Contrat sur mesure
+        else if (i.customed_contract || i.customized_contract) {
+          const customObj = i.customed_contract || i.customized_contract;
+          itemName = customObj.title || customObj.name || 'Contrat sur mesure';
+          itemImage = customObj.picture || null;
+          targetId = customObj.id;
+        }
+        // ⚡️ AJOUT 2 : Révision de contrat
+        else if (i.contract_revision || i.revision) {
+          const revObj = i.contract_revision || i.revision;
+          itemName = revObj.title || revObj.name || 'Révision de contrat';
+          itemImage = revObj.picture || null;
+          targetId = revObj.id;
+        }
+        // ⚡️ AJOUT 3 : Sécurité ultime si le backend envoie directement le titre à la racine de l'item
+        else if (i.title || i.name) {
+          itemName = i.title || i.name;
         }
 
         return {
@@ -78,7 +97,7 @@ export default {
           subtotal: Number(i.subtotal || 0), 
           quantity: i.quantity,
           image: itemImage,
-          isPack: !!i.pack // ⚡️ AJOUT : On crée un flag pour simplifier le template
+          isPack: !!(i.pack || i.packs)
         };
       })
     ));
