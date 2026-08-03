@@ -3,7 +3,10 @@
     <section class="checkout-section">
         <div class="sides" v-if="!isPaiementModale && !isXpayeModale">
             <itemsListVue/>
-            <checkoutFormVue @success="handlePaiementSuccess"/>
+            <checkoutFormVue
+            formTitle="confirmer votre transaction"
+            @success="handlePaiementSuccess"/>
+            
         </div>
         <paiementModale
             :isOpen="isPaiementModale"

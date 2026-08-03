@@ -10,10 +10,52 @@
     
     <h3 class="success__title">{{ message }}</h3>
     
-    <p class="success__subtitle">
-      Votre paiement a bien été pris en compte. <br>
-      Redirection vers la personnalisation de votre contrat dans <span class="countdown-highlight">{{ countdown }}s</span>...
-    </p>
+    <!-- ==========================================
+         1. ACHAT PRO (Carte de visite - Sans Countdown)
+         ========================================== -->
+    <div v-if="isPro" class="pro-actions-wrapper">
+      <p class="success__subtitle">
+        Votre paiement a bien été pris en compte. Vous pouvez maintenant télécharger votre carte de visite.
+      </p>
+
+      <button 
+        class="btn-download-pro" 
+        @click="$emit('download-pro')" 
+        :disabled="isDownloading"
+      >
+        <svg v-if="!isDownloading" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="btn-icon">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
+        </svg>
+        <span v-else class="loading-spinner"></span>
+        <span>{{ isDownloading ? 'Téléchargement en cours...' : 'Télécharger ma carte de visite' }}</span>
+      </button>
+
+      <div class="home-link-wrapper">
+        <router-link to="/" class="home-link">
+          &larr; Revenir à la page d'accueil
+        </router-link>
+      </div>
+    </div>
+
+    <!-- ==========================================
+         2. ACHAT PACK DE CRÉDITS (Avec Countdown -> Dashboard)
+         ========================================== -->
+    <div v-else-if="isPack" class="success__subtitle">
+      <p>
+        Votre paiement a bien été pris en compte. Vos crédits ont été ajoutés à votre compte. <br>
+        Redirection vers votre dashboard dans <span class="countdown-highlight">{{ countdown }}s</span>...
+      </p>
+    </div>
+
+    <!-- ==========================================
+         3. CONTRAT STANDARD (Avec Countdown -> ContractWritter)
+         ========================================== -->
+    <div v-else class="success__subtitle">
+      <p>
+        Votre paiement a bien été pris en compte. <br>
+        Redirection vers la personnalisation de votre contrat dans <span class="countdown-highlight">{{ countdown }}s</span>...
+      </p>
+    </div>
 
   </div>
 </template>
@@ -29,15 +71,29 @@ export default {
     countdown: {
       type: Number,
       required: true
+    },
+    isPro: {
+      type: Boolean,
+      default: false
+    },
+    // ⚡️ NOUVELLE PROP POUR LES PACKS
+    isPack: {
+      type: Boolean,
+      default: false
+    },
+    isDownloading: {
+      type: Boolean,
+      default: false
     }
-  }
-}
+  },
+  emits: ['download-pro']
+};
 </script>
 
 <style scoped>
 /* ── Écran de succès ── */
 .success__screen {
-  height: 100vh;
+  min-height: 80vh;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -54,34 +110,109 @@ export default {
 }
 
 .success__icon {
-    width: 72px;
-    height: 72px;
-    color: #32f459;
-    animation: popIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  width: 72px;
+  height: 72px;
+  color: #32f459;
+  animation: popIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both;
 }
 
 @keyframes popIn {
-    from { opacity: 0; transform: scale(0.4); }
-    to   { opacity: 1; transform: scale(1); }
+  from { opacity: 0; transform: scale(0.4); }
+  to   { opacity: 1; transform: scale(1); }
 }
 
 .success__title {
-    color: #202b4a;
-    font-size: 1.6rem;
-    font-weight: 700;
-    margin: 0;
+  color: #202b4a;
+  font-size: 1.6rem;
+  font-weight: 700;
+  margin: 0;
 }
 
 .success__subtitle {
-    color: #4a5568;
-    font-size: 1.05rem;
-    line-height: 1.7;
-    margin: 0;
+  color: #4a5568;
+  font-size: 1.05rem;
+  line-height: 1.7;
+  margin: 0;
+  max-width: 450px;
 }
 
 .countdown-highlight {
-    font-weight: 800;
-    color: #156ca9; /* Couleur pour mettre en valeur les secondes restantes */
-    font-size: 1.15rem;
+  font-weight: 800;
+  color: #156ca9;
+  font-size: 1.15rem;
+}
+
+/* ── STYLES SPÉCIFIQUES ACTIONS PRO ── */
+.pro-actions-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.25rem;
+  width: 100%;
+  max-width: 380px;
+}
+
+.btn-download-pro {
+  width: 100%;
+  background-color: #202b4a;
+  color: #ffffff;
+  border: none;
+  border-radius: 50px;
+  padding: 0.95rem 1.5rem;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.6rem;
+  box-shadow: 0 4px 12px rgba(32, 43, 74, 0.15);
+}
+
+.btn-download-pro:hover:not(:disabled) {
+  background-color: #156ca9;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 18px rgba(21, 108, 169, 0.25);
+}
+
+.btn-download-pro:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.btn-icon {
+  width: 20px;
+  height: 20px;
+}
+
+.loading-spinner {
+  width: 20px;
+  height: 20px;
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  border-top-color: #ffffff;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.home-link-wrapper {
+  margin-top: 0.2rem;
+}
+
+.home-link {
+  color: #64748b;
+  font-size: 0.95rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.home-link:hover {
+  color: #202b4a;
+  text-decoration: underline;
 }
 </style>

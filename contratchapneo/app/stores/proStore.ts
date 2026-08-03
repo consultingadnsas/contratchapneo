@@ -172,10 +172,25 @@ export const useProStore = defineStore('proStore', () => {
         error.value = null;
 
         try {
+            const orderStore = useOrderStore();
+        
+            // 1. 🔒 SÉCURITÉ : Récupération de l'email de l'acheteur
+            const backupEmailCookie = useCookie('backup_checkout_email');
+            const email = orderStore.currentOrder?.guest?.email 
+                    || orderStore.currentOrder?.user?.email 
+                    || backupEmailCookie.value;
+
+            if (!email) {
+                console.warn("⚠️ Aucun email trouvé, tentative de téléchargement sans paramètre email...");
+            }
+
+            console.log(`📥 [proStore] Lancement du téléchargement pour le Pro ID : ${proId}`);
             // 🚨 Modifie l'URL ci-dessous pour qu'elle corresponde exactement à celle de ton `urls.py` Django
             const response = await $api.raw(`/pro/professionals/download/${proId}/`, {
                 method: 'POST',
                 responseType: 'blob', // TRÈS IMPORTANT: On dit à Nuxt qu'on attend un fichier physique !
+                query: email ? { email } : undefined, // Permet à Django d'authentifier l'invité
+                body: { email } // On l'envoie aussi dans le body au cas où ton API le cherche là   
             });
 
             // 1. Extraire le nom du fichier depuis les headers de la réponse
@@ -201,6 +216,7 @@ export const useProStore = defineStore('proStore', () => {
             link.remove();
             window.URL.revokeObjectURL(url);
 
+           console.log(`✅ [proStore] Fichier téléchargé avec succès : ${filename}`);
             return true;
 
         } catch (err: any) {
