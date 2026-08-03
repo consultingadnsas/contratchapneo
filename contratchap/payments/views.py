@@ -20,7 +20,7 @@ from rest_framework             import status
 from rest_framework.permissions import AllowAny
 
 from ecommerce.models import Order
-from contrat.models   import Contrat
+from contrat.models   import Contrat, ContractRevision
 from .models          import Transaction
 from .serializers     import (
     TransactionSerializer,
@@ -36,6 +36,13 @@ from .utils import (
 )
 
 from contrat.utils import fill_docx_template, convert_docx_to_pdf
+
+
+def _activate_paid_revisions(order: Order) -> None:
+    for item in order.order_items.select_related('contract_revision').all():
+        if item.contract_revision:
+            item.contract_revision.status = ContractRevision.RevisionStatus.IN_PROGRESS
+            item.contract_revision.save(update_fields=['status'])
 
 # ─────────────────────────────────────────
 # INITIATE  —  POST /payment/initiate/
@@ -203,6 +210,7 @@ class PaymentSimulateView(APIView):
             order.status = Order.Status.PAID
             order.save()
 
+            _activate_paid_revisions(order)
             _increment_downloads(order)
             _send_download_email(order)
 
@@ -276,6 +284,8 @@ def payment_webhook_view(request):
         order = transaction.order
         order.status = Order.Status.PAID
         order.save(update_fields=['status'])
+
+        _activate_paid_revisions(order)
 
         if order.user:  
             for item in order.order_items.all():

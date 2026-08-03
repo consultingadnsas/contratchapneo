@@ -31,6 +31,14 @@ export interface ProItem {
   profile_picture: string | null;
 }
 
+export interface RevisionCustomizedContract {
+  id: string;
+  title: string;
+  description: string;
+  price: string;
+
+}
+
 export const useCartStore = defineStore('cart', () => {
   const { $api } = useNuxtApp();
   const config = useRuntimeConfig();
@@ -290,6 +298,32 @@ export const useCartStore = defineStore('cart', () => {
     }
   };
 
+  const addRevisionContractToCart = async( contract_revision_id: string) => {
+
+    isLoading.value = true;
+    error.value = null;
+
+    try {
+      const response = await $api(`/ecommerce/cart/add/`, {
+        method: 'POST',
+        body: { contract_revision_id: contract_revision_id}
+      });
+
+      if (response) {
+        console.log("Votre reponse de revision", response);
+        cart.value = normalizeCart(response);
+        return response;
+      }
+    } catch(err:any){
+      error.value = err.message;
+      console.error("Erreur ajout revision", err)
+      throw err;
+    } finally {
+      isLoading.value = false;
+    }
+
+  }
+
   const removeFromCart = async (contratId: string) => {
     isLoading.value = true;
     error.value = null;
@@ -421,7 +455,8 @@ export const useCartStore = defineStore('cart', () => {
     checkout,
     initiatePayment,
     addCustomizedContract,
-    clearLocalCart
+    clearLocalCart,
+    addRevisionContractToCart
   };
 },
 { persist: true }

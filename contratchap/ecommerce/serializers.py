@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from .models import Cart, CartItem, GuestInfo, Order, OrderItem
-from contrat.models import Contrat, CustomedContract, Pack, UserPack
+from contrat.models import Contrat, CustomedContract, Pack, UserPack, ContractRevision
 from pro.models import LegalProfessional 
 
 # ─────────────────────────────────────────
@@ -60,6 +60,13 @@ class PackMiniSerializer(serializers.ModelSerializer):
             'picture' # Assure-toi que c'est bien le nom exact dans ton model Pack (pic ou picture)
         ]
 
+class ContractRevisionMiniSerializer(serializers.ModelSerializer):
+    status_display = serializers.CharField(source='get_status_display', read_only=True)
+
+    class Meta:
+        model = ContractRevision
+        fields = ['id', 'subject', 'price', 'promo_price', 'status', 'status_display']
+
 
 # ─────────────────────────────────────────
 # GESTION DE L'AJOUT AU PANIER (Écriture)
@@ -73,7 +80,8 @@ class AddToCartSerializer(serializers.Serializer):
     contrat_id = serializers.UUIDField(required=False, allow_null=True)
     pro_id = serializers.UUIDField(required=False, allow_null=True) 
     customed_contract = serializers.UUIDField(required=False, allow_null=True)
-    pack_id = serializers.UUIDField(required=False, allow_null=True) # ✅
+    pack_id = serializers.UUIDField(required=False, allow_null=True)
+    contract_revision_id = serializers.UUIDField(required=False, allow_null=True)
     quantity = serializers.IntegerField(default=1, min_value=1)
 
     def validate(self, data):
@@ -81,15 +89,19 @@ class AddToCartSerializer(serializers.Serializer):
         pro_id = data.get('pro_id')
         customed_contract = data.get('customed_contract')
         pack_id = data.get('pack_id')
+        contract_revision_id = data.get('contract_revision_id')
 
         # On compte combien de champs sont remplis (le Pack est inclus)
-        provided_items = sum(x is not None for x in [contrat_id, pro_id, customed_contract, pack_id])
+        provided_items = sum(x is not None for x in [contrat_id, pro_id, customed_contract, pack_id, contract_revision_id])
 
         # Vérification stricte : un seul article à la fois !
         if provided_items > 1:
             raise serializers.ValidationError("Vous ne pouvez pas ajouter plus d'un type d'article en même temps.")
         if provided_items == 0:
-            raise serializers.ValidationError("Vous devez fournir soit un contrat_id, soit un pro_id, soit un customed_contract, soit un pack_id.")
+            raise serializers.ValidationError("Vous devez fournir soit un contrat_id, soit un pro_id, soit un customed_contract, soit un pack_id, soit un contract_revision_id.")
+
+        if data.get('contract_revision_id') and not ContractRevision.objects.filter(id=data['contract_revision_id']).exists():
+            raise serializers.ValidationError({"contract_revision_id": "Cette demande de révision n'existe pas."})
 
         # Vérification de l'existence en Base de Données
         if contrat_id and not Contrat.objects.filter(id=contrat_id).exists():
@@ -109,26 +121,18 @@ class AddToCartSerializer(serializers.Serializer):
 # ─────────────────────────────────────────
 
 class CartItemSerializer(serializers.ModelSerializer):
-    contrat = ContratMiniSerializer(read_only=True)
-    pro = ProMiniSerializer(read_only=True)
-    customed_contract = CustomizedContractSerializer(read_only=True)
-    # CORRECTION ICI : On mappe le champ "packs" du modèle vers la clé "pack" de l'API
-    pack = PackMiniSerializer(source='packs', read_only=True) 
+    contrat           = ContratMiniSerializer(read_only=True)
+    pro                = ProMiniSerializer(read_only=True)
+    customed_contract  = CustomizedContractSerializer(read_only=True)
+    pack               = PackMiniSerializer(source='packs', read_only=True)
+    contract_revision  = ContractRevisionMiniSerializer(read_only=True)  # 🆕
     subtotal = serializers.SerializerMethodField()
 
     class Meta:
         model = CartItem
         fields = [
-            'id',
-            'contrat',           
-            'pro',               
-            'customed_contract', 
-            'pack',              
-            'quantity',
-            'user_inputs',
-            'unit_price',
-            'subtotal',
-            'created_at',
+            'id', 'contrat', 'pro', 'customed_contract', 'pack', 'contract_revision',
+            'quantity', 'user_inputs', 'unit_price', 'subtotal', 'created_at',
         ]
         read_only_fields = ['id', 'unit_price', 'created_at']
 
@@ -242,6 +246,7 @@ class OrderItemSerializer(serializers.ModelSerializer):
             'customised_contract',  # snapshot 
             'pack',                 # 🚨 CORRECTION 2 : NOUVEAU FK (Tu l'avais oublié)
             'pack_title',           # 🚨 CORRECTION 2 : NOUVEAU snapshot (Tu l'avais oublié)
+            'contract_revision',    # 🆕
             'unit_price',
             'user_inputs',
             'quantity',

@@ -4,7 +4,7 @@ import uuid
 from django.utils import timezone
 
 # About relation
-from contrat.models import (Contrat, CustomedContract, Pack)
+from contrat.models import (Contrat, CustomedContract, Pack, ContractRevision)
 from pro.models import LegalProfessional
 
 class Coupon(models.Model):
@@ -117,7 +117,7 @@ class Cart(models.Model):
 
 class CartItem(models.Model):
     """
-    Ligne du panier — hybride : peut contenir un Contrat OU un Professionnel.
+    Ligne du panier — hybride : peut contenir un Contrat, un Pro, un Sur mesure, un Pack OU une Révision.
     """
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     cart = models.ForeignKey(
@@ -125,38 +125,38 @@ class CartItem(models.Model):
         on_delete=models.CASCADE,
         related_name='items'
     )
-    # Contrat devient optionnel
     contrat = models.ForeignKey(
         Contrat,
         on_delete=models.CASCADE,
         related_name='cart_items',
-        null=True, 
-        blank=True
+        null=True, blank=True
     )
-    # Pro devient optionnel
     pro = models.ForeignKey(
         LegalProfessional,
         on_delete=models.CASCADE,
-        related_name='cart_items', # J'ai changé 'pro_items' en 'cart_items' pour la cohérence
-        null=True, 
-        blank=True
+        related_name='cart_items',
+        null=True, blank=True
     )
-    # Contrat sur demande devient optionnel
     customed_contract = models.ForeignKey(
         CustomedContract,
         on_delete=models.CASCADE,
         related_name='customed_contract_items',
-        null=True,
-        blank=True
+        null=True, blank=True
     )
-    # Packs de contrats
     packs = models.ForeignKey(
         Pack,
         on_delete=models.CASCADE,
         related_name='packs_items',
-        null=True,
-        blank=True
+        null=True, blank=True
     )
+    # 🆕 NOUVEAU : Révision de contrat
+    contract_revision = models.ForeignKey(
+        ContractRevision,
+        on_delete=models.CASCADE,
+        related_name='cart_items',
+        null=True, blank=True
+    )
+
     quantity = models.PositiveIntegerField(default=1)
     unit_price = models.DecimalField(
         max_digits=10,
@@ -166,8 +166,7 @@ class CartItem(models.Model):
 
     user_inputs = models.JSONField(
         default=dict,
-        blank=True, 
-        null = True,
+        blank=True, null=True,
         help_text='Stock les variables saisies par le client pour générer le contrat'
     )
 
@@ -176,14 +175,16 @@ class CartItem(models.Model):
 
     class Meta:
         constraints = [
+            # 🚨 Mise à jour de la contrainte : On ajoute contract_revision aux vérifications
             models.CheckConstraint(
                 condition=(
-                    models.Q(contrat__isnull=False, pro__isnull=True, customed_contract__isnull=True, packs__isnull=True) |
-                    models.Q(contrat__isnull=True, pro__isnull=False, customed_contract__isnull=True, packs__isnull=True) |
-                    models.Q(contrat__isnull=True, pro__isnull=True, customed_contract__isnull=False, packs__isnull=True) |
-                    models.Q(contrat__isnull=True, pro__isnull=True, customed_contract__isnull=True, packs__isnull=False)
+                    models.Q(contrat__isnull=False, pro__isnull=True, customed_contract__isnull=True, packs__isnull=True, contract_revision__isnull=True) |
+                    models.Q(contrat__isnull=True, pro__isnull=False, customed_contract__isnull=True, packs__isnull=True, contract_revision__isnull=True) |
+                    models.Q(contrat__isnull=True, pro__isnull=True, customed_contract__isnull=False, packs__isnull=True, contract_revision__isnull=True) |
+                    models.Q(contrat__isnull=True, pro__isnull=True, customed_contract__isnull=True, packs__isnull=False, contract_revision__isnull=True) |
+                    models.Q(contrat__isnull=True, pro__isnull=True, customed_contract__isnull=True, packs__isnull=True, contract_revision__isnull=False)
                 ),
-                name='cartitem_exclusive_type' # 👈 Le nom correct pour le CartItem
+                name='cartitem_exclusive_type'
             )
         ]
 
@@ -193,11 +194,11 @@ class CartItem(models.Model):
         elif self.customed_contract:
             return f'{self.quantity}x Sur mesure : {self.customed_contract.subject}'
         elif self.pro:
-            # 💡 Astuce : get_title_display() affichera "Avocat" au lieu de "AVOCAT"
             return f'{self.quantity}x Pro : {self.pro.get_title_display()} {self.pro.last_name}'
         elif self.packs:
-            # Assure-toi que ton modèle Pack a bien un champ 'title' ou 'name'
             return f'{self.quantity}x Pack : {self.packs.title}' 
+        elif self.contract_revision:
+            return f'{self.quantity}x Révision : {self.contract_revision.subject}'
             
         return f'{self.quantity}x Élément inconnu'
 
@@ -209,12 +210,13 @@ class CartItem(models.Model):
             if self.contrat:
                 self.unit_price = self.contrat.prix
             elif self.customed_contract:
-                # 💡 Assure-toi que CustomedContract possède bien un champ 'prix'
-                self.unit_price = self.customed_contract.prix 
+                self.unit_price = self.customed_contract.price # Assure-toi que c'est .price ou .prix selon ton modèle
             elif self.pro:
                 self.unit_price = self.pro.prix
             elif self.packs:
                 self.unit_price = self.packs.prix
+            elif self.contract_revision:
+                self.unit_price = self.contract_revision.price # 🆕 Capture du prix de la révision
         super().save(*args, **kwargs)
 
 class GuestInfo(models.Model):
@@ -348,27 +350,33 @@ class OrderItem(models.Model):
     contrat_customed = models.ForeignKey(
         'contrat.CustomedContract',
         on_delete=models.SET_NULL,
-        blank=True,
-        null=True,
+        blank=True, null=True,
     )
     pack = models.ForeignKey(
         'contrat.Pack',
         on_delete=models.SET_NULL,
-        blank=True,
-        null=True,
+        blank=True, null=True,
+        related_name='order_items'
+    )
+    # 🆕 NOUVEAU : Révision de contrat
+    contract_revision = models.ForeignKey(
+        ContractRevision,
+        on_delete=models.SET_NULL,
+        blank=True, null=True,
         related_name='order_items'
     )
 
     # Snapshots — figés définitivement au moment du checkout
-    # Rendu optionnel selon ce qu'on achète
     contrat_title = models.CharField(max_length=255, null=True, blank=True)
     customised_contract = models.CharField(max_length=225, null=True, blank=True)
     pro_name = models.CharField(max_length=255, null=True, blank=True) 
     pack_title = models.CharField(max_length=255, null=True, blank=True)
+    # 🆕 Snapshot pour la révision
+    revision_subject = models.CharField(max_length=255, null=True, blank=True)
+    
     user_inputs = models.JSONField(
         default=dict,
-        blank=True, 
-        null = True,
+        blank=True, null=True,
         help_text='Stock les variables saisies par le client pour générer le contrat'
     )
 
@@ -379,14 +387,16 @@ class OrderItem(models.Model):
 
     class Meta:
         constraints = [
+            # 🚨 Mise à jour de la contrainte pour OrderItem
             models.CheckConstraint(
                 condition=(
-                    models.Q(contrat__isnull=False, pro__isnull=True, contrat_customed__isnull=True, pack__isnull=True) |
-                    models.Q(contrat__isnull=True, pro__isnull=False, contrat_customed__isnull=True, pack__isnull=True) |
-                    models.Q(contrat__isnull=True, pro__isnull=True, contrat_customed__isnull=False, pack__isnull=True) |
-                    models.Q(contrat__isnull=True, pro__isnull=True, contrat_customed__isnull=True, pack__isnull=False)
+                    models.Q(contrat__isnull=False, pro__isnull=True, contrat_customed__isnull=True, pack__isnull=True, contract_revision__isnull=True) |
+                    models.Q(contrat__isnull=True, pro__isnull=False, contrat_customed__isnull=True, pack__isnull=True, contract_revision__isnull=True) |
+                    models.Q(contrat__isnull=True, pro__isnull=True, contrat_customed__isnull=False, pack__isnull=True, contract_revision__isnull=True) |
+                    models.Q(contrat__isnull=True, pro__isnull=True, contrat_customed__isnull=True, pack__isnull=False, contract_revision__isnull=True) |
+                    models.Q(contrat__isnull=True, pro__isnull=True, contrat_customed__isnull=True, pack__isnull=True, contract_revision__isnull=False)
                 ),
-                name='orderitem_exclusive_type' # 👈 Le nom correct pour l'OrderItem
+                name='orderitem_exclusive_type'
             )
         ]
 
@@ -397,6 +407,8 @@ class OrderItem(models.Model):
             name = f"Sur mesure : {self.customised_contract}"
         elif self.pack_title:
             name = f"Pack : {self.pack_title}"
+        elif self.revision_subject:
+            name = f"Révision : {self.revision_subject}"
         else:
             name = f"Carte - {self.pro_name}"
         return f'{self.quantity} x {name} — commande {str(self.order.id)[:8]}…'
@@ -411,9 +423,11 @@ class OrderItem(models.Model):
             self.pro_name = f"{self.pro.first_name} {self.pro.last_name}"
         if not self.customised_contract and self.contrat_customed:
             self.customised_contract = getattr(self.contrat_customed, 'title', f"Demande sur mesure #{self.contrat_customed.id}")
-        
-        # NOUVEAU : Capture du nom du pack
         if not self.pack_title and self.pack:
             self.pack_title = self.pack.title
+            
+        # 🆕 Snapshot de la révision
+        if not self.revision_subject and self.contract_revision:
+            self.revision_subject = getattr(self.contract_revision, 'subject', f"Révision #{self.contract_revision.id}")
             
         super().save(*args, **kwargs)
