@@ -73,16 +73,6 @@
             :isLoading="loading"
         />
 
-       <ClientOnly>
-            <Teleport to="body">
-                <BaseNotification 
-                    v-model:show="notify.show"
-                    :type="notify.type"
-                    :title="notify.title"
-                    :message="notify.message"
-                />
-            </Teleport>
-        </ClientOnly>
     </form>
 </template>
 

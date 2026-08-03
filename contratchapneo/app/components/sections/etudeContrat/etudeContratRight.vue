@@ -104,16 +104,6 @@
                 />
             </form>
         </div>
-
-        <!-- Composant de notification -->
-        <Teleport to="body">
-            <baseNotification 
-                v-model:show="notify.show"
-                :type="notify.type"
-                :title="notify.title"
-                :message="notify.message"
-            />
-        </Teleport>
     </div>
 </template>
 
@@ -124,9 +114,8 @@ import BaseSelect from '../../input/BaseSelect.vue';
 import BaseArea from '../../input/BaseArea.vue';
 import formButton from '../../buttons/formButton.vue';
 import baseNotification from '../../tools/baseNotification.vue';
+import { useRouter } from 'vue-router'
 import { useCartStore } from '../../../stores/cartStore';
-
-const { $api } = useNuxtApp();
 
 export default {
     name: 'EtudeContratRight',
@@ -138,6 +127,10 @@ export default {
         baseNotification
     },
     setup() {
+
+        const { $api } = useNuxtApp();
+
+        const router = useRouter();
         const cartStore = useCartStore();
         const formData = ref({
             name: '',
@@ -260,6 +253,8 @@ export default {
                 formData.value = { name: '', email: '', type: '', description: '', phonePrefix: '+225', phoneNumber: '' };
                 selectedFile.value = null;
 
+                router.push('/order/checkout')
+
             } catch (error: any) {
                 const backendMessage = error?.response?._data?.message || error?.response?._data?.errors || error?.message;
                 showNotification('error', 'Erreur d\'envoi', backendMessage || "Une erreur est survenue lors de l'envoi. Veuillez réessayer.");
@@ -270,6 +265,7 @@ export default {
         };
 
         return {
+            router,
             formData,
             ohadaCountries,
             selectedFile,

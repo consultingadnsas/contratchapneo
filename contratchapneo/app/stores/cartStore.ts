@@ -446,7 +446,8 @@ export const useCartStore = defineStore('cart', () => {
     checkout,
     initiatePayment,
     addCustomizedContract,
-    clearLocalCart
+    clearLocalCart,
+    addRevisionContractToCart
   };
 },
 { persist: true }
