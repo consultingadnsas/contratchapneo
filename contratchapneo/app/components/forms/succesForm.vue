@@ -38,7 +38,7 @@
     </div>
 
     <!-- ==========================================
-         2. ACHAT PACK DE CRÉDITS (Avec Countdown -> Dashboard)
+         2. ACHAT PACK DE CRÉDITS (Countdown -> Dashboard)
          ========================================== -->
     <div v-else-if="isPack" class="success__subtitle">
       <p>
@@ -48,7 +48,27 @@
     </div>
 
     <!-- ==========================================
-         3. CONTRAT STANDARD (Avec Countdown -> ContractWritter)
+         3. CONTRAT SUR MESURE (Countdown -> Dashboard)
+         ========================================== -->
+    <div v-else-if="isCustomContract" class="success__subtitle">
+      <p>
+        Votre demande de contrat sur mesure a bien été enregistrée. Notre équipe juridique prend en charge votre dossier. <br>
+        Redirection dans <span class="countdown-highlight">{{ countdown }}s</span>...
+      </p>
+    </div>
+
+    <!-- ==========================================
+         4. RÉVISION DE CONTRAT (Countdown -> Dashboard)
+         ========================================== -->
+    <div v-else-if="isRevision" class="success__subtitle">
+      <p>
+        Votre paiement pour la révision de contrat est confirmé. Un expert examine actuellement vos documents. <br>
+        Redirection dans <span class="countdown-highlight">{{ countdown }}s</span>...
+      </p>
+    </div>
+
+    <!-- ==========================================
+         5. CONTRAT STANDARD (Countdown -> ContractWritter)
          ========================================== -->
     <div v-else class="success__subtitle">
       <p>
@@ -76,8 +96,16 @@ export default {
       type: Boolean,
       default: false
     },
-    // ⚡️ NOUVELLE PROP POUR LES PACKS
     isPack: {
+      type: Boolean,
+      default: false
+    },
+    // ⚡️ NOUVELLES PROPS
+    isCustomContract: {
+      type: Boolean,
+      default: false
+    },
+    isRevision: {
       type: Boolean,
       default: false
     },
@@ -133,7 +161,7 @@ export default {
   font-size: 1.05rem;
   line-height: 1.7;
   margin: 0;
-  max-width: 450px;
+  max-width: 480px;
 }
 
 .countdown-highlight {

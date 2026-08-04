@@ -4,6 +4,8 @@
             :countdown="countdown" 
             :isPro="isProOrder"
             :isPack="isPackOrder"
+            :isCustomContract="isCustomContractOrder"
+            :isRevision="isRevisionOrder"
             :isDownloading="proStore.isLoading"
             @download-pro="handleDownloadProCard"
         />
@@ -16,12 +18,11 @@ import { ref, computed, onMounted, onBeforeUnmount } from 'vue';
 import { useRouter } from 'vue-router';
 import { useOrderStore } from '../../stores/orderStore';
 import { useProStore } from '../../stores/proStore';
-import { useProfileStore } from '../../stores/profileStore'; // ⚡️ Ajout du store profil
+import { useProfileStore } from '../../stores/profileStore';
 
 import footerSection from '../../components/sections/footerSection.vue';
 import succesForm from '../../components/forms/succesForm.vue';
 
-// ⚡️ Activation du middleware de sécurité
 definePageMeta({
   middleware: 'payment-guard'
 });
@@ -41,58 +42,93 @@ export default {
         const countdown = ref(5);
         let timer: ReturnType<typeof setInterval> | null = null;
 
-        // --- UTILITAIRE : Récupération sécurisée des articles de la commande ---
         const getItems = () => {
             return orderStore.currentOrder?.order_items || orderStore.currentOrder?.items || [];
         };
 
-        // ==========================================================
-        // 1. 👔 DÉTECTION STRICTE DU PRODUIT PRO (Carte de visite)
-        // ==========================================================
-       const proItem = computed(() => {
-            // SÉCURITÉ : Si c'est déjà identifié comme un Pack, ce n'est PAS un Pro !
-            if (isPackOrder.value) return null;
+        // ⚡️ UTILITAIRE : FOUILLE PARTOUT POUR TROUVER LE TITRE DE L'ARTICLE
+        const getItemTitle = (item: any): string => {
+            return String(
+                item.title || 
+                item.name || 
+                item.designation || 
+                item.label || 
+                item.customed_contract?.title || 
+                item.customed_contract?.name || 
+                item.customized_contract?.title || 
+                item.customized_contract?.name || 
+                item.custom_contract?.title || 
+                item.contrat?.title || 
+                item.contrat?.name || 
+                ''
+            ).toLowerCase();
+        };
 
+        // ==========================================================
+        // 1. 📝 DÉTECTION DU CONTRAT SUR MESURE
+        // ==========================================================
+        const customContractItem = computed(() => {
             return getItems().find((item: any) => {
-                const title = String(item.title || item.name || item.designation || item.label || '').toLowerCase();
+                const jsonStr = JSON.stringify(item || {}).toLowerCase();
                 
                 return (
-                    item.pro_id || 
-                    item.professional_id || 
-                    item.professional || 
-                    item.type === 'pro' || 
-                    item.product_type === 'pro' ||
-                    item.is_pro === true ||
-                    title.includes('carte') || 
-                    title.includes('visite') || 
-                    title.includes('professionnel') ||
-                    // ⚡️ LE RETOUR DU BOUCLIER : Si ce n'est NI un contrat NI un pack -> C'est un Pro !
-                    (!item.contrat_id && !item.contrat && !isPackOrder.value)
+                    // ⚡️ AJOUT CRITIQUE : On cible exactement "customed_contracts" (singulier et pluriel)
+                    jsonStr.includes('customed_contracts') ||
+                    jsonStr.includes('customed_contract') ||
+                    item.customed_contracts ||
+                    item.customed_contract ||
+                    item.customed_contracts_id ||
+                    item.customed_contract_id ||
+                    item.customized_contract ||
+                    item.custom_contract ||
+                    item.type === 'customed_contracts' ||
+                    item.type === 'customed_contract' ||
+                    jsonStr.includes('custom') ||
+                    jsonStr.includes('mesure') ||
+                    jsonStr.includes('personnalis')
                 );
             });
         });
 
-        const isProOrder = computed(() => !!proItem.value);
+        const isCustomContractOrder = computed(() => !!customContractItem.value);
 
         // ==========================================================
-        // 2. 📦 DÉTECTION STRICTE DU PACK DE CRÉDITS
+        // 2. 🔍 DÉTECTION DE LA RÉVISION DE CONTRAT
+        // ==========================================================
+        const revisionItem = computed(() => {
+            return getItems().find((item: any) => {
+                const title = getItemTitle(item);
+                return (
+                    item.contract_revision ||
+                    item.contract_revision_id ||
+                    item.revision ||
+                    item.revision_id ||
+                    item.type === 'revision' ||
+                    title.includes('révision') ||
+                    title.includes('revision')
+                );
+            });
+        });
+
+        const isRevisionOrder = computed(() => !!revisionItem.value);
+
+        // ==========================================================
+        // 3. 📦 DÉTECTION DU PACK DE CRÉDITS
         // ==========================================================
         const packItem = computed(() => {
-            // SÉCURITÉ : Si c'est déjà identifié comme un Pro, ce n'est PAS un pack !
-            if (isProOrder.value) return null;
+            if (isCustomContractOrder.value || isRevisionOrder.value) return null;
 
             return getItems().find((item: any) => {
-                const title = String(item.title || item.name || item.designation || '').toLowerCase();
-                
+                const title = getItemTitle(item);
                 return (
                     item.pack_id || 
                     item.pack || 
                     item.type === 'pack' || 
                     item.product_type === 'pack' ||
                     item.is_pack === true ||
-                    // Mots-clés exclusifs aux Packs dans le titre
-                    (title.includes('pack') || title.includes('crédit') || title.includes('credit')) ||
-                    // Présence de propriétés spécifiques aux packs
+                    title.includes('pack') || 
+                    title.includes('crédit') || 
+                    title.includes('credit') ||
                     item.credits !== undefined ||
                     item.customs !== undefined ||
                     item.credits_restants !== undefined
@@ -103,7 +139,32 @@ export default {
         const isPackOrder = computed(() => !!packItem.value);
 
         // ==========================================================
-        // 3. 👔 ACTION MANUELLE : TÉLÉCHARGEMENT CARTE PRO
+        // 4. 👔 DÉTECTION DU PRODUIT PRO (Carte de visite)
+        // ==========================================================
+        const proItem = computed(() => {
+            if (isPackOrder.value || isCustomContractOrder.value || isRevisionOrder.value) return null;
+
+            return getItems().find((item: any) => {
+                const title = getItemTitle(item);
+                return (
+                    item.pro ||
+                    item.pro_id || 
+                    item.professional_id || 
+                    item.professional || 
+                    item.type === 'pro' || 
+                    item.product_type === 'pro' ||
+                    item.is_pro === true ||
+                    title.includes('carte') || 
+                    title.includes('visite') || 
+                    title.includes('professionnel')
+                );
+            });
+        });
+
+        const isProOrder = computed(() => !!proItem.value);
+
+        // ==========================================================
+        // 5. 👔 ACTION MANUELLE : TÉLÉCHARGEMENT CARTE PRO
         // ==========================================================
         const handleDownloadProCard = async () => {
             if (!proItem.value) {
@@ -114,6 +175,7 @@ export default {
             const proId = proItem.value.pro_id || 
                           proItem.value.professional_id || 
                           proItem.value.professional?.id || 
+                          proItem.value.pro?.id ||
                           proItem.value.id;
 
             if (!proId) {
@@ -131,13 +193,12 @@ export default {
         };
 
         // ==========================================================
-        // 4. ⏱️ GESTION DU COMPTE À REBOURS & REDIRECTIONS
+        // 6. ⏱️ GESTION DU COMPTE À REBOURS & REDIRECTIONS
         // ==========================================================
         onMounted(() => {
             console.log("🔍 [OrderSucces] Articles reçus :", getItems());
-            console.log("👉 Type détecté — Pro:", isProOrder.value, "| Pack:", isPackOrder.value);
+            console.log("👉 Types — Pro:", isProOrder.value, "| Pack:", isPackOrder.value, "| Custom:", isCustomContractOrder.value, "| Revision:", isRevisionOrder.value);
 
-            // On ne déclenche la minuterie QUE pour les Packs et les Contrats standards
             if (!isProOrder.value) {
                 timer = setInterval(async () => {
                     countdown.value--;
@@ -145,23 +206,25 @@ export default {
                     if (countdown.value <= 0) {
                         if (timer) clearInterval(timer);
                         
-                        // ── CAS A : ACHAT DE PACK ──
-                        if (isPackOrder.value) {
-                            console.log("📦 Commande Pack terminée -> Mise à jour des crédits...");
-                            
+                        // ── CAS A : CONTRAT SUR MESURE OU RÉVISION -> REDIRECTION ACCUEIL ('/') ──
+                        if (isCustomContractOrder.value || isRevisionOrder.value) {
+                            console.log("📝/🔍 Contrat sur mesure ou Révision détecté -> Redirection Accueil ('/')...");
+                            router.push('/');
+                        }
+                        // ── CAS B : PACK DE CRÉDITS -> REDIRECTION DASHBOARD ──
+                        else if (isPackOrder.value) {
+                            console.log("📦 Pack détecté -> Redirection Dashboard...");
                             try {
-                                // ⚡️ Indispensable : On rafraîchit les crédits dans Pinia avant d'afficher le Dashboard
                                 await profileStore.getPacks();
                                 console.log("✅ Crédits synchronisés avec succès.");
                             } catch (err) {
-                                console.warn("⚠️ Impossible de rafraîchir les crédits avant redirection :", err);
+                                console.warn("⚠️ Impossible de rafraîchir les crédits :", err);
                             }
-
                             router.push('/profile/Dashboard');
                         } 
-                        // ── CAS B : ACHAT DE CONTRAT STANDARD ──
+                        // ── CAS C : CONTRAT STANDARD -> ÉDITEUR DE CONTRAT ──
                         else {
-                            console.log("📄 Commande Contrat terminée -> Redirection vers l'éditeur...");
+                            console.log("📄 Contrat standard -> Redirection vers l'éditeur...");
                             router.push('/contractWritter');
                         }
                     }
@@ -179,6 +242,8 @@ export default {
             countdown,
             isProOrder,
             isPackOrder,
+            isCustomContractOrder,
+            isRevisionOrder,
             proStore,
             handleDownloadProCard
         };

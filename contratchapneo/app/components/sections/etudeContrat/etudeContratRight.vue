@@ -466,6 +466,7 @@ export default {
     cursor: pointer;
     padding: 0 0.5rem;
     transition: color 0.2s ease, transform 0.2s ease;
+    margin-right: -8rem
 }
 
 .remove-file-btn:hover {
@@ -521,6 +522,9 @@ export default {
     }
     .file-upload-label {
         padding: 1.5rem 1rem;
+    }
+    .remove-file-btn {
+        margin-right: -7rem;
     }
 }
 </style>

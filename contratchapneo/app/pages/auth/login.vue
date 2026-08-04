@@ -43,7 +43,7 @@
 
 
           <div class="form-options">
-            <a href="#" v-if="loginFailed" class="forgot-link fade-in">Code perdu ?</a>
+            <a href="/auth/password-reset" v-if="loginFailed" class="forgot-link fade-in">Code perdu ?</a>
           </div>
 
           <p v-if="loginFailed" class="error-message fade-in">

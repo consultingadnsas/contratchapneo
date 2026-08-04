@@ -135,6 +135,14 @@
                     />
                 </div>
 
+                <!-- ── 7. OPTION DÉCLARATION CNPS ── -->
+                <div class="toggle-group">
+                    <label class="toggle-item">
+                        <input type="checkbox" v-model="formData.isDeclaredCNPS" />
+                        <span>Le travailleur est-il déclaré à la CNPS ? (Application de la retenue salariale de 6,3 %)</span>
+                    </label>
+                </div>
+
                 <!-- Message d'erreur -->
                 <div v-if="errorMessage" class="alert error">{{ errorMessage }}</div>
 
@@ -147,7 +155,7 @@
                 />
             </form>
 
-            <!-- ── 7. RÉSULTATS DU CALCUL ── -->
+            <!-- ── 8. RÉSULTATS DU CALCUL ── -->
             <div v-if="hasCalculated" class="result-box" :class="{ 'is-zero': netAmount <= 0 }">
                 <h3>Total Net estimé du Solde de Tout Compte :</h3>
                 <div class="amount">{{ formatCurrency(netAmount) }}</div>
@@ -168,9 +176,13 @@
                         <span>• Assiette indemnitaire (Exonérée Art. 117 CGI) :</span>
                         <span>{{ formatCurrency(totalExempt) }}</span>
                     </div>
-                    <div class="summary-row deduction-row" v-if="cnpsEmployeeDeduction > 0">
+                    <div class="summary-row deduction-row" v-if="formData.isDeclaredCNPS && cnpsEmployeeDeduction > 0">
                         <span>(-) Retenue salariale CNPS Retraite (6,3 %)* :</span>
                         <span>- {{ formatCurrency(cnpsEmployeeDeduction) }}</span>
+                    </div>
+                    <div class="summary-row info-row" v-else-if="!formData.isDeclaredCNPS && totalTaxableCNPS > 0">
+                        <span>(i) Statut CNPS : Non déclaré (0 FCFA de retenue appliquée)</span>
+                        <span>0 FCFA</span>
                     </div>
                 </div>
 
@@ -193,14 +205,14 @@
                                 {{ item.taxable ? 'Imposable ITS/IGR (Art. 115)' : 'Exonéré ITS/IGR (Art. 117)' }}
                             </span>
                             <span class="badge" :class="item.cnps ? 'badge-taxable' : 'badge-exempt'">
-                                {{ item.cnps ? 'Soumis CNPS (Décret 2014-411)' : 'Exonéré CNPS' }}
+                                {{ item.cnps ? 'Nature : Soumise CNPS' : 'Exonéré CNPS' }}
                             </span>
                         </div>
                     </div>
                 </div>
 
                 <small class="disclaimer">
-                    * Retenue CNPS Retraite calculée au taux de 6,3 % sur l'assiette soumise (plafonnée à 3 375 000 FCFA/mois selon Décret n° 2015-680). Simulation calculée selon les barèmes légaux et conventionnels en vigueur en Côte d'Ivoire (hors calcul des impôts sur le revenu ITS/IGR qui dépendent de vos parts fiscales Q).
+                    * Retenue CNPS Retraite calculée au taux de 6,3 % sur l'assiette soumise (plafonnée à 3 375 000 FCFA/mois selon Décret n° 2015-680) uniquement lorsque l'option de déclaration est active. Simulation calculée selon les barèmes légaux et conventionnels en vigueur en Côte d'Ivoire (hors calcul des impôts sur le revenu ITS/IGR qui dépendent de vos parts fiscales Q).
                 </small>
             </div>
         </div>
@@ -270,7 +282,8 @@ export default defineComponent({
             remainingMonths: '',
             daysWorkedInLastMonth: '0',
             remainingLeaveDays: '0',
-            preavisExecute: false
+            preavisExecute: false,
+            isDeclaredCNPS: true
         });
 
         const isCalculating = ref(false);
@@ -399,7 +412,6 @@ export default defineComponent({
                         summaryMessage.value = "La faute lourde prive le salarié de l'indemnité de préavis et de l'indemnité légale de licenciement (Art. 18.16 CT). Seuls les congés payés et la gratification restent dus.";
                     } 
                     else if (formData.value.motif === 'demission') {
-                        // En cas de démission, le préavis non exécuté est DÛ par le salarié à l'employeur (Art. 18.11 CT)
                         if (!formData.value.preavisExecute) {
                             const monthsPreavis = getPreavisMonths(formData.value.categoriePro, yearsOfSeniority);
                             const retenuePreavis = -(avgSalary * monthsPreavis);
@@ -414,7 +426,6 @@ export default defineComponent({
                         summaryMessage.value = "La démission n'ouvre pas droit à l'indemnité de licenciement. Un préavis non exécuté par le salarié démissionnaire est déduit de son solde.";
                     }
                     else { // Licenciement normal, Retraite ou Décès
-                        // - Indemnité compensatrice de préavis (si non effectué et hors Décès)
                         if (!formData.value.preavisExecute && formData.value.motif !== 'deces') {
                             const monthsPreavis = getPreavisMonths(formData.value.categoriePro, yearsOfSeniority);
                             const preavisAmount = avgSalary * monthsPreavis;
@@ -427,7 +438,6 @@ export default defineComponent({
                             });
                         }
 
-                        // - Indemnité Légale (Licenciement, Retraite ou Décès - minimum 1 an d'ancienneté)
                         if (yearsOfSeniority >= 1) {
                             let tranche1 = Math.min(yearsOfSeniority, 5) * 0.30 * avgSalary;
                             let tranche2 = yearsOfSeniority > 5 ? Math.min(yearsOfSeniority - 5, 5) * 0.35 * avgSalary : 0;
@@ -461,7 +471,6 @@ export default defineComponent({
 
                     const approxMonthly = (totalGross / Math.max(1, (diffDays / 30.416)));
 
-                    // A. Salaire de présence (Mois de fin)
                     if (daysWorked > 0) {
                         const presenceAmount = (approxMonthly / 30) * daysWorked;
                         breakdown.value.push({
@@ -473,7 +482,6 @@ export default defineComponent({
                         });
                     }
 
-                    // B. Congés payés restants
                     if (remainingLeaves > 0) {
                         const leaveAmount = (approxMonthly / 26) * remainingLeaves;
                         breakdown.value.push({
@@ -485,7 +493,6 @@ export default defineComponent({
                         });
                     }
 
-                    // C. Motifs CDD
                     if (formData.value.motif === 'fin_cdd') {
                         const precarite = totalGross * 0.03;
                         breakdown.value.push({
@@ -525,9 +532,13 @@ export default defineComponent({
                     }
                 });
 
-                // Calcul de la retenue CNPS salariale (6,3 % sur l'assiette soumise, plafond 3 375 000 FCFA/mois)
-                const baseCNPSPlafonnee = Math.max(0, Math.min(totalTaxableCNPS.value, 3375000));
-                cnpsEmployeeDeduction.value = baseCNPSPlafonnee * 0.063;
+                // Application conditionnelle de la CNPS selon l'option sélectionnée par l'utilisateur
+                if (formData.value.isDeclaredCNPS) {
+                    const baseCNPSPlafonnee = Math.max(0, Math.min(totalTaxableCNPS.value, 3375000));
+                    cnpsEmployeeDeduction.value = baseCNPSPlafonnee * 0.063;
+                } else {
+                    cnpsEmployeeDeduction.value = 0;
+                }
 
                 // Solde Net à Percevoir
                 netAmount.value = totalGrossAmount.value - cnpsEmployeeDeduction.value;
@@ -574,7 +585,7 @@ export default defineComponent({
     padding: 7rem 1rem 4rem 1rem;
     background: radial-gradient(circle at 50% 20%, #1a233d 0%, #0c101d 100%);
     color: var(--my-white, #ffffff);
-    overflow: hidden;
+    overflow-x: hidden;
 }
 
 .calculator-header {
@@ -771,6 +782,14 @@ export default defineComponent({
     padding-top: 0.7rem;
     color: #fca5a5;
     font-weight: 600;
+}
+
+.summary-row.info-row {
+    border-top: 1px dashed rgba(255, 255, 255, 0.1);
+    margin-top: 0.5rem;
+    padding-top: 0.7rem;
+    color: #fcd34d;
+    font-size: 0.88rem;
 }
 
 /* ── Liste détaillée par Indemnité ── */

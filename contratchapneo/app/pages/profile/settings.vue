@@ -20,7 +20,7 @@
         
       <div class="dashboard-grid">
 
-        <profile-form/>
+        <profile-form @updated="authStore.getProfile()"/>
 
       </div>
 

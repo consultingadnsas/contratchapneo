@@ -127,7 +127,7 @@ export default {
 .question-text { font-size: 1.05rem; font-weight: 700; color: var(--color-dark); padding-right: 1.5rem; transition: color 0.3s; }
 .faq-item.is-open .question-text { color: var(--color-primary); }
 
-.chevron-icon { width: 20px; height: 20px; color: var(--color-gray); transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1); flex-shrink: 0; }
+.chevron-icon { width: 20px; height: 20px; color: var(--color-gray); transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1); flex-shrink: 0; margin-right: -1rem }
 .faq-item.is-open .chevron-icon { transform: rotate(180deg); color: var(--color-primary); }
 
 .faq-answer-wrapper { display: grid; grid-template-rows: 0fr; transition: grid-template-rows 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
@@ -175,4 +175,8 @@ export default {
 .pulse-dot { width: 10px; height: 10px; background-color: var(--color-success); border-radius: 50%; position: relative; }
 .pulse-dot::after { content: ''; position: absolute; width: 100%; height: 100%; background-color: var(--color-success); border-radius: 50%; top: 0; left: 0; animation: ping 2s cubic-bezier(0, 0, 0.2, 1) infinite; }
 @keyframes ping { 75%, 100% { transform: scale(2.5); opacity: 0; } }
+
+@media (min-width: 1024px){
+  .chevron-icon{ margin-right: -10rem; } /* Ajustement pour mobile */
+}
 </style>
