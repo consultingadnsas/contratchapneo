@@ -19,6 +19,7 @@ def get_or_create_cart(request):
                         contrat=item.contrat,
                         pro=item.pro,
                         customed_contract=item.customed_contract,
+                        contract_revision=item.contract_revision,
                         packs=item.packs
                     ).first()
                     if existing_item:
@@ -30,6 +31,7 @@ def get_or_create_cart(request):
                             contrat=item.contrat,
                             pro=item.pro,
                             customed_contract=item.customed_contract,
+                            contract_revision=item.contract_revision,
                             packs=item.packs,
                             quantity=item.quantity,
                             unit_price=item.unit_price

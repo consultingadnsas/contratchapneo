@@ -1,4 +1,10 @@
 <template>
+    <baseNotification
+        v-model:show="notify.show"
+        :type="notify.type"
+        :title="notify.title"
+        :message="notify.message"
+    />
     <form 
         class="custom-contract-form w-full flex flex-col gap-4"
         @submit.prevent="submitForm"
@@ -164,12 +170,31 @@ export default {
                 showNotification('error', 'Email invalide', 'Veuillez entrer une adresse email valide.');
                 return false;
             }
-            if (!checkoutform.subject.trim()) {
+            const subject = checkoutform.subject.trim();
+            if (!subject) {
                 showNotification('error', 'Sujet manquant', "Veuillez préciser l'objet de votre demande.");
                 return false;
             }
-            if (!checkoutform.description.trim()) {
-                showNotification('error', 'Description manquante', 'Veuillez détailler votre besoin dans la description.');
+            const minSubjectLength = 2;
+            const wordCounts = subject.split(/\s+/).filter(Boolean).length;
+            if (wordCounts < minSubjectLength) {
+                showNotification('error', 'Sujet trop court', `Le sujet doit contenir au moins ${minSubjectLength} mots.`);
+                return false;
+            }
+
+            const desc = checkoutform.description.trim();
+            if (!desc) {
+                showNotification('error', 'Champs requis', 'Le message ou contexte est obligatoire.');
+                return false;
+            }
+            const MIN_WORDS = 10;
+            const wordCount = desc.split(/\s+/).filter(Boolean).length;
+            if (wordCount < MIN_WORDS) {
+                showNotification(
+                    'error', 
+                    'Détails insuffisants', 
+                    `Veuillez donner plus de détails (${wordCount}/${MIN_WORDS} mots minimum requis pour que notre expert comprenne votre besoin).`
+                );
                 return false;
             }
             return true;

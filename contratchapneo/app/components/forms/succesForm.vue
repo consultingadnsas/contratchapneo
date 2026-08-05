@@ -48,27 +48,17 @@
     </div>
 
     <!-- ==========================================
-         3. CONTRAT SUR MESURE (Countdown -> Dashboard)
+         3. SUR-MESURE & RÉVISION DE CONTRAT (Countdown -> Accueil)
          ========================================== -->
-    <div v-else-if="isCustomContract" class="success__subtitle">
+    <div v-else-if="isCustomContract || isRevision" class="success__subtitle">
       <p>
-        Votre demande de contrat sur mesure a bien été enregistrée. Notre équipe juridique prend en charge votre dossier. <br>
-        Redirection dans <span class="countdown-highlight">{{ countdown }}s</span>...
+        Votre demande a bien été enregistrée, un expert s'en occupera. <br>
+        Redirection vers l'accueil dans <span class="countdown-highlight">{{ countdown }}s</span>...
       </p>
     </div>
 
     <!-- ==========================================
-         4. RÉVISION DE CONTRAT (Countdown -> Dashboard)
-         ========================================== -->
-    <div v-else-if="isRevision" class="success__subtitle">
-      <p>
-        Votre paiement pour la révision de contrat est confirmé. Un expert examine actuellement vos documents. <br>
-        Redirection dans <span class="countdown-highlight">{{ countdown }}s</span>...
-      </p>
-    </div>
-
-    <!-- ==========================================
-         5. CONTRAT STANDARD (Countdown -> ContractWritter)
+         4. CONTRAT STANDARD (Countdown -> ContractWritter)
          ========================================== -->
     <div v-else class="success__subtitle">
       <p>
@@ -100,7 +90,6 @@ export default {
       type: Boolean,
       default: false
     },
-    // ⚡️ NOUVELLES PROPS
     isCustomContract: {
       type: Boolean,
       default: false

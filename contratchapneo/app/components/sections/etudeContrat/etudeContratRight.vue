@@ -1,6 +1,12 @@
 <template>
     <div class="right-panel">
         <div class="form-wrapper">
+            <baseNotification
+                v-model:show="notify.show"
+                :type="notify.type"
+                :title="notify.title"
+                :message="notify.message"
+            />
             <form @submit.prevent="handleSubmit" class="study-form">
                 
                 <BaseInput
@@ -206,8 +212,19 @@ export default {
                 showNotification('error', 'Champs requis', 'Le numéro de téléphone est obligatoire.');
                 return false;
             }
-            if (!formData.value.description.trim()) {
+            const desc = formData.value.description.trim();
+            if (!desc) {
                 showNotification('error', 'Champs requis', 'Le message ou contexte est obligatoire.');
+                return false;
+            }
+            const MIN_WORDS = 6;
+            const wordCount = desc.split(/\s+/).filter(Boolean).length;
+            if (wordCount < MIN_WORDS) {
+                showNotification(
+                    'error', 
+                    'Détails insuffisants', 
+                    `Veuillez donner plus de détails (${wordCount}/${MIN_WORDS} mots minimum requis pour que notre expert comprenne votre besoin).`
+                );
                 return false;
             }
             if (!selectedFile.value) {

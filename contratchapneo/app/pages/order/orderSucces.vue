@@ -46,7 +46,6 @@ export default {
             return orderStore.currentOrder?.order_items || orderStore.currentOrder?.items || [];
         };
 
-        // ⚡️ UTILITAIRE : FOUILLE PARTOUT POUR TROUVER LE TITRE DE L'ARTICLE
         const getItemTitle = (item: any): string => {
             return String(
                 item.title || 
@@ -55,9 +54,6 @@ export default {
                 item.label || 
                 item.customed_contract?.title || 
                 item.customed_contract?.name || 
-                item.customized_contract?.title || 
-                item.customized_contract?.name || 
-                item.custom_contract?.title || 
                 item.contrat?.title || 
                 item.contrat?.name || 
                 ''
@@ -65,28 +61,48 @@ export default {
         };
 
         // ==========================================================
-        // 1. 📝 DÉTECTION DU CONTRAT SUR MESURE
+        // 1. 📝 DÉTECTION STRICTE DU CONTRAT SUR MESURE (customed_contract)
         // ==========================================================
         const customContractItem = computed(() => {
             return getItems().find((item: any) => {
-                const jsonStr = JSON.stringify(item || {}).toLowerCase();
-                
-                return (
-                    // ⚡️ AJOUT CRITIQUE : On cible exactement "customed_contracts" (singulier et pluriel)
-                    jsonStr.includes('customed_contracts') ||
-                    jsonStr.includes('customed_contract') ||
-                    item.customed_contracts ||
-                    item.customed_contract ||
-                    item.customed_contracts_id ||
-                    item.customed_contract_id ||
-                    item.customized_contract ||
-                    item.custom_contract ||
-                    item.type === 'customed_contracts' ||
-                    item.type === 'customed_contract' ||
-                    jsonStr.includes('custom') ||
-                    jsonStr.includes('mesure') ||
-                    jsonStr.includes('personnalis')
+                const title = getItemTitle(item);
+                const normalizedTitle = title.replace(/\s+/g, '');
+
+                // ⚡️ 1. On cible exactement "customed_contract" (ce que le backend attend/renvoie)
+                const hasCustomContractKey = (
+                    (item.customed_contract !== undefined && item.customed_contract !== null) ||
+                    (item.customed_contract_id !== undefined && item.customed_contract_id !== null)
                 );
+
+                // ⚡️ 2. Type explicite
+                const isCustomType = (
+                    item.type === 'customed_contract' ||
+                    item.type === 'custom' ||
+                    item.product_type === 'custom'
+                );
+
+                // ⚡️ 3. Titre du service
+                const hasCustomTitle = (
+                    title.includes('sur mesure') ||
+                    title.includes('sur-mesure') ||
+                    normalizedTitle.includes('surmesure') ||
+                    normalizedTitle.includes('suremesure')
+                );
+
+                // ⚡️ 4. BOUCLIER D'ÉLIMINATION : Si ce n'est NI un contrat standard (item.contrat),
+                // NI un Pro, NI un Pack, NI une Révision -> C'est obligatoirement un Sur mesure !
+                const isNotOtherProduct = (
+                    !item.contrat && 
+                    !item.contrat_id && 
+                    !item.pro && 
+                    !item.pro_id && 
+                    !item.pack && 
+                    !item.pack_id && 
+                    !item.contract_revision && 
+                    !item.contract_revision_id
+                );
+
+                return hasCustomContractKey || isCustomType || hasCustomTitle || isNotOtherProduct;
             });
         });
 
@@ -99,10 +115,8 @@ export default {
             return getItems().find((item: any) => {
                 const title = getItemTitle(item);
                 return (
-                    item.contract_revision ||
-                    item.contract_revision_id ||
-                    item.revision ||
-                    item.revision_id ||
+                    (item.contract_revision !== undefined && item.contract_revision !== null) ||
+                    (item.contract_revision_id !== undefined && item.contract_revision_id !== null) ||
                     item.type === 'revision' ||
                     title.includes('révision') ||
                     title.includes('revision')
@@ -129,9 +143,7 @@ export default {
                     title.includes('pack') || 
                     title.includes('crédit') || 
                     title.includes('credit') ||
-                    item.credits !== undefined ||
-                    item.customs !== undefined ||
-                    item.credits_restants !== undefined
+                    (item.credits !== undefined && item.credits !== null)
                 );
             });
         });
@@ -164,7 +176,17 @@ export default {
         const isProOrder = computed(() => !!proItem.value);
 
         // ==========================================================
-        // 5. 👔 ACTION MANUELLE : TÉLÉCHARGEMENT CARTE PRO
+        // 5. 📄 DÉTECTION STRICTE DU CONTRAT STANDARD
+        // ==========================================================
+        const isStandardContractOrder = computed(() => {
+            if (isProOrder.value || isPackOrder.value || isCustomContractOrder.value || isRevisionOrder.value) {
+                return false;
+            }
+            return getItems().some((item: any) => !!(item.contrat || item.contrat_id));
+        });
+
+        // ==========================================================
+        // 6. 👔 ACTION MANUELLE : TÉLÉCHARGEMENT CARTE PRO
         // ==========================================================
         const handleDownloadProCard = async () => {
             if (!proItem.value) {
@@ -193,11 +215,11 @@ export default {
         };
 
         // ==========================================================
-        // 6. ⏱️ GESTION DU COMPTE À REBOURS & REDIRECTIONS
+        // 7. ⏱️ GESTION DU COMPTE À REBOURS & REDIRECTIONS
         // ==========================================================
         onMounted(() => {
             console.log("🔍 [OrderSucces] Articles reçus :", getItems());
-            console.log("👉 Types — Pro:", isProOrder.value, "| Pack:", isPackOrder.value, "| Custom:", isCustomContractOrder.value, "| Revision:", isRevisionOrder.value);
+            console.log("👉 Types — Pro:", isProOrder.value, "| Pack:", isPackOrder.value, "| Custom:", isCustomContractOrder.value, "| Revision:", isRevisionOrder.value, "| Standard:", isStandardContractOrder.value);
 
             if (!isProOrder.value) {
                 timer = setInterval(async () => {
@@ -223,9 +245,14 @@ export default {
                             router.push('/profile/Dashboard');
                         } 
                         // ── CAS C : CONTRAT STANDARD -> ÉDITEUR DE CONTRAT ──
-                        else {
+                        else if (isStandardContractOrder.value) {
                             console.log("📄 Contrat standard -> Redirection vers l'éditeur...");
                             router.push('/contractWritter');
+                        }
+                        // ── CAS D : SÉCURITÉ ULTIME -> REDIRECTION ACCUEIL ('/') ──
+                        else {
+                            console.log("🛡️ Article non standard -> Redirection Accueil ('/')...");
+                            router.push('/');
                         }
                     }
                 }, 1000);
