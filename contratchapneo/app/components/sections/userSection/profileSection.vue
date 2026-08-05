@@ -1,9 +1,57 @@
 <template>
-
     <section class="w-full flex flex-col items-center gap-4 py-4">
 
         <contractCardSkeleton v-if="profileStore.isLoading" />
 
+        <!-- CAS 1 : L'utilisateur n'a AUCUN pack actif, mais a un historique (Pack expiré) -->
+        <div v-else-if="hasExpiredPacksOnly" class="pack-section">
+            
+            <emptyState 
+                title="Votre pack a expiré"
+                description="Votre abonnement n'est plus actif. Renouvelez votre ancien pack en un clic ou choisissez une nouvelle offre ci-dessous."
+                textAction=""
+                type="contrat"
+                class="mb-6"
+            />
+
+            <!-- Section 1 : Renouvellement rapide de l'ancien pack -->
+            <div class="renewal-wrapper w-full">
+                <h3 class="section-subtitle">Renouveler mon offre précédente</h3>
+                <div class="packs-grid">
+                    <pack-buying-card 
+                        v-for="(item, index) in profileStore.expiredPacks" 
+                        :key="'expired-' + (item.id || index)"
+                        :title="getFullPackInfo(item.pack).title" 
+                        :price="getFullPackInfo(item.pack).prix"
+                        :description="getFullPackInfo(item.pack).description"
+                        :planType="getPlanType(getFullPackInfo(item.pack).title)" 
+                        :isActive="false"
+                        buttonLabel="Renouveler ce pack"
+                        @buy="addToCart(item.pack)"
+                    />
+                </div>
+            </div>
+
+            <!-- Section 2 : Catalogue des autres offres disponibles -->
+            <div class="catalog-wrapper w-full mt-8">
+                <h3 class="section-subtitle">Explorer nos autres offres</h3>
+                <div class="packs-grid">
+                    <pack-buying-card 
+                        v-for="(pack, index) in profileStore.availablePacks" 
+                        :key="'available-' + (pack.id || index)"
+                        :title="pack.title" 
+                        :price="pack.prix"
+                        :description="pack.description"
+                        :planType="getPlanType(pack.title)"
+                        buttonLabel="Acheter"
+                        @buy="addToCart(pack.id)"
+                    />
+                </div>
+            </div>
+
+        </div>
+
+        <!-- CAS 2 : L'utilisateur est un nouveau client (Aucun pack actif ni expiré) -->
         <div v-else-if="profileStore.userPacks.length === 0" class="pack-section">
             
             <emptyState 
@@ -14,7 +62,6 @@
             />
             
             <div class="packs-grid">
-                
                 <pack-buying-card 
                     v-for="(pack, index) in profileStore.availablePacks" 
                     :key="pack.id || index"
@@ -24,18 +71,17 @@
                     :planType="getPlanType(pack.title)"
                     @buy="addToCart(pack.id)"
                 />
-
             </div>
         </div>
     
+        <!-- CAS 3 : L'utilisateur a au moins un pack actif -->
         <div v-else class="pack-section">
             
             <dashboard-input label="Je recherche mon contrat" class="search-bar" />
             
             <div class="packs-grid">
-                
                 <pack-buying-card 
-                    v-for="(item, index) in profileStore.userPacks" 
+                    v-for="(item, index) in activeUserPacks" 
                     :key="item.id || index"
                     :title="getFullPackInfo(item.pack).title" 
                     :price="getFullPackInfo(item.pack).prix"
@@ -44,17 +90,15 @@
                     :isActive="true"
                     @buy="addToCart(item.pack)"
                 />
-
             </div>
         </div>
-
     </section>
 </template>
 
 <script lang="ts">
 import { useProfileStore } from '../../../stores/profileStore'
 import { useCartStore } from '../../../stores/cartStore';
-import { onMounted } from 'vue'
+import { onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 
 import contractCardSkeleton from '../../cards/contractCardSkeleton.vue';
@@ -73,8 +117,20 @@ export default {
     setup() {
         const cartStore = useCartStore();
         const profileStore = useProfileStore();
-
         const router = useRouter();
+        const activeUserPacks = computed(() => {
+            return profileStore.userPacks.filter((item: any) => item.is_active === true);
+        });
+
+        // ⚡️ NOUVEAU : Récupère les packs expirés (historique d'abonnement inactif)
+        const expiredUserPacks = computed(() => {
+            return profileStore.userPacks.filter((item: any) => item.is_active === false);
+        });
+
+        // ⚡️ NOUVEAU : Détecte si l'utilisateur est un ancien abonné dont tout a expiré
+        const hasExpiredPacksOnly = computed(() => {
+            return activeUserPacks.value.length === 0 && expiredUserPacks.value.length > 0;
+        });
 
         const addToCart = async(packId:string)=> {
 
@@ -120,7 +176,10 @@ export default {
             router,
             addToCart,
             getPlanType,
-            getFullPackInfo
+            getFullPackInfo,
+            activeUserPacks,
+            expiredUserPacks,
+            hasExpiredPacksOnly
         }
     }
 }
@@ -182,6 +241,21 @@ export default {
     
     /* Centre la carte à l'arrêt du scroll */
     scroll-snap-align: center; 
+}
+.section-subtitle {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #1f2937;
+    margin-bottom: 1rem;
+    width: 100%;
+    text-align: left;
+}
+
+.renewal-wrapper, .catalog-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    width: 100%;
 }
 
 /* =========================================

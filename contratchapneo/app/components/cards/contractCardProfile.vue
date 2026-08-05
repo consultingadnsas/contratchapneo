@@ -46,7 +46,7 @@ import { defineComponent } from 'vue';
 import defaultImg from '../../assets/pictures/ContratChap/pexels-thirdman-5060819.jpg';
 
 export default defineComponent({
-    name: 'ContratCards',
+    name: 'ContractCardProfile',
     props: {
         title: {
             type: String,

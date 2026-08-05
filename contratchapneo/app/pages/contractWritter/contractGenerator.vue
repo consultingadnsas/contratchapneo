@@ -44,6 +44,11 @@
                     </svg>
                     {{ isDownloading ? 'Téléchargement...' : 'Télécharger manuellement' }}
                 </button>
+                <div class="home-link-wrapper">
+                    <router-link to="/" class="home-link">
+                        &larr; Retourner à la page d'accueil
+                    </router-link>
+                </div>
             </div>
 
         </div>
@@ -269,6 +274,24 @@ h2 {
 
 .spinner {
     animation: spin 1s linear infinite;
+}
+
+.home-link-wrapper {
+    margin-top: 1.5rem;
+}
+
+.home-link {
+    display: inline-block;
+    color: #4b5563;
+    font-size: 0.9rem;
+    font-weight: 500;
+    text-decoration: none;
+    transition: color 0.2s ease, transform 0.2s ease;
+}
+
+.home-link:hover {
+    color: #2563eb;
+    text-decoration: underline;
 }
 
 @keyframes spin {
