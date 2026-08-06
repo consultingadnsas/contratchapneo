@@ -186,7 +186,7 @@ export default {
         });
 
         // ==========================================================
-        // 6. 👔 ACTION MANUELLE : TÉLÉCHARGEMENT CARTE PRO
+        // 5. 👔 ACTION MANUELLE : TÉLÉCHARGEMENT CARTE PRO
         // ==========================================================
         const handleDownloadProCard = async () => {
             if (!proItem.value) {
@@ -194,32 +194,34 @@ export default {
                 return;
             }
 
-            const proId = proItem.value.pro_id || 
-                          proItem.value.professional_id || 
-                          proItem.value.professional?.id || 
-                          proItem.value.pro?.id ||
-                          proItem.value.id;
+            // ⚡️ CORRECTION : Si .pro est une chaîne de caractères (UUID direct), on le prend !
+            // Sinon on vérifie s'il est dans un objet (.pro.id) ou dans .pro_id / .professional_id
+            const proId = (typeof proItem.value.pro === 'string' ? proItem.value.pro : proItem.value.pro?.id) ||
+                          proItem.value.pro_id ||
+                          (typeof proItem.value.professional === 'string' ? proItem.value.professional : proItem.value.professional?.id) ||
+                          proItem.value.professional_id ||
+                          (proItem.value.type === 'pro' ? proItem.value.id : null);
 
             if (!proId) {
-                console.error("🚨 Élément Pro trouvé, mais son identifiant est manquant :", proItem.value);
-                alert("Erreur technique : l'identifiant de la carte est introuvable.");
+                console.error("🚨 Identifiant du Pro introuvable dans :", proItem.value);
+                alert("Erreur technique : l'identifiant du professionnel est introuvable.");
                 return;
             }
 
-            console.log("👔 Lancement du téléchargement pour l'identifiant :", proId);
+            console.log("👔 Lancement du téléchargement pour le Pro ID :", proId);
             const success = await proStore.downloadProCard(String(proId));
 
             if (!success) {
-                alert(proStore.error || "Une erreur est survenue pendant le téléchargement.");
+                alert(proStore.error || "Une erreur est survenue pendant le téléchargement de la carte de visite.");
             }
         };
 
         // ==========================================================
-        // 7. ⏱️ GESTION DU COMPTE À REBOURS & REDIRECTIONS
+        // 7. ⏱️ GESTION DU COMPTE À REBOURS & AUTOMATISATIONS
         // ==========================================================
         onMounted(() => {
             console.log("🔍 [OrderSucces] Articles reçus :", getItems());
-            console.log("👉 Types — Pro:", isProOrder.value, "| Pack:", isPackOrder.value, "| Custom:", isCustomContractOrder.value, "| Revision:", isRevisionOrder.value, "| Standard:", isStandardContractOrder.value);
+            console.log("👉 Types — Pro:", isProOrder.value, "| Pack:", isPackOrder.value, "| Custom:", isCustomContractOrder.value, "| Revision:", isRevisionOrder.value);
 
             if (!isProOrder.value) {
                 timer = setInterval(async () => {
@@ -257,7 +259,14 @@ export default {
                     }
                 }, 1000);
             } else {
-                console.log("👔 Commande Pro détectée : Compte à rebours automatique désactivé.");
+                console.log("👔 Commande Pro détectée : Compte à rebours désactivé.");
+                
+                // ⚡️ AJOUT : Lancement automatique du téléchargement après 800 ms
+                // Ce court délai laisse le temps à l'animation CSS de la page de s'afficher proprement
+                console.log("📥 Lancement automatique du téléchargement de la carte...");
+                setTimeout(() => {
+                    handleDownloadProCard();
+                }, 800);
             }
         });
 
