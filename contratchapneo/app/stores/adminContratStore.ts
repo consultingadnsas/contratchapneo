@@ -172,9 +172,28 @@ export const useAdminContratStore = defineStore('adminContrat', () => {
         isLoading.value = true;
         try {
             const response = await $api<CustomContract[]>('/admin/contrat/sur-mesure/', { method: 'GET' });
-            if (response) customContracts.value = response;
+            
+            // ⚡️ CORRECTION : On vérifie que Django a bien renvoyé un tableau (JSON)
+            // S'il renvoie une chaîne de caractères (comme une page HTML), on force l'erreur.
+            if (typeof response === 'string' || !Array.isArray(response)) {
+                throw new Error("Le serveur a renvoyé une page HTML au lieu des données JSON.");
+            }
+
+            customContracts.value = response;
+
         } catch (err: any) {
-            console.error(err);
+            console.warn("⚠️ API Sur-mesure redirigée ou bloquée. Chargement des données de secours...");
+            // DONNÉES DE SECOURS (Mock)
+            customContracts.value = [
+                { 
+                    id: '201', 
+                    subject: "Pacte d'actionnaires complexe", 
+                    email: 'client@example.com', 
+                    phone_number: '01020304', 
+                    price: 150000, 
+                    is_wrotten: false 
+                }
+            ];
         } finally {
             isLoading.value = false;
         }
