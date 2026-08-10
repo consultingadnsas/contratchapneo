@@ -14,7 +14,7 @@
           <!-- ⚡️ Utilisation de cat.title -->
           <folderCards 
             :title="cat.title" 
-            subtitle="Dossier Boutique" 
+            :subtitle="cat.description" 
             color="blue" 
             :hasItems="true" 
           />
