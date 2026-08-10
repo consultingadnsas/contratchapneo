@@ -33,16 +33,16 @@ export default {
     const router = useRouter();
 
     const adminMenu = ref<MenuItem[]>([
-      { id: 'overview', label: "Dashboard", route: '/profile/admin/AdminHome', icon: markRaw(HomeIcon), category: 'General' },
-      { id: 'history', label: 'Historiques', route: '/profile/admin/AdminHistory', icon: markRaw(BookOpenIcon), category: 'General' },
-      { id: 'finance', label: 'Finances', route: '/profile/admin/AdminFinance', icon: markRaw(BanknotesIcon), category: 'General' },
-      { id: 'inbox', label: 'Demandes clients', route: '/profile/admin/AdminInbox', icon: markRaw(InboxIcon), category: 'General' },
-      { id: 'contracts', label: 'Contrats', route: '/profile/admin/AdminContrats', icon: markRaw(DocumentTextIcon), category: 'Catalogue' },
-      { id: 'experts', label: 'Experts Juridiques', route: '/profile/admin/AdminExperts', icon: markRaw(UsersIcon), category: 'Catalogue' },
-      { id: 'settings', label: 'Paramètres', route: '/profile/admin/AdminSettings', icon: markRaw(Cog8ToothIcon), category: 'Tools' },
-      { id: 'trash', label: 'Corbeille', route: '/profile/admin/AdminTrash', icon: markRaw(TrashIcon), category: 'Tools' },
-      { id: 'temoin', label: 'Témoignages', route: '/profile/admin/AdminTesti', icon: markRaw(ChatBubbleBottomCenterTextIcon), category: 'Catalogue' },
-      { id: 'packs', label: 'Packs de contrat', route: '/profile/admin/Adminpacks', icon : markRaw(SwatchIcon), category: 'Catalogue' }
+      { id: 'overview', label: "Dashboard", route: '/admin/AdminHome', icon: markRaw(HomeIcon), category: 'General' },
+      { id: 'history', label: 'Historiques', route: '/admin/AdminHistory', icon: markRaw(BookOpenIcon), category: 'General' },
+      { id: 'finance', label: 'Finances', route: '/admin/AdminFinance', icon: markRaw(BanknotesIcon), category: 'General' },
+      { id: 'inbox', label: 'Demandes clients', route: '/admin/AdminInbox', icon: markRaw(InboxIcon), category: 'General' },
+      { id: 'contracts', label: 'Contrats', route: '/admin/AdminContrats', icon: markRaw(DocumentTextIcon), category: 'Catalogue' },
+      { id: 'experts', label: 'Experts Juridiques', route: '/admin/AdminExperts', icon: markRaw(UsersIcon), category: 'Catalogue' },
+      { id: 'settings', label: 'Paramètres', route: '/admin/AdminSettings', icon: markRaw(Cog8ToothIcon), category: 'Tools' },
+      { id: 'trash', label: 'Corbeille', route: '/admin/AdminTrash', icon: markRaw(TrashIcon), category: 'Tools' },
+      { id: 'temoin', label: 'Témoignages', route: '/admin/AdminTesti', icon: markRaw(ChatBubbleBottomCenterTextIcon), category: 'Catalogue' },
+      { id: 'packs', label: 'Packs de contrat', route: '/admin/Adminpacks', icon : markRaw(SwatchIcon), category: 'Catalogue' }
     ]);
 
     const handleLogout = () => {
