@@ -1,11 +1,9 @@
 <template>
   <div class="contracts-wrapper">
     
-    <!-- EN-TÊTE ET ONGLETS -->
-   <div class="header-section">
+    <div class="header-section">
       <div class="title-and-search">
         <h3 class="section-title">Gestion du Catalogue</h3>
-        
         <div class="search-box">
           <component :is="MagnifyingGlassIcon" class="icon-gray icon-sm" />
           <input type="text" v-model="searchQuery" placeholder="Rechercher un dossier ou contrat..." />
@@ -22,7 +20,6 @@
           </button>
         </div>
 
-        <!-- MENU DÉROULANT D'AJOUT -->
         <div class="dropdown-container">
           <button class="add-global-btn" @click="toggleDropdown">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="btn-icon">
@@ -45,35 +42,28 @@
       </div>
     </div>
 
-    <!-- ONGLET 1 : COMPOSANT CATÉGORIES (BOUTIQUE) -->
+    <!-- ⚡️ Branchement du Store -->
     <adminCategories 
       v-if="activeTab === 'categories'"
-      :categories="standardCategories"
-      :contracts="standardContracts" 
+      :categories="adminStore.categories"
+      :contracts="adminStore.contracts" 
       :searchQuery="searchQuery"
-      @add-category="addStdCategory"
-      @delete-category="deleteStdCategory"
       @add-contract="openModal"
       @edit-contract="openModal"
-      @delete-contract="deleteStdContract"
-      @toggle-status="toggleStdStatus"
     />
 
-    <!-- ONGLET 2 : COMPOSANT SUR-MESURE -->
     <adminSurmesure 
       v-if="activeTab === 'surmesure'"
       ref="surmesureRef"
-      :contracts="customContracts"
+      :contracts="adminStore.customContracts"
       :searchQuery="searchQuery"
-      @delete-contract="deleteCustomContract"
-      @toggle-status="toggleCustomStatus"
     />
 
     <!-- MODALE GLOBALE D'AJOUT / ÉDITION -->
     <adminContratsModal 
       v-if="isModalOpen" 
       :contract="selectedContract" 
-      :categories="standardCategories"
+      :categories="adminStore.categories"
       :preselectedCategory="targetCategory"
       @close="closeModal" 
       @save="handleSaveContract"
@@ -84,19 +74,22 @@
 
 <script lang="ts">
 import { ref, onMounted, onBeforeUnmount } from 'vue';
-import adminContratsModal from '../../../modale/adminContratModale.vue';
-import adminCategories from './adminCategory.vue'; 
-import adminSurmesure from './adminSurmesure.vue';
+import adminContratsModal from '../../../../components/modale/adminContratModale.vue';
+import adminCategories from '../admincontrat/adminCategory.vue'; 
+import adminSurmesure from '../admincontrat/adminSurmesure.vue';
 import { MagnifyingGlassIcon } from '@heroicons/vue/24/outline'; 
+import { useAdminContratStore } from '../../../../stores/adminContratStore'; 
 
 export default {
   name: 'AdminContracts',
   components: { adminContratsModal, adminCategories, adminSurmesure },
   setup() {
+    // ⚡️ Initialisation du store
+    const adminStore = useAdminContratStore();
+    
     const activeTab = ref('categories');
     const searchQuery = ref('');
     const surmesureRef = ref<any>(null);
-    
     const isDropdownOpen = ref(false);
     
     const toggleDropdown = () => isDropdownOpen.value = !isDropdownOpen.value;
@@ -106,12 +99,21 @@ export default {
       if (!target.closest('.dropdown-container')) isDropdownOpen.value = false;
     };
 
-    onMounted(() => document.addEventListener('click', closeDropdownEvent));
+    onMounted(async () => { 
+      document.addEventListener('click', closeDropdownEvent); 
+      // ⚡️ Récupération de toutes les données du backend au chargement
+      await Promise.all([
+        adminStore.fetchCategories(),
+        adminStore.fetchContracts(),
+        adminStore.fetchCustomContracts()
+      ]);
+    });
+    
     onBeforeUnmount(() => document.removeEventListener('click', closeDropdownEvent));
 
     const handleCreateStandard = () => {
       activeTab.value = 'categories';
-      openModal({ isNew: true, categoryName: '' });
+      openModal({ isNew: true, categoryId: '' });
       isDropdownOpen.value = false;
     };
 
@@ -121,30 +123,6 @@ export default {
       setTimeout(() => { if (surmesureRef.value) surmesureRef.value.openLocalModal(); }, 50);
     };
 
-    // --- DONNÉES EN DUR (MOCK) ---
-    const standardCategories = ref(['Création d\'entreprise', 'Ressources Humaines', 'Immobilier']);
-    const standardContracts = ref([
-      { id: 1, title: 'Statuts SARL OHADA', category: 'Création d\'entreprise', price: 15000, isActive: true },
-      { id: 2, title: 'Contrat de Travail CDI', category: 'Ressources Humaines', price: 20000, isActive: false },
-    ]);
-
-    const customContracts = ref([
-      { id: 3, title: 'Pacte d\'actionnaires complexe', price: 150000, isActive: true }
-    ]);
-
-    // --- LOGIQUE LOCALE ---
-    const addStdCategory = (cat: string) => standardCategories.value.push(cat);
-    const deleteStdCategory = (index: number, catName: string) => {
-      standardCategories.value.splice(index, 1);
-      standardContracts.value = standardContracts.value.filter(c => c.category !== catName);
-    };
-
-    const deleteStdContract = (id: number) => { standardContracts.value = standardContracts.value.filter(c => c.id !== id); };
-    const deleteCustomContract = (id: number) => { customContracts.value = customContracts.value.filter(c => c.id !== id); };
-    
-    const toggleStdStatus = (contract: any) => console.log(`Statut modifié (Boutique) : ${contract.title}`);
-    const toggleCustomStatus = (contract: any) => console.log(`Statut modifié (Sur-Mesure) : ${contract.title}`);
-
     // --- MODALE ---
     const isModalOpen = ref(false);
     const selectedContract = ref<any>(null);
@@ -153,7 +131,7 @@ export default {
     const openModal = (payload: any = null) => {
       if (payload && payload.isNew) {
         selectedContract.value = null;
-        targetCategory.value = payload.categoryName || ''; 
+        targetCategory.value = payload.categoryId || ''; 
       } else {
         selectedContract.value = payload; 
         targetCategory.value = payload ? payload.category : '';
@@ -167,21 +145,23 @@ export default {
       targetCategory.value = '';
     };
 
-    const handleSaveContract = (data: any) => {
-      if (data.id) {
-        const index = standardContracts.value.findIndex(c => c.id === data.id);
-        if (index !== -1) standardContracts.value[index] = { ...standardContracts.value[index], ...data };
-      } else {
-        standardContracts.value.unshift({ id: Date.now(), ...data, isActive: true });
+    // ⚡️ Sauvegarde vers le Backend via FormData
+    const handleSaveContract = async (formData: FormData, id: string | null) => {
+      try {
+        if (id) {
+          await adminStore.updateContract(id, formData);
+        } else {
+          await adminStore.addNewContract(formData);
+        }
+        closeModal();
+      } catch (e) {
+        console.error("Erreur de sauvegarde:", e);
       }
-      closeModal();
     };
 
     return {
+      adminStore,
       activeTab, 
-      standardCategories, standardContracts, customContracts,
-      addStdCategory, deleteStdCategory, deleteStdContract, toggleStdStatus,
-      deleteCustomContract, toggleCustomStatus,
       isModalOpen, selectedContract, targetCategory, openModal, closeModal, handleSaveContract,
       searchQuery, MagnifyingGlassIcon, surmesureRef,
       isDropdownOpen, toggleDropdown, handleCreateStandard, handleCreateCustom
@@ -191,7 +171,7 @@ export default {
 </script>
 
 <style scoped>
-/* Conserve ton CSS d'origine tel quel ici ! */
+/* RESTAURATION DU CSS D'ORIGINE */
 .contracts-wrapper {
   --bg-main: #f8fafc; --bg-panel: #ffffff; --bg-panel-light: #f1f5f9; 
   --text-dark: #1e293b; --text-gray: #94a3b8; --accent-blue: #2563eb;
