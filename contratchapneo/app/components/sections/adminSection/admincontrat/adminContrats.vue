@@ -1,11 +1,9 @@
 <template>
   <div class="contracts-wrapper">
     
-    <!-- EN-TÊTE ET ONGLETS -->
-   <div class="header-section">
+    <div class="header-section">
       <div class="title-and-search">
         <h3 class="section-title">Gestion du Catalogue</h3>
-        
         <div class="search-box">
           <component :is="MagnifyingGlassIcon" class="icon-gray icon-sm" />
           <input type="text" v-model="searchQuery" placeholder="Rechercher un dossier ou contrat..." />
@@ -22,7 +20,6 @@
           </button>
         </div>
 
-        <!-- MENU DÉROULANT D'AJOUT -->
         <div class="dropdown-container">
           <button class="add-global-btn" @click="toggleDropdown">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="btn-icon">
@@ -45,35 +42,28 @@
       </div>
     </div>
 
-    <!-- ONGLET 1 : COMPOSANT CATÉGORIES (BOUTIQUE) -->
+    <!-- ⚡️ Branchement du Store -->
     <adminCategories 
       v-if="activeTab === 'categories'"
-      :categories="standardCategories"
-      :contracts="standardContracts" 
+      :categories="adminStore.categories"
+      :contracts="adminStore.contracts" 
       :searchQuery="searchQuery"
-      @add-category="addStdCategory"
-      @delete-category="deleteStdCategory"
       @add-contract="openModal"
       @edit-contract="openModal"
-      @delete-contract="deleteStdContract"
-      @toggle-status="toggleStdStatus"
     />
 
-    <!-- ONGLET 2 : COMPOSANT SUR-MESURE -->
     <adminSurmesure 
       v-if="activeTab === 'surmesure'"
       ref="surmesureRef"
-      :contracts="customContracts"
+      :contracts="adminStore.customContracts"
       :searchQuery="searchQuery"
-      @delete-contract="deleteCustomContract"
-      @toggle-status="toggleCustomStatus"
     />
 
     <!-- MODALE GLOBALE D'AJOUT / ÉDITION -->
     <adminContratsModal 
       v-if="isModalOpen" 
       :contract="selectedContract" 
-      :categories="standardCategories"
+      :categories="adminStore.categories"
       :preselectedCategory="targetCategory"
       @close="closeModal" 
       @save="handleSaveContract"
@@ -84,19 +74,22 @@
 
 <script lang="ts">
 import { ref, onMounted, onBeforeUnmount } from 'vue';
-import adminContratsModal from '../../../modale/adminContratModale.vue';
-import adminCategories from './adminCategory.vue'; 
-import adminSurmesure from './adminSurmesure.vue';
+import adminContratsModal from '../../../../components/modale/adminContratModale.vue';
+import adminCategories from '../admincontrat/adminCategory.vue'; 
+import adminSurmesure from '../admincontrat/adminSurmesure.vue';
 import { MagnifyingGlassIcon } from '@heroicons/vue/24/outline'; 
+import { useAdminContratStore } from '../../../../stores/adminContratStore'; // 👈 Ajuste le chemin si besoin
 
 export default {
   name: 'AdminContracts',
   components: { adminContratsModal, adminCategories, adminSurmesure },
   setup() {
+    // ⚡️ Initialisation du store
+    const adminStore = useAdminContratStore();
+    
     const activeTab = ref('categories');
     const searchQuery = ref('');
     const surmesureRef = ref<any>(null);
-    
     const isDropdownOpen = ref(false);
     
     const toggleDropdown = () => isDropdownOpen.value = !isDropdownOpen.value;
@@ -106,12 +99,21 @@ export default {
       if (!target.closest('.dropdown-container')) isDropdownOpen.value = false;
     };
 
-    onMounted(() => document.addEventListener('click', closeDropdownEvent));
+    onMounted(async () => { 
+      document.addEventListener('click', closeDropdownEvent); 
+      // ⚡️ Récupération de toutes les données du backend au chargement
+      await Promise.all([
+        adminStore.fetchCategories(),
+        adminStore.fetchContracts(),
+        adminStore.fetchCustomContracts()
+      ]);
+    });
+    
     onBeforeUnmount(() => document.removeEventListener('click', closeDropdownEvent));
 
     const handleCreateStandard = () => {
       activeTab.value = 'categories';
-      openModal({ isNew: true, categoryName: '' });
+      openModal({ isNew: true, categoryId: '' });
       isDropdownOpen.value = false;
     };
 
@@ -121,30 +123,6 @@ export default {
       setTimeout(() => { if (surmesureRef.value) surmesureRef.value.openLocalModal(); }, 50);
     };
 
-    // --- DONNÉES EN DUR (MOCK) ---
-    const standardCategories = ref(['Création d\'entreprise', 'Ressources Humaines', 'Immobilier']);
-    const standardContracts = ref([
-      { id: 1, title: 'Statuts SARL OHADA', category: 'Création d\'entreprise', price: 15000, isActive: true },
-      { id: 2, title: 'Contrat de Travail CDI', category: 'Ressources Humaines', price: 20000, isActive: false },
-    ]);
-
-    const customContracts = ref([
-      { id: 3, title: 'Pacte d\'actionnaires complexe', price: 150000, isActive: true }
-    ]);
-
-    // --- LOGIQUE LOCALE ---
-    const addStdCategory = (cat: string) => standardCategories.value.push(cat);
-    const deleteStdCategory = (index: number, catName: string) => {
-      standardCategories.value.splice(index, 1);
-      standardContracts.value = standardContracts.value.filter(c => c.category !== catName);
-    };
-
-    const deleteStdContract = (id: number) => { standardContracts.value = standardContracts.value.filter(c => c.id !== id); };
-    const deleteCustomContract = (id: number) => { customContracts.value = customContracts.value.filter(c => c.id !== id); };
-    
-    const toggleStdStatus = (contract: any) => console.log(`Statut modifié (Boutique) : ${contract.title}`);
-    const toggleCustomStatus = (contract: any) => console.log(`Statut modifié (Sur-Mesure) : ${contract.title}`);
-
     // --- MODALE ---
     const isModalOpen = ref(false);
     const selectedContract = ref<any>(null);
@@ -153,7 +131,7 @@ export default {
     const openModal = (payload: any = null) => {
       if (payload && payload.isNew) {
         selectedContract.value = null;
-        targetCategory.value = payload.categoryName || ''; 
+        targetCategory.value = payload.categoryId || ''; 
       } else {
         selectedContract.value = payload; 
         targetCategory.value = payload ? payload.category : '';
@@ -167,21 +145,23 @@ export default {
       targetCategory.value = '';
     };
 
-    const handleSaveContract = (data: any) => {
-      if (data.id) {
-        const index = standardContracts.value.findIndex(c => c.id === data.id);
-        if (index !== -1) standardContracts.value[index] = { ...standardContracts.value[index], ...data };
-      } else {
-        standardContracts.value.unshift({ id: Date.now(), ...data, isActive: true });
+    // ⚡️ Sauvegarde vers le Backend via FormData
+    const handleSaveContract = async (formData: FormData, id: string | null) => {
+      try {
+        if (id) {
+          await adminStore.updateContract(id, formData);
+        } else {
+          await adminStore.addNewContract(formData);
+        }
+        closeModal();
+      } catch (e) {
+        console.error("Erreur de sauvegarde:", e);
       }
-      closeModal();
     };
 
     return {
+      adminStore,
       activeTab, 
-      standardCategories, standardContracts, customContracts,
-      addStdCategory, deleteStdCategory, deleteStdContract, toggleStdStatus,
-      deleteCustomContract, toggleCustomStatus,
       isModalOpen, selectedContract, targetCategory, openModal, closeModal, handleSaveContract,
       searchQuery, MagnifyingGlassIcon, surmesureRef,
       isDropdownOpen, toggleDropdown, handleCreateStandard, handleCreateCustom
@@ -191,82 +171,25 @@ export default {
 </script>
 
 <style scoped>
-/* Conserve ton CSS d'origine tel quel ici ! */
-.contracts-wrapper {
-  --bg-main: #f8fafc; --bg-panel: #ffffff; --bg-panel-light: #f1f5f9; 
-  --text-dark: #1e293b; --text-gray: #94a3b8; --accent-blue: #2563eb;
-  display: flex; flex-direction: column; gap: 2rem; font-family: 'Inter', sans-serif; padding-bottom: 2rem;
-}
-
-.header-section { display: flex; flex-direction: column; gap: 1.5rem; }
-
-.title-and-search { 
-  display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; 
-}
-
-.tabs-and-actions {
-  display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; width: 100%;
-}
-
-.search-box {
-  display: flex; align-items: center; background: #ffffff; 
-  border: 1px solid #e2e8f0; border-radius: 50px; 
-  padding: 0.6rem 1.2rem; max-width: 500px; width: 100%;
-}
-.search-box:focus-within { border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); }
-.search-box input { border: none; outline: none; width: 100%; margin-left: 0.5rem; font-size: 0.9rem; color: #1e293b; }
-
-.icon-gray { width: 20px; height: 20px; color: #94a3b8; }
-.section-title { font-size: 1.4rem; color: var(--text-dark); font-weight: 700; margin: 0; }
-
-.tabs-group { display: flex; background: var(--primary-color); border-radius: 50px; padding: 0.3rem; width: fit-content; }
-.tab-btn { background: transparent; border: none; color: #ffffff; font-size: 0.85rem; font-weight: 600; padding: 0.6rem 1.2rem; border-radius: 50px; cursor: pointer; transition: all 0.2s ease; }
-.tab-btn.active { background: var(--secondary-light-color); color: #ffffff; box-shadow: 0px 2px 10px rgba(0,0,0,0.05); }
-
-/* --- STYLE DU MENU DÉROULANT --- */
-.dropdown-container {
-  position: relative;
-}
-
-.add-global-btn {
-  display: flex; align-items: center; width: fit-content; gap: 0.4rem;
-  background-color: var(--primary-color); color: #ffffff; font-size: 0.9rem;
-  font-weight: 600; padding: 0.6rem 1.4rem; border: none; border-radius: 50px;
-  cursor: pointer; transition: background-color 0.2s ease, transform 0.2s ease;
-}
-.add-global-btn:hover { background-color: #1d4ed8; }
-
-.btn-icon { width: 18px; height: 18px; }
-
-.dropdown-menu {
-  position: absolute;
-  top: calc(100% + 0.5rem);
-  right: 0;
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
-  border-radius: 12px;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-  min-width: 220px;
+.admin-layout-container {
   display: flex;
-  flex-direction: column;
-  padding: 0.5rem;
-  z-index: 50;
-  animation: fadeIn 0.2s ease-out;
+  min-height: 100vh;
+  background-color: #f8fafc;
 }
 
-.dropdown-item {
-  display: flex; align-items: center; gap: 0.8rem;
-  background: transparent; border: none; padding: 0.8rem 1rem;
-  font-size: 0.9rem; font-weight: 500; color: #334155;
-  text-align: left; cursor: pointer; border-radius: 8px;
-  transition: background 0.2s; white-space: nowrap;
+.admin-main-content {
+  flex: 1;
+  padding: 1.5rem;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-bottom: calc(80px + env(safe-area-inset-bottom)); 
 }
-.dropdown-item:hover { background: #f1f5f9; color: #1e293b; }
-.dropdown-icon { width: 18px; height: 18px; color: #64748b; }
-.dropdown-item:hover .dropdown-icon { color: #2563eb; }
 
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(-10px); }
-  to { opacity: 1; transform: translateY(0); }
+@media (max-width: 728px) {
+  .admin-main-content {
+    margin-left: 0;
+    margin-bottom: 80px;
+    padding: 1rem;
+  }
 }
 </style>
