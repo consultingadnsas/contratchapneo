@@ -78,7 +78,7 @@ import adminContratsModal from '../../../../components/modale/adminContratModale
 import adminCategories from '../admincontrat/adminCategory.vue'; 
 import adminSurmesure from '../admincontrat/adminSurmesure.vue';
 import { MagnifyingGlassIcon } from '@heroicons/vue/24/outline'; 
-import { useAdminContratStore } from '../../../../stores/adminContratStore'; // 👈 Ajuste le chemin si besoin
+import { useAdminContratStore } from '../../../../stores/adminContratStore'; 
 
 export default {
   name: 'AdminContracts',
@@ -171,25 +171,82 @@ export default {
 </script>
 
 <style scoped>
-.admin-layout-container {
+/* RESTAURATION DU CSS D'ORIGINE */
+.contracts-wrapper {
+  --bg-main: #f8fafc; --bg-panel: #ffffff; --bg-panel-light: #f1f5f9; 
+  --text-dark: #1e293b; --text-gray: #94a3b8; --accent-blue: #2563eb;
+  display: flex; flex-direction: column; gap: 2rem; font-family: 'Inter', sans-serif; padding-bottom: 2rem;
+}
+
+.header-section { display: flex; flex-direction: column; gap: 1.5rem; }
+
+.title-and-search { 
+  display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; 
+}
+
+.tabs-and-actions {
+  display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; width: 100%;
+}
+
+.search-box {
+  display: flex; align-items: center; background: #ffffff; 
+  border: 1px solid #e2e8f0; border-radius: 50px; 
+  padding: 0.6rem 1.2rem; max-width: 500px; width: 100%;
+}
+.search-box:focus-within { border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); }
+.search-box input { border: none; outline: none; width: 100%; margin-left: 0.5rem; font-size: 0.9rem; color: #1e293b; }
+
+.icon-gray { width: 20px; height: 20px; color: #94a3b8; }
+.section-title { font-size: 1.4rem; color: var(--text-dark); font-weight: 700; margin: 0; }
+
+.tabs-group { display: flex; background: var(--primary-color); border-radius: 50px; padding: 0.3rem; width: fit-content; }
+.tab-btn { background: transparent; border: none; color: #ffffff; font-size: 0.85rem; font-weight: 600; padding: 0.6rem 1.2rem; border-radius: 50px; cursor: pointer; transition: all 0.2s ease; }
+.tab-btn.active { background: var(--secondary-light-color); color: #ffffff; box-shadow: 0px 2px 10px rgba(0,0,0,0.05); }
+
+/* --- STYLE DU MENU DÉROULANT --- */
+.dropdown-container {
+  position: relative;
+}
+
+.add-global-btn {
+  display: flex; align-items: center; width: fit-content; gap: 0.4rem;
+  background-color: var(--primary-color); color: #ffffff; font-size: 0.9rem;
+  font-weight: 600; padding: 0.6rem 1.4rem; border: none; border-radius: 50px;
+  cursor: pointer; transition: background-color 0.2s ease, transform 0.2s ease;
+}
+.add-global-btn:hover { background-color: #1d4ed8; }
+
+.btn-icon { width: 18px; height: 18px; }
+
+.dropdown-menu {
+  position: absolute;
+  top: calc(100% + 0.5rem);
+  right: 0;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+  min-width: 220px;
   display: flex;
-  min-height: 100vh;
-  background-color: #f8fafc;
+  flex-direction: column;
+  padding: 0.5rem;
+  z-index: 50;
+  animation: fadeIn 0.2s ease-out;
 }
 
-.admin-main-content {
-  flex: 1;
-  padding: 1.5rem;
-  overflow-y: auto;
-  overflow-x: hidden;
-  padding-bottom: calc(80px + env(safe-area-inset-bottom)); 
+.dropdown-item {
+  display: flex; align-items: center; gap: 0.8rem;
+  background: transparent; border: none; padding: 0.8rem 1rem;
+  font-size: 0.9rem; font-weight: 500; color: #334155;
+  text-align: left; cursor: pointer; border-radius: 8px;
+  transition: background 0.2s; white-space: nowrap;
 }
+.dropdown-item:hover { background: #f1f5f9; color: #1e293b; }
+.dropdown-icon { width: 18px; height: 18px; color: #64748b; }
+.dropdown-item:hover .dropdown-icon { color: #2563eb; }
 
-@media (max-width: 728px) {
-  .admin-main-content {
-    margin-left: 0;
-    margin-bottom: 80px;
-    padding: 1rem;
-  }
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 </style>
