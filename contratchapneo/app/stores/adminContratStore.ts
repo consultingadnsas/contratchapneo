@@ -1,71 +1,204 @@
-import {defineStore} from 'pinia';
-import {ref, computed} from 'vue';
-import type {Category, Contrat, PaginatedResponse, Tags} from './contratStore';
+import { defineStore } from 'pinia';
+import { ref } from 'vue';
+import type { Contrat, Category} from './contratStore'
+
+// ==========================================
+// INTERFACES (Basées sur models.py)
+// ==========================================
 
 
-export const useAdminContratStore = defineStore('adminContrat', ()=>{
+export interface CustomContract {
+    id?: string;
+    subject: string;
+    email: string;
+    phone_number: string;
+    price: number;
+    is_wrotten: boolean;
+}
 
-    const { $api } = useNuxtApp()
+// ==========================================
+// STORE
+// ==========================================
+export const useAdminContratStore = defineStore('adminContrat', () => {
 
-    // State
+    const { $api } = useNuxtApp();
+
+    // --- STATE ---
     const isLoading = ref<boolean>(false);
-    const error = ref<null | string>(null);
+    const error = ref<string | null>(null);
 
-    const category = ref<Category | string>('');
+    const categories = ref<Category[]>([]);
+    const contracts = ref<Contrat[]>([]);
+    const customContracts = ref<CustomContract[]>([]);
 
-    // Compute
-
-    // Actions
-    const addNewCategory = async (payload: { title: string; description: string }) => {
+    // ==========================================
+    // ACTIONS : CATÉGORIES
+    // ==========================================
+    const fetchCategories = async () => {
         isLoading.value = true;
         error.value = null;
-
         try {
-            const response = await $api('/contrat/admin-category/', {
-                method: "POST",
-                body: {
-                    title: payload.title,
-                    description: payload.description // On envoie la vraie description !
-                }
-            });
-            if (response) {
-                console.log("Ajout de catégorie réussi", response);
-                return response;
-            }
-        } catch(err: any) {
-            error.value = err.message || "Erreur lors de l'ajout de catégorie";
-            console.error("Un souci est intervenu :", err);
+            const response = await $api<Category[]>('/contrat/admin-category/', { method: 'GET' });
+            if (response) categories.value = response;
+        } catch (err: any) {
+            error.value = err.message || "Erreur lors de la récupération des catégories";
+            console.error(err);
         } finally {
             isLoading.value = false;
         }
-    }
+    };
 
-    const addNewContract = async(payload:Contrat)=>{
-        
+    const addNewCategory = async (payload: { title: string; description: string }) => {
         isLoading.value = true;
-        error.value = ""
-        try{
-            const response = await $api('/contrat/admin-contrat', {
-                method:"POST",
-                body:payload
+        error.value = null;
+        try {
+            const response = await $api<Category>('/contrat/admin-category/', {
+                method: "POST",
+                body: payload
             });
-            if(response){
-                console.log("admin réponse contrat", response);
+            if (response) {
+                categories.value.unshift(response); // Ajoute au début de la liste locale
                 return response;
             }
-        } catch{
-            error.value = err.message || "Erreur lors de l'ajout de catégorie";
-            console.error("Un souci est intervenu :", err);
-        } finally{
+        } catch (err: any) {
+            error.value = err.message || "Erreur lors de l'ajout de la catégorie";
+            throw err;
+        } finally {
             isLoading.value = false;
         }
-    }
+    };
 
-    return{
+    const deleteCategory = async (categoryId: string) => {
+        isLoading.value = true;
+        try {
+            await $api(`/contrat/admin-category/${categoryId}/`, { method: "DELETE" });
+            categories.value = categories.value.filter(c => c.id !== categoryId);
+        } catch (err: any) {
+            error.value = err.message || "Erreur lors de la suppression de la catégorie";
+            throw err;
+        } finally {
+            isLoading.value = false;
+        }
+    };
+
+    // ==========================================
+    // ACTIONS : CONTRATS STANDARDS (BOUTIQUE)
+    // ==========================================
+    const fetchContracts = async () => {
+        isLoading.value = true;
+        error.value = null;
+        try {
+            const response = await $api<Contrat[]>('/contrat/admin-contrat/', { method: 'GET' });
+            if (response) contracts.value = response;
+        } catch (err: any) {
+            error.value = err.message || "Erreur lors de la récupération des contrats";
+        } finally {
+            isLoading.value = false;
+        }
+    };
+
+    const addNewContract = async (payload: FormData) => {
+        isLoading.value = true;
+        error.value = null;
+        try {
+            // Requête POST avec FormData (pour gérer fichier_modele et picture)
+            const response = await $api<Contrat>('/contrat/admin-contrat/', {
+                method: "POST",
+                body: payload
+            });
+            if (response) {
+                contracts.value.unshift(response);
+                return response;
+            }
+        } catch (err: any) {
+            error.value = err.message || "Erreur lors de l'ajout du contrat";
+            throw err;
+        } finally {
+            isLoading.value = false;
+        }
+    };
+
+    const updateContract = async (contractId: string, payload: FormData) => {
+        isLoading.value = true;
+        error.value = null;
+        try {
+            const response = await $api<Contrat>(`/contrat/admin-contrat/${contractId}/`, {
+                method: "PATCH", // PATCH permet de ne modifier que certains champs (ex: prix) sans écraser le fichier
+                body: payload
+            });
+            if (response) {
+                // Mise à jour locale
+                const index = contracts.value.findIndex(c => c.id === contractId);
+                if (index !== -1) contracts.value[index] = response;
+                return response;
+            }
+        } catch (err: any) {
+            error.value = err.message || "Erreur lors de la modification du contrat";
+            throw err;
+        } finally {
+            isLoading.value = false;
+        }
+    };
+
+    const deleteContract = async (contractId: string) => {
+        isLoading.value = true;
+        try {
+            await $api(`/contrat/admin-contrat/${contractId}/`, { method: "DELETE" });
+            contracts.value = contracts.value.filter(c => c.id !== contractId);
+        } catch (err: any) {
+            error.value = err.message || "Erreur lors de la suppression du contrat";
+            throw err;
+        } finally {
+            isLoading.value = false;
+        }
+    };
+
+    const toggleContractStatus = async (contractId: string, isActive: boolean) => {
+        try {
+            await $api(`/contrat/admin-contrat/${contractId}/toggle-status/`, {
+                method: "PATCH",
+                body: { is_active: isActive }
+            });
+        } catch (err: any) {
+            error.value = err.message || "Impossible de changer le statut";
+            throw err;
+        }
+    };
+
+    // ==========================================
+    // ACTIONS : CONTRATS SUR MESURE
+    // ==========================================
+    const fetchCustomContracts = async () => {
+        isLoading.value = true;
+        try {
+            const response = await $api<CustomContract[]>('/admin/contrat/sur-mesure/', { method: 'GET' });
+            if (response) customContracts.value = response;
+        } catch (err: any) {
+            console.error(err);
+        } finally {
+            isLoading.value = false;
+        }
+    };
+
+    return {
+        // State
         isLoading,
         error,
+        categories,
+        contracts,
+        customContracts,
+        // Categories
+        fetchCategories,
         addNewCategory,
-        addNewContract
-    }
+        deleteCategory,
+        // Contracts
+        fetchContracts,
+        addNewContract,
+        updateContract,
+        deleteContract,
+        toggleContractStatus,
+        // Custom
+        fetchCustomContracts
+    };
 
-}, {persist:true})
+}, { persist: true });

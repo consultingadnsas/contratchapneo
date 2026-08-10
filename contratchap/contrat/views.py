@@ -531,6 +531,7 @@ class CustomContractFromPack(APIView):
 class AdminContractListCreateView(APIView):
     
     permission_classes = [IsAdminUser]
+    authentication_classes = []
 
     def post(self, request):
         
@@ -564,6 +565,7 @@ class AdminContractListCreateView(APIView):
 # ==============================================
 class AdminContractDetailView(APIView):
     permission_classes = [IsAdminUser]
+    authentication_classes = []
 
     def get(self, request, contrat_id):
         """Récupération d'un contrat spécifique avec sa catégorie"""
@@ -616,6 +618,7 @@ class AdminContractDetailView(APIView):
 class AdminCategoryDetail(APIView):
 
     permission_classes=[IsAdminUser]
+    authentication_classes = []
 
     def post(self, request):
 
