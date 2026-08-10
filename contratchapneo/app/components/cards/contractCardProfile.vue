@@ -176,8 +176,8 @@ export default defineComponent({
 
 .pro-name {
     margin-right: 1.5rem;
-    font-size: 1rem;
-    font-weight: 500;
+    font-size: 0.9rem;
+    font-weight: 600;
     line-height: 1.2;
     letter-spacing: -0.02em;
 

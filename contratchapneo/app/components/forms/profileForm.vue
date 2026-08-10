@@ -3,8 +3,17 @@
         
         <h3>Votre profil</h3>
 
-        <div class="form-grid">
+        <!-- ⚡️ BANNIÈRE DE SUCCÈS ANIMÉE -->
+        <Transition name="fade-slide">
+            <div v-if="showSuccess" class="success-banner">
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon-success" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clip-rule="evenodd" />
+                </svg>
+                <span>Vos informations ont été enregistrées avec succès.</span>
+            </div>
+        </Transition>
 
+        <div class="form-grid">
             <BaseInput
                 label="Nom de famille"
                 v-model="registrationForm.last_name"
@@ -42,14 +51,21 @@
                 :errorMessage="errors.phone_number"
                 :disabled="isSubmitting"
             />
-
         </div>
 
         <div class="form-actions">
+            <!-- ⚡️ LABEL ET STYLE DU BOUTON DYNAMIQUES -->
             <mainButton 
                 type="submit" 
-                label="Mettre à jour"
+                :label="showSuccess ? 'Enregistré !' : 'Mettre à jour'"
                 :isloading="isSubmitting"
+                :class="{ 'btn-success-state': showSuccess }"
+            />
+            <secondButton 
+                type="reset" 
+                label="Réinitialiser mon mot de passe"
+                :disabled="isSubmitting"
+                @click.prevent="router.push('/auth/password-reset')"
             />
         </div>
 
@@ -64,6 +80,8 @@
 import { ref, onMounted } from 'vue'
 import BaseInput from '../input/BaseInput.vue'
 import mainButton from '../buttons/mainButton.vue'
+import secondButton from '../buttons/secondButton.vue'
+import { useRouter } from 'vue-router'
 
 import type { User } from '../../stores/authStore'
 import { useAuthStore } from '../../stores/authStore'
@@ -71,10 +89,14 @@ import { useAuthStore } from '../../stores/authStore'
 export default {
     components: {
         BaseInput,
-        mainButton
+        mainButton,
+        secondButton
     },
-    setup() {
+    emits:['updated'],
+    setup(props, { emit }) {
         const authStore = useAuthStore();
+        const showSuccess = ref(false);
+        const router = useRouter();
 
         const isSubmitting = ref(false);
 
@@ -152,6 +174,20 @@ export default {
                     // ⚠️ Ici, tu appelles register(), 
                     // mais tu devras créer une fonction updateProfile() dans ton store pour gérer l'API PUT/PATCH !
                     await authStore.updateProfile(payload); // <--- À adapter selon ton store
+                    // 2. OPTION A (Moderne et fluide) : On refetch directement le profil pour 
+                    // rafraîchir le nom dans le header et dans les champs de formulaire !
+                    await authStore.getProfile();
+                   
+                    console.log("✅ Profil mis à jour et rafraîchi avec succès !");
+                    // 3. EMIT : On notifie le parent que la mise à jour a été effectuée
+                    emit('updated');
+                    // 2. ⚡️ On active l'animation de succès
+                    showSuccess.value = true;
+
+                    // 3. On désactive le message après 3.5 secondes pour garder le formulaire propre
+                    setTimeout(() => {
+                        showSuccess.value = false;
+                    }, 3500);
                     
                 } catch (error) {
                     console.error("La mise à jour a échoué.");
@@ -192,7 +228,9 @@ export default {
             registrationForm,
             errors,
             submitForm,
-            isSubmitting 
+            isSubmitting,
+            showSuccess,
+            router
         }
     }
 }
@@ -214,6 +252,39 @@ export default {
     gap: 1rem;
     width: 100%;
 }
+/* ── Bannière de succès ── */
+.success-banner {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    background-color: #f0fdf4;
+    color: #166534;
+    border: 1px solid #bbf7d0;
+    padding: 0.85rem 1rem;
+    border-radius: 0.75rem;
+    font-size: 0.95rem;
+    font-weight: 500;
+    box-shadow: 0 4px 12px rgba(22, 101, 52, 0.05);
+}
+
+.icon-success {
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+    color: #22c55e;
+}
+
+/* ── Transitions Vue (fade + glissement vers le bas) ── */
+.fade-slide-enter-active,
+.fade-slide-leave-active {
+    transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.fade-slide-enter-from,
+.fade-slide-leave-to {
+    opacity: 0;
+    transform: translateY(-10px);
+}
 
 /* 💻 Écrans larges (Laptop / Tablette) : on passe à 2 colonnes */
 @media (min-width: 768px) {
@@ -225,6 +296,7 @@ export default {
 
 .form-actions {
     width: 100%;
+    gap: 1.5rem;
     display: flex;
     justify-content: flex-start; /* ou 'center' / 'flex-end' selon tes goûts */
     margin-top: 0.5rem;

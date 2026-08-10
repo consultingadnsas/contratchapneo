@@ -10,7 +10,8 @@
       </div>
       
       <div class="grid-4-cols">
-        <div class="folder-wrapper" v-for="(cat, index) in contratstore.categories" :key="index" @click="openCategory(cat)">
+        <div class="folder-wrapper" v-for="cat in filteredCategories" :key="cat.id" @click="openCategory(cat)">
+          <!-- ⚡️ Utilisation de cat.title -->
           <folderCards 
             :title="cat.title" 
             subtitle="Dossier Boutique" 
@@ -18,7 +19,7 @@
             :hasItems="true" 
           />
           
-          <button class="delete-folder-btn" @click.stop="handleDeleteFolder(index, cat)" title="Supprimer ce dossier et son contenu">
+          <button class="delete-folder-btn" @click.stop="handleDeleteFolder(cat)" title="Supprimer ce dossier">
             <component :is="TrashIcon" class="icon-xs" />
           </button>
         </div>
@@ -36,29 +37,29 @@
           <component :is="ArrowLeftIcon" class="icon-sm" /> Retour aux dossiers
         </button>
         <div class="folder-title-box">
-          <h3 class="section-title text-blue">{{ openedCategory }}</h3>
+          <h3 class="section-title text-blue">{{ openedCategory.title }}</h3>
         </div>
       </div>
 
       <div class="grid-2-cols">
-        <!-- Cartes des contrats existants -->
-        <div class="contract-card" v-for="category in contratstore.categories" :key="category.id" :class="{'card-offline': !contract.isActive}">
+        <!-- ⚡️ is_active au lieu de isActive -->
+        <div class="contract-card" v-for="contract in filteredContracts" :key="contract.id" :class="{'card-offline': !contract.is_active}">
           <div class="card-header">
             <div class="icon-box-light"><component :is="DocumentTextIcon" class="icon-md" /></div>
-            <span class="status-badge" :class="contract.isActive ? 'badge-green' : 'badge-gray'">
-              {{ contract.isActive ? 'En ligne' : 'Hors ligne' }}
+            <span class="status-badge" :class="contract.is_active ? 'badge-green' : 'badge-gray'">
+              {{ contract.is_active ? 'En ligne' : 'Hors ligne' }}
             </span>
           </div>
 
           <div class="card-body">
             <h4 class="dark-text">{{ contract.title }}</h4>
-            <span class="gray-text text-sm">{{ contract.price }} FCFA</span>
+            <span class="gray-text text-sm">{{ contract.prix || contract.price }} FCFA</span>
           </div>
 
           <div class="card-footer">
             <div class="actions-block">
               <label class="switch" title="Mettre en ligne / Hors ligne">
-                <input type="checkbox" v-model="contract.isActive" @change="$emit('toggle-status', contract)">
+                <input type="checkbox" v-model="contract.is_active" @change="toggleStatus(contract)">
                 <span class="slider round"></span>
               </label>
               <button class="action-icon-btn edit-btn" @click="$emit('edit-contract', contract)">
@@ -70,7 +71,8 @@
             </div>
           </div>
         </div>
-        <div class="contract-card add-card" @click="$emit('add-contract', { isNew: true, categoryName: openedCategory })">
+        
+        <div class="contract-card add-card" @click="$emit('add-contract', { isNew: true, categoryId: openedCategory.id })">
           <div class="add-circle"><component :is="PlusIcon" class="icon-lg" /></div>
           <h4 class="dark-text mt-3">Ajouter un contrat</h4>
         </div>
@@ -78,6 +80,7 @@
 
     </div>
 
+    <!-- Modale inchangée -->
     <transition name="fade">
       <div v-if="isFolderModalOpen" class="folder-modal-overlay" @click.self="isFolderModalOpen = false">
         <div class="folder-modal">
@@ -89,17 +92,19 @@
           <form @submit.prevent="handleAdd" class="folder-modal-body">
             <div class="form-group">
               <label for="folderName">Nom de la catégorie</label>
-              <input type="text" id="folderName" v-model="newFolderData.name" placeholder="Ex: Droit Immobilier" required />
+              <input type="text" id="folderName" v-model="newFolderData.name" required />
             </div>
             
             <div class="form-group">
               <label for="folderDesc">Description</label>
-              <textarea id="folderDesc" v-model="newFolderData.description" placeholder="Courte description de ce dossier..." rows="3" required></textarea>
+              <textarea id="folderDesc" v-model="newFolderData.description" rows="3" required></textarea>
             </div>
 
             <div class="folder-modal-footer">
               <button type="button" class="btn-cancel" @click="isFolderModalOpen = false">Annuler</button>
-              <button type="submit" class="btn-save">Créer le dossier</button>
+              <button type="submit" class="btn-save" :disabled="adminStore.isLoading">
+                {{ adminStore.isLoading ? 'Création...' : 'Créer le dossier' }}
+              </button>
             </div>
           </form>
         </div>
@@ -110,64 +115,37 @@
 </template>
 
 <script lang="ts">
-import { ref, computed, markRaw, onMounted, reactive } from 'vue';
+import { ref, computed, markRaw, reactive } from 'vue';
 import { PlusIcon, TrashIcon, PencilSquareIcon, DocumentTextIcon, ArrowLeftIcon, MagnifyingGlassIcon } from '@heroicons/vue/24/outline';
 import folderCards from '../../../cards/folderCards.vue'; 
-import {useContratStore} from '../../../../stores/contratStore';
-import type {Contrat, Category} from '../../../../stores/contratStore';
-import {useAdminContratStore} from '../../../../stores/adminContratStore'
+import { useAdminContratStore } from '../../../../stores/adminContratStore'; // 👈 Ajuste le chemin
 
 export default {
-  
   name: 'AdminCategories',
-  
   components: { folderCards },
-  
   props: {
-    categories: { 
-      type: Array as () => string[], 
-      required: true 
-    },
-    contracts: { 
-      type: Array as () => any[], 
-      required: true 
-    },
-    searchQuery: { 
-      type: String, 
-      default: '' 
-    }
+    categories: { type: Array as () => any[], required: true },
+    contracts: { type: Array as () => any[], required: true },
+    searchQuery: { type: String, default: '' }
   },
+  emits: ['add-contract', 'edit-contract'],
   
-  emits: ['add-category', 'delete-category', 'add-contract', 'edit-contract', 'delete-contract', 'toggle-status'],
-  
-  setup(props, { emit }) {
-    
-    // Store pour gérer les catégories
-
-    const contratstore = useContratStore();
+  setup(props) {
     const adminStore = useAdminContratStore();
+    const openedCategory = ref<any>(null); // Stocke l'objet Category complet
 
-    const openedCategory = ref<string | null>(null);
-    const newCategory = ref<null | string>('');
-
-    // About Modale
     const isFolderModalOpen = ref<boolean>(false);
-    const newFolderData = reactive({
-      name:'',
-      description:''
-    })
+    const newFolderData = reactive({ name: '', description: '' });
 
     // --- RECHERCHE ---
     const filteredCategories = computed(() => {
       if (!props.searchQuery) return props.categories;
-      return props.categories.filter(c => {
-        const catName = typeof c === 'string' ? c : (c as any).name;
-        return catName.toLowerCase().includes(props.searchQuery.toLowerCase());
-      });
+      return props.categories.filter(c => c.title.toLowerCase().includes(props.searchQuery.toLowerCase()));
     });
 
     const filteredContracts = computed(() => {
-      let list = props.contracts.filter(c => c.category === openedCategory.value);
+      // ⚡️ Comparaison avec l'ID de la catégorie
+      let list = props.contracts.filter(c => c.category === openedCategory.value?.id);
       if (props.searchQuery) {
         list = list.filter(c => c.title.toLowerCase().includes(props.searchQuery.toLowerCase()));
       }
@@ -175,62 +153,50 @@ export default {
     });
 
     // --- NAVIGATION ---
-    const openCategory = (cat: string | any) => { 
-      openedCategory.value = typeof cat === 'string' ? cat : cat.name;
-    };
+    const openCategory = (cat: any) => { openedCategory.value = cat; };
     const closeCategory = () => { openedCategory.value = null; };
 
-    // --- ACTIONS DOSSIERS ---
-    const handleAdd = () => {
+    // --- ACTIONS API ---
+    const handleAdd = async () => {
       if (newFolderData.name.trim() !== '') {
-        // 1. Appel au store avec le bon format
-        adminStore.addNewCategory({ 
-            title: newFolderData.name, 
-            description: newFolderData.description 
-        });
-        
-        // 2. Émission vers le parent
-        emit('add-category', { 
-          name: newFolderData.name, 
-          description: newFolderData.description 
-        });
-        
-        // 3. Réinitialisation
-        newFolderData.name = '';
-        newFolderData.description = '';
-        isFolderModalOpen.value = false;
-
-        contratstore.getCategories();
+        try {
+          await adminStore.addNewCategory({ title: newFolderData.name, description: newFolderData.description });
+          newFolderData.name = '';
+          newFolderData.description = '';
+          isFolderModalOpen.value = false;
+        } catch (e) {
+          alert("Erreur lors de la création");
+        }
       }
     };
 
-    const handleDeleteFolder = (index: number, catName: string) => {
-      // Alerte globale de suppression de dossier et de son contenu
-      if (confirm(`⚠️ ATTENTION : Si vous supprimez le dossier "${catName}", vous supprimerez également TOUT son contenu (tous les contrats associés). Voulez-vous vraiment continuer ?`)) {
-        emit('delete-category', index, catName);
+    const handleDeleteFolder = async (cat: any) => {
+      if (confirm(`⚠️ Supprimer le dossier "${cat.title}" et son contenu ?`)) {
+        await adminStore.deleteCategory(cat.id);
       }
     };
 
-    const handleDeleteContract = (id: number) => {
-      if(confirm('Supprimer ce contrat définitivement ?')) emit('delete-contract', id);
+    const handleDeleteContract = async (id: string) => {
+      if(confirm('Supprimer ce contrat définitivement ?')) {
+        await adminStore.deleteContract(id);
+      }
     };
 
-    onMounted(()=>{
-      contratstore.getCategories();
-    })
+    const toggleStatus = async (contract: any) => {
+      try {
+        await adminStore.toggleContractStatus(contract.id, contract.is_active);
+      } catch (e) {
+        // En cas d'échec de l'API, on annule visuellement le switch
+        contract.is_active = !contract.is_active;
+        alert("Erreur lors de la modification du statut.");
+      }
+    };
 
     return {
-      newFolderData,
-      isFolderModalOpen,
-      contratstore,
       adminStore,
-      openedCategory, 
-      openCategory, 
-      closeCategory, 
-      newCategory, 
-      filteredCategories, 
-      filteredContracts,
-      handleAdd, handleDeleteFolder, handleDeleteContract,
+      newFolderData, isFolderModalOpen, openedCategory, openCategory, closeCategory, 
+      filteredCategories, filteredContracts,
+      handleAdd, handleDeleteFolder, handleDeleteContract, toggleStatus,
       PlusIcon: markRaw(PlusIcon), TrashIcon: markRaw(TrashIcon), 
       PencilSquareIcon: markRaw(PencilSquareIcon), DocumentTextIcon: markRaw(DocumentTextIcon), 
       ArrowLeftIcon: markRaw(ArrowLeftIcon), MagnifyingGlassIcon: markRaw(MagnifyingGlassIcon)
@@ -240,6 +206,7 @@ export default {
 </script>
 
 <style scoped>
+/* Conserve ton CSS d'origine tel quel ici ! */
 .categories-container { font-family: 'Inter', sans-serif; }
 
 /* DOSSIERS */

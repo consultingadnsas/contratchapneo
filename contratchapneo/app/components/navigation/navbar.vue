@@ -2,7 +2,7 @@
     <header :class="['main-header', `theme-${theme}`, { 'is-scrolled': isScrolled }]">
         <nav class="nav-container">
             <NuxtLink to="/" class="pic__container" @click="closeMenu">
-                <img src="/LOGO_CONTRATCHAP.png" alt="ContratchapNeo">
+                <img :src="'/LOGO_CONTRATCHAP.png'" alt="ContratchapNeo">
             </NuxtLink>
 
             <DesktopMenu :theme="theme" :isScrolled="isScrolled" />

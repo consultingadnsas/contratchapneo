@@ -1,5 +1,5 @@
 import { defineStore } from "pinia";
-import { ref } from "vue";
+import { ref, computed } from "vue";
 import { useCartStore } from './cartStore';
 import { useProfileStore } from './profileStore';
 
@@ -32,7 +32,7 @@ export interface ChangePasswordPayload {
 
 export const useAuthStore = defineStore('auth', () => {
 
-  // State
+  // --- State ---
   const user = ref<User>({
     id: '',
     username: '',
@@ -49,11 +49,48 @@ export const useAuthStore = defineStore('auth', () => {
 
   const { $api } = useNuxtApp()
 
- // Actions
+  // --- Getters (Réintégrés pour le Middleware, la Navbar et le Dashboard) ---
+  const getSafeUser = () => {
+    if (user.value && (user.value as any).user) {
+      return (user.value as any).user;
+    }
+    return user.value || {};
+  };
+
+  const isAuthenticated = computed(() => {
+    const u = getSafeUser();
+    return Boolean(
+      (u.username && u.username !== '' && u.username !== 'AnonymousUser') ||
+      (u.email && u.email !== '')
+    );
+  });
+
+  const userInitials = computed(() => {
+    const u = getSafeUser();
+    if (u.first_name && u.last_name) {
+      return (u.first_name.charAt(0) + u.last_name.charAt(0)).toUpperCase();
+    } else if (u.username && u.username !== 'AnonymousUser') {
+      return u.username.substring(0, 2).toUpperCase();
+    }
+    return 'DB';
+  });
+
+  const displayName = computed(() => {
+    const u = getSafeUser();
+    if (u.first_name && u.first_name !== '') {
+      return u.first_name;
+    } else if (u.username && u.username !== '' && u.username !== 'AnonymousUser') {
+      return u.username;
+    } else if (u.email && u.email !== '') {
+      return u.email.split('@')[0];
+    }
+    return 'invité';
+  });
+
+  // --- Actions ---
   const register = async (payload: Omit<User, 'id'>) => {
-    
     isLoading.value = true;
-    error.value = null; // ⚡️ On réinitialise l'erreur proprement
+    error.value = null;
 
     try {
       const response = await $api('/account/register/', {
@@ -62,19 +99,16 @@ export const useAuthStore = defineStore('auth', () => {
       })
 
       if (response) {
-        // Debuging
         console.log('Réponse de création', response)
-        await navigateTo('/auth/login'); // ⚡️ N'oublie pas le await pour la navigation
+        await navigateTo('/auth/login');
       }
 
     } catch (err: any) {
       console.error("Détails de l'erreur backend :", err.response?._data);
       
-      // ⚡️ CORRECTION : Extraction des vraies erreurs renvoyées par Django
       if (err.response && err.response._data) {
           const data = err.response._data;
           if (data.errors) {
-              // Récupère la première erreur (ex: username déjà pris)
               const firstKey = Object.keys(data.errors)[0];
               error.value = data.errors[firstKey][0];
           } else {
@@ -84,16 +118,14 @@ export const useAuthStore = defineStore('auth', () => {
           error.value = "Impossible de joindre le serveur.";
       }
       
-      // On lève l'erreur pour que le formulaire puisse arrêter son traitement si besoin
       throw err; 
 
     } finally {
-      // ⚡️ Ça arrête le spinner quoi qu'il arrive
       isLoading.value = false;
     }
   }
 
-  // Nouvelle action pour le Login
+  // Action pour le Login avec enregistrement du token + chargement du profil
   const login = async (credentials: Pick<User, 'email' | 'username' | 'password'>) => {
     isLoading.value = true
     error.value = null
@@ -101,17 +133,26 @@ export const useAuthStore = defineStore('auth', () => {
     console.log('[AuthStore] login() → credentials envoyés :', credentials)
 
     try {
-      // Ajuste l'URL '/auth/login' selon la structure de ton backend
       const response = await $api('/account/login/', {
         method: 'POST',
         body: credentials,
       })
 
-      if (response){
+      if (response) {
         console.log('[AuthStore] login() → réponse reçue :', response)
 
-        // Met à jour l'utilisateur (ou gère le stockage du token ici si nécessaire)
-        user.value = (response as any).data?.user || {}
+        // 1. Enregistrer le token dans les cookies Nuxt (Indispensable pour le SSR & Middleware)
+        const resData = (response as any).data || response;
+        const tokenCookie = useCookie('token', {
+          maxAge: 60 * 60 * 24 * 7, // 7 jours
+          sameSite: 'lax'
+        });
+        
+        tokenCookie.value = resData.token || resData.access || resData.key;
+        console.log('[AuthStore] ✅ Cookie token enregistré :', tokenCookie.value);
+
+        // 2. Charger directement le profil complet via getProfile()
+        await getProfile();
 
         return response
       } else {
@@ -129,6 +170,7 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
+  // Ton getProfile fusionné et respecté à 100% (avec le { user: User })
   const getProfile = async () => {
     isLoading.value = true;
 
@@ -150,44 +192,36 @@ export const useAuthStore = defineStore('auth', () => {
     }
   };
 
-  const updateProfile = async (payload:User) => {
-
+  const updateProfile = async (payload: User) => {
     isLoading.value = true;
 
     try {
-
-      const response = await $api('/account/me/',{
-        method:'PATCH',
-        body:payload
+      const response = await $api('/account/me/', {
+        method: 'PATCH',
+        body: payload
       })
 
-      if(response){
-
-        console.log("Mise à jour résussie", response)
+      if (response) {
+        console.log("Mise à jour réussie", response)
       }
 
-    } catch(err:any){
-      console.error("Une erreur esrt survenue lors de la mise à jour", err)
+    } catch (err: any) {
+      console.error("Une erreur est survenue lors de la mise à jour", err)
     } finally {
       isLoading.value = false;
     }
-
   }
 
   const logout = async () => {
     isLoading.value = true;
 
     try {
-      // 1. Avertir le backend de fermer la session (invalider le token côté serveur)
       await $api('/account/logout/', {
         method: 'POST'
       });
     } catch (err: any) {
-      // On capture l'erreur mais on ne bloque pas la suite. 
-      // Si le backend échoue (ex: token déjà expiré), on DOIT quand même déconnecter l'utilisateur localement.
       console.error('❌ Erreur lors de la déconnexion backend :', err);
     } finally {
-      // 2. Vider le state utilisateur localement (CRUCIAL)
       user.value = {
         id: '',
         username: '',
@@ -199,75 +233,60 @@ export const useAuthStore = defineStore('auth', () => {
         user_type: ''
       };
 
-      // 3. Supprimer le(s) cookie(s) d'authentification
       const token = useCookie('token');
       token.value = null; 
       
-      //4. Vider les autres stores (Panier et Profil)
-      // Importe ces stores en haut de ton fichier si ce n'est pas fait
       const cartStore = useCartStore();
       const profileStore = useProfileStore();
       
-      // On utilise nos nouvelles fonctions personnalisées !
       cartStore.clearLocalCart();
       profileStore.clearLocalProfile();
 
       console.log('✅ Déconnexion locale réussie et state purgé !');
       isLoading.value = false;
 
-      // 5. Rediriger l'utilisateur vers la page de connexion
       await navigateTo('/auth/login', { replace: true }); 
     }
   };
 
-  const resetPassword = async(payload: ForgotPasswordPayload) => {
-    
+  const resetPassword = async (payload: ForgotPasswordPayload) => {
     isLoading.value = true;
 
-    try{
-
+    try {
       const response = await $api('/account/password-reseting/', {
-        method:'POST',
+        method: 'POST',
         body: payload,
       })
 
-      if(response){
+      if (response) {
         console.log("Votre reponse", response)
       }
 
-    } catch(err:any) {
-
+    } catch (err: any) {
       console.log("Erreur survenue", err)
-
     } finally {
       isLoading.value = false;
     }
-
   }
 
-  const ConfirmToken = async(payload:VerifyTokenPayload) => {
-    
+  const ConfirmToken = async (payload: VerifyTokenPayload) => {
     isLoading.value = true;
 
-    try{
-
+    try {
       const response = await $api('/account/password-reset/verify-token/', {
-        method:'POST',
+        method: 'POST',
         body: payload,
       })
 
-      if(response){
+      if (response) {
         console.log("Votre reponse", response)
       }
 
-    } catch(err:any) {
-
+    } catch (err: any) {
       console.log("Erreur survenue", err)
-
     } finally {
       isLoading.value = false;
     }
-
   }
 
   const ChangePassword = async (payload: ChangePasswordPayload) => {
@@ -293,6 +312,9 @@ export const useAuthStore = defineStore('auth', () => {
     user,
     isLoading,
     error,
+    isAuthenticated,
+    userInitials,
+    displayName,
     register,
     login,
     getProfile,

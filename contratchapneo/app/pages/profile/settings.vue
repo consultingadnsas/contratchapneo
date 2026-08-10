@@ -9,7 +9,7 @@
       <header class="dashboard-header">
       
         <div v-if="authStore.user">
-          <p class="greeting">Profile, {{ authStore.user?.username ?? 'invité' }}</p>
+          <p class="greeting">Profile, {{  authStore.displayName  }}</p>
         </div>
     
         <div v-else>
@@ -20,7 +20,7 @@
         
       <div class="dashboard-grid">
 
-        <profile-form/>
+        <profile-form @updated="authStore.getProfile()"/>
 
       </div>
 

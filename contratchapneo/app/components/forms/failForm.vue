@@ -14,20 +14,6 @@
         Votre transaction a été annulée ou n'a pas abouti. Aucun montant n'a été débité. <br>
         Vous serez redirigé dans <span>{{ countdown }}s</span>.
     </p>
-    
-    <div class="fail__actions">
-        <button
-            class="fail__retry"
-            @click="goToCart"
-        >
-            Réessayer le paiement
-        </button>
-        
-        <mainButton 
-            label="Aller à la page d'accueil" 
-            @click="()=>router.push('/')"
-        />
-    </div>
   </div>
 </template>
 
@@ -44,7 +30,7 @@ export default {
     props: {
         message: {
             type: String,
-            default: 'Paiement annulé !'
+            default: 'Paiement échoué !'
         }
     },
     emits: ['timeout'],
@@ -140,26 +126,4 @@ export default {
     color: #ef4444;
 }
 
-.fail__actions {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-    margin-top: 1rem;
-}
-
-.fail__retry {
-    background: #ef4444;
-    color: #fff;
-    border: none;
-    border-radius: 999px;
-    padding: 0.9rem 1.5rem;
-    font-weight: 700;
-    cursor: pointer;
-    transition: transform 0.2s ease, background 0.2s ease;
-}
-
-.fail__retry:hover {
-    transform: translateY(-2px);
-    background: #dc2626;
-}
 </style>

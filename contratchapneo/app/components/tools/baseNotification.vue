@@ -1,45 +1,46 @@
 <template>
-  <!-- Le conteneur global qui gère la file d'attente -->
-  <div class="toast-container">
-    <TransitionGroup name="toast">
-      
-      <!-- On boucle sur la liste interne des notifications -->
-      <div 
-        v-for="toast in internalToasts" 
-        :key="toast.id" 
-        class="notification-toast" 
-        :class="`toast-${toast.type}`"
-      >
-        
-        <!-- Icône dynamique -->
-        <div class="toast-icon">
-          <svg v-if="toast.type === 'success'" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-          </svg>
-          <svg v-else-if="toast.type === 'error'" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3Z" />
-          </svg>
-        </div>
+  <Teleport to="body">
+      <div class="toast-container">
+        <TransitionGroup name="toast">
+          
+          <!-- On boucle sur la liste interne des notifications -->
+          <div 
+            v-for="toast in internalToasts" 
+            :key="toast.id" 
+            class="notification-toast" 
+            :class="`toast-${toast.type}`"
+          >
+            
+            <!-- Icône dynamique -->
+            <div class="toast-icon">
+              <svg v-if="toast.type === 'success'" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+              </svg>
+              <svg v-else-if="toast.type === 'error'" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3Z" />
+              </svg>
+            </div>
 
-        <!-- Contenu du message -->
-        <div class="toast-content">
-          <h4 class="toast-title">{{ toast.title }}</h4>
-          <p v-if="toast.message" class="toast-message">{{ toast.message }}</p>
-        </div>
+            <!-- Contenu du message -->
+            <div class="toast-content">
+              <h4 class="toast-title">{{ toast.title }}</h4>
+              <p v-if="toast.message" class="toast-message">{{ toast.message }}</p>
+            </div>
 
-        <!-- Bouton de fermeture manuelle -->
-        <button class="toast-close" @click="removeToast(toast.id)" aria-label="Fermer">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
-          </svg>
-        </button>
+            <!-- Bouton de fermeture manuelle -->
+            <button class="toast-close" @click="removeToast(toast.id)" aria-label="Fermer">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+              </svg>
+            </button>
 
-        <!-- Barre de progression animée -->
-        <div class="toast-progress" :style="{ animationDuration: `${duration}ms` }"></div>
-        
+            <!-- Barre de progression animée -->
+            <div class="toast-progress" :style="{ animationDuration: `${duration}ms` }"></div>
+            
+          </div>
+        </TransitionGroup>
       </div>
-    </TransitionGroup>
-  </div>
+    </Teleport>
 </template>
 
 <script lang="ts">

@@ -22,7 +22,7 @@
           </button>
         </div>
 
-        <!-- NOUVEAU : BOUTON D'AJOUT GLOBAL AVEC MENU DÉROULANT -->
+        <!-- MENU DÉROULANT D'AJOUT -->
         <div class="dropdown-container">
           <button class="add-global-btn" @click="toggleDropdown">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="btn-icon">
@@ -31,7 +31,6 @@
             Nouveau Contrat
           </button>
 
-          <!-- Le menu déroulant -->
           <div v-if="isDropdownOpen" class="dropdown-menu">
             <button class="dropdown-item" @click="handleCreateStandard">
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="dropdown-icon"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" /></svg>
@@ -50,7 +49,7 @@
     <adminCategories 
       v-if="activeTab === 'categories'"
       :categories="standardCategories"
-      :contracts="contratStore.contracts"
+      :contracts="standardContracts" 
       :searchQuery="searchQuery"
       @add-category="addStdCategory"
       @delete-category="deleteStdCategory"
@@ -70,7 +69,7 @@
       @toggle-status="toggleCustomStatus"
     />
 
-    <!-- MODALE GLOBALE D'AJOUT / ÉDITION (Uniquement pour Modèles) -->
+    <!-- MODALE GLOBALE D'AJOUT / ÉDITION -->
     <adminContratsModal 
       v-if="isModalOpen" 
       :contract="selectedContract" 
@@ -89,35 +88,27 @@ import adminContratsModal from '../../../modale/adminContratModale.vue';
 import adminCategories from './adminCategory.vue'; 
 import adminSurmesure from './adminSurmesure.vue';
 import { MagnifyingGlassIcon } from '@heroicons/vue/24/outline'; 
-import {useContratStore} from '../../../../stores/contratStore';
 
 export default {
   name: 'AdminContracts',
   components: { adminContratsModal, adminCategories, adminSurmesure },
   setup() {
-    const contratStore = useContratStore();
     const activeTab = ref('categories');
     const searchQuery = ref('');
-    const surmesureRef = ref<any>(null); // Pour appeler la méthode de l'enfant
+    const surmesureRef = ref<any>(null);
     
-    // --- GESTION DU DROPDOWN ---
     const isDropdownOpen = ref(false);
     
-    const toggleDropdown = () => {
-      isDropdownOpen.value = !isDropdownOpen.value;
-    };
+    const toggleDropdown = () => isDropdownOpen.value = !isDropdownOpen.value;
 
     const closeDropdownEvent = (e: MouseEvent) => {
       const target = e.target as HTMLElement;
-      if (!target.closest('.dropdown-container')) {
-        isDropdownOpen.value = false;
-      }
+      if (!target.closest('.dropdown-container')) isDropdownOpen.value = false;
     };
 
-    onMounted(() => { document.addEventListener('click', closeDropdownEvent); });
-    onBeforeUnmount(() => { document.removeEventListener('click', closeDropdownEvent); });
+    onMounted(() => document.addEventListener('click', closeDropdownEvent));
+    onBeforeUnmount(() => document.removeEventListener('click', closeDropdownEvent));
 
-    // --- ACTIONS DU MENU ---
     const handleCreateStandard = () => {
       activeTab.value = 'categories';
       openModal({ isNew: true, categoryName: '' });
@@ -127,40 +118,34 @@ export default {
     const handleCreateCustom = () => {
       activeTab.value = 'surmesure';
       isDropdownOpen.value = false;
-      // On attend que l'onglet s'affiche avant d'ouvrir sa modale
-      setTimeout(() => {
-        if (surmesureRef.value) {
-          surmesureRef.value.openLocalModal();
-        }
-      }, 50);
+      setTimeout(() => { if (surmesureRef.value) surmesureRef.value.openLocalModal(); }, 50);
     };
 
-    // --- DONNÉES : BOUTIQUE ---
+    // --- DONNÉES EN DUR (MOCK) ---
     const standardCategories = ref(['Création d\'entreprise', 'Ressources Humaines', 'Immobilier']);
     const standardContracts = ref([
       { id: 1, title: 'Statuts SARL OHADA', category: 'Création d\'entreprise', price: 15000, isActive: true },
+      { id: 2, title: 'Contrat de Travail CDI', category: 'Ressources Humaines', price: 20000, isActive: false },
     ]);
 
-    // --- DONNÉES : SUR-MESURE ---
     const customContracts = ref([
       { id: 3, title: 'Pacte d\'actionnaires complexe', price: 150000, isActive: true }
     ]);
 
-    // --- LOGIQUE : DOSSIERS ---
+    // --- LOGIQUE LOCALE ---
     const addStdCategory = (cat: string) => standardCategories.value.push(cat);
     const deleteStdCategory = (index: number, catName: string) => {
       standardCategories.value.splice(index, 1);
       standardContracts.value = standardContracts.value.filter(c => c.category !== catName);
     };
 
-    // --- LOGIQUE : CONTRATS ---
     const deleteStdContract = (id: number) => { standardContracts.value = standardContracts.value.filter(c => c.id !== id); };
     const deleteCustomContract = (id: number) => { customContracts.value = customContracts.value.filter(c => c.id !== id); };
     
     const toggleStdStatus = (contract: any) => console.log(`Statut modifié (Boutique) : ${contract.title}`);
     const toggleCustomStatus = (contract: any) => console.log(`Statut modifié (Sur-Mesure) : ${contract.title}`);
 
-    // --- GESTION DE LA MODALE PRINCIPALE ---
+    // --- MODALE ---
     const isModalOpen = ref(false);
     const selectedContract = ref<any>(null);
     const targetCategory = ref(''); 
@@ -193,7 +178,6 @@ export default {
     };
 
     return {
-      contratStore,
       activeTab, 
       standardCategories, standardContracts, customContracts,
       addStdCategory, deleteStdCategory, deleteStdContract, toggleStdStatus,
@@ -207,7 +191,7 @@ export default {
 </script>
 
 <style scoped>
-/* Les styles de base restent identiques[cite: 11] */
+/* Conserve ton CSS d'origine tel quel ici ! */
 .contracts-wrapper {
   --bg-main: #f8fafc; --bg-panel: #ffffff; --bg-panel-light: #f1f5f9; 
   --text-dark: #1e293b; --text-gray: #94a3b8; --accent-blue: #2563eb;
