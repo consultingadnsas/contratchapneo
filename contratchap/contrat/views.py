@@ -681,3 +681,73 @@ class AdminCategory(APIView):
             {"message": "Catégorie supprimée avec succès"}, 
             status=status.HTTP_204_NO_CONTENT
         )
+
+# ==============================================
+# 3. URL: /api/admin/packs/
+# ==============================================
+class AdminPackView(APIView):
+    permission_classes = [IsAdminUser]
+
+    def post(self, request):
+
+        try:
+
+            serializer = PackModelSerializer(data=request.data)
+            
+            # 1. raise_exception=True gère automatiquement le IF/ELSE et renvoie une erreur 400 propre !
+            serializer.is_valid(raise_exception=True) 
+            
+            # 2. Sauvegarde si c'est valide
+            serializer.save()
+            
+            # 3. Réponse 201
+            return Response(
+                {"data": serializer.data},
+                status=status.HTTP_201_CREATED
+            )
+            
+        except Exception as e:
+            # DRF loggera l'erreur en interne, et on renvoie un 500 personnalisé
+            return Response(
+                {"error": "Une erreur liée au serveur est survenue, réessayez plus tard."}, 
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+    def get(self, request):
+
+        packs = Pack.objects.all()
+
+        serializer = PackModelSerializer(packs, many=True)
+
+        return Response(
+            {
+                "data": serializer.data
+            }, status=status.HTTP_200_OK
+        )
+
+    def put(self, request, pack_id):
+
+        """ Mise à jour des packs"""
+
+        pack = get_object_or_404(Pack, id=pack_id)
+
+        serializer = PackModelSerializer(pack, data=request.data)
+
+        if serializer.is_valid():
+            serializer.save()
+
+            return Response(
+                {
+                    'data': serializer.data,
+                    'message': 'Pack mis à jour'
+                },
+                status=status.HTTP_200_OK
+            )
+
+    def delete(self, request, pack_id):
+        pack = get_object_or_404(Pack, id=pack_id)
+        pack.delete()
+        return Response(
+            {"message": "Contrat supprimé avec succès"}, 
+            status=status.HTTP_204_NO_CONTENT
+        )
