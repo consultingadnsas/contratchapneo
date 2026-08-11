@@ -1,18 +1,20 @@
 from django.urls import path
-from .views import (
+from .views.cart import (
     CartDetailView,
     CartAddItemView,
     CartAddPack,
     CartRemoveItemView,
     CartClearView,
     CartItemUpdateView,
-    CheckoutView,
+    ApplyCouponView,
+    RemoveCouponView
+)
+from .views.checkout import CheckoutView
+from .views.order import (
     OrderListView,
     OrderDetailView,
     OrderCancelView,
     OrderDownloadView,
-    ApplyCouponView,
-    RemoveCouponView
 )
 
 urlpatterns = [

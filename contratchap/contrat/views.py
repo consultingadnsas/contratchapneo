@@ -531,7 +531,6 @@ class CustomContractFromPack(APIView):
 class AdminContractListCreateView(APIView):
     
     permission_classes = [IsAdminUser]
-    authentication_classes = []
 
     def post(self, request):
         
@@ -564,8 +563,8 @@ class AdminContractListCreateView(APIView):
 # 2. URL: /api/admin/contracts/<int:contrat_id>/
 # ==============================================
 class AdminContractDetailView(APIView):
+
     permission_classes = [IsAdminUser]
-    authentication_classes = []
 
     def get(self, request, contrat_id):
         """Récupération d'un contrat spécifique avec sa catégorie"""
@@ -615,12 +614,13 @@ class AdminContractDetailView(APIView):
 # 3. URL: /api/admin/contract/
 # ==========================================
 
-class AdminCategoryDetail(APIView):
+class AdminCategory(APIView):
 
     permission_classes=[IsAdminUser]
-    authentication_classes = []
 
     def post(self, request):
+
+        # Ajouter une categories
 
         serializer = CategorySerializer(data=request.data)
 
@@ -640,4 +640,45 @@ class AdminCategoryDetail(APIView):
                 'message': 'Erreur lors de la création de la catégorie'
             },
             status=status.HTTP_400_BAD_REQUEST
+        )
+
+    def get(self, request):
+
+        categories = Category.objects.all()
+        serializer = CategorySerializer(categories, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def put(self, request):
+        # Mettre à jour une catégorie
+        category_id = request.data.get('id')
+        category = get_object_or_404(Category, id=category_id)
+
+        serializer = CategorySerializer(category, data=request.data, partial=True)
+
+        if serializer.is_valid():
+            serializer.save()
+            return Response(
+                {
+                    'data': serializer.data,
+                    'message': 'Catégorie mise à jour avec succès'
+                },
+                status=status.HTTP_200_OK
+            )
+        
+        return Response(
+            {
+                'error': serializer.errors,
+                'message': 'Erreur lors de la mise à jour de la catégorie'
+            },
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    def delete(self, request):
+        # Supprimer une catégorie
+        category_id = request.data.get('id')
+        category = get_object_or_404(Category, id=category_id)
+        category.delete()
+        return Response(
+            {"message": "Catégorie supprimée avec succès"}, 
+            status=status.HTTP_204_NO_CONTENT
         )
