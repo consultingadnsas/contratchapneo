@@ -23,6 +23,7 @@
                         :title="contrat.title"
                         :description="contrat.description"
                         :price="contrat.prix"
+                        :promoPrice="contrat.promo_price"
                         :image="contrat.picture || undefined"
                         :data-index="index"
                         @view="openViewModal(contrat.id)" 

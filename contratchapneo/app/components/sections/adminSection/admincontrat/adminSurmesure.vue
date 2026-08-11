@@ -1,27 +1,28 @@
 <template>
   <div class="surmesure-container">
 
-    <!-- PLUS DE BOUTON ICI ! -->
-
     <div class="grid-3-cols">
-      <div class="contract-card" v-for="contract in filteredContracts" :key="contract.id" :class="{'card-offline': !contract.isActive}">
+      <!-- ⚡️ CORRECTION : Utilisation de is_active au lieu de isActive -->
+      <div class="contract-card" v-for="contract in filteredContracts" :key="contract.id" :class="{'card-offline': !contract.is_active}">
         
         <div class="card-header">
           <div class="icon-box-purple"><component :is="DocumentTextIcon" class="icon-md" /></div>
-          <span class="status-badge" :class="contract.isActive ? 'badge-green' : 'badge-gray'">
-            {{ contract.isActive ? 'En ligne' : 'Hors ligne' }}
+          <span class="status-badge" :class="contract.is_active ? 'badge-green' : 'badge-gray'">
+            {{ contract.is_active ? 'En ligne' : 'Hors ligne' }}
           </span>
         </div>
 
         <div class="card-body">
-          <h4 class="dark-text">{{ contract.title }}</h4>
-          <span class="price-text">{{ contract.price }} FCFA</span>
+          <!-- ⚡️ CORRECTION : Le backend utilise 'subject' pour le sur-mesure -->
+          <h4 class="dark-text">{{ contract.subject || contract.title }}</h4>
+          <span class="price-text">{{ contract.price || contract.prix }} FCFA</span>
+          <span class="gray-text text-sm block mt-1" v-if="contract.email">{{ contract.email }}</span>
         </div>
 
         <div class="card-footer">
           <div class="actions-block">
             <label class="switch" title="Mettre en ligne / Hors ligne">
-              <input type="checkbox" v-model="contract.isActive" @change="$emit('toggle-status', contract)">
+              <input type="checkbox" v-model="contract.is_active" @change="toggleStatus(contract)">
               <span class="slider round"></span>
             </label>
             <button class="action-icon-btn edit-btn" @click="openLocalModal(contract)" title="Modifier">
@@ -50,7 +51,7 @@
           
           <form @submit.prevent="submitContract" class="folder-modal-body">
             <div class="form-group">
-              <label for="contractTitle">Nom du contrat</label>
+              <label for="contractTitle">Sujet du contrat</label>
               <input type="text" id="contractTitle" v-model="formData.title" placeholder="Ex: Pacte d'actionnaires..." required />
             </div>
             
@@ -74,6 +75,7 @@
 <script lang="ts">
 import { ref, computed, markRaw, reactive } from 'vue';
 import { PlusIcon, TrashIcon, PencilSquareIcon, DocumentTextIcon } from '@heroicons/vue/24/outline';
+import { useAdminContratStore } from '../../../../stores/adminContratStore'; // 👈 Ajout du store
 
 export default {
   name: 'AdminSurmesure',
@@ -81,29 +83,28 @@ export default {
     contracts: { type: Array as () => any[], required: true },
     searchQuery: { type: String, default: '' }
   },
-  emits: ['delete-contract', 'toggle-status'],
-  setup(props, { emit, expose }) {
+  setup(props, { expose }) {
     
-    // --- GESTION DE LA MODALE ---
+    // ⚡️ Initialisation du store
+    const adminStore = useAdminContratStore();
+
     const isModalOpen = ref(false);
     const editingContract = ref<any>(null);
-    const formData = reactive({
-      title: '',
-      price: ''
-    });
+    const formData = reactive({ title: '', price: '' });
 
-    // --- RECHERCHE ---
     const filteredContracts = computed(() => {
       if (!props.searchQuery) return props.contracts;
-      return props.contracts.filter(c => c.title.toLowerCase().includes(props.searchQuery.toLowerCase()));
+      return props.contracts.filter(c => {
+        const searchText = c.subject || c.title || '';
+        return searchText.toLowerCase().includes(props.searchQuery.toLowerCase());
+      });
     });
 
-    // --- ACTIONS SUR LA MODALE ---
     const openLocalModal = (contract: any = null) => {
-      if (contract && contract.title) {
+      if (contract && (contract.title || contract.subject)) {
         editingContract.value = contract;
-        formData.title = contract.title;
-        formData.price = contract.price;
+        formData.title = contract.subject || contract.title;
+        formData.price = contract.price || contract.prix;
       } else {
         editingContract.value = null;
         formData.title = '';
@@ -112,40 +113,43 @@ export default {
       isModalOpen.value = true;
     };
 
-    const closeLocalModal = () => {
-      isModalOpen.value = false;
-    };
+    const closeLocalModal = () => { isModalOpen.value = false; };
 
-    // EXPOSE PERMET AU PARENT D'APPELER CETTE FONCTION
     expose({ openLocalModal });
 
     const submitContract = () => {
       if (editingContract.value) {
-        editingContract.value.title = formData.title;
+        editingContract.value.subject = formData.title;
         editingContract.value.price = formData.price;
       } else {
+        // En attendant que ton collègue crée la route POST pour le sur-mesure
         props.contracts.unshift({
-          id: Date.now(),
-          title: formData.title,
+          id: Date.now().toString(),
+          subject: formData.title,
           price: formData.price,
-          isActive: true,
-          category: 'Sur-Mesure'
+          is_active: true,
+          email: 'Nouveau'
         });
       }
       closeLocalModal();
     };
 
-    // --- SUPPRESSION ---
-    const handleDelete = (id: number) => {
+    const handleDelete = (id: string | number) => {
       if (confirm('Voulez-vous vraiment supprimer ce contrat sur-mesure définitivement ?')) {
-        emit('delete-contract', id);
+        const index = props.contracts.findIndex(c => c.id === id);
+        if (index !== -1) props.contracts.splice(index, 1);
       }
     };
 
+    const toggleStatus = (contract: any) => {
+      console.log(`Le statut de ${contract.subject || contract.title} est maintenant: ${contract.is_active}`);
+    };
+
     return {
+      adminStore,
       filteredContracts,
       isModalOpen, editingContract, formData,
-      openLocalModal, closeLocalModal, submitContract, handleDelete,
+      openLocalModal, closeLocalModal, submitContract, handleDelete, toggleStatus,
       PlusIcon: markRaw(PlusIcon), TrashIcon: markRaw(TrashIcon), 
       PencilSquareIcon: markRaw(PencilSquareIcon), DocumentTextIcon: markRaw(DocumentTextIcon)
     };

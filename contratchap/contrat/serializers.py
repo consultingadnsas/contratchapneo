@@ -23,11 +23,13 @@ class ContratSerializer(serializers.ModelSerializer):
             'category', 
             'title', 
             'description', 
-            'prix', 
+            'prix',
+            'promo_price',
             'fichier_modele',
             'picture', 
             'views', 
-            'downloads', 
+            'downloads',
+            'is_active',
             'created_at', 
             'updated_at'
         ]

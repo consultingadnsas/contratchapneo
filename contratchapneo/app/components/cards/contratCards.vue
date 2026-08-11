@@ -10,8 +10,15 @@
 
         <div class="card-info">
             <h4 class="pro-name">{{ title }}</h4>
-            <!-- Optionnel: tu as retiré la description ici, mais tu peux la remettre si besoin -->
-            <p class="pro-specialty" >{{ price }} FCFA</p>
+            
+            <!-- ⚡️ NOUVEAU : Logique d'affichage du prix avec ou sans promotion -->
+            <div v-if="promoPrice && Number(promoPrice) > 0" class="pro-specialty price-wrapper">
+                <span class="old-price">{{ price }} FCFA</span>
+                <span class="new-price">{{ promoPrice }} FCFA</span>
+            </div>
+            <p v-else class="pro-specialty">{{ price }} FCFA</p>
+            <!-- ============================================================= -->
+
         </div>
 
         <div class="btn-container">
@@ -55,6 +62,11 @@ export default defineComponent({
         price: {
             type: [Number, String],
             default: 4000
+        },
+        // ⚡️ NOUVEAU : Ajout de la prop pour le prix promotionnel
+        promoPrice: {
+            type: [Number, String],
+            default: null
         },
         description: {
             type: String,
@@ -203,6 +215,27 @@ export default defineComponent({
     width: fit-content;
     max-width: 100%;
     color: #ffffff;
+}
+
+/* ⚡️ NOUVEAU : Styles pour la promotion sur fond sombre */
+.price-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+}
+
+.old-price {
+    color: #cbd5e1; /* Gris clair pour bien ressortir sur le fond */
+    font-size: 0.75rem;
+    text-decoration: line-through;
+    font-weight: 500;
+    opacity: 0.8;
+}
+
+.new-price {
+    color: #ffffff;
+    font-weight: 700;
+    font-size: 0.9rem;
 }
 
 /* Barre d'accentuation au survol */

@@ -1,5 +1,6 @@
 from django.urls import path
 from .views import (
+    AdminContractDetailView,
     CategoryDetailWithContractsView, 
     CategoryListView, 
     CategoryOperationsView,
@@ -38,5 +39,6 @@ urlpatterns = [
     path('admin-category/', AdminCategory.as_view(), name='admin-category'),
     path('custom-requests/', CustomedContractRequestView.as_view(), name='custom-contract-requests'),
     path('revision-requests/', ContractRevisionRequestView.as_view(), name='contract-revision-requests'),
-    path('admin-contrat/', AdminContractListCreateView.as_view(), name="admin-contract")
+    path('admin-contrat/', AdminContractListCreateView.as_view(), name="admin-contract"),
+    path('admin-contrat/<uuid:contrat_id>/', AdminContractDetailView.as_view(), name="admin-contract-detail"),
 ]

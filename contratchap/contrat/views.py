@@ -12,6 +12,7 @@ from rest_framework.pagination import PageNumberPagination
 from rest_framework.generics import ListAPIView
 
 from django.db import transaction
+from django.db.models import Prefetch
 from django.shortcuts import get_object_or_404
 from django.db.models import Q, F
 from .models import Category, Contrat, CustomedContract, Pack, UserPack, ContractRevision
@@ -59,10 +60,13 @@ class CategoryDetailWithContractsView(APIView):
     authentication_classes = []
 
     def get(self, request, category_id):
-        # On récupère la catégorie ou on renvoie une erreur 404 si elle n'existe pas
-        # prefetch_related permet de charger efficacement tous les contrats liés
+        # ⚡️ CORRECTION : On filtre les contrats pré-chargés
+        active_contracts = Contrat.objects.filter(is_active=True)
+        
         category = get_object_or_404(
-            Category.objects.prefetch_related('contrats'), 
+            Category.objects.prefetch_related(
+                Prefetch('contrats', queryset=active_contracts)
+            ), 
             id=category_id
         )
         
@@ -120,7 +124,7 @@ class ContractListView(ListAPIView):
 
     def get_queryset(self):
         # Toujours penser au order_by !
-        queryset = Contrat.objects.select_related('category').order_by('-created_at')
+        queryset = Contrat.objects.filter(is_active=True).select_related('category').order_by('-created_at')
         
         # self.request est automatiquement disponible dans les vues génériques
         category_id = self.request.query_params.get('category', None)
@@ -532,6 +536,12 @@ class AdminContractListCreateView(APIView):
     
     permission_classes = [IsAdminUser]
 
+    # NOUVEAU : Pour permettre au Frontend de récupérer la liste
+    def get(self, request):
+        contracts = Contrat.objects.select_related('category').order_by('-created_at')
+        serializer = ContratSerializer(contracts, many=True, context={'request': request})
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
     def post(self, request):
         
         """ 
@@ -575,7 +585,7 @@ class AdminContractDetailView(APIView):
         serializer = ContratSerializer(contract, context={'request': request})
         return Response(serializer.data, status=status.HTTP_200_OK)
     
-    def put(self, request, contrat_id):
+    def patch(self, request, contrat_id):
         """Mise à jour d'un contrat spécifique"""
         contract = get_object_or_404(Contrat, id=contrat_id)
 

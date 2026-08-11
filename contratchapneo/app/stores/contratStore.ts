@@ -16,6 +16,8 @@ export interface Contrat {
     title: string,
     description: string,
     prix: string | number,
+    promo_price?: string | number, // ⚡️ NOUVEAU : Pour que TS reconnaisse la promotion
+    is_active?: boolean,
     fichier_modele: string,
     picture: string,
     views: number | string,
