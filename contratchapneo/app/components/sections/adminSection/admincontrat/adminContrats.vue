@@ -46,8 +46,7 @@
     <adminCategories 
       v-if="activeTab === 'categories'"
       :categories="adminStore.categories"
-      :contracts="adminStore.contracts" 
-      :searchQuery="searchQuery"
+      :contracts="adminStore.contracts" :searchQuery="searchQuery"
       @add-contract="openModal"
       @edit-contract="openModal"
     />
@@ -105,7 +104,7 @@ export default {
       await Promise.all([
         adminStore.fetchCategories(),
         adminStore.fetchContracts(),
-        adminStore.fetchCustomContracts()
+        adminStore.fetchCustomContracts() 
       ]);
     });
     

@@ -39,7 +39,14 @@ export const useAdminContratStore = defineStore('adminContrat', () => {
         error.value = null;
         try {
             const response = await $api<Category[]>('/contrat/admin-category/', { method: 'GET' });
-            if (response) categories.value = response;
+            
+            // ✅ On vérifie juste si response existe (et éventuellement si c'est un tableau)
+            if (response) {
+                categories.value = response;
+                // On map sur le tableau pour extraire les contrats de chaque catégorie
+                contracts.value = response.flatMap(category => category.contrats || []);
+                console.log("Categories récupérées:", categories.value);
+            }
         } catch (err: any) {
             error.value = err.message || "Erreur lors de la récupération des catégories";
             console.error(err);
@@ -71,7 +78,9 @@ export const useAdminContratStore = defineStore('adminContrat', () => {
     const deleteCategory = async (categoryId: string) => {
         isLoading.value = true;
         try {
-            await $api(`/contrat/admin-category/${categoryId}/`, { method: "DELETE" });
+            await $api(`/contrat/admin-category/`,
+                { method: "DELETE", body: {id: categoryId}}
+            );
             categories.value = categories.value.filter(c => c.id !== categoryId);
         } catch (err: any) {
             error.value = err.message || "Erreur lors de la suppression de la catégorie";

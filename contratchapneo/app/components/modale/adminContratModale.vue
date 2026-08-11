@@ -9,27 +9,31 @@
       
       <form @submit.prevent="submitForm" class="modal-form">
         <div class="form-row">
-          <div class="form-group">
-            <label>Titre du document</label>
-            <input type="text" v-model="localData.title" placeholder="Ex: Statuts SARL OHADA" required />
-          </div>
-
+          
+          <BaseInput 
+            label="Titre du document" 
+            v-model="localData.title" 
+            placeholder="Ex: Statuts SARL OHADA"
+          />
+          
           <!-- Catégorie -->
           <div class="form-group">
             <label>Catégorie</label>
             <select v-model="localData.category" required>
               <option value="" disabled>Choisir une catégorie</option>
-              <option v-for="cat in categories" :key="cat" :value="cat">{{ cat }}</option>
+              <option v-for="cat in categories" :key="cat" :value="cat">{{ cat.title }}</option>
             </select>
           </div>
         </div>
 
         <!-- Prix et Promo -->
         <div class="form-row">
-          <div class="form-group">
-            <label>Prix de base (FCFA)</label>
-            <input type="number" v-model="localData.price" placeholder="Ex: 15000" required />
-          </div>
+          
+          <BaseInput 
+            label="Prix de base (FCFA)" 
+            v-model="localData.price" 
+            placeholder="Ex: 15000"
+          />
           
           <div class="form-group promo-group">
             <label class="promo-label">
@@ -68,6 +72,8 @@
           </div>
         </div>
 
+        <BaseArera label="Ajouter une description" v-model="localData.description"/>
+
         <!-- Footer -->
         <div class="modal-footer">
           <button type="button" class="btn-outline" @click="$emit('close')">Annuler</button>
@@ -84,9 +90,17 @@
 <script lang="ts">
 import { ref, PropType } from 'vue';
 import { DocumentArrowUpIcon, CheckCircleIcon } from '@heroicons/vue/24/outline';
+import BaseInput from '../input/BaseInput.vue';
+import BaseSelect from '../input/BaseSelect.vue'
+import BaseArera from '../input/BaseArea.vue';
 
 export default {
   name: 'AdminContratsModal',
+  components:{
+    BaseInput,
+    BaseSelect,
+    BaseArera
+  },
   props: {
     contract: { type: Object as PropType<any>, default: null },
     categories: { type: Array as PropType<string[]>, required: true }
@@ -99,7 +113,8 @@ export default {
       id: null as number | null,
       title: '', category: '', price: '',
       isPromoActive: false, promoPrice: '',
-      file: null as File | null
+      file: null as File | null,
+      description: ''
     });
 
     if (props.contract) {
@@ -107,7 +122,8 @@ export default {
         ...props.contract, 
         price: props.contract.price.toString(),
         promoPrice: props.contract.promoPrice ? props.contract.promoPrice.toString() : '',
-        file: null 
+        file: null,
+        description: props.contract.description || ''
       };
     }
 
@@ -118,7 +134,38 @@ export default {
 
     const submitForm = () => {
       if (!localData.value.isPromoActive) localData.value.promoPrice = '';
-      emit('save', localData.value);
+      
+      // 1. Création de l'objet FormData
+      const formData = new FormData();
+      
+      // 2. Ajout des champs textes
+      formData.append('title', localData.value.title);
+      formData.append('prix', localData.value.price); // Assure-toi que le nom correspond au modèle Django ('prix' ou 'price')
+      
+      if (localData.value.promoPrice) {
+          formData.append('promo_price', localData.value.promoPrice);
+      }
+
+      // 3. Gestion de la catégorie (On envoie l'ID, pas l'objet complet)
+      // On s'assure d'envoyer l'ID de la catégorie.
+      if (localData.value.category && localData.value.category.id) {
+           formData.append('category', localData.value.category.id);
+      } else if (typeof localData.value.category === 'string') {
+          // Au cas où c'est déjà un string (lors de l'édition)
+          formData.append('category', localData.value.category);
+      }
+
+      // 4. Ajout du fichier (s'il y en a un nouveau)
+      if (localData.value.file) {
+        formData.append('fichier_modele', localData.value.file);
+      }
+
+      if (localData.value.description){
+        formData.append('description', localData.value.description);
+      }
+
+      // 5. On émet le FormData et l'ID (pour savoir si c'est une création ou une modification)
+      emit('save', formData, localData.value.id);
     };
 
     return { isEditing, localData, handleFileUpload, submitForm, DocumentArrowUpIcon, CheckCircleIcon };

@@ -643,9 +643,8 @@ class AdminCategory(APIView):
         )
 
     def get(self, request):
-
-        categories = Category.objects.all()
-        serializer = CategorySerializer(categories, many=True)
+        categories = Category.objects.prefetch_related('contrats')
+        serializer = CategoryWithContractsSerializer(categories, many=True, context={'request': request})
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def put(self, request):
