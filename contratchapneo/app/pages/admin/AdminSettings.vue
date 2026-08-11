@@ -61,7 +61,7 @@ export default {
 <style scoped>
 .admin-layout-container {
   display: flex;
-  min-height: 100vh;
+  height: 100vh;
   background-color: #f8fafc;
 }
 

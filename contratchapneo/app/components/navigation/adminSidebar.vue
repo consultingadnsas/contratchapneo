@@ -136,15 +136,27 @@ export default {
 
 @media (min-width: 1030px) {
   .hidden-mobile { display: flex; }
-  .sidebar { 
-    position: relative; width: 270px; height: auto; flex-direction: column; 
-    padding: 1rem 1.5rem; box-shadow: 10px 0 30px rgba(0,0,0,0.01);
+  .sidebar {
+    position: relative;
+    bottom: auto;
+    left: auto;
+    width: 260px;
+    height: 100vh;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: stretch;
+    padding: 2rem 1.5rem;
+    border-top: none;
+    border-right: 1px solid var(--sb-border);
+    box-shadow: none;
+    gap: 0.2rem;
+    transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
-  .sidebar.is-reduced { width: 90px; height: auto; padding: 5rem 0.2rem; }
+  .sidebar.is-reduced { width: 90px; height: auto; padding: 2rem 0.5rem; }
   
   .logo { display: flex; align-items: center; justify-content: space-between; padding: 0 0.5rem; margin-bottom: 2rem; width: 100%; flex-shrink: 0; }
   .sidebar.is-reduced .logo { justify-content: center; }
-  .logo-text { font-weight: 800; font-size: 1.4rem; color: #ffffff; letter-spacing: -0.5px; }
+  .logo-text { font-weight: 800; font-size: 1.4rem; color: var(--secondary-light-color); letter-spacing: -0.5px; }
   
   .toggle-icon { width: 24px; height: 24px; color: var(--sb-text); cursor: pointer; }
   .toggle-icon:hover { color: var(--sb-accent); }
