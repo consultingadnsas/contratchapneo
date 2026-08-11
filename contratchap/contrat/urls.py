@@ -14,7 +14,8 @@ from .views import (
     DownloadContractFromPack,
     CustomContractFromPack,
     AdminCategory,
-    AdminContractListCreateView
+    AdminContractListCreateView,
+    AdminPackView
 )
 
 urlpatterns = [
@@ -40,5 +41,6 @@ urlpatterns = [
     path('custom-requests/', CustomedContractRequestView.as_view(), name='custom-contract-requests'),
     path('revision-requests/', ContractRevisionRequestView.as_view(), name='contract-revision-requests'),
     path('admin-contrat/', AdminContractListCreateView.as_view(), name="admin-contract"),
+    path('admin-pack/', AdminPackView.as_view(), name="admin-views"),
     path('admin-contrat/<uuid:contrat_id>/', AdminContractDetailView.as_view(), name="admin-contract-detail"),
 ]
