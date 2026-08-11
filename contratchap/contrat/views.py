@@ -10,6 +10,7 @@ from rest_framework import status
 from rest_framework.permissions import AllowAny, IsAuthenticated, IsAdminUser
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.generics import ListAPIView
+from .serializers import AdminPackSerializer
 
 from django.db import transaction
 from django.db.models import Prefetch
@@ -695,69 +696,32 @@ class AdminCategory(APIView):
 # ==============================================
 # 3. URL: /api/admin/packs/
 # ==============================================
-class AdminPackView(APIView):
+class AdminPackListCreateView(APIView):
     permission_classes = [IsAdminUser]
 
-    def post(self, request):
-
-        try:
-
-            serializer = PackModelSerializer(data=request.data)
-            
-            # 1. raise_exception=True gère automatiquement le IF/ELSE et renvoie une erreur 400 propre !
-            serializer.is_valid(raise_exception=True) 
-            
-            # 2. Sauvegarde si c'est valide
-            serializer.save()
-            
-            # 3. Réponse 201
-            return Response(
-                {"data": serializer.data},
-                status=status.HTTP_201_CREATED
-            )
-            
-        except Exception as e:
-            # DRF loggera l'erreur en interne, et on renvoie un 500 personnalisé
-            return Response(
-                {"error": "Une erreur liée au serveur est survenue, réessayez plus tard."}, 
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
-
     def get(self, request):
+        packs = Pack.objects.all().order_by('prix')
+        serializer = AdminPackSerializer(packs, many=True)
+        return Response({"data": serializer.data}, status=status.HTTP_200_OK)
 
-        packs = Pack.objects.all()
-
-        serializer = PackModelSerializer(packs, many=True)
-
-        return Response(
-            {
-                "data": serializer.data
-            }, status=status.HTTP_200_OK
-        )
-
-    def put(self, request, pack_id):
-
-        """ Mise à jour des packs"""
-
-        pack = get_object_or_404(Pack, id=pack_id)
-
-        serializer = PackModelSerializer(pack, data=request.data)
-
-        if serializer.is_valid():
+    def post(self, request):
+        serializer = AdminPackSerializer(data=request.data)
+        if serializer.is_valid(raise_exception=True):
             serializer.save()
+            return Response({"data": serializer.data}, status=status.HTTP_201_CREATED)
 
-            return Response(
-                {
-                    'data': serializer.data,
-                    'message': 'Pack mis à jour'
-                },
-                status=status.HTTP_200_OK
-            )
+class AdminPackDetailView(APIView):
+    permission_classes = [IsAdminUser]
+
+    def patch(self, request, pack_id):
+        pack = get_object_or_404(Pack, id=pack_id)
+        # partial=True est indispensable pour les requêtes PATCH
+        serializer = AdminPackSerializer(pack, data=request.data, partial=True)
+        if serializer.is_valid(raise_exception=True):
+            serializer.save()
+            return Response({'data': serializer.data, 'message': 'Pack mis à jour'}, status=status.HTTP_200_OK)
 
     def delete(self, request, pack_id):
         pack = get_object_or_404(Pack, id=pack_id)
         pack.delete()
-        return Response(
-            {"message": "Contrat supprimé avec succès"}, 
-            status=status.HTTP_204_NO_CONTENT
-        )
+        return Response({"message": "Pack supprimé avec succès"}, status=status.HTTP_204_NO_CONTENT)

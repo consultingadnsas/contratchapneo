@@ -16,7 +16,8 @@
       <div class="input-group">
         <label>Prix de base (FCFA)</label>
         <div class="input-with-icon">
-          <input type="number" v-model="pack.basePrice" class="price-input" />
+          <!-- ⚡️ Utilisation de pack.prix au lieu de basePrice -->
+          <input type="number" v-model="pack.prix" class="price-input" />
           <span class="currency-suffix">F</span>
         </div>
       </div>
@@ -37,38 +38,45 @@
           <div class="input-group mt-2">
             <label class="text-orange">Nouveau prix promo</label>
             <div class="input-with-icon border-orange">
-              <input type="number" v-model="pack.promoPrice" class="price-input text-orange font-bold" />
+              <!-- ⚡️ Utilisation de pack.promo_price -->
+              <input type="number" v-model="pack.promo_price" class="price-input text-orange font-bold" />
               <span class="currency-suffix text-orange">F</span>
             </div>
           </div>
           <div class="discount-indicator">
-            Soit une réduction de {{ calculateDiscount(pack.basePrice, pack.promoPrice) }}%
+            Soit une réduction de {{ calculateDiscount(pack.prix, pack.promo_price) }}%
           </div>
         </div>
       </div>
 
     </div>
 
+    <!-- ⚡️ Remplacement des "features" textuelles par les vrais champs Django -->
     <div class="card-footer flex-grow">
-      <h5 class="dark-text text-xs mb-2 text-uppercase">Inclus dans ce pack :</h5>
-      <ul class="features-list">
-        <li v-for="(feature, index) in pack.features" :key="index" class="feature-item">
-          <component :is="CheckIcon" class="icon-xs text-green feature-check" />
-          
-          <textarea 
-            v-model="pack.features[index]" 
-            class="editable-feature-input" 
-            rows="2" 
-            placeholder="Nouveau service..."
-          ></textarea>
-          
-          <button class="remove-feature-btn" @click="removeFeature(index)" title="Retirer">
-            <component :is="XMarkIcon" class="icon-xs" />
-          </button>
-        </li>
-      </ul>
-      <button class="add-feature-btn" @click="addFeature">
-        <component :is="PlusIcon" class="icon-xs" /> Ajouter un service
+      <h5 class="dark-text text-xs mb-2 text-uppercase">Contenu de l'offre :</h5>
+      
+      <div class="feature-inputs-grid">
+        <div class="feature-row">
+          <label>Crédits (Contrats standards)</label>
+          <input type="number" v-model="pack.nombre_credits" class="tiny-input" min="0" />
+        </div>
+        <div class="feature-row">
+          <label>Contrats sur-mesure inclus</label>
+          <input type="number" v-model="pack.nombre_customed_contract" class="tiny-input" min="0" />
+        </div>
+        <div class="feature-row">
+          <label>Consultations Pro incluses</label>
+          <input type="number" v-model="pack.nombre_cartes_pro" class="tiny-input" min="0" />
+        </div>
+        <div class="feature-row">
+          <label>Durée de validité (Jours)</label>
+          <input type="number" v-model="pack.duree_validite_jours" class="tiny-input" min="1" />
+        </div>
+      </div>
+
+      <!-- ⚡️ NOUVEAU : Bouton de sauvegarde individuel -->
+      <button class="save-pack-btn" @click="$emit('save-pack', pack)">
+        <component :is="CheckIcon" class="icon-xs" /> Enregistrer les modifications
       </button>
     </div>
 
@@ -87,24 +95,14 @@ export default {
       required: true
     }
   },
-  emits: ['remove-pack'],
-  setup(props) {
-    const addFeature = () => {
-      props.pack.features.push('');
-    };
-
-    const removeFeature = (index: number) => {
-      props.pack.features.splice(index, 1);
-    };
-
+  emits: ['remove-pack', 'save-pack'], // Ajout de l'événement de sauvegarde
+  setup() {
     const calculateDiscount = (base: number, promo: number) => {
-      if (base <= 0 || promo >= base) return 0;
+      if (!base || !promo || base <= 0 || promo >= base) return 0;
       return Math.round(((base - promo) / base) * 100);
     };
 
     return {
-      addFeature,
-      removeFeature,
       calculateDiscount,
       TagIcon: markRaw(TagIcon),
       CheckIcon: markRaw(CheckIcon),
@@ -117,7 +115,7 @@ export default {
 </script>
 
 <style scoped>
-/* Uniquement les styles de la carte */
+/* Les anciens styles conservés */
 .dark-text { color: #1e293b; }
 .gray-text { color: #94a3b8; }
 .text-orange { color: #f97316; }
@@ -177,17 +175,14 @@ input:checked + .slider { background-color: #f97316; }
 input:checked + .slider:before { transform: translateX(16px); }
 
 .card-footer { background: #f8fafc; margin: 0 -1.5rem -1.5rem -1.5rem; padding: 1.5rem; border-bottom-left-radius: 24px; border-bottom-right-radius: 24px; }
-.features-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 0.6rem; }
-.feature-item { display: flex; align-items: flex-start; gap: 0.5rem; position: relative; margin-bottom: 0.5rem; }
-.feature-check { flex-shrink: 0; margin-top: 8px; }
 
-.editable-feature-input { flex: 1; font-size: 0.9rem; color: #1e293b; border: 1px dashed transparent; background: transparent; padding: 0.4rem 0.6rem; border-radius: 8px; outline: none; transition: 0.2s; line-height: 1.5; width: 100%; min-height: 45px; resize: vertical; font-family: inherit; }
-.editable-feature-input:hover { border-color: #cbd5e1; background: #f8fafc; }
-.editable-feature-input:focus { border-style: solid; border-color: #2563eb; background: #fff; box-shadow: 0 2px 10px rgba(37, 99, 235, 0.05); }
+/* ⚡️ NOUVEAUX STYLES POUR LES CHAMPS DE LA BASE DE DONNÉES */
+.feature-inputs-grid { display: flex; flex-direction: column; gap: 0.8rem; margin-bottom: 1.5rem; }
+.feature-row { display: flex; justify-content: space-between; align-items: center; gap: 1rem; }
+.feature-row label { font-size: 0.85rem; font-weight: 600; color: #475569; margin: 0; }
+.tiny-input { width: 70px; padding: 0.4rem; border: 1px solid #cbd5e1; border-radius: 8px; text-align: center; font-weight: 700; color: #1e293b; background: #ffffff; outline: none; }
+.tiny-input:focus { border-color: #2563eb; box-shadow: 0 0 0 2px rgba(37,99,235,0.1); }
 
-.remove-feature-btn { background: transparent; border: none; color: #cbd5e1; cursor: pointer; padding: 0.4rem; border-radius: 6px; transition: 0.2s; margin-top: 4px; width: fit-content; }
-.remove-feature-btn:hover { color: #ef4444; background: #fee2e2; }
-
-.add-feature-btn { background: transparent; border: 1px dashed #cbd5e1; color: #94a3b8; font-size: 0.8rem; font-weight: 900; padding: 0.6rem; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.4rem; transition: 0.2s; width: 100%; margin-top: 1rem; }
-.add-feature-btn:hover { border-color: #2563eb; color: #2563eb; background: #eff6ff; }
+.save-pack-btn { background: #2563eb; border: none; color: white; font-size: 0.85rem; font-weight: 700; padding: 0.8rem; border-radius: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem; transition: 0.2s; width: 100%; box-shadow: 0 4px 12px rgba(37,99,235,0.2); }
+.save-pack-btn:hover { background: #1d4ed8; transform: translateY(-2px); }
 </style>

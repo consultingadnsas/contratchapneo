@@ -108,6 +108,11 @@ class PackModelSerializer(serializers.ModelSerializer):
             'created_at'
         ]  # adaptez
 
+class AdminPackSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Pack
+        fields = '__all__' # Expose tous les champs du modèle
+
 class ContractRevisionSerializer(serializers.ModelSerializer):
     # 💡 Petit bonus Contratchap : On ajoute ce champ pour que ton front-end 
     # récupère directement "En attente" au lieu de "PENDING"
