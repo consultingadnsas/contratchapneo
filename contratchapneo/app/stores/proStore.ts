@@ -77,47 +77,47 @@ export const useProStore = defineStore('proStore', () => {
      * 1. Récupérer la liste des professionnels avec filtres
      */
     const getProfessionals = async (page: number = 1, domainSlug: string = '', countryCode: string = '', searchQuery: string = '') => {
-    isLoading.value = true;
-    error.value = null;
-    
-    try {
-        // 1. On inclut la page dans les paramètres
-        const params: Record<string, any> = { page }; 
-        if (domainSlug) params.domain = domainSlug;
-        if (countryCode) params.country = countryCode;
-        if (searchQuery) params.q = searchQuery;
+        isLoading.value = true;
+        error.value = null;
+        
+        try {
+            // 1. On inclut la page dans les paramètres
+            const params: Record<string, any> = { page }; 
+            if (domainSlug) params.domain = domainSlug;
+            if (countryCode) params.country = countryCode;
+            if (searchQuery) params.q = searchQuery;
 
-        const response = await $api<any>('/pro/professionals/', {
-            method: 'GET',
-            params
-        });
+            const response = await $api<any>('/pro/professionals/', {
+                method: 'GET',
+                params
+            });
 
-        if (response) {
-            // 2. Mise à jour des variables de pagination du Store
-            // (Assure-toi que ton backend renvoie bien un champ "count")
-            totalCount.value = response.count || 0; 
-            currentPage.value = page;
+            if (response) {
+                // 2. Mise à jour des variables de pagination du Store
+                // (Assure-toi que ton backend renvoie bien un champ "count")
+                totalCount.value = response.count || 0; 
+                currentPage.value = page;
 
-            // 3. On extrait les données du tableau "results" (standard de pagination)
-            // Le "|| response" est une sécurité au cas où ton backend renvoie encore un tableau direct
-            const resultsArray = response.results || response; 
+                // 3. On extrait les données du tableau "results" (standard de pagination)
+                // Le "|| response" est une sécurité au cas où ton backend renvoie encore un tableau direct
+                const resultsArray = response.results || response; 
 
-            professionals.value = resultsArray.map((pro: any) => ({
-                ...pro,
-                profile_picture: resolveMediaUrl(pro.profile_picture)
-            }));
-            
-            console.log('Professionnels de la page', page, 'récupérés avec succès', professionals.value);
+                professionals.value = resultsArray.map((pro: any) => ({
+                    ...pro,
+                    profile_picture: resolveMediaUrl(pro.profile_picture)
+                }));
+                
+                console.log('Professionnels de la page', page, 'récupérés avec succès', professionals.value);
+            }
+        } catch (err: any) {
+            console.error('Erreur getProfessionals:', err);
+            error.value = err.message || "Erreur lors de la récupération des professionnels";
+            professionals.value = [];
+            totalCount.value = 0; // On remet à 0 en cas d'erreur
+        } finally {
+            isLoading.value = false;
         }
-    } catch (err: any) {
-        console.error('Erreur getProfessionals:', err);
-        error.value = err.message || "Erreur lors de la récupération des professionnels";
-        professionals.value = [];
-        totalCount.value = 0; // On remet à 0 en cas d'erreur
-    } finally {
-        isLoading.value = false;
-    }
-};
+    };
     // --- NOUVEAU : Le verrou pour éviter les requêtes en double ---
     const isFetchingFilters = ref<boolean>(false);
 
@@ -241,6 +241,129 @@ export const useProStore = defineStore('proStore', () => {
         }
     };
 
+    // ====================== Admin Section ========================
+
+    // --- HELPER : Création du FormData pour gérer les fichiers et ManyToMany ---
+    const buildFormData = (data: any) => {
+        const formData = new FormData();
+        
+        for (const key in data) {
+            // On ignore les valeurs nulles, indéfinies ou vides
+            if (data[key] !== null && data[key] !== undefined && data[key] !== '') {
+                
+                // Cas 1 : Fichiers (Images / PDF)
+                if (data[key] instanceof File) {
+                    formData.append(key, data[key]);
+                } 
+                // Cas 2 : Relations ManyToMany (ex: domains)
+                else if (Array.isArray(data[key])) {
+                    data[key].forEach((item: any) => {
+                        const id = typeof item === 'object' ? item.id : item;
+                        formData.append(key, id.toString());
+                    });
+                } 
+                // Cas 3 : Clés étrangères (ex: country)
+                else if (typeof data[key] === 'object' && data[key].id) {
+                    formData.append(key, data[key].id.toString());
+                }
+                // Cas standard : Texte, Nombres, Booléens
+                else {
+                    formData.append(key, data[key].toString());
+                }
+            }
+        }
+        return formData;
+    };
+
+    /**
+     * POST : Ajouter un professionnel
+     */
+    const addPro = async (proData: any) => {
+        isLoading.value = true;
+        error.value = null;
+        try {
+            const formData = buildFormData(proData);
+            
+            // (⚠️ Remplace l'URL par celle de ton fichier urls.py, ex: /pro/admin/)
+            const response = await $api<any>(`/pro/admin/`, { 
+                method: 'POST',
+                body: formData
+            });
+
+            if (response && response.data) {
+                // Ajoute le pro créé au début de la liste pour qu'il s'affiche direct
+                professionals.value.unshift({
+                    ...response.data,
+                    profile_picture: resolveMediaUrl(response.data.profile_picture)
+                });
+                return true;
+            }
+        } catch (err: any) {
+            console.error('Erreur addPro:', err);
+            error.value = err.response?._data?.error || err.response?._data || "Erreur lors de la création.";
+            return false;
+        } finally {
+            isLoading.value = false;
+        }
+    };
+
+    /**
+     * PUT : Modifier un professionnel existant
+     */
+    const updatePro = async (id: string, proData: any) => {
+        isLoading.value = true;
+        error.value = null;
+        try {
+            const formData = buildFormData(proData);
+            
+            const response = await $api<any>(`/pro/admin/${id}/`, {
+                method: 'PUT',
+                body: formData
+            });
+
+            if (response && response.data) {
+                // Met à jour le pro dans la liste locale
+                const index = professionals.value.findIndex(p => p.id === id);
+                if (index !== -1) {
+                    professionals.value[index] = {
+                        ...response.data,
+                        profile_picture: resolveMediaUrl(response.data.profile_picture)
+                    };
+                }
+                return true;
+            }
+        } catch (err: any) {
+            console.error('Erreur updatePro:', err);
+            error.value = err.response?._data?.error || err.response?._data || "Erreur lors de la modification.";
+            return false;
+        } finally {
+            isLoading.value = false;
+        }
+    };
+
+    /**
+     * DELETE : Supprimer un professionnel
+     */
+    const deletePro = async (id: string) => {
+        isLoading.value = true;
+        error.value = null;
+        try {
+            await $api(`/pro/admin/${id}/`, { 
+                method: 'DELETE' 
+            });
+            
+            // Retire l'élément supprimé de l'interface en temps réel
+            professionals.value = professionals.value.filter(p => p.id !== id);
+            return true;
+        } catch (err: any) {
+            console.error('Erreur deletePro:', err);
+            error.value = err.response?._data?.error || "Erreur lors de la suppression.";
+            return false;
+        } finally {
+            isLoading.value = false;
+        }
+    };
+
     return {
         // 🚨 CRITIQUE : J'AI SUPPRIMÉ `cartStore` D'ICI !
         isLoading,
@@ -255,6 +378,9 @@ export const useProStore = defineStore('proStore', () => {
         getProfessionals,
         getFilters,
         getSpecificProfessional,
-        downloadProCard
+        downloadProCard,
+        addPro,
+        updatePro,
+        deletePro
     };
 });

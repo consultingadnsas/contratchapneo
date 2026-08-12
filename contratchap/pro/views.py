@@ -6,7 +6,7 @@ from django.db.models import Q
 from django.shortcuts import get_object_or_404
 from .models import Country, LegalDomain, LegalProfessional, ProCardDownload
 from .serializers import CountrySerializer, LegalDomainSerializer, LegalProfessionalSerializer
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from contrat.models import UserPack
 from django.http import FileResponse
 from django.utils.text import slugify
@@ -152,3 +152,71 @@ class DownloadProCardFromPack(APIView):
                 {"error": "Le fichier est introuvable sur le serveur."},
                 status=status.HTTP_404_NOT_FOUND
             )
+
+# ==============================================================================
+# 1. Gestion des pro côté
+# ==============================================================================
+
+class ProAdminView(APIView):
+
+    permission_classes = [IsAdminUser]
+
+    def post(self, request):
+
+        try:
+            
+            serializer = LegalProfessionalSerializer(data=request.data)
+
+            serializer.is_valid(raise_exception=True)
+
+            serializer.save()
+
+            return Response(
+                {"data": serializer.data},
+                status=status.HTTP_201_CREATED
+            )
+        except Exception as e:
+            # DRF loggera l'erreur en interne, et on renvoie un 500 personnalisé
+            return Response(
+                {"error": "Une erreur liée au serveur est survenue, réessayez plus tard."}, 
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+    def get(self, request):
+
+        pro = LegalProfessional.objects.all()
+
+        serializer = LegalProfessionalSerializer(pro, many=True)
+
+        return Response(
+            {
+                "data": serializer.data
+            }, status=status.HTTP_200_OK
+        )
+
+    def put(self, request, pro_id):
+    
+        """ Mise à jour des packs"""
+
+        pro = get_object_or_404(LegalProfessional, id=pro_id)
+
+        serializer = LegalProfessionalSerializer(pro, data=request.data)
+
+        if serializer.is_valid():
+            serializer.save()
+
+            return Response(
+                {
+                    'data': serializer.data,
+                    'message': 'Pro mis à jour'
+                },
+                status=status.HTTP_200_OK
+            )
+
+    def delete(self, request, pro_id):
+        pro = get_object_or_404(LegalProfessional, id=pro_id)
+        pro.delete()
+        return Response(
+            {"message": "Pro supprimé avec succès"}, 
+            status=status.HTTP_204_NO_CONTENT
+        )

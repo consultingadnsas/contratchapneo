@@ -27,42 +27,34 @@
           </div>
         </div>
 
-        <BaseInput 
-          v-model="formData.name" 
-          label="Nom complet *" 
-          placeholder="Ex: Me. Sylla Awa" 
-        />
-        
         <div class="input-row">
-          <div class="input-group">
-            <label class="input-label">Fonction *</label>
-            <select v-model="formData.role" class="form-select">
-              <option disabled value="">Sélectionner...</option>
-              <option value="Avocat">Avocat</option>
-              <option value="Notaire">Notaire</option>
-              <option value="Juriste">Juriste</option>
-            </select>
-          </div>
-          <BaseInput 
-            v-model="formData.specialty" 
-            label="Domaine d'expertise *" 
-            placeholder="Ex: Droit des Affaires" 
-          />
+            <BaseInput v-model="formData.name" label="Nom complet *" placeholder="Ex: Me. Sylla Awa" />
+            <div class="input-group">
+              <label class="input-label">Fonction *</label>
+              <select v-model="formData.role" class="form-select">
+                <option disabled value="">Sélectionner...</option>
+                <option value="AVOCAT">Avocat</option>
+                <option value="NOTAIRE">Notaire</option>
+                <option value="JURISTE">Juriste d'entreprise</option>
+                <option value="CONSEIL_JURIDIQUE">Conseil Juridique</option>
+                <option value="HUISSIER">Huissier</option>
+              </select>
+            </div>
         </div>
 
         <div class="input-row">
-          <BaseInput 
-            v-model="formData.contractsSold" 
-            type="number"
-            label="Contrats rédigés" 
-            placeholder="0" 
-          />
-          <BaseInput 
-            v-model="formData.consultations" 
-            type="number"
-            label="Consultations" 
-            placeholder="0" 
-          />
+            <BaseInput v-model="formData.email" type="email" label="Email *" placeholder="contact@expert.com" />
+            <BaseInput v-model="formData.phone_number" label="Téléphone *" placeholder="+225 01020304" />
+        </div>
+        
+        <div class="input-row">
+            <BaseInput v-model="formData.city" label="Ville *" placeholder="Ex: Abidjan" />
+            <BaseInput v-model="formData.specialty" label="Domaine d'expertise" placeholder="Ex: Droit des Affaires" />
+        </div>
+
+        <div class="input-group">
+            <label class="input-label">Biographie / Présentation *</label>
+            <textarea v-model="formData.bio" class="form-select" rows="3" placeholder="Présentation de l'expert..."></textarea>
         </div>
 
         <div class="options-section">
@@ -106,48 +98,46 @@ export default {
   setup(props, { emit }) {
     const isEditing = computed(() => !!props.expert);
     
-    // Initialisation
     const formData = ref({
       id: null,
       name: '',
       role: '',
+      email: '',
+      phone_number: '',
+      city: '',
+      bio: '',
       specialty: '',
-      contractsSold: 0,
-      consultations: 0,
       isVerified: false,
       isActive: true,
-      avatar: ''
+      avatar: '',
+      avatarFile: null as File | null // ⚠️ Crucial pour envoyer l'image à Django
     });
 
     watch(() => props.expert, (newVal) => {
       if (newVal) {
-        formData.value = { ...newVal };
+        formData.value = { ...newVal, avatarFile: null };
       } else {
-        formData.value = { id: null, name: '', role: '', specialty: '', contractsSold: 0, consultations: 0, isVerified: false, isActive: true, avatar: '' };
+        formData.value = { id: null, name: '', role: '', email: '', phone_number: '', city: '', bio: '', specialty: '', isVerified: false, isActive: true, avatar: '', avatarFile: null };
       }
     }, { immediate: true });
 
     const handleFileUpload = (event: Event) => {
       const file = (event.target as HTMLInputElement).files?.[0];
       if (file) {
-        formData.value.avatar = URL.createObjectURL(file);
+        formData.value.avatarFile = file; // On garde le vrai fichier pour l'API
+        formData.value.avatar = URL.createObjectURL(file); // On garde l'URL pour l'aperçu
       }
     };
 
     const submitForm = () => {
-      if (!formData.value.name || !formData.value.role || !formData.value.specialty) {
-        alert("Le nom, la fonction et le domaine sont obligatoires.");
+      if (!formData.value.name || !formData.value.role || !formData.value.email) {
+        alert("Veuillez remplir les champs obligatoires (*)");
         return;
       }
       emit('save', { ...formData.value });
     };
 
-    return {
-      isEditing,
-      formData,
-      handleFileUpload,
-      submitForm
-    };
+    return { isEditing, formData, handleFileUpload, submitForm };
   }
 }
 </script>

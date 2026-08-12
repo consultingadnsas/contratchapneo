@@ -94,10 +94,10 @@
 </template>
 
 <script lang="ts">
-import { ref, computed, markRaw } from 'vue';
+import { ref, computed, markRaw, onMounted } from 'vue';
 import ExpertModal from '../../modale/expertModal.vue';
 import secondButton from '../../buttons/secondButton.vue';
-import {useProStore} from '../../../stores/proStore'
+import { useProStore } from '../../../stores/proStore';
 import { 
   UserPlusIcon, 
   MagnifyingGlassIcon, 
@@ -115,40 +115,68 @@ export default {
     const searchQuery = ref('');
     const activeTab = ref('Tous');
 
-    // Données factices
-    const experts = ref([
-      { id: 1, name: 'Me. Bamba Souleymane', role: 'Avocat', specialty: 'Droit des Affaires', avatar: '', isVerified: true, isActive: true, contractsSold: 45, consultations: 89 },
-      { id: 2, name: 'Me. Sylla Awa', role: 'Notaire', specialty: 'Droit Immobilier', avatar: '', isVerified: true, isActive: true, contractsSold: 12, consultations: 34 },
-      { id: 3, name: 'Kouassi Jean', role: 'Juriste', specialty: 'Droit Social', avatar: '', isVerified: false, isActive: true, contractsSold: 8, consultations: 15 },
-      { id: 4, name: 'Me. Touré Fatou', role: 'Avocat', specialty: 'Droit Pénal des Affaires', avatar: '', isVerified: true, isActive: false, contractsSold: 30, consultations: 41 },
-    ]);
+    // Mappage des données pour l'affichage
+    const experts = computed(() => {
+      return proStore.professionals.map(pro => ({
+        id: pro.id,
+        name: `${pro.first_name} ${pro.last_name}`.trim(),
+        roleDisplay: pro.title_display || 'Expert',
+        specialty: pro.domains && pro.domains.length > 0 ? pro.domains.map((d: any) => d.name).join(', ') : 'Généraliste',
+        avatar: pro.profile_picture,
+        isVerified: pro.is_verified,
+        isActive: pro.is_active,
+        contractsSold: 0, 
+        consultations: 0,
+        originalData: pro // Gardé pour réinjecter dans la modale
+      }));
+    });
 
     const filteredExperts = computed(() => {
       return experts.value.filter(expert => {
         const matchesSearch = expert.name.toLowerCase().includes(searchQuery.value.toLowerCase()) || 
                               expert.specialty.toLowerCase().includes(searchQuery.value.toLowerCase());
-        const matchesTab = activeTab.value === 'Tous' || expert.role === activeTab.value;
+        const matchesTab = activeTab.value === 'Tous' || expert.roleDisplay.toLowerCase().includes(activeTab.value.toLowerCase());
         return matchesSearch && matchesTab;
       });
     });
 
     const getInitials = (name: string) => {
-      const parts = name.replace('Me. ', '').split(' ');
-      return parts.length > 1 ? parts[0][0] + parts[1][0] : parts[0][0];
+      const cleanName = name.replace(/^(Me\.|Dr\.|Maître)\s+/i, '').trim();
+      const parts = cleanName.split(' ');
+      return parts.length > 1 ? (parts[0][0] + parts[1][0]).toUpperCase() : parts[0][0].toUpperCase();
     };
 
     const getRoleColor = (role: string) => {
-      if (role === 'Avocat') return 'bg-blue-light text-blue';
-      if (role === 'Notaire') return 'bg-purple-light text-purple';
+      const roleLower = role.toLowerCase();
+      if (roleLower.includes('avocat')) return 'bg-blue-light text-blue';
+      if (roleLower.includes('notaire')) return 'bg-purple-light text-purple';
       return 'bg-orange-light text-orange';
     };
 
-    // --- LOGIQUE MODALE ---
+    // --- CRUD LOGIQUE ---
     const isModalOpen = ref(false);
     const selectedExpert = ref<any>(null);
 
     const openModal = (expert: any = null) => {
-      selectedExpert.value = expert;
+      if (expert && expert.originalData) {
+        const o = expert.originalData;
+        // On formate les données brutes pour remplir la modale
+        selectedExpert.value = {
+          id: o.id,
+          name: `${o.first_name} ${o.last_name}`,
+          role: o.title, // 'AVOCAT', 'NOTAIRE' (valeur brute)
+          email: o.email,
+          phone_number: o.phone_number,
+          city: o.city,
+          bio: o.bio || '',
+          specialty: expert.specialty,
+          isVerified: o.is_verified,
+          isActive: o.is_active,
+          avatar: o.profile_picture
+        };
+      } else {
+        selectedExpert.value = null;
+      }
       isModalOpen.value = true;
     };
 
@@ -157,24 +185,59 @@ export default {
       selectedExpert.value = null;
     };
 
-    const saveExpert = (expertData: any) => {
-      if (expertData.id) {
-        const index = experts.value.findIndex(e => e.id === expertData.id);
-        if (index !== -1) experts.value[index] = expertData;
-      } else {
-        expertData.id = Date.now();
-        experts.value.unshift(expertData);
+    const saveExpert = async (expertData: any) => {
+      // 1. Séparer le nom complet en Prénom et Nom
+      const nameParts = expertData.name.trim().split(' ');
+      const firstName = nameParts.shift() || 'Prénom';
+      const lastName = nameParts.join(' ') || 'Nom'; // Le reste devient le nom de famille
+
+      // 2. Construire le payload pour Django
+      const payload: any = {
+        first_name: firstName,
+        last_name: lastName,
+        title: expertData.role,
+        email: expertData.email,
+        phone_number: expertData.phone_number,
+        city: expertData.city,
+        bio: expertData.bio,
+        is_active: expertData.isActive,
+        is_verified: expertData.isVerified,
+      };
+
+      // Si une nouvelle image a été chargée, on l'ajoute !
+      if (expertData.avatarFile) {
+        payload.profile_picture = expertData.avatarFile;
       }
-      closeModal();
+
+      // 3. Appel au Store
+      let success = false;
+      if (expertData.id) {
+        success = await proStore.updatePro(expertData.id, payload);
+      } else {
+        success = await proStore.addPro(payload);
+      }
+
+      if (success) {
+        closeModal();
+      } else {
+        alert(proStore.error || "Une erreur est survenue lors de l'enregistrement.");
+      }
     };
 
-    const deleteExpert = (id: number) => {
-      if (confirm('Supprimer définitivement cet expert ?')) {
-        experts.value = experts.value.filter(e => e.id !== id);
+    const deleteExpert = async (id: string) => {
+      if (confirm('Supprimer définitivement cet expert ? Cette action est irréversible.')) {
+        const success = await proStore.deletePro(id);
+        if(!success) {
+          alert(proStore.error || "Impossible de supprimer l'expert.");
+        }
       }
     };
 
     const viewProfile = (expert: any) => console.log('Voir profil complet:', expert.name);
+
+    onMounted(async () => {
+      await proStore.getProfessionals(); 
+    });
 
     return {
       searchQuery,
@@ -189,6 +252,7 @@ export default {
       saveExpert,
       deleteExpert,
       viewProfile,
+      isLoading: computed(() => proStore.isLoading),
       UserPlusIcon: markRaw(UserPlusIcon), 
       MagnifyingGlassIcon: markRaw(MagnifyingGlassIcon), 
       CheckBadgeIcon: markRaw(CheckBadgeIcon),
