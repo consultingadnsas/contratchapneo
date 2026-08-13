@@ -16,12 +16,11 @@
             placeholder="Ex: Statuts SARL OHADA"
           />
           
-          <!-- Catégorie -->
           <div class="form-group">
             <label>Catégorie</label>
             <select v-model="localData.category" required>
               <option value="" disabled>Choisir une catégorie</option>
-              <option v-for="cat in categories" :key="cat" :value="cat">{{ cat.title }}</option>
+              <option v-for="cat in categories" :key="cat.id" :value="cat.id">{{ cat.title }}</option>
             </select>
           </div>
         </div>
@@ -54,7 +53,7 @@
           </div>
         </div>
 
-        <!-- Zone d'Upload -->
+        <!-- Zone d'Upload pour le Document -->
         <div class="form-group mt-2">
           <label>Fichier du modèle (PDF ou Word)</label>
           <div class="file-upload-box">
@@ -65,8 +64,28 @@
               </div>
               <div class="upload-text">
                 <span v-if="!localData.file" class="dark-text font-bold">Cliquez pour uploader le fichier</span>
-                <span v-else class="text-green font-bold">{{ localData.file.name || 'Fichier sélectionné' }}</span>
-                <span v-if="!localData.file" class="gray-text text-sm">Formats acceptés : PDF, DOCX (Max 5MB)</span>
+                <span v-else class="text-green font-bold">{{ localData.file.name || 'Nouveau fichier sélectionné' }}</span>
+                <span v-if="!localData.file" class="gray-text text-sm">Formats acceptés : PDF, DOCX</span>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <!-- ⚡️ NOUVEAU : Zone d'Upload pour l'Image -->
+        <div class="form-group mt-2">
+          <label>Image de présentation (Optionnel)</label>
+          <div class="file-upload-box">
+            <input type="file" id="contract-image" accept="image/png, image/jpeg, image/webp" @change="handleImageUpload" />
+            <label for="contract-image" class="file-label">
+              <div class="icon-circle">
+                <!-- On utilise PhotoIcon ici -->
+                <component :is="PhotoIcon" class="icon-md" />
+              </div>
+              <div class="upload-text">
+                <span v-if="!localData.picture" class="dark-text font-bold">Cliquez pour ajouter une image</span>
+                <span v-else-if="typeof localData.picture === 'string'" class="text-green font-bold">Image actuelle conservée</span>
+                <span v-else class="text-green font-bold">{{ localData.picture.name }}</span>
+                <span v-if="!localData.picture" class="gray-text text-sm">Formats acceptés : JPG, PNG, WEBP</span>
               </div>
             </label>
           </div>
@@ -89,7 +108,8 @@
 
 <script lang="ts">
 import { ref, PropType } from 'vue';
-import { DocumentArrowUpIcon, CheckCircleIcon } from '@heroicons/vue/24/outline';
+// ⚡️ NOUVEAU : Import de PhotoIcon
+import { DocumentArrowUpIcon, CheckCircleIcon, PhotoIcon } from '@heroicons/vue/24/outline';
 import BaseInput from '../input/BaseInput.vue';
 import BaseSelect from '../input/BaseSelect.vue'
 import BaseArera from '../input/BaseArea.vue';
@@ -103,26 +123,47 @@ export default {
   },
   props: {
     contract: { type: Object as PropType<any>, default: null },
-    categories: { type: Array as PropType<string[]>, required: true }
+    categories: { type: Array as PropType<any[]>, required: true }, 
+    preselectedCategory: { type: String, default: '' } 
   },
   emits: ['close', 'save'],
   setup(props, { emit }) {
     const isEditing = ref(!!props.contract);
     
+    let initialCategoryId = props.preselectedCategory || '';
+
+    if (props.contract && props.contract.category) {
+      if (typeof props.contract.category === 'object') {
+        initialCategoryId = props.contract.category.id;
+      } else {
+        initialCategoryId = props.contract.category;
+      }
+    }
+    
     const localData = ref({
-      id: null as number | null,
-      title: '', category: '', price: '',
-      isPromoActive: false, promoPrice: '',
+      id: null as string | null,
+      title: '', 
+      category: initialCategoryId, 
+      price: '',
+      isPromoActive: false, 
+      promoPrice: '',
       file: null as File | null,
+      picture: null as File | string | null, // ⚡️ NOUVEAU : Champ pour l'image
       description: ''
     });
 
     if (props.contract) {
+      const contractPrice = props.contract.prix !== undefined ? props.contract.prix : props.contract.price;
+      const contractPromo = props.contract.promo_price !== undefined ? props.contract.promo_price : props.contract.promoPrice;
+
       localData.value = { 
         ...props.contract, 
-        price: props.contract.price.toString(),
-        promoPrice: props.contract.promoPrice ? props.contract.promoPrice.toString() : '',
-        file: null,
+        category: initialCategoryId, 
+        price: contractPrice ? contractPrice.toString() : '',
+        promoPrice: contractPromo ? contractPromo.toString() : '',
+        isPromoActive: !!contractPromo,
+        file: null, // On ne précharge pas le fichier dans un input file (sécurité navigateur)
+        picture: props.contract.picture || null, // ⚡️ NOUVEAU : On récupère l'URL de l'image si elle existe
         description: props.contract.description || ''
       };
     }
@@ -132,43 +173,58 @@ export default {
       if (target.files && target.files.length > 0) localData.value.file = target.files[0];
     };
 
+    // ⚡️ NOUVEAU : Gestion de l'upload d'image
+    const handleImageUpload = (event: Event) => {
+      const target = event.target as HTMLInputElement;
+      if (target.files && target.files.length > 0) {
+        localData.value.picture = target.files[0];
+      }
+    };
+
     const submitForm = () => {
-      if (!localData.value.isPromoActive) localData.value.promoPrice = '';
-      
-      // 1. Création de l'objet FormData
       const formData = new FormData();
       
-      // 2. Ajout des champs textes
       formData.append('title', localData.value.title);
-      formData.append('prix', localData.value.price); // Assure-toi que le nom correspond au modèle Django ('prix' ou 'price')
+      formData.append('prix', localData.value.price); 
       
-      if (localData.value.promoPrice) {
+      // ⚡️ LA CORRECTION EST ICI : 
+      if (localData.value.isPromoActive && localData.value.promoPrice) {
+          // Si activé, on envoie le nouveau prix
           formData.append('promo_price', localData.value.promoPrice);
+      } else {
+          // Si désactivé, on oblige Django à effacer le champ en envoyant une chaîne vide
+          formData.append('promo_price', '');
       }
 
-      // 3. Gestion de la catégorie (On envoie l'ID, pas l'objet complet)
-      // On s'assure d'envoyer l'ID de la catégorie.
-      if (localData.value.category && localData.value.category.id) {
-           formData.append('category', localData.value.category.id);
-      } else if (typeof localData.value.category === 'string') {
-          // Au cas où c'est déjà un string (lors de l'édition)
+      if (localData.value.category) {
           formData.append('category', localData.value.category);
       }
 
-      // 4. Ajout du fichier (s'il y en a un nouveau)
       if (localData.value.file) {
         formData.append('fichier_modele', localData.value.file);
+      }
+
+      if (localData.value.picture instanceof File) {
+        formData.append('picture', localData.value.picture);
       }
 
       if (localData.value.description){
         formData.append('description', localData.value.description);
       }
 
-      // 5. On émet le FormData et l'ID (pour savoir si c'est une création ou une modification)
       emit('save', formData, localData.value.id);
     };
 
-    return { isEditing, localData, handleFileUpload, submitForm, DocumentArrowUpIcon, CheckCircleIcon };
+    return { 
+      isEditing, 
+      localData, 
+      handleFileUpload, 
+      handleImageUpload, // ⚡️ NOUVEAU 
+      submitForm, 
+      DocumentArrowUpIcon, 
+      CheckCircleIcon, 
+      PhotoIcon // ⚡️ NOUVEAU
+    };
   }
 }
 </script>
@@ -204,7 +260,7 @@ export default {
 .form-group label { color: #64748b; font-size: 0.85rem; font-weight: 600; }
 .promo-label { display: flex; justify-content: space-between; align-items: center; }
 
-/* Inputs très doux */
+/* Inputs */
 .form-group input, .form-group select { 
   background: #f8fafc; border: 1px solid #e2e8f0; color: #1e293b; 
   padding: 0.8rem 1rem; border-radius: 12px; font-size: 0.95rem; outline: none; transition: 0.2s; 
@@ -212,12 +268,12 @@ export default {
 .form-group input:focus, .form-group select:focus { border-color: #2563eb; background: #ffffff; box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); }
 .disabled-input { opacity: 0.4; cursor: not-allowed; background: #f1f5f9 !important; }
 
-/* UPLOAD (Encart stylisé) */
+/* UPLOAD */
 .file-upload-box { position: relative; width: 100%; }
 .file-upload-box input { position: absolute; width: 0; height: 0; opacity: 0; overflow: hidden; z-index: -1; }
 .file-label { 
   display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1rem; 
-  padding: 2rem; background: #f8fafc; border: 2px dashed #cbd5e1; border-radius: 16px; 
+  padding: 1.5rem; background: #f8fafc; border: 2px dashed #cbd5e1; border-radius: 16px; 
   cursor: pointer; transition: 0.3s; text-align: center; 
 }
 .file-label:hover { background: #eff6ff; border-color: #2563eb; }

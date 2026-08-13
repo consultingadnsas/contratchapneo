@@ -4,7 +4,7 @@
             <h4 class="pro-title">{{ title }}</h4>
 
             <div class="price-section">
-                <span class="price-main">{{ price }}</span>
+                <span class="price-main">{{ price}} FCFA</span>
                 <span class="price-suffix">/an</span>
             </div>
 

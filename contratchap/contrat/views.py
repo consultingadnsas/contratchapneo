@@ -10,8 +10,10 @@ from rest_framework import status
 from rest_framework.permissions import AllowAny, IsAuthenticated, IsAdminUser
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.generics import ListAPIView
+from .serializers import AdminPackSerializer
 
 from django.db import transaction
+from django.db.models import Prefetch
 from django.shortcuts import get_object_or_404
 from django.db.models import Q, F
 from .models import Category, Contrat, CustomedContract, Pack, UserPack, ContractRevision
@@ -59,10 +61,13 @@ class CategoryDetailWithContractsView(APIView):
     authentication_classes = []
 
     def get(self, request, category_id):
-        # On récupère la catégorie ou on renvoie une erreur 404 si elle n'existe pas
-        # prefetch_related permet de charger efficacement tous les contrats liés
+        # ⚡️ CORRECTION : On filtre les contrats pré-chargés
+        active_contracts = Contrat.objects.filter(is_active=True)
+        
         category = get_object_or_404(
-            Category.objects.prefetch_related('contrats'), 
+            Category.objects.prefetch_related(
+                Prefetch('contrats', queryset=active_contracts)
+            ), 
             id=category_id
         )
         
@@ -120,7 +125,7 @@ class ContractListView(ListAPIView):
 
     def get_queryset(self):
         # Toujours penser au order_by !
-        queryset = Contrat.objects.select_related('category').order_by('-created_at')
+        queryset = Contrat.objects.filter(is_active=True).select_related('category').order_by('-created_at')
         
         # self.request est automatiquement disponible dans les vues génériques
         category_id = self.request.query_params.get('category', None)
@@ -532,6 +537,12 @@ class AdminContractListCreateView(APIView):
     
     permission_classes = [IsAdminUser]
 
+    # NOUVEAU : Pour permettre au Frontend de récupérer la liste
+    def get(self, request):
+        contracts = Contrat.objects.select_related('category').order_by('-created_at')
+        serializer = ContratSerializer(contracts, many=True, context={'request': request})
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
     def post(self, request):
         
         """ 
@@ -575,7 +586,7 @@ class AdminContractDetailView(APIView):
         serializer = ContratSerializer(contract, context={'request': request})
         return Response(serializer.data, status=status.HTTP_200_OK)
     
-    def put(self, request, contrat_id):
+    def patch(self, request, contrat_id):
         """Mise à jour d'un contrat spécifique"""
         contract = get_object_or_404(Contrat, id=contrat_id)
 
@@ -685,69 +696,32 @@ class AdminCategory(APIView):
 # ==============================================
 # 3. URL: /api/admin/packs/
 # ==============================================
-class AdminPackView(APIView):
+class AdminPackListCreateView(APIView):
     permission_classes = [IsAdminUser]
 
-    def post(self, request):
-
-        try:
-
-            serializer = PackModelSerializer(data=request.data)
-            
-            # 1. raise_exception=True gère automatiquement le IF/ELSE et renvoie une erreur 400 propre !
-            serializer.is_valid(raise_exception=True) 
-            
-            # 2. Sauvegarde si c'est valide
-            serializer.save()
-            
-            # 3. Réponse 201
-            return Response(
-                {"data": serializer.data},
-                status=status.HTTP_201_CREATED
-            )
-            
-        except Exception as e:
-            # DRF loggera l'erreur en interne, et on renvoie un 500 personnalisé
-            return Response(
-                {"error": "Une erreur liée au serveur est survenue, réessayez plus tard."}, 
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
-
     def get(self, request):
+        packs = Pack.objects.all().order_by('prix')
+        serializer = AdminPackSerializer(packs, many=True)
+        return Response({"data": serializer.data}, status=status.HTTP_200_OK)
 
-        packs = Pack.objects.all()
-
-        serializer = PackModelSerializer(packs, many=True)
-
-        return Response(
-            {
-                "data": serializer.data
-            }, status=status.HTTP_200_OK
-        )
-
-    def put(self, request, pack_id):
-
-        """ Mise à jour des packs"""
-
-        pack = get_object_or_404(Pack, id=pack_id)
-
-        serializer = PackModelSerializer(pack, data=request.data)
-
-        if serializer.is_valid():
+    def post(self, request):
+        serializer = AdminPackSerializer(data=request.data)
+        if serializer.is_valid(raise_exception=True):
             serializer.save()
+            return Response({"data": serializer.data}, status=status.HTTP_201_CREATED)
 
-            return Response(
-                {
-                    'data': serializer.data,
-                    'message': 'Pack mis à jour'
-                },
-                status=status.HTTP_200_OK
-            )
+class AdminPackDetailView(APIView):
+    permission_classes = [IsAdminUser]
+
+    def patch(self, request, pack_id):
+        pack = get_object_or_404(Pack, id=pack_id)
+        # partial=True est indispensable pour les requêtes PATCH
+        serializer = AdminPackSerializer(pack, data=request.data, partial=True)
+        if serializer.is_valid(raise_exception=True):
+            serializer.save()
+            return Response({'data': serializer.data, 'message': 'Pack mis à jour'}, status=status.HTTP_200_OK)
 
     def delete(self, request, pack_id):
         pack = get_object_or_404(Pack, id=pack_id)
         pack.delete()
-        return Response(
-            {"message": "Contrat supprimé avec succès"}, 
-            status=status.HTTP_204_NO_CONTENT
-        )
+        return Response({"message": "Pack supprimé avec succès"}, status=status.HTTP_204_NO_CONTENT)

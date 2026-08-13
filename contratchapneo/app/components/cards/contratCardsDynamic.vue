@@ -18,6 +18,7 @@
       :description="description"
       :price="price"
       :image="image"
+      :promoPrice="promoPrice" 
       @view="$emit('view')"
       @buy="$emit('buy')"
     />
@@ -40,7 +41,9 @@ export default {
     title: { type: String, required: true },
     description: { type: String, default: '' },
     price: { type: [String, Number], default: '' },
-    image: { type: String, default: undefined }
+    image: { type: String, default: undefined },
+    // ⚡️ NOUVEAU : On déclare promoPrice pour que le parent puisse le passer
+    promoPrice: { type: [String, Number], default: null } 
   },
   emits: ['view', 'buy', 'generate'],
   setup() {

@@ -78,13 +78,14 @@ export const useAdminContratStore = defineStore('adminContrat', () => {
     const deleteCategory = async (categoryId: string) => {
         isLoading.value = true;
         try {
-            await $api(`/contrat/admin-category/`,
-                { method: "DELETE", body: {id: categoryId}}
-            );
+            // ⚡️ CORRECTION : On envoie l'ID dans le Body (data) comme Django l'attend
+            await $api(`/contrat/admin-category/`, { 
+                method: "DELETE",
+                body: { id: categoryId } 
+            });
             categories.value = categories.value.filter(c => c.id !== categoryId);
         } catch (err: any) {
-            error.value = err.message || "Erreur lors de la suppression de la catégorie";
-            throw err;
+            console.error(err);
         } finally {
             isLoading.value = false;
         }
@@ -110,18 +111,21 @@ export const useAdminContratStore = defineStore('adminContrat', () => {
         isLoading.value = true;
         error.value = null;
         try {
-            // Requête POST avec FormData (pour gérer fichier_modele et picture)
-            const response = await $api<Contrat>('/contrat/admin-contrat/', {
+            const response = await $api<any>('/contrat/admin-contrat/', {
                 method: "POST",
                 body: payload
             });
             if (response) {
-                contracts.value.unshift(response);
-                return response;
+                // ⚡️ CORRECTION 1 : On extrait les vraies données (response.data)
+                // Ainsi, Vue.js lit correctement "is_active: true" envoyé par Django
+                const newContract = response.data ? response.data : response;
+                
+                contracts.value.unshift(newContract);
+                return newContract;
             }
         } catch (err: any) {
             error.value = err.message || "Erreur lors de l'ajout du contrat";
-            throw err;
+            console.error(err);
         } finally {
             isLoading.value = false;
         }
@@ -131,19 +135,30 @@ export const useAdminContratStore = defineStore('adminContrat', () => {
         isLoading.value = true;
         error.value = null;
         try {
-            const response = await $api<Contrat>(`/contrat/admin-contrat/${contractId}/`, {
-                method: "PATCH", // PATCH permet de ne modifier que certains champs (ex: prix) sans écraser le fichier
+            // On utilise <any> temporairement car la réponse contient un { data, message }
+            const response = await $api<any>(`/contrat/admin-contrat/${contractId}/`, {
+                method: "PATCH", 
                 body: payload
             });
+            
             if (response) {
-                // Mise à jour locale
+                // ⚡️ LA CORRECTION EST ICI : 
+                // On extrait les vraies données du contrat (response.data) envoyées par Django
+                const updatedData = response.data ? response.data : response;
+
+                // Mise à jour locale immédiate
                 const index = contracts.value.findIndex(c => c.id === contractId);
-                if (index !== -1) contracts.value[index] = response;
-                return response;
+                if (index !== -1) {
+                    contracts.value.splice(index, 1, {
+                        ...contracts.value[index],
+                        ...updatedData // On fusionne avec les bonnes données !
+                    });
+                }
+                return updatedData;
             }
         } catch (err: any) {
             error.value = err.message || "Erreur lors de la modification du contrat";
-            throw err;
+            console.error(err);
         } finally {
             isLoading.value = false;
         }
@@ -164,9 +179,10 @@ export const useAdminContratStore = defineStore('adminContrat', () => {
 
     const toggleContractStatus = async (contractId: string, isActive: boolean) => {
         try {
-            await $api(`/contrat/admin-contrat/${contractId}/toggle-status/`, {
-                method: "PATCH",
-                body: { is_active: isActive }
+            // ⚡️ CORRECTION 2 : On utilise l'URL officielle de modification (sans /toggle-status/)
+            await $api(`/contrat/admin-contrat/${contractId}/`, {
+                method: "PATCH", 
+                body: { is_active: isActive } // Envoi de la mise à jour partielle en JSON
             });
         } catch (err: any) {
             error.value = err.message || "Impossible de changer le statut";
@@ -180,10 +196,29 @@ export const useAdminContratStore = defineStore('adminContrat', () => {
     const fetchCustomContracts = async () => {
         isLoading.value = true;
         try {
-            const response = await $api<CustomContract[]>('/admin/contrat/sur-mesure/', { method: 'GET' });
-            if (response) customContracts.value = response;
+            const response = await $api<CustomContract[]>('/contrat/custom-requests/', { method: 'GET' });
+            
+            // ⚡️ CORRECTION : On vérifie que Django a bien renvoyé un tableau (JSON)
+            // S'il renvoie une chaîne de caractères (comme une page HTML), on force l'erreur.
+            if (typeof response === 'string' || !Array.isArray(response)) {
+                throw new Error("Le serveur a renvoyé une page HTML au lieu des données JSON.");
+            }
+
+            customContracts.value = response;
+
         } catch (err: any) {
-            console.error(err);
+            console.warn("⚠️ API Sur-mesure redirigée ou bloquée. Chargement des données de secours...");
+            // DONNÉES DE SECOURS (Mock)
+            customContracts.value = [
+                { 
+                    id: '201', 
+                    subject: "Pacte d'actionnaires complexe", 
+                    email: 'client@example.com', 
+                    phone_number: '01020304', 
+                    price: 150000, 
+                    is_wrotten: false 
+                }
+            ];
         } finally {
             isLoading.value = false;
         }

@@ -3,21 +3,27 @@
     
     <div class="header-section">
       <div class="title-row">
-        <h3 class="section-title">Gestion des Offres</h3>
+        <h3 class="section-title">Gestion des Offres (Packs)</h3>
         <div class="header-actions">
-          <secondButton label="Nouveau pack" @click="addNewPack" />
-          <mainButton label="Actualiser les packs" @click="saveAllChanges" />
+          <secondButton label="Nouveau pack" @click="addNewPackToView" />
+          <mainButton label="Rafraîchir la liste" @click="adminStore.fetchPacks()" />
         </div>
       </div>
-      <p class="gray-text text-sm">Ajustez les prix, modifiez les textes et ajoutez de nouveaux packs. Ils s'ordonneront automatiquement selon leur prix de base.</p>
+      <p class="gray-text text-sm">Ajustez les prix, modifiez les quantités de crédits et créez de nouveaux abonnements pour vos clients.</p>
     </div>
 
-    <div class="pricing-grid">
+    <!-- Affichage d'un spinner s'il y a un chargement global -->
+    <div v-if="adminStore.isLoading" class="loading-state">
+      Chargement des offres...
+    </div>
+
+    <div v-else class="pricing-grid">
       <packageAdmin 
         v-for="pack in sortedPacks" 
         :key="pack.id" 
         :pack="pack" 
-        @remove-pack="removePack" 
+        @remove-pack="handleRemovePack" 
+        @save-pack="handleSavePack"
       />
     </div>
 
@@ -25,10 +31,11 @@
 </template>
 
 <script lang="ts">
-import { ref, computed } from 'vue';
+import { computed, onMounted } from 'vue';
 import mainButton from '../../buttons/mainButton.vue';
 import secondButton from '../../buttons/secondButton.vue';
-import packageAdmin from '../../cards/packageAdmin.vue'; // Assure-toi du bon chemin d'importation
+import packageAdmin from '../../cards/packageAdmin.vue';
+import { useAdminPackStore } from '../../../stores/adminPackStore';
 
 export default {
   name: 'AdminPacks',
@@ -38,80 +45,104 @@ export default {
     packageAdmin 
   },
   setup() {
-    const subscriptionPacks = ref([
-      {
-        id: 'basic',
-        title: 'Pack Basic',
-        description: 'Packs idéal pour les petites entreprises',
-        basePrice: 29000,
-        isPromoActive: false,
-        promoPrice: 10000,
-        features: ['Accès à 10 documents juridiques payants', 'Très petite entreprise ou consultant individuel'],
-        highlightClass: ''
-      },
-      {
-        id: 'business',
-        title: 'Pack Business',
-        description: 'Accédez à une fourniture de contrat bien plus épurée et d\'autres avantages intéressant',
-        basePrice: 49000,
-        isPromoActive: true,
-        promoPrice: 35000,
-        features: ['Accès à 12 documents juridiques payants','Rédaction sur-mesure d\'un document juridique' ,'PME et startup de moins de 10 employés avec un volume de tâche juridique modéré'],
-        highlightClass: 'card-highlighted'
-      },
-      {
-        id: 'pro',
-        title: 'Pack Business Pro',
-        description: 'Profitez de la pleine puissance de Contratchap. Accédez à une panoplie de contrats, de service, de conseil, et de nos outils de calcules',
-        basePrice: 99000,
-        isPromoActive: false,
-        promoPrice: 80000,
-        features: ['Accès à 25 documents juridiques payants', 'Rédaction sur-mesure de 3 documents juridiques', 'Suivi par une équipe de juristes(appuie et conseil personnalisés)', 'PME et startup de plus de 10 employés avec un volume de tâche juridique important'],
-        highlightClass: ''
-      }
-    ]);
+    const adminStore = useAdminPackStore();
 
-    const sortedPacks = computed(() => {
-      return [...subscriptionPacks.value].sort((a, b) => a.basePrice - b.basePrice);
+    onMounted(() => {
+      adminStore.fetchPacks();
     });
 
-    const addNewPack = () => {
-      subscriptionPacks.value.push({
-        id: 'pack-' + Date.now(),
-        title: 'Nouveau Pack',
-        description: 'Description de votre nouvelle offre.',
-        basePrice: 0,
+    const sortedPacks = computed(() => {
+      // Tri par prix (du moins cher au plus cher)
+      return [...adminStore.packs].sort((a, b) => (a.prix || 0) - (b.prix || 0));
+    });
+
+    // Création d'une carte vide temporaire sur l'interface
+    const addNewPackToView = () => {
+      adminStore.packs.push({
+        id: 'temp-' + Date.now(), // ID temporaire pour le v-for
+        title: 'Nouvelle Offre',
+        description: '',
+        prix: 0,
+        promo_price: null,
         isPromoActive: false,
-        promoPrice: 0,
-        features: ['Premier avantage inclus'],
-        highlightClass: ''
+        nombre_credits: 0,
+        nombre_customed_contract: 0,
+        custom_contract_included: false,
+        nombre_cartes_pro: 0,
+        duree_validite_jours: 30,
+        is_active: true
       });
     };
 
-    const removePack = (id: string) => {
+    // Suppression d'un pack
+    const handleRemovePack = async (packId: string) => {
+      if (packId.startsWith('temp-')) {
+        // C'est juste une carte non sauvegardée, on la retire de la vue
+        adminStore.packs = adminStore.packs.filter(p => p.id !== packId);
+        return;
+      }
+
       if (confirm('Êtes-vous sûr de vouloir supprimer ce pack définitivement ?')) {
-        subscriptionPacks.value = subscriptionPacks.value.filter(p => p.id !== id);
+        await adminStore.deletePack(packId);
       }
     };
 
-    const saveAllChanges = () => {
-      console.log('Modifications sauvegardées :', subscriptionPacks.value);
-      alert('Les tarifs, les textes et les offres ont été mis à jour avec succès.');
+    // Sauvegarde vers le backend (POST ou PATCH)
+    // Sauvegarde vers le backend (POST ou PATCH)
+    const handleSavePack = async (pack: any) => {
+      const formData = new FormData();
+      
+      // ⚡️ CORRECTION : On sécurise les textes avec (|| '') et les nombres avec (|| 0)
+      formData.append('title', pack.title || 'Sans titre');
+      formData.append('description', pack.description || '');
+      formData.append('prix', (pack.prix || 0).toString());
+      
+      // Gestion de la promotion
+      if (pack.isPromoActive && pack.promo_price) {
+        formData.append('promo_price', pack.promo_price.toString());
+      } else {
+        formData.append('promo_price', '');
+      }
+
+      formData.append('nombre_credits', (pack.nombre_credits || 0).toString());
+      formData.append('nombre_customed_contract', (pack.nombre_customed_contract || 0).toString());
+      
+      // Validation logique (Si crédits > 0, alors option incluse = True)
+      const isCustomIncluded = pack.nombre_customed_contract > 0 ? 'true' : 'false';
+      formData.append('custom_contract_included', isCustomIncluded);
+      
+      formData.append('nombre_cartes_pro', (pack.nombre_cartes_pro || 0).toString());
+      formData.append('duree_validite_jours', (pack.duree_validite_jours || 30).toString()); // 30 jours par défaut
+      
+      try {
+        if (pack.id && !pack.id.startsWith('temp-')) {
+          // Si l'ID est un vrai UUID, c'est une modification
+          await adminStore.updatePack(pack.id, formData);
+          alert(`Le pack "${pack.title}" a été mis à jour avec succès.`);
+        } else {
+          // C'est un nouveau pack à créer
+          await adminStore.addNewPack(formData);
+          // On retire la carte temporaire car l'action addNewPack ajoute la vraie carte renvoyée par Django
+          adminStore.packs = adminStore.packs.filter(p => p.id !== pack.id);
+          alert(`Le pack "${pack.title}" a été créé avec succès.`);
+        }
+      } catch (e) {
+        alert("Une erreur s'est produite lors de la sauvegarde du pack.");
+      }
     };
 
     return {
-      subscriptionPacks,
+      adminStore,
       sortedPacks,
-      addNewPack,
-      removePack,
-      saveAllChanges
+      addNewPackToView,
+      handleRemovePack,
+      handleSavePack
     };
   }
 }
 </script>
 
 <style scoped>
-/* Styles globaux de la page et de la grille */
 .packs-wrapper {
   display: flex; flex-direction: column; gap: 2rem; padding-bottom: 2rem;
   font-family: 'Inter', sans-serif;
@@ -124,6 +155,13 @@ export default {
 .title-row { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; }
 .section-title { font-size: 1.4rem; color: #1e293b; font-weight: 700; margin: 0; }
 .header-actions { display: flex; gap: 0.8rem; align-items: center;  }
+
+.loading-state {
+  text-align: center;
+  padding: 3rem;
+  color: #64748b;
+  font-weight: 600;
+}
 
 .pricing-grid { 
   display: flex; 

@@ -23,11 +23,13 @@ class ContratSerializer(serializers.ModelSerializer):
             'category', 
             'title', 
             'description', 
-            'prix', 
+            'prix',
+            'promo_price',
             'fichier_modele',
             'picture', 
             'views', 
-            'downloads', 
+            'downloads',
+            'is_active',
             'created_at', 
             'updated_at'
         ]
@@ -105,6 +107,11 @@ class PackModelSerializer(serializers.ModelSerializer):
             'picture', 
             'created_at'
         ]  # adaptez
+
+class AdminPackSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Pack
+        fields = '__all__' # Expose tous les champs du modèle
 
 class ContractRevisionSerializer(serializers.ModelSerializer):
     # 💡 Petit bonus Contratchap : On ajoute ce champ pour que ton front-end 

@@ -66,6 +66,7 @@
                         :title="contrat.title"
                         :description="contrat.description"
                         :price="contrat.prix"
+                        :promoPrice="contrat.promo_price"
                         :image="contrat.picture || undefined"
                         @view="openViewModal(contrat.id)" 
                         @buy="addTocart(contrat.id)"

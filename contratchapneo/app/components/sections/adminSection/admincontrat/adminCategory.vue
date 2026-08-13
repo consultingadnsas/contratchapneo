@@ -11,7 +11,6 @@
       
       <div class="grid-4-cols">
         <div class="folder-wrapper" v-for="cat in filteredCategories" :key="cat.id" @click="openCategory(cat)">
-          <!-- ⚡️ Utilisation de cat.title -->
           <folderCards 
             :title="cat.title" 
             :subtitle="cat.description" 
@@ -42,7 +41,6 @@
       </div>
 
       <div class="grid-2-cols">
-        <!-- ⚡️ is_active au lieu de isActive -->
         <div class="contract-card" v-for="contract in filteredContracts" :key="contract.id" :class="{'card-offline': !contract.is_active}">
           <div class="card-header">
             <div class="icon-box-light"><component :is="DocumentTextIcon" class="icon-md" /></div>
@@ -53,7 +51,15 @@
 
           <div class="card-body">
             <h4 class="dark-text">{{ contract.title }}</h4>
-            <span class="gray-text text-sm">{{ contract.prix || contract.price }} FCFA</span>
+            
+            <!-- ⚡️ LOGIQUE D'AFFICHAGE DU PRIX PROMOTIONNEL -->
+            <div v-if="contract.promo_price && contract.promo_price > 0" class="price-wrapper">
+              <span class="old-price">{{ contract.prix || contract.price }} FCFA</span>
+              <span class="new-price">{{ contract.promo_price }} FCFA</span>
+            </div>
+            <span v-else class="gray-text text-sm">{{ contract.prix || contract.price }} FCFA</span>
+            <!-- ============================================== -->
+
           </div>
 
           <div class="card-footer">
@@ -80,7 +86,6 @@
 
     </div>
 
-    <!-- Modale inchangée -->
     <transition name="fade">
       <div v-if="isFolderModalOpen" class="folder-modal-overlay" @click.self="isFolderModalOpen = false">
         <div class="folder-modal">
@@ -118,7 +123,7 @@
 import { ref, computed, markRaw, reactive } from 'vue';
 import { PlusIcon, TrashIcon, PencilSquareIcon, DocumentTextIcon, ArrowLeftIcon, MagnifyingGlassIcon } from '@heroicons/vue/24/outline';
 import folderCards from '../../../cards/folderCards.vue'; 
-import { useAdminContratStore } from '../../../../stores/adminContratStore'; // 👈 Ajuste le chemin
+import { useAdminContratStore } from '../../../../stores/adminContratStore'; 
 
 export default {
   name: 'AdminCategories',
@@ -132,31 +137,34 @@ export default {
   
   setup(props) {
     const adminStore = useAdminContratStore();
-    const openedCategory = ref<any>(null); // Stocke l'objet Category complet
+    const openedCategory = ref<any>(null); 
 
     const isFolderModalOpen = ref<boolean>(false);
     const newFolderData = reactive({ name: '', description: '' });
 
-    // --- RECHERCHE ---
     const filteredCategories = computed(() => {
       if (!props.searchQuery) return props.categories;
       return props.categories.filter(c => c.title.toLowerCase().includes(props.searchQuery.toLowerCase()));
     });
 
     const filteredContracts = computed(() => {
-      // ⚡️ Comparaison avec l'ID de la catégorie
-      let list = props.contracts.filter(c => c.category === openedCategory.value?.id);
+      let list = props.contracts.filter(c => {
+        const categoryId = typeof c.category === 'object' && c.category !== null 
+            ? c.category.id 
+            : c.category;
+            
+        return String(categoryId) === String(openedCategory.value?.id);
+      });
+      
       if (props.searchQuery) {
         list = list.filter(c => c.title.toLowerCase().includes(props.searchQuery.toLowerCase()));
       }
       return list;
     });
 
-    // --- NAVIGATION ---
     const openCategory = (cat: any) => { openedCategory.value = cat; };
     const closeCategory = () => { openedCategory.value = null; };
 
-    // --- ACTIONS API ---
     const handleAdd = async () => {
       if (newFolderData.name.trim() !== '') {
         try {
@@ -186,7 +194,6 @@ export default {
       try {
         await adminStore.toggleContractStatus(contract.id, contract.is_active);
       } catch (e) {
-        // En cas d'échec de l'API, on annule visuellement le switch
         contract.is_active = !contract.is_active;
         alert("Erreur lors de la modification du statut.");
       }
@@ -206,13 +213,10 @@ export default {
 </script>
 
 <style scoped>
-/* Conserve ton CSS d'origine tel quel ici ! */
 .categories-container { font-family: 'Inter', sans-serif; }
 
-/* DOSSIERS */
 .folders-section { background: #ffffff; border-radius: 24px; padding: 1rem; box-shadow: 0 10px 30px rgba(0,0,0,0.03); }
 
-/* CORRECTION : L'ancien width: 20%; a été remplacé par fit-content pour éviter d'écraser le texte */
 .add-input-group { display: flex; width: fit-content; margin-bottom: 1.5rem; }
 
 .add-folder-btn {
@@ -228,31 +232,25 @@ export default {
   font-weight: 600;
   font-size: 0.95rem;
   transition: background 0.2s;
-  white-space: nowrap; /* 👈 EMPÊCHE LE TEXTE DE REVENIR À LA LIGNE */
+  white-space: nowrap; 
 }
 .add-folder-btn:hover { background: #1d4ed8; }
 
-/* --- SYSTÈME DE GRILLES DEMANDÉ --- */
-/* 4 dossiers par ligne */
 .grid-4-cols { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem; padding: 1rem 0; }
-/* 2 contrats par ligne */
 .grid-2-cols { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem; }
 
-/* Cartes Dossiers */
 .folder-wrapper { position: relative; cursor: pointer; transition: 0.2s; border-radius: 16px; }
 .folder-wrapper:hover { transform: translateY(-3px); }
 .delete-folder-btn { position: absolute; top: -10px; right: -10px; z-index: 10; background: #ffffff; border: 1px solid #fee2e2; color: #ef4444; border-radius: 8px; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s; opacity: 0; box-shadow: 0 4px 10px rgba(239, 68, 68, 0.1); }
 .folder-wrapper:hover .delete-folder-btn { opacity: 1; }
 .delete-folder-btn:hover { background: #ef4444; color: white; }
 
-/* VUE INTÉRIEUR DOSSIER */
 .opened-folder-view { background: #ffffff; border-radius: 24px; padding: 1rem; box-shadow: 0 10px 30px rgba(0,0,0,0.03); }
 .opened-folder-header { display: flex; align-items: center; gap: 1.5rem; border-bottom: 1px solid #f1f5f9; padding-bottom: 1.5rem; }
 .btn-secondary { background: #ffffff; border: 1px solid #cbd5e1; padding: 0.6rem 1rem; border-radius: 10px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 2rem; color: #1e293b; width: fit-content; white-space: nowrap; }
 .text-blue { color: #2563eb; margin: 0; font-size: 1.4rem; font-weight: 800;}
 .btn-secondary *{ width: 20px; }
 
-/* Cartes Contrats */
 .contract-card { background: #ffffff; border-radius: 24px; padding: 1.5rem; border: 1px solid #e2e8f0; display: flex; flex-direction: column; gap: 1.2rem; transition: 0.3s ease; }
 .contract-card:hover { transform: translateY(-3px); box-shadow: 0 15px 35px rgba(0,0,0,0.06); }
 .card-offline { opacity: 0.7; filter: grayscale(40%); }
@@ -264,10 +262,14 @@ export default {
 .dark-text { color: var(--primary-color); margin: 0; font-size: 1.1rem; font-weight: 700;}
 .gray-text { color: #64748b; font-size: 0.85rem; }
 
+/* ⚡️ NOUVEAU CSS POUR LE PRIX PROMO */
+.price-wrapper { display: flex; align-items: center; gap: 0.5rem; margin-top: 0.2rem; }
+.old-price { color: #94a3b8; font-size: 0.75rem; text-decoration: line-through; }
+.new-price { color: #10b981; font-weight: 700; font-size: 0.95rem; }
+
 .card-footer { display: flex; justify-content: flex-end; border-top: 1px solid #f1f5f9; padding-top: 1.2rem; }
 .actions-block { display: flex; align-items: center; gap: 0.5rem; }
 
-/* Switch et boutons d'action */
 .switch { position: relative; display: inline-block; width: 36px; height: 20px; margin-right: 0.5rem; flex-shrink: 0; }
 .switch input { opacity: 0; width: 0; height: 0; }
 .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #cbd5e1; transition: .4s; border-radius: 34px; }
@@ -279,13 +281,10 @@ input:checked + .slider:before { transform: translateX(16px); }
 .action-icon-btn:hover { background: #e2e8f0; color: #1e293b; }
 .delete-btn:hover { background: #fee2e2; border-color: #fecaca; color: #ef4444; }
 
-/* Carte Ajout */
 .add-card { border: 2px dashed #cbd5e1; background: #f8fafc; align-items: center; justify-content: center; text-align: center; cursor: pointer; }
 .add-card:hover { border-color: #2563eb; }
 .add-circle { width: 50px; height: 50px; border-radius: 50%; background: #eff6ff; color: #2563eb; display: flex; align-items: center; justify-content: center; }
 
-
-/* --- MODALE D'AJOUT DE DOSSIER --- */
 .folder-modal-overlay {
   position: fixed; top: 0; left: 0; width: 100%; height: 100%;
   background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px);
@@ -302,7 +301,6 @@ input:checked + .slider:before { transform: translateX(16px); }
   display: flex; justify-content: space-between; align-items: center; text-align: center; background: var(--primary-color);
   padding: 1.5rem 2rem; border-bottom: 1px solid #e2e8f0;
 }
-/* CORRECTION : L'en-tête ne passe plus à la ligne */
 .folder-modal-header h3 { margin: 0; font-size: 1.2rem; color: #ffffff; white-space: nowrap; }
 .close-modal-btn { background: transparent; border: none; font-size: 1.5rem; color: #94a3b8; cursor: pointer }
 .close-modal-btn:hover { color: #ef4444; }
@@ -321,7 +319,6 @@ input:checked + .slider:before { transform: translateX(16px); }
   display: flex; justify-content: flex-end; gap: 1rem; margin-top: 2rem; flex-wrap: nowrap;
 }
 
-/* CORRECTION : Les boutons de la modale ne passent plus à la ligne */
 .btn-cancel { background: transparent; border: 1px solid #cbd5e1; color: #64748b; padding: 0.6rem 1.2rem; border-radius: 8px; cursor: pointer; font-weight: 600; white-space: nowrap; }
 .btn-cancel:hover { background: #f1f5f9; }
 .btn-save { background: var(--primary-color); border: none; color: white; padding: 0.6rem 1.2rem; border-radius: 8px; cursor: pointer; font-weight: 600; white-space: nowrap; }
@@ -330,8 +327,6 @@ input:checked + .slider:before { transform: translateX(16px); }
 .fade-enter-active, .fade-leave-active { transition: opacity 0.2s ease; }
 .fade-enter-from, .fade-leave-to { opacity: 0; }
 
-
-/* RESPONSIVE DES GRILLES */
 @media (max-width: 1024px) {
   .grid-4-cols { grid-template-columns: repeat(2, 1fr); }
   .grid-2-cols { grid-template-columns: 1fr; }
