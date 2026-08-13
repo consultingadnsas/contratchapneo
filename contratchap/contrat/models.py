@@ -62,9 +62,14 @@ class Pack(models.Model):
         LE CATALOGUE (Ce qui s'affiche sur la boutique) 
     """
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+
     title = models.CharField(max_length=255)
+
     description = models.TextField()
+    
     prix = models.DecimalField(max_digits=10, decimal_places=2)
+
+    prix_promo = models.DecimalField(max_digits=10, decimal_places=2)
 
     # 🚀 NOUVEAU : Le mode "Crédits"
     nombre_credits = models.PositiveIntegerField(

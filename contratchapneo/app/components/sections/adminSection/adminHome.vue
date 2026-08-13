@@ -125,71 +125,78 @@
 </template>
 
 <script lang="ts">
-// 1. On importe markRaw ET les vraies icônes de Heroicons
-import { ref, markRaw } from 'vue';
+import { computed, onMounted, markRaw } from 'vue';
 import folderCards from '../../cards/folderCards.vue';
 import { 
   ArrowDownTrayIcon, 
   ArrowUpTrayIcon, 
   CreditCardIcon 
 } from '@heroicons/vue/24/outline';
+import { useAdminTransactStore } from '../../../stores/adminTransactStore'; // 🚨 Ajuste le chemin selon ton projet
 
 export default {
   name: 'AdminOverview',
-  components:{
+  components: {
     folderCards
   },
   emits: ['open-catalogue'],
   setup() {
-    // 2. On utilise les vraies icônes enveloppées de markRaw()
-    const recentActivities = ref([
-      { 
-        id: 1, 
-        action: "Achat Modèle SARL", 
-        status: "Succès", 
-        statusColor: "dot-green", 
-        client: "TechAfrica", 
-        date: "05 Oct 2026", 
-        amount: "15 000", 
-        icon: markRaw(ArrowDownTrayIcon), 
-        colorClass: 'bg-blue-light' 
-      },
-      { 
-        id: 2, 
-        action: "Demande Sur-Mesure", 
-        status: "En attente", 
-        statusColor: "dot-yellow", 
-        client: "Bamba L.", 
-        date: "12 Sep 2026", 
-        amount: "250 000", 
-        icon: markRaw(ArrowUpTrayIcon), 
-        colorClass: 'bg-orange-light' 
-      },
-      { 
-        id: 3, 
-        action: "Achat Pack Création", 
-        status: "Succès", 
-        statusColor: "dot-green", 
-        client: "Startup Z", 
-        date: "15 Jul 2026", 
-        amount: "45 000", 
-        icon: markRaw(CreditCardIcon), 
-        colorClass: 'bg-purple-light' 
-      },
-      { 
-        id: 4, 
-        action: "Achat Contrat Bail", 
-        status: "Succès", 
-        statusColor: "dot-green", 
-        client: "Sylla Awa", 
-        date: "07 May 2026", 
-        amount: "15 000", 
-        icon: markRaw(ArrowDownTrayIcon), 
-        colorClass: 'bg-blue-light' 
-      },
-    ]);
+    const transactStore = useAdminTransactStore();
 
-    return { recentActivities };
+    // 1. Déclenchement de l'appel API au montage du composant
+    onMounted(async () => {
+      await transactStore.fetchTransact();
+    });
+
+    // 2. Helper : Formatage des dates (ex: "2026-10-05" -> "05 Oct 2026")
+    const formatDate = (dateString: string) => {
+      if (!dateString) return 'Date inconnue';
+      const date = new Date(dateString);
+      return date.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' });
+    };
+
+    // 3. Helper : Attribution des couleurs selon le statut Django
+    const getStatusStyles = (status: string) => {
+      const safeStatus = status?.toLowerCase() || '';
+      if (['success', 'payé', 'paid'].includes(safeStatus)) {
+        return { color: 'dot-green', text: 'Succès' };
+      } else if (['pending', 'en attente'].includes(safeStatus)) {
+        return { color: 'dot-yellow', text: 'En attente' };
+      } else if (['failed', 'échoué', 'error'].includes(safeStatus)) {
+        return { color: 'dot-red', text: 'Échoué' };
+      }
+      return { color: 'dot-gray', text: status || 'Inconnu' };
+    };
+
+    // 4. Transformation des données brutes en données d'affichage
+    const recentActivities = computed(() => {
+      return transactStore.transactions.map((t) => {
+        const styles = getStatusStyles(t.status);
+        
+        // Sécurité : On s'assure d'afficher un nom même si l'objet order/user est incomplet
+        const clientName = t.order?.user 
+          ? `${t.order.user.first_name || ''} ${t.order.user.last_name || ''}`.trim() || t.order.user.email
+          : 'Client Invité';
+
+        return {
+          id: t.id,
+          action: `${t.id?.slice(0, 12) || '...'}`, 
+          status: styles.text,
+          statusColor: styles.color,
+          client: clientName,
+          date: formatDate(t.created_at),
+          // Formatage du montant avec séparateur de milliers (ex: 15000 -> 15 000)
+          amount: new Intl.NumberFormat('fr-FR').format(t.amount), 
+          icon: markRaw(CreditCardIcon), // Icône par défaut
+          colorClass: 'bg-gray-light' 
+        };
+      });
+    });
+
+    return { 
+      recentActivities,
+      isLoading: computed(() => transactStore.isLoading)
+    };
   }
 }
 </script>
