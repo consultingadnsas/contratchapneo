@@ -17,7 +17,10 @@ from rest_framework.decorators import (api_view, authentication_classes, permiss
 from rest_framework.views       import APIView
 from rest_framework.response    import Response
 from rest_framework             import status
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAdminUser
+from rest_framework.generics import ListAPIView
+from rest_framework.pagination import PageNumberPagination
+
 
 from ecommerce.models import Order
 from contrat.models   import Contrat, ContractRevision
@@ -494,5 +497,17 @@ def _increment_downloads(order: Order):
         )
 
 
+# ========================================================
+# 1. Get Transaction 5(Admin Section)
+# ========================================================
 
+class AdminCartPagination(PageNumberPagination):
+    page_size = 10
+    page_size_query_param = 'page_size'
+    max_page_size = 100
 
+class AdminTransaction(ListAPIView):
+    permission_classes = [IsAdminUser]
+    queryset = Transaction.objects.all().order_by('-id')
+    serializer_class = TransactionSerializer
+    pagination_class = AdminCartPagination

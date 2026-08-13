@@ -1,9 +1,14 @@
 from rest_framework import serializers
 from .models import Transaction
+from ecommerce.models import Order
+from ecommerce.serializers import OrderSerializer
 
 
 class TransactionSerializer(serializers.ModelSerializer):
     status_label = serializers.CharField(source='get_status_display', read_only=True)
+    
+    # 🚨 CORRECTION ICI : On utilise directement ton OrderSerializer
+    order = OrderSerializer(read_only=True)
 
     class Meta:
         model  = Transaction

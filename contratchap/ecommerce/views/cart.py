@@ -1,11 +1,5 @@
-import tempfile
-import zipfile
-import io
-import os
-from PIL.DdsImagePlugin import item
-from PIL.Image import item
-from django.http import FileResponse
-from django.conf import settings
+from rest_framework.generics import ListAPIView
+from rest_framework.pagination import PageNumberPagination
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -15,7 +9,7 @@ from django.shortcuts import get_object_or_404
 from django.db import transaction
 from django.db.models import F
 
-from ..models import CartItem, Order, OrderItem, GuestInfo, Coupon
+from ..models import Cart, CartItem, Order, OrderItem, GuestInfo, Coupon
 from ..serializers import (
     CartSerializer,
     CartItemSerializer,
@@ -32,6 +26,11 @@ from contrat.utils import fill_docx_template, convert_docx_to_pdf, send_document
 # ─────────────────────────────────────────
 # CART VIEWS
 # ─────────────────────────────────────────
+
+class AdminCartPagination(PageNumberPagination):
+    page_size = 10
+    page_size_query_param = 'page_size'
+    max_page_size = 100
 
 class ApplyCouponView(APIView):
     """
@@ -380,3 +379,13 @@ class CartClearView(APIView):
             status=status.HTTP_200_OK
         )
         return set_cart_cookie_if_needed(request, response)
+
+# =========================================================
+# 1. Admin Cart Management
+# =========================================================
+
+class AdminCartView(ListAPIView):
+    permission_classes = [IsAdminUser]
+    queryset = Cart.objects.all().order_by('-id')
+    serializer_class = CartSerializer
+    pagination_class = AdminCartPagination

@@ -8,7 +8,7 @@
     
     <!-- La zone dynamique où tes pages (Aperçu, Finance, etc.) vont s'afficher -->
     <main class="admin-main-content">
-        <AdminHome/>
+      <AdminHome/>
     </main>
   </div>
 </template>
