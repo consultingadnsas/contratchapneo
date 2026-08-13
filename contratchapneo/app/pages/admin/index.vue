@@ -30,7 +30,7 @@ export default {
 
     // On définit le menu directement dans le Layout
     const adminMenu = ref<MenuItem[]>([
-      { id: 'overview', label: "Dashboard", route: '/admin/AdminHome', icon: markRaw(HomeIcon), category: 'General' },
+      { id: 'overview', label: "Dashboard", route: '/admin', icon: markRaw(HomeIcon), category: 'General' },
       { id: 'history', label: 'Historiques', route: '/admin/AdminHistory', icon: markRaw(BookOpenIcon), category: 'General' },
       { id: 'finance', label: 'Finances', route: '/admin/AdminFinance', icon: markRaw(BanknotesIcon), category: 'General' },
       { id: 'inbox', label: 'Demandes clients', route: '/admin/AdminInbox', icon: markRaw(InboxIcon), category: 'General' },
