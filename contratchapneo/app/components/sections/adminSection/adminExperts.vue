@@ -67,10 +67,6 @@
               <span class="stat-label">Consultations</span>
             </div>
           </div>
-          
-          <div class="actions-row mt-3">
-            <secondButton label="Voir le profil complet" class="w-full" @click="viewProfile(expert)" />
-          </div>
         </div>
 
       </div>
@@ -370,8 +366,6 @@ export default {
 .stat-item { display: flex; flex-direction: column; align-items: center; }
 .stat-val { font-size: 1.1rem; font-weight: 800; color: var(--text-dark); }
 .stat-label { font-size: 0.7rem; color: var(--text-gray); text-transform: uppercase; letter-spacing: 0.5px; }
-
-.actions-row { display: flex; width: 100%; }
 
 .empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 4rem 2rem; background: var(--bg-panel); border-radius: 24px; text-align: center; border: 1px dashed #cbd5e1; }
 .icon-box-light { width: 64px; height: 64px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
