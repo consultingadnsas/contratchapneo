@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
 import { useNuxtApp } from '#app';
-import type { Order } from './orderStore';
+import type { Order, OrderItem } from './orderStore';
 
 export interface Transaction {
     id: string;
@@ -19,8 +19,7 @@ export const useAdminTransactStore = defineStore('adminTransac', () => {
     
     const { $api } = useNuxtApp();
 
-    // --- STATE ---
-    const transactions = ref<Transaction[]>([]); // 🚨 Ajout de la liste des transactions
+    const transactions = ref<Transaction[]>([]);
     const isLoading = ref<boolean>(false);
     const error = ref<string | null>(null);
 
@@ -30,14 +29,35 @@ export const useAdminTransactStore = defineStore('adminTransac', () => {
         error.value = null;
 
         try {
-            const response = await $api<any>('/payments/admin/', {
-                method: 'GET'
-            });
+            let allTransactions: Transaction[] = [];
+            
+            // ⚡️ On commence par la première page
+            let currentEndpoint: string | null = '/payments/admin/';
 
-            // 💡 On gère la pagination DRF (response.results) ou un tableau direct (response.data ou response)
-            if (response) {
-                transactions.value = response.results || response.data || response || [];
+            // ⚡️ Tant qu'il y a une page suivante (next), on continue de boucler
+            while (currentEndpoint) {
+                const response = await $api<any>(currentEndpoint, { method: 'GET' });
+
+                if (response && response.results) {
+                    // C'est une réponse paginée de Django
+                    allTransactions = [...allTransactions, ...response.results];
+                    
+                    // Si Django renvoie une URL absolue (http://localhost:8000/api/...), 
+                    // on nettoie l'URL pour ne garder que le chemin relatif pour notre $api Nuxt
+                    if (response.next) {
+                        const url = new URL(response.next);
+                        currentEndpoint = url.pathname + url.search; // ex: /api/payments/admin/?page=2
+                    } else {
+                        currentEndpoint = null; // Plus de page, on arrête la boucle
+                    }
+                } else {
+                    // Si le backend n'a finalement pas activé la pagination
+                    allTransactions = response?.data || response || [];
+                    currentEndpoint = null;
+                }
             }
+
+            transactions.value = allTransactions;
             
         } catch (err: any) {
             error.value = err.message || "Une erreur est survenue lors de la récupération des transactions.";
@@ -48,7 +68,7 @@ export const useAdminTransactStore = defineStore('adminTransac', () => {
     }
 
     return {
-        transactions, // Ne pas oublier de l'exporter !
+        transactions,
         isLoading,
         error,
         fetchTransact

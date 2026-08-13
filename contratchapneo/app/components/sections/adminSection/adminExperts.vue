@@ -53,7 +53,7 @@
           </div>
           
           <h4 class="expert-name">{{ expert.name }}</h4>
-          <span class="expert-role">{{ expert.role }} &bull; {{ expert.specialty }}</span>
+          <span class="expert-role">{{ expert.roleDisplay }} &bull; {{ expert.specialty }}</span>
         </div>
 
         <div class="card-footer">
@@ -98,7 +98,8 @@
 import { ref, computed, markRaw, onMounted } from 'vue';
 import ExpertModal from '../../modale/expertModal.vue';
 import secondButton from '../../buttons/secondButton.vue';
-import { useProStore } from '../../../stores/proStore';
+// ⚡️ Remplacement par le nouveau store
+import { useAdminProStore } from '../../../stores/adminProStore'; 
 import { 
   UserPlusIcon, 
   MagnifyingGlassIcon, 
@@ -111,24 +112,26 @@ export default {
   name: 'AdminExperts',
   components: { ExpertModal, secondButton },
   setup() {
-    const proStore = useProStore();
+    // ⚡️ Instanciation du nouveau store
+    const adminProStore = useAdminProStore();
     
     const searchQuery = ref('');
     const activeTab = ref('Tous');
 
     // Mappage des données pour l'affichage
     const experts = computed(() => {
-      return proStore.professionals.map(pro => ({
+      // ⚡️ Utilisation de adminProStore.pros
+      return adminProStore.pros.map(pro => ({
         id: pro.id,
         name: `${pro.first_name} ${pro.last_name}`.trim(),
-        roleDisplay: pro.title_display || 'Expert',
+        roleDisplay: pro.title_display || pro.title || 'Expert',
         specialty: pro.domains && pro.domains.length > 0 ? pro.domains.map((d: any) => d.name).join(', ') : 'Généraliste',
         avatar: pro.profile_picture,
         isVerified: pro.is_verified,
         isActive: pro.is_active,
         contractsSold: 0, 
         consultations: 0,
-        originalData: pro // Gardé pour réinjecter dans la modale
+        originalData: pro 
       }));
     });
 
@@ -148,6 +151,7 @@ export default {
     };
 
     const getRoleColor = (role: string) => {
+      if (!role) return 'bg-gray-light text-gray';
       const roleLower = role.toLowerCase();
       if (roleLower.includes('avocat')) return 'bg-blue-light text-blue';
       if (roleLower.includes('notaire')) return 'bg-purple-light text-purple';
@@ -161,11 +165,10 @@ export default {
     const openModal = (expert: any = null) => {
       if (expert && expert.originalData) {
         const o = expert.originalData;
-        // On formate les données brutes pour remplir la modale
         selectedExpert.value = {
           id: o.id,
           name: `${o.first_name} ${o.last_name}`,
-          role: o.title, // 'AVOCAT', 'NOTAIRE' (valeur brute)
+          role: o.title,
           email: o.email,
           phone_number: o.phone_number,
           city: o.city,
@@ -187,49 +190,55 @@ export default {
     };
 
     const saveExpert = async (expertData: any) => {
-      // 1. Séparer le nom complet en Prénom et Nom
       const nameParts = expertData.name.trim().split(' ');
       const firstName = nameParts.shift() || 'Prénom';
-      const lastName = nameParts.join(' ') || 'Nom'; // Le reste devient le nom de famille
+      const lastName = nameParts.join(' ') || 'Nom'; 
 
-      // 2. Construire le payload pour Django
-      const payload: any = {
-        first_name: firstName,
-        last_name: lastName,
-        title: expertData.role,
-        email: expertData.email,
-        phone_number: expertData.phone_number,
-        city: expertData.city,
-        bio: expertData.bio,
-        is_active: expertData.isActive,
-        is_verified: expertData.isVerified,
-      };
+      // ⚡️ Création d'un FormData (Requis par Django pour les fichiers)
+      const formData = new FormData();
+      formData.append('first_name', firstName);
+      formData.append('last_name', lastName);
+      formData.append('title', expertData.role);
+      
+      if (expertData.email) formData.append('email', expertData.email);
+      if (expertData.phone_number) formData.append('phone_number', expertData.phone_number);
+      if (expertData.city) formData.append('city', expertData.city);
+      if (expertData.bio) formData.append('bio', expertData.bio);
+      
+      // Les booléens doivent être convertis en chaînes pour FormData
+      formData.append('is_active', expertData.isActive ? 'true' : 'false');
+      formData.append('is_verified', expertData.isVerified ? 'true' : 'false');
 
-      // Si une nouvelle image a été chargée, on l'ajoute !
+      // Ajout de l'image si elle est présente
       if (expertData.avatarFile) {
-        payload.profile_picture = expertData.avatarFile;
+        formData.append('profile_picture', expertData.avatarFile);
       }
 
-      // 3. Appel au Store
       let success = false;
-      if (expertData.id) {
-        success = await proStore.updatePro(expertData.id, payload);
-      } else {
-        success = await proStore.addPro(payload);
+      try {
+        if (expertData.id) {
+          await adminProStore.updatePro(expertData.id, formData);
+        } else {
+          await adminProStore.addPro(formData);
+        }
+        success = true;
+      } catch (e) {
+        success = false;
       }
 
       if (success) {
         closeModal();
       } else {
-        alert(proStore.error || "Une erreur est survenue lors de l'enregistrement.");
+        alert(adminProStore.error || "Une erreur est survenue lors de l'enregistrement.");
       }
     };
 
     const deleteExpert = async (id: string) => {
       if (confirm('Supprimer définitivement cet expert ? Cette action est irréversible.')) {
-        const success = await proStore.deletePro(id);
-        if(!success) {
-          alert(proStore.error || "Impossible de supprimer l'expert.");
+        try {
+          await adminProStore.deletePro(id);
+        } catch(e) {
+          alert(adminProStore.error || "Impossible de supprimer l'expert.");
         }
       }
     };
@@ -237,7 +246,8 @@ export default {
     const viewProfile = (expert: any) => console.log('Voir profil complet:', expert.name);
 
     onMounted(async () => {
-      await proStore.getProfessionals(); 
+      // ⚡️ Utilisation de la nouvelle fonction fetchPros
+      await adminProStore.fetchPros(); 
     });
 
     return {
@@ -253,7 +263,7 @@ export default {
       saveExpert,
       deleteExpert,
       viewProfile,
-      isLoading: computed(() => proStore.isLoading),
+      isLoading: computed(() => adminProStore.isLoading),
       UserPlusIcon: markRaw(UserPlusIcon), 
       MagnifyingGlassIcon: markRaw(MagnifyingGlassIcon), 
       CheckBadgeIcon: markRaw(CheckBadgeIcon),
@@ -266,7 +276,7 @@ export default {
 
 <style scoped>
 /* ==============================================================
-   VARIABLES & STRUCTURE
+   VARIABLES & STRUCTURE (Le style CSS reste totalement inchangé)
    ============================================================== */
 .experts-wrapper {
   --bg-panel: #ffffff;
@@ -279,7 +289,6 @@ export default {
   font-family: 'Inter', sans-serif; padding-bottom: 2rem;
 }
 
-/* UTILITAIRES */
 .dark-text { color: var(--text-dark); }
 .gray-text { color: var(--text-gray); }
 .font-bold { font-weight: 700; }
@@ -303,9 +312,6 @@ export default {
 .icon-lg { width: 32px; height: 32px; }
 .icon-gray { color: var(--text-gray); }
 
-/* ==============================================================
-   EN-TÊTE & FILTRES
-   ============================================================== */
 .header-section { display: flex; flex-direction: column; gap: 1.5rem; }
 .title-row { display: flex; justify-content: space-between; align-items: center; }
 .section-title { font-size: 1.4rem; color: var(--text-dark); font-weight: 700; margin: 0; }
@@ -325,7 +331,6 @@ export default {
 .tab-btn { background: transparent; border: none; color: #ffffff; font-size: 0.85rem; font-weight: 600; padding: 0.5rem 1.2rem; border-radius: 50px; cursor: pointer; transition: all 0.2s ease; }
 .tab-btn.active { background: var(--secondary-light-color); color: #ffffff; box-shadow: 0px 2px 10px rgba(0,0,0,0.05); }
 
-/* Bouton d'ajout d'expert (Style inspiré de mainButton pour inclure l'icône) */
 .btn-primary-custom { 
   background: var(--primary-color-dark); color: #ffffff; font-weight: 600; 
   border-radius: 999px; padding: 12px 24px; font-size: 1rem; 
@@ -334,9 +339,6 @@ export default {
 }
 .btn-primary-custom:hover { background: #1f2937; }
 
-/* ==============================================================
-   GRILLE DES EXPERTS
-   ============================================================== */
 .experts-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.5rem; }
 
 .expert-card {
@@ -347,7 +349,6 @@ export default {
 .expert-card:hover { transform: translateY(-3px); box-shadow: 0 15px 35px rgba(0,0,0,0.06); }
 .card-suspended { opacity: 0.7; filter: grayscale(30%); }
 
-/* HAUT CARTE (Statut et Actions) */
 .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; }
 .status-indicator { width: 10px; height: 10px; border-radius: 50%; box-shadow: 0 0 0 3px rgba(255,255,255,0.8); }
 .actions-group-top { display: flex; gap: 0.4rem; }
@@ -355,7 +356,6 @@ export default {
 .action-icon-btn:hover { color: var(--text-dark); }
 .delete-btn:hover { color: #ef4444; }
 
-/* CORPS CARTE (Avatar & Textes) */
 .card-body { display: flex; flex-direction: column; align-items: center; text-align: center; border-bottom: 1px solid #f1f5f9; padding-bottom: 1.2rem; margin-bottom: 1.2rem; }
 .avatar-container { position: relative; width: 80px; height: 80px; margin-bottom: 1rem; }
 .avatar-placeholder { width: 100%; height: 100%; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; font-weight: 700; letter-spacing: 1px; }
@@ -365,7 +365,6 @@ export default {
 .expert-name { margin: 0 0 0.2rem 0; font-size: 1.1rem; font-weight: 700; color: var(--text-dark); }
 .expert-role { font-size: 0.85rem; color: var(--text-gray); }
 
-/* BAS CARTE (Stats & Boutons) */
 .card-footer { display: flex; flex-direction: column; gap: 1rem; }
 .stats-row { display: flex; justify-content: space-around; }
 .stat-item { display: flex; flex-direction: column; align-items: center; }
@@ -374,7 +373,6 @@ export default {
 
 .actions-row { display: flex; width: 100%; }
 
-/* EMPTY STATE */
 .empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 4rem 2rem; background: var(--bg-panel); border-radius: 24px; text-align: center; border: 1px dashed #cbd5e1; }
 .icon-box-light { width: 64px; height: 64px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
 

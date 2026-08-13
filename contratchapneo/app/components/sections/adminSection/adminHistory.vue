@@ -8,13 +8,13 @@
         
         <div class="search-box">
           <component :is="MagnifyingGlassIcon" class="icon-gray" />
-          <input type="text" v-model="searchQuery" placeholder="Rechercher un nom, un email..." />
+          <input type="text" v-model="searchQuery" placeholder="Rechercher un nom, un email, un produit..." />
         </div>
       </div>
 
       <div class="tabs-group">
         <button class="tab-btn" :class="{ active: activeTab === 'models' }" @click="activeTab = 'models'">
-          Contrats vendu
+          Contrats vendus
         </button>
         <button class="tab-btn" :class="{ active: activeTab === 'packs' }" @click="activeTab = 'packs'">
           Packs de contrats
@@ -25,35 +25,41 @@
       </div>
     </div>
 
-    <!-- TABLEAU DE L'HISTORIQUE (Style MoonInc) -->
-    <div class="panel clean-list-container">
+    <!-- ÉTAT DE CHARGEMENT -->
+    <div v-if="transactStore.isLoading" class="loading-state">
+      Chargement de l'historique des transactions...
+    </div>
+
+    <!-- TABLEAU DE L'HISTORIQUE -->
+    <div v-else class="panel clean-list-container">
       <table class="minimal-table">
         <thead>
           <tr>
-            <th>Produit Acheté</th>
+            <th>Type de produit</th>
             <th>Statut</th>
             <th>Client & Contact</th>
             <th>Date & Heure</th>
             <th class="text-right">Montant</th>
+            <th class="text-center">Action</th>
           </tr>
         </thead>
         <tbody>
-          <tr v-for="item in filteredHistory" :key="item.id">
+          <!-- ⚡️ UTILISATION DE LA LISTE PAGINÉE ICI -->
+          <tr v-for="item in paginatedHistory" :key="item.id">
             
-            <!-- Colonne Produit (Avec la petite icône pastel) -->
             <td>
               <div class="action-cell">
-                <span class="dark-text font-bold">{{ item.product }}</span>
+                <div class="icon-box-light" :class="getIconColor(activeTab)">
+                  <component :is="getIcon(activeTab)" />
+                </div>
+                <span class="dark-text font-bold">{{ item.productTypeLabel }}</span>
               </div>
             </td>
             
-            <!-- Colonne Statut -->
             <td>
-              <span class="status-dot dot-green"></span> 
-              <span class="gray-text">Payé</span>
+              <span class="gray-text">{{ item.statusLabel }}</span>
             </td>
 
-            <!-- Colonne Client -->
             <td>
               <div class="client-info">
                 <span class="dark-text font-bold">{{ item.clientName }}</span>
@@ -61,7 +67,6 @@
               </div>
             </td>
             
-            <!-- Colonne Date -->
             <td>
               <div class="client-info">
                 <span class="gray-text">{{ item.date }}</span>
@@ -69,9 +74,17 @@
               </div>
             </td>
             
-            <!-- Colonne Montant -->
             <td class="text-right dark-text font-bold">
               {{ item.amount }} FCFA
+            </td>
+
+            <td class="text-center">
+              <button class="pill-btn" @click="openDetails(item)">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                </svg>
+              </button>
             </td>
             
           </tr>
@@ -79,8 +92,63 @@
       </table>
 
       <!-- ÉTAT VIDE -->
-      <div v-if="filteredHistory.length === 0" class="empty-state">
-        <p class="gray-text">Aucune transaction trouvée pour cette recherche.</p>
+      <div v-if="paginatedHistory.length === 0" class="empty-state">
+        <p class="gray-text">Aucune transaction trouvée pour cette catégorie ou recherche.</p>
+      </div>
+      
+      <!-- ⚡️ LE PAGINATEUR INTÉGRÉ ICI -->
+      <Paginator 
+        v-if="filteredHistory.length > 0"
+        :currentPage="currentPage"
+        :totalCount="filteredHistory.length"
+        :pageSize="itemsPerPage"
+        @page-change="handlePageChange"
+      />
+    </div>
+
+    <!-- ⚡️ MODALE D'APERÇU DES DÉTAILS -->
+    <div v-if="selectedTx" class="modal-overlay" @click.self="closeDetails">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h4>Détails de la transaction</h4>
+          <button class="close-btn" @click="closeDetails">✕</button>
+        </div>
+        
+        <div class="modal-body">
+          <div class="detail-row">
+            <span class="label">ID Commande :</span>
+            <span class="value font-bold">{{ selectedTx.orderId }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Client :</span>
+            <span class="value">{{ selectedTx.clientEmail }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Date :</span>
+            <span class="value">{{ selectedTx.date }} à {{ selectedTx.time }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Montant Total :</span>
+            <span class="value font-bold dark-text">{{ selectedTx.amount }} FCFA</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Statut :</span>
+            <span class="value">
+              {{ selectedTx.statusLabel }}
+            </span>
+          </div>
+
+          <div class="items-section">
+            <h5>Contenu de la commande</h5>
+            <ul v-if="selectedTx.rawOrderItems && selectedTx.rawOrderItems.length > 0" class="items-list">
+              <li v-for="(article, idx) in selectedTx.rawOrderItems" :key="idx">
+                <span class="check-icon">✓</span>
+                {{ article.contrat_title || article.pack_title || article.customised_contract || 'Article sans nom' }}
+              </li>
+            </ul>
+            <p v-else class="gray-text">Aucun détail d'article trouvé.</p>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -88,54 +156,120 @@
 </template>
 
 <script lang="ts">
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted, watch } from 'vue'; // ⚡️ Ajout de 'watch'
 import { 
   MagnifyingGlassIcon, 
   DocumentTextIcon, 
   ArchiveBoxIcon, 
   ScaleIcon
 } from '@heroicons/vue/24/outline';
+import { useAdminTransactStore } from '../../../stores/adminTransactStore';
+import Paginator from '../../tools/Paginator.vue'; // ⚡️ Ajuste le chemin vers ton composant Paginator
 
 export default {
   name: 'AdminHistory',
+  components: {
+    Paginator // ⚡️ Enregistrement du composant
+  },
   setup() {
-    const activeTab = ref('models'); // 'models', 'packs', 'custom'
+    const transactStore = useAdminTransactStore();
+    const activeTab = ref<'models' | 'packs' | 'custom'>('models');
     const searchQuery = ref('');
+    
+    const selectedTx = ref<any>(null);
 
-    // --- FAUSSES BASES DE DONNÉES ---
-    const historyModels = ref([
-      { id: 1, date: '12 Juin 2026', time: '14:30', clientName: 'Koffi Armand', clientEmail: 'koffi.a@gmail.com', clientPhone: '+225 07070707', product: 'Statuts SARL OHADA', amount: '15 000' },
-      { id: 2, date: '12 Juin 2026', time: '09:15', clientName: 'Sylla Awa', clientEmail: 'awa.sylla@yahoo.fr', clientPhone: '+225 05050505', product: 'Contrat de Prestation', amount: '10 000' },
-    ]);
+    // ⚡️ ÉTATS POUR LA PAGINATION
+    const currentPage = ref(1);
+    const itemsPerPage = 10; // Tu peux modifier cette valeur pour afficher plus ou moins de transactions par page
 
-    const historyPacks = ref([
-      { id: 101, date: '11 Juin 2026', time: '16:45', clientName: 'Entreprise TechCI', clientEmail: 'contact@techci.com', clientPhone: '+225 01010101', product: 'Pack Création Entreprise', amount: '45 000' },
-      { id: 102, date: '09 Juin 2026', time: '10:00', clientName: 'Bamba Lamine', clientEmail: 'bamba.l@outlook.com', clientPhone: '+225 09090909', product: 'Pack Freelance', amount: '20 000' },
-    ]);
-
-    const historyCustom = ref([
-      { id: 201, date: '10 Juin 2026', time: '11:20', clientName: 'Groupe EBOMAF', clientEmail: 'legal@ebomaf.com', clientPhone: '+226 70707070', product: 'Contrat de Fusion (Devis)', amount: '150 000' },
-      { id: 202, date: '05 Juin 2026', time: '15:30', clientName: 'Startup Z', clientEmail: 'hello@startupz.ci', clientPhone: '+225 03030303', product: 'Audit Juridique Complet', amount: '300 000' },
-    ]);
-
-    // --- LOGIQUE DE FILTRAGE ---
-    const filteredHistory = computed(() => {
-      let currentList = [];
-      if (activeTab.value === 'models') currentList = historyModels.value;
-      else if (activeTab.value === 'packs') currentList = historyPacks.value;
-      else if (activeTab.value === 'custom') currentList = historyCustom.value;
-
-      if (!searchQuery.value) return currentList;
-      
-      const query = searchQuery.value.toLowerCase();
-      return currentList.filter(item => 
-        item.clientName.toLowerCase().includes(query) ||
-        item.clientEmail.toLowerCase().includes(query) ||
-        item.product.toLowerCase().includes(query)
-      );
+    onMounted(() => {
+      transactStore.fetchTransact();
     });
 
-    // --- DESIGN DYNAMIQUE (Icônes et Couleurs selon l'onglet) ---
+    const mappedTransactions = computed(() => {
+      const sortedTransactions = [...transactStore.transactions].sort((a, b) => {
+        const dateA = new Date(a.created_at || a.order?.created_at).getTime();
+        const dateB = new Date(b.created_at || b.order?.created_at).getTime();
+        return dateB - dateA;
+      });
+
+      return sortedTransactions.map((tx: any) => {
+        const order = tx.order || {};
+        const orderItems = order.order_items || order.items || tx.order_items || [];
+        
+        let productTypeLabel = 'Achat de contrat';
+        let itemType = 'models';
+
+        if (order.pack || tx.pack || order.order_type === 'pack' || orderItems[0]?.pack_title) {
+          itemType = 'packs';
+          productTypeLabel = 'Achat de pack';
+        } else if (order.custom_contract || tx.custom_contract || order.order_type === 'custom' || orderItems[0]?.customised_contract) {
+          itemType = 'custom';
+          productTypeLabel = 'Demande sur-mesure';
+        } else {
+          itemType = 'models';
+          productTypeLabel = 'Achat de contrat';
+        }
+
+        const clientEmail = order.buyer_email || order.guest?.email || order.user?.email || 'Email non renseigné';
+        const clientName = order.guest?.full_name || (order.user ? `${order.user.first_name || ''} ${order.user.last_name || ''}`.trim() : null) || order.buyer_email || 'Client Invité';
+
+        const rawDate = tx.created_at || order.created_at;
+        const dateObj = rawDate ? new Date(rawDate) : new Date();
+        const dateStr = dateObj.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' });
+        const timeStr = dateObj.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+
+        const statusRaw = (tx.status || order.status || '').toLowerCase();
+        const isSuccess = ['success', 'completed', 'paid', 'succès', 'payé'].includes(statusRaw);
+        const finalStatusLabel = tx.status_label || tx.status_labels || order.status_label || order.status_labels || (isSuccess ? 'Payé' : 'Échoué');
+
+        return {
+          id: tx.id || Math.random().toString(),
+          orderId: order.id || tx.id,
+          type: itemType,
+          productTypeLabel,
+          isSuccess,
+          statusLabel: finalStatusLabel,
+          clientName,
+          clientEmail,
+          date: dateStr,
+          time: timeStr,
+          amount: new Intl.NumberFormat('fr-FR').format(tx.amount || order.total_amount || 0),
+          rawOrderItems: orderItems 
+        };
+      });
+    });
+
+    const filteredHistory = computed(() => {
+      let list = mappedTransactions.value.filter(item => item.type === activeTab.value);
+      if (searchQuery.value.trim() !== '') {
+        const query = searchQuery.value.toLowerCase().trim();
+        list = list.filter(item => 
+          item.clientName.toLowerCase().includes(query) ||
+          item.clientEmail.toLowerCase().includes(query) ||
+          item.orderId.toLowerCase().includes(query)
+        );
+      }
+      return list;
+    });
+
+    // ⚡️ NOUVEAU COMPUTED POUR COUPER LA LISTE SELON LA PAGE ACTIVE
+    const paginatedHistory = computed(() => {
+      const startIndex = (currentPage.value - 1) * itemsPerPage;
+      const endIndex = startIndex + itemsPerPage;
+      return filteredHistory.value.slice(startIndex, endIndex);
+    });
+
+    // ⚡️ WATCHER : Réinitialiser à la page 1 si on change d'onglet ou si on fait une recherche
+    watch([activeTab, searchQuery], () => {
+      currentPage.value = 1;
+    });
+
+    // ⚡️ FONCTION : Gérer le changement de page déclenché par le composant Paginator
+    const handlePageChange = (page: number) => {
+      currentPage.value = page;
+    };
+
     const getIconColor = (tab: string) => {
       if (tab === 'models') return 'bg-blue-light';
       if (tab === 'packs') return 'bg-purple-light';
@@ -148,89 +282,92 @@ export default {
       return ScaleIcon;
     };
 
+    const openDetails = (item: any) => {
+      selectedTx.value = item;
+    };
+
+    const closeDetails = () => {
+      selectedTx.value = null;
+    };
+
     return {
-      activeTab, searchQuery, filteredHistory,
-      MagnifyingGlassIcon, getIconColor, getIcon
+      transactStore, activeTab, searchQuery, filteredHistory,
+      MagnifyingGlassIcon, getIconColor, getIcon,
+      selectedTx, openDetails, closeDetails,
+      currentPage, itemsPerPage, paginatedHistory, handlePageChange // ⚡️ Exposer les nouvelles méthodes/variables pour le template
     };
   }
 }
 </script>
 
 <style scoped>
-/* ==============================================================
-   CHARTE GRAPHIQUE (MoonInc / ContratChap)
-   ============================================================== */
+/* Le CSS reste inchangé par rapport à ta version précédente */
 .history-wrapper {
-  --bg-main: #f8fafc;        
-  --bg-panel: #ffffff;       
-  --bg-panel-light: #f1f5f9; 
-  --text-dark: #1e293b;      
-  --text-gray: #94a3b8;      
-  --accent-blue: #2563eb;
-  
-  display: flex; flex-direction: column; gap: 2rem; 
-  font-family: 'Inter', sans-serif;
+  --bg-main: #f8fafc; --bg-panel: #ffffff; --bg-panel-light: #f1f5f9; 
+  --text-dark: #1e293b; --text-gray: #94a3b8; --accent-blue: #2563eb;
+  display: flex; flex-direction: column; gap: 2rem; font-family: 'Inter', sans-serif;
 }
-
-/* --- EN-TÊTE --- */
 .header-section { display: flex; flex-direction: column; gap: 1.5rem; }
 .title-and-search { display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 1rem; }
 .section-title { font-size: 1.2rem; color: var(--text-dark); font-weight: 700; margin: 0; }
-
-.search-box {
-  display: flex; align-items: center; gap: 0.8rem; background: var(--bg-panel);
-  border: 1px solid #e2e8f0; border-radius: 50px; padding: 0.6rem 1.2rem; 
-  flex: 1; max-width: 400px;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.02);
-}
+.search-box { display: flex; align-items: center; gap: 0.8rem; background: var(--bg-panel); border: 1px solid #e2e8f0; border-radius: 50px; padding: 0.6rem 1.2rem; flex: 1; max-width: 400px; box-shadow: 0 4px 10px rgba(0,0,0,0.02); }
 .search-box input { background: transparent; border: none; color: var(--text-dark); font-size: 0.9rem; outline: none; width: 100%; font-weight: 500; }
 .search-box input::placeholder { color: #cbd5e1; font-weight: 400; }
 .icon-gray { width: 18px; height: 18px; color: var(--text-gray); }
-
-/* --- ONGLETS (Pillules claires) --- */
-.tabs-group { display: flex; background: var(--primary-color); border-radius: 50px; padding: 0.3rem; width: fit-content; }
-.tab-btn { 
-  background: transparent; border: none; color: #ffffff; 
-  font-size: 0.85rem; font-weight: 600; padding: 0.6rem 1.2rem; 
-  border-radius: 50px; cursor: pointer; transition: all 0.2s ease; 
-}
-.tab-btn.active { 
-  background: var(--secondary-light-color); color: #ffffff; 
-  box-shadow: 0px 2px 10px rgba(0,0,0,0.05); 
-}
-
-/* --- PANNEAU & TABLEAU ÉPURÉ --- */
-.clean-list-container {
-  background: var(--bg-panel); border-radius: 24px; padding: 1.5rem;
-  box-shadow: 0 10px 40px rgba(0,0,0,0.03); border: 1px solid #f1f5f9;
-  overflow-x: auto;
-}
+.tabs-group { display: flex; background: var(--primary-color, #2563eb); border-radius: 50px; padding: 0.3rem; width: fit-content; }
+.tab-btn { background: transparent; border: none; color: #ffffff; font-size: 0.85rem; font-weight: 600; padding: 0.6rem 1.2rem; border-radius: 50px; cursor: pointer; transition: all 0.2s ease; }
+.tab-btn.active { background: var(--secondary-light-color, #1d4ed8); color: #ffffff; box-shadow: 0px 2px 10px rgba(0,0,0,0.1); }
+.loading-state { text-align: center; padding: 3rem; color: var(--text-gray); font-weight: 600; }
+.clean-list-container { background: var(--bg-panel); border-radius: 24px; padding: 1.5rem; box-shadow: 0 10px 40px rgba(0,0,0,0.03); border: 1px solid #f1f5f9; overflow-x: auto; }
 .minimal-table { width: 100%; border-collapse: collapse; text-align: left; min-width: 800px; }
 .minimal-table th { color: #cbd5e1; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; padding-bottom: 1.5rem; }
 .minimal-table td { padding: 1.2rem 0; border-bottom: 1px solid #f8fafc; vertical-align: middle; }
 .minimal-table tr:last-child td { border-bottom: none; }
-
-/* --- ÉLÉMENTS DE LA TABLE --- */
 .dark-text { color: var(--text-dark); }
 .gray-text { color: var(--text-gray); font-size: 0.9rem; }
 .font-bold { font-weight: 600; }
-.text-right { text-align: right; }
+.text-right { text-align: center; }
+.text-center { text-align: center; }
 .text-sm { font-size: 0.75rem; display: block; margin-top: 0.2rem; }
-
-/* Cellules Spéciales */
 .action-cell { display: flex; align-items: center; gap: 1rem; }
 .client-info { display: flex; flex-direction: column; }
-
-/* Icônes Pastel (Couleurs dynamiques selon l'onglet) */
-.icon-box-light { width: 38px; height: 38px; border-radius: 12px; display: flex; align-items: center; justify-content: center; }
+.icon-box-light { width: 38px; height: 38px; border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
 .icon-box-light svg { width: 20px; height: 20px; }
 .bg-blue-light { background: #eff6ff; color: #3b82f6; }
 .bg-purple-light { background: #faf5ff; color: #a855f7; }
 .bg-orange-light { background: #fff7ed; color: #f97316; }
-
-/* Statut Point */
-.status-dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; margin-right: 0.5rem; vertical-align: middle; }
 .dot-green { background-color: #10b981; box-shadow: 0 0 8px rgba(16, 185, 129, 0.4); }
-
+.dot-red { background-color: #ef4444; box-shadow: 0 0 8px rgba(239, 68, 68, 0.4); }
 .empty-state { text-align: center; padding: 3rem 0; }
+
+.pill-btn {
+  background: transparent; color: var(--text-dark);
+  padding: 0.4rem 1rem; border-radius: 50px; font-size: 0.8rem; font-weight: 600; cursor: pointer;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.02); transition: all 0.2s;
+}
+.pill-btn:hover { background: #f8fafc; border-color: #cbd5e1; }
+
+.modal-overlay {
+  position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+  background: rgba(0, 0, 0, 0.4); backdrop-filter: blur(4px);
+  display: flex; align-items: center; justify-content: center; z-index: 1000;
+}
+.modal-content {
+  background: #ffffff; width: 100%; max-width: 500px;
+  border-radius: 20px; padding: 2rem; box-shadow: 0 20px 50px rgba(0,0,0,0.1);
+  display: flex; flex-direction: column; gap: 1.5rem;
+}
+.modal-header { display: flex; justify-content: space-between; align-items: center; }
+.modal-header h4 { margin: 0; font-size: 1.2rem; color: var(--text-dark); font-weight: 700; }
+.close-btn { background: #f1f5f9; border: none; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; font-weight: bold; color: var(--text-gray); }
+.close-btn:hover { background: #e2e8f0; color: var(--text-dark); }
+.modal-body { display: flex; flex-direction: column; gap: 1rem; }
+.detail-row { display: flex; justify-content: space-between; align-items: center; padding-bottom: 0.8rem; border-bottom: 1px solid #f1f5f9; }
+.detail-row .label { color: var(--text-gray); font-size: 0.9rem; }
+.detail-row .value { color: var(--text-dark); font-size: 0.95rem; }
+.items-section { margin-top: 1rem; background: #f8fafc; padding: 1rem; border-radius: 12px; }
+.items-section h5 { margin: 0 0 1rem 0; color: var(--text-dark); font-size: 0.95rem; }
+.items-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 0.8rem; }
+.items-list li { display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem; color: var(--text-dark); }
+.check-icon { color: #10b981; font-weight: bold; }
 </style>

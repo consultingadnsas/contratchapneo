@@ -132,7 +132,7 @@ import {
   ArrowUpTrayIcon, 
   CreditCardIcon 
 } from '@heroicons/vue/24/outline';
-import { useAdminTransactStore } from '../../../stores/adminTransactStore'; // 🚨 Ajuste le chemin selon ton projet
+import { useAdminTransactStore } from '../../../stores/adminTransactStore';
 
 export default {
   name: 'AdminOverview',
@@ -168,26 +168,42 @@ export default {
       return { color: 'dot-gray', text: status || 'Inconnu' };
     };
 
-    // 4. Transformation des données brutes en données d'affichage
+    // 4. Transformation ET Tri des données (les plus récentes en premier)
     const recentActivities = computed(() => {
-      return transactStore.transactions.map((t) => {
+      // On crée une copie du tableau et on le trie par date décroissante
+      const sortedTransactions = [...transactStore.transactions].sort((a, b) => {
+        const dateA = new Date(a.created_at).getTime();
+        const dateB = new Date(b.created_at).getTime();
+        return dateB - dateA; // Du plus récent au plus ancien
+      });
+
+      // On limite aux 7 plus récentes pour garder le dashboard compact
+      return sortedTransactions.slice(0, 7).map((t) => {
         const styles = getStatusStyles(t.status);
+        const order = t.order || {};
         
-        // Sécurité : On s'assure d'afficher un nom même si l'objet order/user est incomplet
-        const clientName = t.order?.user 
-          ? `${t.order.user.first_name || ''} ${t.order.user.last_name || ''}`.trim() || t.order.user.email
-          : 'Client Invité';
+        // Identification dynamique du type d'action
+        let actionType = 'Achat de contrat';
+        
+        if (order.pack || t.pack || order.order_type === 'pack' || order.type === 'pack') {
+          actionType = 'Achat de pack';
+        } else if (order.custom_contract || t.custom_contract || order.order_type === 'custom' || order.type === 'custom') {
+          actionType = 'Demande sur-mesure';
+        }
+        
+        // ⚡️ LA MAGIE EST ICI : On utilise exactement le nom renvoyé par ton backend
+        const clientEmail = order.buyer_email || 'Email non renseigné';
 
         return {
           id: t.id,
-          action: `${t.id?.slice(0, 12) || '...'}`, 
+          action: actionType, 
           status: styles.text,
           statusColor: styles.color,
-          client: clientName,
+          client: clientEmail, // 👈 L'e-mail va enfin s'afficher !
           date: formatDate(t.created_at),
-          // Formatage du montant avec séparateur de milliers (ex: 15000 -> 15 000)
-          amount: new Intl.NumberFormat('fr-FR').format(t.amount), 
-          icon: markRaw(CreditCardIcon), // Icône par défaut
+          // Formatage du montant avec séparateur de milliers
+          amount: new Intl.NumberFormat('fr-FR').format(t.amount || order.total_amount || 0), 
+          icon: markRaw(CreditCardIcon), 
           colorClass: 'bg-gray-light' 
         };
       });
