@@ -4,8 +4,15 @@
             <h4 class="pro-title">{{ title }}</h4>
 
             <div class="price-section">
-                <span class="price-main">{{ price }}</span>
-                <span class="price-suffix">/an</span>
+                <!-- ⚡️ AFFICHAGE DYNAMIQUE DU PRIX (Avec ou sans promo) -->
+                <template v-if="promoPrice && Number(promoPrice) > 0">
+                    <span class="price-old">{{ price }}</span>
+                    <span class="price-main">{{ promoPrice }}</span>
+                </template>
+                <template v-else>
+                    <span class="price-main">{{ price }} </span>
+                </template>
+                <span class="price-suffix">FCFA</span>
             </div>
 
             <p class="description">{{ description }}</p>
@@ -15,7 +22,8 @@
 
         <div class="card-body">
             <ul class="features-list">
-                <li v-for="(feature, index) in features" :key="index">
+                <!-- ⚡️ BOUCLE SUR LES AVANTAGES CALCULÉS DYNAMIQUEMENT -->
+                <li v-for="(feature, index) in computedFeatures" :key="index">
                     <span class="check-icon">
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
                             <path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 0 1 .143 1.052l-8 10.5a.75.75 0 0 1-1.127.075l-4.5-4.5a.75.75 0 0 1 1.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 0 1 1.05-.143Z" clip-rule="evenodd" />
@@ -29,42 +37,71 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, PropType } from 'vue';
+import { defineComponent, PropType, computed } from 'vue';
 import mainButton from '../buttons/mainButton.vue';
-import {useRouter} from 'vue-router';
+import { useRouter } from 'vue-router';
 
 export default defineComponent({
     name: 'LegendaryCard',
     components: { mainButton },
     props: {
-        // Nouvelle prop pour gérer les déclinaisons de couleurs
         planType: {
             type: String as PropType<'basique' | 'business' | 'business-pro'>,
             default: 'basique',
             validator: (value: string) => ['basique', 'business', 'business-pro'].includes(value)
         },
-        title: { type: String, default: 'Legendary' },
-        description: { type: String, default: 'Best for large multiple teams that need maximum capabilities.' },
-        price: { type: String, default: '1000' },
-        features: {
-            type: Array as PropType<string[]>,
-            default: () => [
-                'Unlimited users',
-                'Unlimited gros Objects',
-                '10TB Storage',
-                '2TB Video / Audio Traffic',
-                'AI - TBD'
-            ]
-        },
+        title: { type: String, required: true },
+        description: { type: String, default: '' },
+        
+        // ⚡️ PRIX
+        price: { type: [Number, String], required: true },
+        promoPrice: { type: [Number, String], default: null },
+
+        // ⚡️ NOUVELLES PROPS (Directement liées à ta base de données)
+        nombreCredits: { type: Number, default: 0 },
+        nombreCustomedContract: { type: Number, default: 0 },
+        nombreCartesPro: { type: Number, default: 0 },
+        dureeValiditeJours: { type: Number, default: 30 },
+        
         buttonLabel: { type: String, default: 'Commencer' }
     },
-    setup(){
+    setup(props) {
         
         const router = useRouter();
 
-        return{
+        // ⚡️ LOGIQUE DE CRÉATION DE LA LISTE :
+        // Si le backend renvoie un chiffre > 0, on ajoute la phrase correspondante à la liste.
+        const computedFeatures = computed(() => {
+            const list = [];
+            
+            if (props.nombreCredits > 0) {
+                list.push(`Accès à ${props.nombreCredits} document(s) juridique(s) payant(s)`);
+            }
+            
+            if (props.nombreCustomedContract > 0) {
+                list.push(`Rédaction sur-mesure de ${props.nombreCustomedContract} document(s)`);
+            }
+            
+            if (props.nombreCartesPro > 0) {
+                list.push(`Suivi juriste : ${props.nombreCartesPro} consultation(s) incluse(s)`);
+            }
+            
+            if (props.dureeValiditeJours > 0) {
+                list.push(`Validité du pack : ${props.dureeValiditeJours} jours`);
+            }
+
+            // Fallback au cas où le pack serait vide
+            if (list.length === 0) {
+                list.push("Aucun avantage spécifique inclus");
+            }
+            
+            return list;
+        });
+
+        return {
             router,
-        }
+            computedFeatures
+        };
     }
 });
 </script>
@@ -97,22 +134,21 @@ export default defineComponent({
     display: flex;
     flex-direction: column;
     gap: 1rem;
-    padding: 1.5rem; /* Augmenté légèrement pour mieux voir la couleur */
+    padding: 1.5rem; 
     border-radius: 1.5rem;
     transition: background 0.3s ease;
 }
 
 /* --- DÉCLINAISONS DE COULEURS DU HEADER --- */
 .header-basique {
-    background: #f3f4f6; /* Gris très clair, discret */
+    background: #f3f4f6; 
 }
 
 .header-business {
-    background: #e0f2fe; /* Bleu très doux (ex: Tailwind sky-100) */
+    background: #e0f2fe; 
 }
 
 .header-business-pro {
-    /* Dégradé premium inspiré de la carte B de ton image précédente */
     background: linear-gradient(135deg, #e0f2fe 0%, #65e17e 100%);
 }
 
@@ -129,17 +165,27 @@ export default defineComponent({
     display: flex;
     flex-direction: column;
     gap: 1.5rem;
-    padding: 0 1rem 1rem 1rem; /* Ajout d'un peu de padding interne */
+    padding: 0 1rem 1rem 1rem; 
 }
 
+/* ⚡️ NOUVEAU STYLE POUR LES PRIX BARRÉS */
 .price-section {
     display: flex;
     align-items: baseline;
     gap: 0;
+    flex-wrap: wrap; 
+}
+
+.price-old {
+    font-size: 1.1rem;
+    color: #9ca3af;
+    text-decoration: line-through;
+    margin-right: 0.6rem;
+    font-weight: 600;
 }
 
 .price-main {
-    font-size: 1.8rem; /* Ajusté pour correspondre au design épuré */
+    font-size: 1.8rem; 
     font-weight: 800;
     color: #111827;
     line-height: 1;
@@ -147,7 +193,7 @@ export default defineComponent({
 
 .price-suffix {
     font-size: 0.95rem;
-    color: #4b5563; /* Légèrement plus foncé pour contraster avec le fond coloré */
+    color: #4b5563; 
     margin-left: 4px;
     font-weight: 500;
 }
@@ -170,11 +216,12 @@ export default defineComponent({
 
 .features-list li {
     display: flex;
-    align-items: center;
+    align-items: flex-start; /* Aligné en haut si le texte passe sur 2 lignes */
     gap: 12px;
     font-size: 0.95rem;
     color: #1f2937;
     font-weight: 500;
+    line-height: 1.4;
 }
 
 .check-icon {
@@ -188,6 +235,7 @@ export default defineComponent({
     justify-content: center;
     padding: 4px;
     flex-shrink: 0;
+    margin-top: 2px;
 }
 
 /* --- BOUTONS --- */
@@ -197,7 +245,7 @@ export default defineComponent({
 }
 
 :deep(.btn-dark button) {
-    box-sizing: border-box; /* ⚡️ LA CORRECTION EST ICI : Le padding est maintenant inclus dans les 100% */
+    box-sizing: border-box; 
     background: #111827 !important;
     color: #ffffff !important;
     font-weight: 600;

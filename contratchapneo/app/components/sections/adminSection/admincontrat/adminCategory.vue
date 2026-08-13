@@ -302,7 +302,7 @@ input:checked + .slider:before { transform: translateX(16px); }
   padding: 1.5rem 2rem; border-bottom: 1px solid #e2e8f0;
 }
 .folder-modal-header h3 { margin: 0; font-size: 1.2rem; color: #ffffff; white-space: nowrap; }
-.close-modal-btn { background: transparent; border: none; font-size: 1.5rem; color: #94a3b8; cursor: pointer }
+.close-modal-btn { background: transparent; border: none; font-size: 1.5rem; color: #94a3b8; cursor: pointer}
 .close-modal-btn:hover { color: #ef4444; }
 
 .folder-modal-body { padding: 2rem; }
