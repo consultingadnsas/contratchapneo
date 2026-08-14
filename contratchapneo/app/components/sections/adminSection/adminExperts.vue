@@ -1,5 +1,4 @@
 <template>
-  
   <div class="experts-wrapper">
     
     <div class="header-section">
@@ -59,10 +58,6 @@
         <div class="card-footer">
           <div class="stats-row">
             <div class="stat-item">
-              <span class="stat-val">{{ expert.contractsSold }}</span>
-              <span class="stat-label">Contrats</span>
-            </div>
-            <div class="stat-item">
               <span class="stat-val">{{ expert.consultations }}</span>
               <span class="stat-label">Consultations</span>
             </div>
@@ -94,7 +89,6 @@
 import { ref, computed, markRaw, onMounted } from 'vue';
 import ExpertModal from '../../modale/expertModal.vue';
 import secondButton from '../../buttons/secondButton.vue';
-// ⚡️ Remplacement par le nouveau store
 import { useAdminProStore } from '../../../stores/adminProStore'; 
 import { 
   UserPlusIcon, 
@@ -108,26 +102,28 @@ export default {
   name: 'AdminExperts',
   components: { ExpertModal, secondButton },
   setup() {
-    // ⚡️ Instanciation du nouveau store
     const adminProStore = useAdminProStore();
     
     const searchQuery = ref('');
     const activeTab = ref('Tous');
 
-    // Mappage des données pour l'affichage
+    // Mappage complet des données pour l'affichage ET la modale
     const experts = computed(() => {
-      // ⚡️ Utilisation de adminProStore.pros
       return adminProStore.pros.map(pro => ({
         id: pro.id,
-        name: `${pro.first_name} ${pro.last_name}`.trim(),
+        name: `${pro.first_name || ''} ${pro.last_name || ''}`.trim(),
         roleDisplay: pro.title_display || pro.title || 'Expert',
+        role: pro.title,
+        email: pro.email,
+        phone_number: pro.phone_number,
+        city: pro.city,
+        bio: pro.bio,
         specialty: pro.domains && pro.domains.length > 0 ? pro.domains.map((d: any) => d.name).join(', ') : 'Généraliste',
         avatar: pro.profile_picture,
+        visiting_card: pro.visiting_card,
         isVerified: pro.is_verified,
         isActive: pro.is_active,
-        contractsSold: 0, 
-        consultations: 0,
-        originalData: pro 
+        consultations: 0
       }));
     });
 
@@ -158,22 +154,10 @@ export default {
     const isModalOpen = ref(false);
     const selectedExpert = ref<any>(null);
 
+    // ⚡️ Ultra-simple : on prend l'expert tel quel ou on vide
     const openModal = (expert: any = null) => {
-      if (expert && expert.originalData) {
-        const o = expert.originalData;
-        selectedExpert.value = {
-          id: o.id,
-          name: `${o.first_name} ${o.last_name}`,
-          role: o.title,
-          email: o.email,
-          phone_number: o.phone_number,
-          city: o.city,
-          bio: o.bio || '',
-          specialty: expert.specialty,
-          isVerified: o.is_verified,
-          isActive: o.is_active,
-          avatar: o.profile_picture
-        };
+      if (expert && expert.id) {
+        selectedExpert.value = { ...expert }; 
       } else {
         selectedExpert.value = null;
       }
@@ -190,7 +174,6 @@ export default {
       const firstName = nameParts.shift() || 'Prénom';
       const lastName = nameParts.join(' ') || 'Nom'; 
 
-      // ⚡️ Création d'un FormData (Requis par Django pour les fichiers)
       const formData = new FormData();
       formData.append('first_name', firstName);
       formData.append('last_name', lastName);
@@ -201,31 +184,21 @@ export default {
       if (expertData.city) formData.append('city', expertData.city);
       if (expertData.bio) formData.append('bio', expertData.bio);
       
-      // Les booléens doivent être convertis en chaînes pour FormData
       formData.append('is_active', expertData.isActive ? 'true' : 'false');
       formData.append('is_verified', expertData.isVerified ? 'true' : 'false');
 
-      // Ajout de l'image si elle est présente
-      if (expertData.avatarFile) {
-        formData.append('profile_picture', expertData.avatarFile);
-      }
+      if (expertData.avatarFile) formData.append('profile_picture', expertData.avatarFile);
+      if (expertData.visitingCardFile) formData.append('visiting_card', expertData.visitingCardFile);
 
-      let success = false;
       try {
         if (expertData.id) {
           await adminProStore.updatePro(expertData.id, formData);
         } else {
           await adminProStore.addPro(formData);
         }
-        success = true;
-      } catch (e) {
-        success = false;
-      }
-
-      if (success) {
         closeModal();
-      } else {
-        alert(adminProStore.error || "Une erreur est survenue lors de l'enregistrement.");
+      } catch (e: any) {
+        alert(adminProStore.error || "Une erreur est survenue lors de l'enregistrement. Vérifiez que tous les champs sont valides.");
       }
     };
 
@@ -242,7 +215,6 @@ export default {
     const viewProfile = (expert: any) => console.log('Voir profil complet:', expert.name);
 
     onMounted(async () => {
-      // ⚡️ Utilisation de la nouvelle fonction fetchPros
       await adminProStore.fetchPros(); 
     });
 
@@ -271,16 +243,13 @@ export default {
 </script>
 
 <style scoped>
-/* ==============================================================
-   VARIABLES & STRUCTURE (Le style CSS reste totalement inchangé)
-   ============================================================== */
+/* Conservez exactement vos styles existants... */
 .experts-wrapper {
   --bg-panel: #ffffff;
   --bg-panel-light: #f1f5f9;
   --text-dark: #1e293b;
   --text-gray: #94a3b8;
   --accent-blue: #2563eb;
-  
   display: flex; flex-direction: column; gap: 2rem;
   font-family: 'Inter', sans-serif; padding-bottom: 2rem;
 }
@@ -366,6 +335,8 @@ export default {
 .stat-item { display: flex; flex-direction: column; align-items: center; }
 .stat-val { font-size: 1.1rem; font-weight: 800; color: var(--text-dark); }
 .stat-label { font-size: 0.7rem; color: var(--text-gray); text-transform: uppercase; letter-spacing: 0.5px; }
+
+.actions-row { display: flex; width: 100%; }
 
 .empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 4rem 2rem; background: var(--bg-panel); border-radius: 24px; text-align: center; border: 1px dashed #cbd5e1; }
 .icon-box-light { width: 64px; height: 64px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }

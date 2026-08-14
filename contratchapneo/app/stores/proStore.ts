@@ -3,44 +3,6 @@ import { ref } from "vue";
 import { useCartStore } from './cartStore'
 
 // ==========================================
-// INTERFACES
-// ==========================================
-export interface Country {
-    id: number;
-    name: string;
-    code: string;
-    is_ohada_member: boolean;
-}
-
-export interface LegalDomain {
-    id: number;
-    name: string;
-    slug: string;
-    description?: string;
-}
-
-export interface LegalProfessional {
-    id: string;
-    first_name: string;
-    last_name: string;
-    title: string;
-    title_display: string;
-    professional_order: string;
-    registration_number: string;
-    email: string;
-    phone_number: string;
-    website?: string;
-    profile_picture?: string | null;
-    bio: string;
-    years_of_experience: number;
-    country: Country;
-    city: string;
-    domains: LegalDomain[];
-    is_active: boolean;
-    is_verified: boolean;
-}
-
-// ==========================================
 // STORE
 // ==========================================
 export const useProStore = defineStore('proStore', () => {

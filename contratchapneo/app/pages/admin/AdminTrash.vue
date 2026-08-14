@@ -38,7 +38,7 @@ export default {
       { id: 'experts', label: 'Experts Juridiques', route: '/admin/AdminExperts', icon: markRaw(UsersIcon), category: 'Catalogue' },
       { id: 'settings', label: 'Paramètres', route: '/admin/AdminSettings', icon: markRaw(Cog8ToothIcon), category: 'Tools' },
       { id: 'trash', label: 'Corbeille', route: '/admin/AdminTrash', icon: markRaw(TrashIcon), category: 'Tools' },
-      { id: 'temoin', label: 'Témoignages', route: '/admin/AdminTesti', icon: markRaw(ChatBubbleBottomCenterTextIcon), category: 'Catalogue' },
+      { id: 'Cart', label: 'Panier', route: '/admin/AdminCart', icon: markRaw(ChatBubbleBottomCenterTextIcon), category: 'Catalogue' },
       { id: 'packs', label: 'Packs de contrat', route: '/admin/Adminpacks', icon : markRaw(SwatchIcon), category: 'Catalogue' }
     ]);
 

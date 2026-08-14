@@ -10,4 +10,42 @@ declare module 'vue' {
   }
 }
 
+// ⚡️ LA SOLUTION EST ICI : On rend les interfaces accessibles partout
+declare global {
+  interface Country {
+      id: number;
+      name: string;
+      code: string;
+      is_ohada_member: boolean;
+  }
+
+  interface LegalDomain {
+      id: number;
+      name: string;
+      slug: string;
+      description?: string;
+  }
+
+  interface LegalProfessional {
+      id: string;
+      first_name: string;
+      last_name: string;
+      title: string;
+      title_display: string;
+      professional_order: string;
+      registration_number: string;
+      email: string;
+      phone_number: string;
+      website?: string;
+      profile_picture?: string | null;
+      bio: string;
+      years_of_experience: number;
+      country: Country;
+      city: string;
+      domains: LegalDomain[];
+      is_active: boolean;
+      is_verified: boolean;
+  }
+}
+
 export {}

@@ -6,7 +6,6 @@
         <h3 class="section-title">Gestion des Offres (Packs)</h3>
         <div class="header-actions">
           <secondButton label="Nouveau pack" @click="addNewPackToView" />
-          <mainButton label="Rafraîchir la liste" @click="adminStore.fetchPacks()" />
         </div>
       </div>
       <p class="gray-text text-sm">Ajustez les prix, modifiez les quantités de crédits et créez de nouveaux abonnements pour vos clients.</p>

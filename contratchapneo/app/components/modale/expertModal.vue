@@ -13,48 +13,100 @@
 
       <div class="modal-body">
         
-        <div class="photo-upload-section">
-          <div class="avatar-preview">
-            <img v-if="formData.avatar" :src="formData.avatar" alt="Aperçu" class="avatar-img-full" />
-            <span v-else class="avatar-placeholder">{{ formData.name ? formData.name.charAt(0) : '?' }}</span>
+        <!-- SECTION UPLOAD (Photo & Document) -->
+        <div class="upload-grid">
+          <!-- Photo -->
+          <div class="photo-upload-section">
+            <div class="avatar-preview">
+              <img v-if="formData.avatar" :src="formData.avatar" alt="Aperçu" class="avatar-img-full" />
+              <span v-else class="avatar-placeholder">{{ formData.name ? formData.name.charAt(0) : '?' }}</span>
+            </div>
+            <div class="upload-actions">
+              <label class="btn-upload">
+                Photo de profil
+                <input type="file" accept="image/*" class="hidden-input" @change="handleFileUpload" />
+              </label>
+              <span class="text-xs gray-text">Format JPG ou PNG.</span>
+            </div>
           </div>
-          <div class="upload-actions">
-            <label class="btn-upload">
-              Charger une photo
-              <input type="file" accept="image/*" class="hidden-input" @change="handleFileUpload" />
-            </label>
-            <span class="text-xs gray-text">Format JPG ou PNG.</span>
+
+          <!-- Document PDF (Carte de visite) -->
+          <div class="document-upload-section">
+            <div class="document-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="icon-lg text-gray">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
+              </svg>
+            </div>
+            <div class="upload-actions">
+              <label class="btn-upload">
+                Carte de visite (PDF)
+                <input type="file" accept="application/pdf" class="hidden-input" @change="handleDocumentUpload" />
+              </label>
+              
+              <!-- AFFICHAGE DU DOCUMENT -->
+              <span class="text-xs text-blue font-bold" v-if="formData.visitingCardFile">
+                Nouveau fichier : {{ formData.visitingCardFile.name }}
+              </span>
+              <a :href="formData.visiting_card" target="_blank" class="text-xs text-green font-bold" style="text-decoration: underline;" v-else-if="formData.visiting_card">
+                Voir le document actuel
+              </a>
+              <span class="text-xs gray-text" v-else>Document de légitimité</span>
+            </div>
           </div>
         </div>
 
+        <!-- FORMULAIRE -->
         <div class="input-row">
-            <BaseInput v-model="formData.name" label="Nom complet *" placeholder="Ex: Me. Sylla Awa" />
-            <div class="input-group">
-              <label class="input-label">Fonction *</label>
-              <select v-model="formData.role" class="form-select">
-                <option disabled value="">Sélectionner...</option>
-                <option value="AVOCAT">Avocat</option>
-                <option value="NOTAIRE">Notaire</option>
-                <option value="JURISTE">Juriste d'entreprise</option>
-                <option value="CONSEIL_JURIDIQUE">Conseil Juridique</option>
-                <option value="HUISSIER">Huissier</option>
-              </select>
+            <div class="input-wrapper">
+              <BaseInput v-model="formData.name" label="Nom complet *" placeholder="Ex: Me. Sylla Awa" />
+              <span v-if="errors.name" class="error-text">{{ errors.name }}</span>
+            </div>
+            
+            <div class="input-wrapper">
+              <div class="input-group">
+                <label class="input-label">Fonction *</label>
+                <select v-model="formData.role" class="form-select" :class="{'border-red': errors.role}">
+                  <option disabled value="">Sélectionner...</option>
+                  <option value="AVOCAT">Avocat</option>
+                  <option value="NOTAIRE">Notaire</option>
+                  <option value="JURISTE">Juriste d'entreprise</option>
+                  <option value="CONSEIL_JURIDIQUE">Conseil Juridique</option>
+                  <option value="HUISSIER">Huissier</option>
+                </select>
+              </div>
+              <span v-if="errors.role" class="error-text">{{ errors.role }}</span>
             </div>
         </div>
 
         <div class="input-row">
-            <BaseInput v-model="formData.email" type="email" label="Email *" placeholder="contact@expert.com" />
-            <BaseInput v-model="formData.phone_number" label="Téléphone *" placeholder="+225 01020304" />
+            <div class="input-wrapper">
+              <BaseInput v-model="formData.email" type="email" label="Email *" placeholder="contact@expert.com" />
+              <span v-if="errors.email" class="error-text">{{ errors.email }}</span>
+            </div>
+            
+            <div class="input-wrapper">
+              <BaseInput v-model="formData.phone_number" label="Téléphone *" placeholder="+225 01020304" />
+              <span v-if="errors.phone_number" class="error-text">{{ errors.phone_number }}</span>
+            </div>
         </div>
         
         <div class="input-row">
-            <BaseInput v-model="formData.city" label="Ville *" placeholder="Ex: Abidjan" />
-            <BaseInput v-model="formData.specialty" label="Domaine d'expertise" placeholder="Ex: Droit des Affaires" />
+            <div class="input-wrapper">
+              <BaseInput v-model="formData.city" label="Ville *" placeholder="Ex: Abidjan" />
+              <span v-if="errors.city" class="error-text">{{ errors.city }}</span>
+            </div>
+            
+            <div class="input-wrapper">
+              <BaseInput v-model="formData.specialty" label="Domaine d'expertise" placeholder="Ex: Droit des Affaires" />
+            </div>
         </div>
 
-        <div class="input-group">
-            <label class="input-label">Biographie / Présentation *</label>
-            <textarea v-model="formData.bio" class="form-select" rows="3" placeholder="Présentation de l'expert..."></textarea>
+        <div class="input-wrapper">
+            <div class="input-group">
+                <label class="input-label">Biographie / Présentation *</label>
+                <textarea v-model="formData.bio" class="form-select" :class="{'border-red': errors.bio}" rows="3" placeholder="Présentation de l'expert..."></textarea>
+            </div>
+            <span v-if="errors.bio" class="error-text">{{ errors.bio }}</span>
         </div>
 
         <div class="options-section">
@@ -98,6 +150,9 @@ export default {
   setup(props, { emit }) {
     const isEditing = computed(() => !!props.expert);
     
+    // Uniquement les erreurs locales
+    const errors = ref<Record<string, string>>({});
+    
     const formData = ref({
       id: null,
       name: '',
@@ -110,34 +165,65 @@ export default {
       isVerified: false,
       isActive: true,
       avatar: '',
-      avatarFile: null as File | null // ⚠️ Crucial pour envoyer l'image à Django
+      avatarFile: null as File | null,
+      visiting_card: '',
+      visitingCardFile: null as File | null
     });
 
     watch(() => props.expert, (newVal) => {
+      errors.value = {}; 
       if (newVal) {
-        formData.value = { ...newVal, avatarFile: null };
+        formData.value = { ...newVal, avatarFile: null, visitingCardFile: null };
       } else {
-        formData.value = { id: null, name: '', role: '', email: '', phone_number: '', city: '', bio: '', specialty: '', isVerified: false, isActive: true, avatar: '', avatarFile: null };
+        formData.value = { 
+          id: null, name: '', role: '', email: '', phone_number: '', city: '', 
+          bio: '', specialty: '', isVerified: false, isActive: true, 
+          avatar: '', avatarFile: null, visiting_card: '', visitingCardFile: null 
+        };
       }
     }, { immediate: true });
 
     const handleFileUpload = (event: Event) => {
       const file = (event.target as HTMLInputElement).files?.[0];
       if (file) {
-        formData.value.avatarFile = file; // On garde le vrai fichier pour l'API
-        formData.value.avatar = URL.createObjectURL(file); // On garde l'URL pour l'aperçu
+        formData.value.avatarFile = file;
+        formData.value.avatar = URL.createObjectURL(file); 
+      }
+    };
+
+    const handleDocumentUpload = (event: Event) => {
+      const file = (event.target as HTMLInputElement).files?.[0];
+      if (file && file.type === 'application/pdf') {
+        formData.value.visitingCardFile = file;
+      } else if (file) {
+        alert("Seuls les fichiers PDF sont autorisés pour la carte de visite.");
       }
     };
 
     const submitForm = () => {
-      if (!formData.value.name || !formData.value.role || !formData.value.email) {
-        alert("Veuillez remplir les champs obligatoires (*)");
-        return;
+      errors.value = {};
+      let isValid = true;
+
+      if (!formData.value.name.trim()) { errors.value.name = "Le nom complet est requis."; isValid = false; }
+      if (!formData.value.role) { errors.value.role = "La fonction est requise."; isValid = false; }
+      if (!formData.value.email.trim()) { errors.value.email = "L'adresse email est requise."; isValid = false; }
+      if (!formData.value.phone_number.trim()) { errors.value.phone_number = "Le numéro de téléphone est requis."; isValid = false; }
+      if (!formData.value.city.trim()) { errors.value.city = "La ville est requise."; isValid = false; }
+      if (!formData.value.bio.trim()) { errors.value.bio = "Une biographie est requise."; isValid = false; }
+
+      if (isValid) {
+        emit('save', { ...formData.value });
       }
-      emit('save', { ...formData.value });
     };
 
-    return { isEditing, formData, handleFileUpload, submitForm };
+    return { 
+      isEditing, 
+      formData, 
+      errors, 
+      handleFileUpload, 
+      handleDocumentUpload, 
+      submitForm 
+    };
   }
 }
 </script>
@@ -151,7 +237,7 @@ export default {
 }
 
 .modal-content {
-  background: #ffffff; border-radius: 24px; width: 100%; max-width: 600px;
+  background: #ffffff; border-radius: 24px; width: 100%; max-width: 650px;
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
   display: flex; flex-direction: column; max-height: 90vh;
 }
@@ -164,31 +250,41 @@ export default {
 .close-btn { background: #f1f5f9; border: none; width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #64748b; cursor: pointer; transition: 0.2s; }
 .close-btn:hover { background: #e2e8f0; color: #0f172a; }
 .icon-sm { width: 20px; height: 20px; }
+.icon-lg { width: 28px; height: 28px; }
 
 .modal-body {
   padding: 1.5rem; overflow-y: auto; display: flex; flex-direction: column; gap: 1.5rem;
 }
 
-/* Zone Photo */
-.photo-upload-section { display: flex; align-items: center; gap: 1.5rem; background: #f8fafc; padding: 1rem; border-radius: 16px; border: 1px dashed #cbd5e1; }
-.avatar-preview { width: 70px; height: 70px; border-radius: 50%; background: #e2e8f0; display: flex; align-items: center; justify-content: center; overflow: hidden; border: 2px solid #ffffff; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+.upload-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+.photo-upload-section, .document-upload-section { display: flex; align-items: center; gap: 1rem; background: #f8fafc; padding: 1rem; border-radius: 16px; border: 1px dashed #cbd5e1; }
+.document-upload-section { justify-content: flex-start; }
+
+.avatar-preview, .document-icon { width: 60px; height: 60px; border-radius: 50%; background: #e2e8f0; display: flex; align-items: center; justify-content: center; overflow: hidden; border: 2px solid #ffffff; box-shadow: 0 4px 6px rgba(0,0,0,0.05); flex-shrink: 0;}
 .avatar-img-full { width: 100%; height: 100%; object-fit: cover; }
-.avatar-placeholder { font-size: 1.8rem; font-weight: 700; color: #94a3b8; }
-.upload-actions { display: flex; flex-direction: column; gap: 0.4rem; }
-.btn-upload { background: #ffffff; border: 1px solid #cbd5e1; padding: 0.5rem 1rem; border-radius: 8px; font-size: 0.85rem; font-weight: 600; color: #475569; cursor: pointer; display: inline-block; transition: 0.2s; }
+.avatar-placeholder { font-size: 1.5rem; font-weight: 700; color: #94a3b8; }
+
+.upload-actions { display: flex; flex-direction: column; gap: 0.4rem; overflow: hidden; }
+.btn-upload { background: #ffffff; border: 1px solid #cbd5e1; padding: 0.4rem 0.8rem; border-radius: 8px; font-size: 0.8rem; font-weight: 600; color: #475569; cursor: pointer; display: inline-block; transition: 0.2s; text-align: center;}
 .btn-upload:hover { border-color: #2563eb; color: #2563eb; }
 .hidden-input { display: none; }
-.text-xs { font-size: 0.75rem; }
-.gray-text { color: #94a3b8; }
 
-/* Formulaire */
+.text-xs { font-size: 0.75rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.gray-text { color: #94a3b8; }
+.text-blue { color: #3b82f6; }
+.text-green { color: #10b981; }
+.font-bold { font-weight: 700; }
+
 .input-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
-.input-group { display: flex; flex-direction: column; margin-bottom: 0.5rem;}
+.input-wrapper { display: flex; flex-direction: column; width: 100%; }
+.error-text { color: #ef4444; font-size: 0.75rem; font-weight: 500; margin-top: 0.3rem; margin-left: 0.5rem; }
+.border-red { border-color: #ef4444 !important; }
+
+.input-group { display: flex; flex-direction: column; margin-bottom: 0.2rem;}
 .input-label { font-size: 0.875rem; font-weight: 500; color: #374151; margin-bottom: 0.5rem; display: block; }
 .form-select { width: 100%; padding: 0.7rem; font-size: 1rem; line-height: 1.5; color: #1f2937; background-color: #fff; border: 1px solid #d1d5db; border-radius: 1.5rem; transition: 0.15s; outline: none; -webkit-appearance: none; -moz-appearance: none; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236b7280'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 1rem center; background-size: 1em; }
 .form-select:focus { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25); }
 
-/* Checkboxes */
 .options-section { display: flex; flex-direction: column; gap: 0.8rem; margin-top: 0.5rem; padding: 1rem; background: #f8fafc; border-radius: 12px; }
 .checkbox-label { display: flex; align-items: center; gap: 0.5rem; cursor: pointer; }
 .form-checkbox { width: 1.2rem; height: 1.2rem; cursor: pointer; }

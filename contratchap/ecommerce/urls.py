@@ -46,5 +46,5 @@ urlpatterns = [
     # Admin-section
     path('admin/cart/', AdminCartView.as_view(), name='admin-cart'),
     path('admin/order/', AdminOrderView.as_view(), name='admin-order'),
-    path('admin/accountancy/', AdminAccountingView.as_view(), name='admin-account')
+    path('admin/accountancy/', AdminAccountingView.as_view(), name='admin-account'),
 ]

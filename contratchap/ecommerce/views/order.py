@@ -6,6 +6,8 @@ from PIL.DdsImagePlugin import item
 from PIL.Image import item
 from django.http import FileResponse
 from django.conf import settings
+from datetime import timedelta
+from django.utils.timezone import now
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status

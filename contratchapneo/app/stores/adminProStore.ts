@@ -3,51 +3,6 @@ import { ref } from 'vue';
 import { useNuxtApp } from '#app';
 
 // ============================================================================
-// 1. INTERFACES (Calquées sur tes serializers et models Django)
-// ============================================================================
-
-export interface Country {
-    id: number;
-    name: string;
-    code: string;
-    is_ohada_member: boolean;
-}
-
-export interface LegalDomain {
-    id: number;
-    name: string;
-    slug: string;
-}
-
-export interface LegalProfessional {
-    id: string;
-    first_name: string;
-    last_name: string;
-    title: string;
-    title_display?: string; // Ajouté via le Serializer
-    professional_order?: string | null;
-    registration_number?: string | null;
-    email: string;
-    phone_number: string;
-    website?: string | null;
-    profile_picture?: string | File | null;
-    visiting_card?: string | File | null;
-    bio: string;
-    years_of_experience: number;
-    prix: number;
-    city: string;
-    is_active: boolean;
-    is_verified: boolean;
-    
-    // Relations renvoyées par le backend
-    country?: Country | null; 
-    domains?: LegalDomain[]; 
-    
-    created_at?: string;
-    updated_at?: string;
-}
-
-// ============================================================================
 // 2. STORE PINIA
 // ============================================================================
 

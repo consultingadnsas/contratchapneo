@@ -161,19 +161,24 @@ class ProAdminView(APIView):
     permission_classes = [IsAdminUser]
 
     def post(self, request):
-        try:
-            # ⚡️ Ajout du contexte ici aussi
-            serializer = LegalProfessionalSerializer(data=request.data, context={'request': request})
-            serializer.is_valid(raise_exception=True)
-            serializer.save()
+        # On ne met pas le try/except global sur la validation
+        serializer = LegalProfessionalSerializer(data=request.data, context={'request': request})
+        
+        # Au lieu de raise_exception=True qui fait crasher si mal géré, 
+        # on vérifie proprement et on renvoie les erreurs détaillées.
+        if not serializer.is_valid():
+            # Renverra par exemple {"email": ["Un utilisateur avec cet email existe déjà."]} en statut 400
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+        try:
+            serializer.save()
             return Response(
                 {"data": serializer.data},
                 status=status.HTTP_201_CREATED
             )
         except Exception as e:
             return Response(
-                {"error": "Une erreur liée au serveur est survenue, réessayez plus tard."}, 
+                {"error": f"Erreur critique lors de la sauvegarde : {str(e)}"}, 
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
