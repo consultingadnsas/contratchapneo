@@ -17,6 +17,12 @@ from .views.order import (
     OrderDownloadView,
 )
 
+from .views.admin import (
+    AdminCartView,
+    AdminOrderView,
+    AdminAccountingView
+)
+
 urlpatterns = [
     # Panier
     path('cart/',                    CartDetailView.as_view(),    name='cart-detail'),
@@ -36,4 +42,9 @@ urlpatterns = [
     # Coupon
     path('cart/apply-coupon/', ApplyCouponView.as_view(), name='apply-coupon'),
     path('cart/remove-coupon/', RemoveCouponView.as_view(), name='remove-coupon'),
+
+    # Admin-section
+    path('admin/cart/', AdminCartView.as_view(), name='admin-cart'),
+    path('admin/order/', AdminOrderView.as_view(), name='admin-order'),
+    path('admin/accountancy/', AdminAccountingView.as_view(), name='admin-account')
 ]
