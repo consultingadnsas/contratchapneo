@@ -35,9 +35,9 @@ from contrat.utils import fill_docx_template, convert_docx_to_pdf, send_document
 
 class OrderListView(APIView):
     """
-    GET /orders/
-    Liste les commandes de l'utilisateur connecté.
-    Non accessible aux invités (ils n'ont pas de compte).
+        GET /orders/
+        Liste les commandes de l'utilisateur connecté.
+        Non accessible aux invités (ils n'ont pas de compte).
     """
     permission_classes = [IsAuthenticated]
     authentication_classes = []

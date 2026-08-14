@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Cart, CartItem, GuestInfo, Order, OrderItem
+from .models import Cart, CartItem, GuestInfo, Order, OrderItem, Coupon
 from contrat.models import Contrat, CustomedContract, Pack, UserPack, ContractRevision
 from pro.models import LegalProfessional 
 
@@ -303,3 +303,101 @@ class CheckoutSerializer(serializers.Serializer):
                     'guest': "Les informations invité sont obligatoires pour un achat sans compte."
                 })
         return data
+
+class CouponSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Coupon
+        fields = '__all__'
+
+# ─────────────────────────────────────────
+# COMPTABILITÉ (Exports et Dashboards)
+# ─────────────────────────────────────────
+
+class AccountingOrderItemSerializer(serializers.ModelSerializer):
+    """
+    Mini-sérialiseur pour avoir des lignes d'achat propres dans le journal comptable,
+    sans s'encombrer des identifiants techniques ou des saisies utilisateur.
+    """
+    designation = serializers.SerializerMethodField()
+    subtotal = serializers.SerializerMethodField()
+
+    class Meta:
+        model = OrderItem
+        fields = [
+            'designation',
+            'quantity',
+            'unit_price',
+            'subtotal'
+        ]
+
+    def get_designation(self, obj):
+        # On génère un libellé propre pour la facture / la compta
+        if obj.contrat_title:
+            return f"Contrat : {obj.contrat_title}"
+        elif obj.customised_contract:
+            return f"Sur mesure : {obj.customised_contract}"
+        elif obj.pack_title:
+            return f"Pack : {obj.pack_title}"
+        elif obj.revision_subject:
+            return f"Révision : {obj.revision_subject}"
+        else:
+            return f"Carte Expert : {obj.pro_name}"
+
+    def get_subtotal(self, obj):
+        return obj.get_subtotal()
+
+
+class AccountingOrderSerializer(serializers.ModelSerializer):
+    """
+    Sérialiseur dédié au tableau de bord financier et aux exports comptables.
+    """
+    # 1. Formatage de la date (Très important pour la compta)
+    date_transaction = serializers.DateTimeField(source='created_at', format='%d/%m/%Y %H:%M')
+    
+    # 2. Informations du client unifiées
+    client_name = serializers.SerializerMethodField()
+    client_email = serializers.EmailField(source='buyer_email', read_only=True)
+    
+    # 3. Label du statut (Ex: "Payé" au lieu de "paid")
+    status_label = serializers.CharField(source='get_status_display', read_only=True)
+    
+    # 4. Informations financières
+    coupon_used = serializers.SerializerMethodField()
+    
+    # 5. Détail des achats
+    lignes_achat = AccountingOrderItemSerializer(source='order_items', many=True, read_only=True)
+
+    class Meta:
+        model = Order
+        fields = [
+            'id',
+            'date_transaction',
+            'status',
+            'status_label',
+            'client_name',
+            'client_email',
+            'total_amount',      # Le total (à adapter selon si c'est ton TTC brut ou net)
+            'discount_amount',   # La valeur exacte de la réduction accordée
+            'coupon_used',       # Le code qui a généré la réduction
+            'lignes_achat',      # Le détail de ce qui a été acheté
+        ]
+
+    def get_client_name(self, obj):
+        """
+        Récupère le nom du client de façon transparente, 
+        qu'il soit connecté (User) ou invité (Guest).
+        """
+        if obj.guest:
+            return obj.guest.full_name
+        if obj.user:
+            # Assure-toi que les champs first_name/last_name existent sur ton CustomUser
+            full_name = f"{obj.user.first_name} {obj.user.last_name}".strip()
+            return full_name if full_name else obj.user.username
+        return "Client Inconnu"
+
+    def get_coupon_used(self, obj):
+        """Affiche le code promo au lieu de l'ID du coupon"""
+        if obj.coupon:
+            return obj.coupon.code
+        return None
