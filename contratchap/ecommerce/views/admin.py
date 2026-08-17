@@ -15,6 +15,7 @@ from ..serializers import (
     CouponSerializer,
     AccountingOrderSerializer  # 👈 NOUVEAU : N'oublie pas d'importer le sérialiseur de compta
 )
+from django.shortcuts import get_object_or_404
 
 class AdminPagination(PageNumberPagination):
     page_size = 10
@@ -33,15 +34,83 @@ class AdminOrderView(ListAPIView):
     serializer_class = OrderSerializer
     pagination_class = AdminPagination
 
+# ==========================================
+# 1. LISTER LES COUPONS (Ton code)
+# ==========================================
 class AdminCouponList(ListAPIView):
     permission_classes = [IsAdminUser]
     queryset = Coupon.objects.all().order_by('-id')
     serializer_class = CouponSerializer
     pagination_class = AdminPagination
 
-class AdminCouponView(APIView):
-    def get(self, request):
-        pass
+# ==========================================
+# 2. CRÉER UN COUPON (Ton code, renommé)
+# ==========================================
+class AdminCouponCreateView(APIView):
+    permission_classes = [IsAdminUser]
+
+    def post(self, request):
+        try:
+            serializer = CouponSerializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+            return Response(
+                {"data": serializer.data, "message": "Coupon créé avec succès"},
+                status=status.HTTP_201_CREATED
+            )
+        except Exception:
+            return Response(
+                {"error": "Une erreur liée au serveur est survenue, réessayez plus tard."}, 
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+# ==========================================
+# 3. DÉTAIL, MODIFICATION & SUPPRESSION (Le nouveau code)
+# ==========================================
+class AdminCouponDetailView(APIView):
+    """
+    Nécessite l'ID du coupon dans l'URL (ex: /admin/coupons/1/)
+    """
+    permission_classes = [IsAdminUser]
+
+    # READ : Récupérer les infos d'un seul code promo
+    def get(self, request, pk):
+        coupon = get_object_or_404(Coupon, pk=pk)
+        serializer = CouponSerializer(coupon)
+        return Response({"data": serializer.data}, status=status.HTTP_200_OK)
+
+    # UPDATE : Modifier un code promo existant
+    def put(self, request, pk):
+        coupon = get_object_or_404(Coupon, pk=pk)
+        try:
+            # partial=True permet de faire des modifications partielles (ex: juste changer la date)
+            serializer = CouponSerializer(coupon, data=request.data, partial=True)
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+            return Response(
+                {"data": serializer.data, "message": "Code promo mis à jour !"}, 
+                status=status.HTTP_200_OK
+            )
+        except Exception:
+            return Response(
+                {"error": "Une erreur est survenue lors de la modification."}, 
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+    # DELETE : Supprimer un code promo
+    def delete(self, request, pk):
+        coupon = get_object_or_404(Coupon, pk=pk)
+        try:
+            coupon.delete()
+            return Response(
+                {"message": "Code promo supprimé avec succès."}, 
+                status=status.HTTP_204_NO_CONTENT
+            )
+        except Exception:
+            return Response(
+                {"error": "Impossible de supprimer ce code promo pour le moment."}, 
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
 # ─────────────────────────────────────────
 # VUE DE COMPTABILITÉ
