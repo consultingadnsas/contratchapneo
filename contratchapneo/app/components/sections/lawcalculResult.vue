@@ -1,12 +1,6 @@
 <template>
     <div class="panel-card panel-right">
         <div class="panel-header">
-            <div class="panel-icon">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 6a7.5 7.5 0 1 0 7.5 7.5h-7.5V6Z" />
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 10.5H21A7.5 7.5 0 0 0 13.5 3v7.5Z" />
-                </svg>
-            </div>
             <h3>Estimation du Solde de Tout Compte</h3>
         </div>
 
@@ -137,8 +131,6 @@ export default defineComponent({
 }
 
 .panel-header { display: flex; align-items: center; gap: 0.8rem; border-bottom: 1px solid rgba(255, 255, 255, 0.08); padding-bottom: 1.2rem; margin-bottom: 1.5rem; }
-.panel-icon { width: 38px; height: 38px; border-radius: 10px; background: rgba(50, 244, 89, 0.12); color: #32f459; display: flex; align-items: center; justify-content: center; }
-.panel-icon svg { width: 20px; height: 20px; }
 .panel-header h3 { font-size: 1.15rem; font-weight: 700; color: #f8fafc; margin: 0; }
 
 .empty-state { text-align: center; padding: 4rem 2rem; color: #64748b; display: flex; flex-direction: column; align-items: center; gap: 1rem; }

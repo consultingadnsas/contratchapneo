@@ -7,7 +7,8 @@ from .views.cart import (
     CartClearView,
     CartItemUpdateView,
     ApplyCouponView,
-    RemoveCouponView
+    RemoveCouponView,
+
 )
 from .views.checkout import CheckoutView
 from .views.order import (
@@ -20,7 +21,8 @@ from .views.order import (
 from .views.admin import (
     AdminCartView,
     AdminOrderView,
-    AdminAccountingView
+    AdminAccountingView,
+    AdminCouponList,
 )
 
 urlpatterns = [
@@ -47,4 +49,5 @@ urlpatterns = [
     path('admin/cart/', AdminCartView.as_view(), name='admin-cart'),
     path('admin/order/', AdminOrderView.as_view(), name='admin-order'),
     path('admin/accountancy/', AdminAccountingView.as_view(), name='admin-account'),
+    path('admin/coupons/', AdminCouponList.as_view(), name='admin-coupon-list'),
 ]

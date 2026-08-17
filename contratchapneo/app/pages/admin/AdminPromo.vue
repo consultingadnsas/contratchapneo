@@ -1,38 +1,36 @@
 <template>
-  <div class="admin-layout-container">
+  <div class="admin-page-container">
     
-    <!-- Ta barre latérale fixe -->
     <AdminSidebar 
       :menuItems="adminMenu" 
       @logout="handleLogout" 
-    />
-    
-    <!-- La zone dynamique -->
-    <main class="admin-main-content">
-      <AdminPacksModule />
-
+    />    
+    <main class="admin-content">
+      <AdminCouponSection />
     </main>
+
   </div>
 </template>
 
 <script lang="ts">
+import { defineComponent } from 'vue';
 import { ref, markRaw } from 'vue';
 import { useRouter } from 'vue-router';
 import AdminSidebar, {MenuItem} from '../../components/navigation/adminSidebar.vue';
-import AdminPacksModule from '../../components/sections/adminSection/adminpacks.vue';
+import AdminCouponSection from '../../components/sections/adminSection/AdminCoupon.vue';
 import { HomeIcon, BanknotesIcon, UsersIcon, BookOpenIcon, InboxIcon, DocumentTextIcon, Cog8ToothIcon, TrashIcon, ShoppingBagIcon, SwatchIcon, GiftTopIcon } from '@heroicons/vue/24/outline';
-export default {
-  name: 'AdminPacksPage', 
-  
-  components: { 
-    AdminSidebar,
-    AdminPacksModule
-  },
 
+export default defineComponent({
+  name: 'AdminCouponsPage',
+  components: {
+    AdminSidebar,
+    AdminCouponSection
+  },
   setup() {
+    
     const router = useRouter();
 
-   const adminMenu = ref<MenuItem[]>([
+    const adminMenu = ref<MenuItem[]>([
       { id: 'overview', label: "Dashboard", route: '/admin', icon: markRaw(HomeIcon), category: 'General' },
       { id: 'history', label: 'Historiques', route: '/admin/AdminHistory', icon: markRaw(BookOpenIcon), category: 'General' },
       { id: 'finance', label: 'Finances', route: '/admin/AdminFinance', icon: markRaw(BanknotesIcon), category: 'General' },
@@ -56,30 +54,21 @@ export default {
       handleLogout
     }
   }
-}
+});
 </script>
 
 <style scoped>
-.admin-layout-container {
-  display: flex;
-  height: 100vh;
-  overflow: hidden;
+.admin-page-container {
+  min-height: 100vh;
   background-color: #f8fafc;
+  display: flex;
 }
 
-.admin-main-content {
+.admin-content {
   flex: 1;
-  padding: 1.5rem;
-  overflow-y: auto;
-  overflow-x: hidden;
-  padding-bottom: calc(80px + env(safe-area-inset-bottom)); 
-}
-
-@media (max-width: 728px) {
-  .admin-main-content {
-    margin-left: 0;
-    margin-bottom: 80px;
-    padding: 1rem;
-  }
+  padding: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
 }
 </style>

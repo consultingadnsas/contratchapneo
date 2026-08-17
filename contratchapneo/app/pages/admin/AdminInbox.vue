@@ -20,7 +20,7 @@ import { ref, markRaw } from 'vue';
 import { useRouter } from 'vue-router';
 import AdminSidebar, {MenuItem} from '../../components/navigation/adminSidebar.vue';
 import AdminInboxModule from '../../components/sections/adminSection/adminInbox.vue';
-import { HomeIcon, BanknotesIcon, UsersIcon, BookOpenIcon, InboxIcon, DocumentTextIcon, Cog8ToothIcon, TrashIcon, ShoppingBagIcon, SwatchIcon } from '@heroicons/vue/24/outline';
+import { HomeIcon, BanknotesIcon, UsersIcon, BookOpenIcon, InboxIcon, DocumentTextIcon, Cog8ToothIcon, TrashIcon, ShoppingBagIcon, SwatchIcon, GiftTopIcon } from '@heroicons/vue/24/outline';
 export default {
   name: 'AdminInboxPage', 
   
@@ -39,10 +39,11 @@ export default {
       { id: 'inbox', label: 'Demandes clients', route: '/admin/AdminInbox', icon: markRaw(InboxIcon), category: 'General' },
       { id: 'contracts', label: 'Contrats', route: '/admin/AdminContrats', icon: markRaw(DocumentTextIcon), category: 'Catalogue' },
       { id: 'experts', label: 'Experts Juridiques', route: '/admin/AdminExperts', icon: markRaw(UsersIcon), category: 'Catalogue' },
+      { id:'promo', label: 'Coupons & promo', route: '/admin/AdminPromo', icon: markRaw(GiftTopIcon), category: 'Tools'},
       { id: 'settings', label: 'Paramètres', route: '/admin/AdminSettings', icon: markRaw(Cog8ToothIcon), category: 'Tools' },
       { id: 'trash', label: 'Corbeille', route: '/admin/AdminTrash', icon: markRaw(TrashIcon), category: 'Tools' },
       { id: 'Cart', label: 'Panier', route: '/admin/AdminCart', icon: markRaw(ShoppingBagIcon), category: 'Catalogue' },
-      { id: 'packs', label: 'Packs de contrat', route: '/admin/Adminpacks', icon : markRaw(SwatchIcon), category: 'Catalogue' }
+      { id: 'packs', label: 'Packs de contrat', route: '/admin/Adminpacks', icon : markRaw(SwatchIcon), category: 'Catalogue' },
     ]);
 
     const handleLogout = () => {

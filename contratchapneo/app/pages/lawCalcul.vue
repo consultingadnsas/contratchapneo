@@ -160,9 +160,15 @@ export default defineComponent({
             cnpsEmployeeDeduction.value = 0;
             netAmount.value = 0;
 
-            await new Promise(resolve => setTimeout(resolve, 500));
-
+            // ⚡️ CORRECTION : Le bloc TRY englobe désormais TOUT le traitement
             try {
+                await new Promise(resolve => setTimeout(resolve, 300));
+
+                if (!formData.value.startDate || !formData.value.endDate) {
+                    errorMessage.value = "Veuillez renseigner les dates d'embauche et de rupture.";
+                    return; // Le bloc finally sera maintenant bien exécuté après ce return !
+                }
+
                 const start = new Date(formData.value.startDate);
                 const end = new Date(formData.value.endDate);
 
@@ -352,6 +358,7 @@ export default defineComponent({
             } catch (error) {
                 errorMessage.value = "Une erreur technique est survenue lors du calcul de votre simulation.";
             } finally {
+                // ⚡️ GARANTIE ABSOLUE : isCalculating repasse TOUJOURS à false !
                 isCalculating.value = false;
             }
         };
