@@ -20,7 +20,10 @@ from .views.order import (
 from .views.admin import (
     AdminCartView,
     AdminOrderView,
-    AdminAccountingView
+    AdminAccountingView,
+    AdminCouponList,
+    AdminCouponCreateView, 
+    AdminCouponDetailView
 )
 
 urlpatterns = [
@@ -46,5 +49,13 @@ urlpatterns = [
     # Admin-section
     path('admin/cart/', AdminCartView.as_view(), name='admin-cart'),
     path('admin/order/', AdminOrderView.as_view(), name='admin-order'),
-    path('admin/accountancy/', AdminAccountingView.as_view(), name='admin-account')
+    path('admin/accountancy/', AdminAccountingView.as_view(), name='admin-account'),
+    # Récupérer la liste paginée
+    path('admin/coupons/', AdminCouponList.as_view(), name='admin-coupon-list'),
+    
+    # Créer un nouveau coupon
+    path('admin/coupons/create/', AdminCouponCreateView.as_view(), name='admin-coupon-create'),
+    
+    # Gérer un coupon spécifique (GET, PUT, DELETE) par son ID
+    path('admin/coupons/<int:pk>/', AdminCouponDetailView.as_view(), name='admin-coupon-detail'),
 ]
