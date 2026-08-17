@@ -4,6 +4,8 @@ from rest_framework import status
 from rest_framework.permissions import IsAdminUser
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.generics import ListAPIView
+from django.utils import timezone
+from datetime import timedelta
 
 from ..models import Cart, CartItem, Order, OrderItem, Coupon
 from ..serializers import (
@@ -19,7 +21,7 @@ from django.shortcuts import get_object_or_404
 
 class AdminPagination(PageNumberPagination):
     page_size = 10
-    page_query_param = 'page_size'
+    page_size_query_param = 'page_size' 
     max_page_size = 100
 
 class AdminCartView(ListAPIView):
@@ -30,9 +32,28 @@ class AdminCartView(ListAPIView):
 
 class AdminOrderView(ListAPIView):
     permission_classes = [IsAdminUser]
-    queryset = Order.objects.all().order_by('-id')
     serializer_class = OrderSerializer
     pagination_class = AdminPagination
+
+    def get_queryset(self):
+        # 1. On récupère toutes les commandes, triées par date (de la plus récente à la plus ancienne)
+        queryset = Order.objects.all().order_by('-created_at')
+        
+        # 2. On vérifie si l'URL contient le paramètre ?abandoned=true
+        is_abandoned = self.request.query_params.get('abandoned')
+        
+        if is_abandoned == 'true':
+            # On calcule l'heure exacte qu'il était il y a 1 heure
+            time_threshold = timezone.now() - timedelta(hours=1)
+            
+            # 3. On filtre : Uniquement les commandes en attente ("pending") 
+            #    ET créées avant la limite d'une heure (lte = less than or equal)
+            queryset = queryset.filter(
+                status='pending',
+                created_at__lte=time_threshold
+            )
+            
+        return queryset
 
 # ==========================================
 # 1. LISTER LES COUPONS (Ton code)

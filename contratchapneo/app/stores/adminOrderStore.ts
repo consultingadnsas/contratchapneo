@@ -1,37 +1,41 @@
 import { defineStore } from 'pinia';
 
-interface Order {
-  id: string;
-  status: string;
-  status_label: string;
-  total_amount: number;
-  buyer_email?: string;
-  client_email?: string; // Plan B
-  created_at?: string;
-  date_transaction?: string; // Plan B
-  order_items: any[];
-}
-
 export const useAdminOrderStore = defineStore('adminOrder', {
   state: () => ({
     orders: [] as Order[],
     abandonedOrders: [] as Order[],
+    totalAbandonedCount: 0, // 👈 Nouveau : pour le Paginator
     isLoading: false,
     error: null as string | null,
   }),
 
   actions: {
-    async fetchAbandonedOrders() {
+    // 👈 Nouveau : Accepte la page en paramètre (par défaut 1)
+    async fetchAbandonedOrders(page: number = 1) { 
       this.isLoading = true;
       this.error = null;
+      const { $api } = useNuxtApp();
+
       try {
-        // ⚡️ CORRECTION ICI : On utilise la route principale avec le paramètre
-        const response: any = await $fetch('http://localhost:8000/admin/order/?abandoned=true', {
-             headers: {}
+        // 👈 Nouveau : Ajout de &page= au lien
+        const response: any = await $api(`/ecommerce/admin/order/?abandoned=true&page=${page}`, {
+          method: 'GET'
         });
         
-        // Comme AdminOrderView utilise AdminPagination, la réponse sera dans response.results
-        this.abandonedOrders = response.results || response.data || response;
+        // Django renvoie { count: X, next: '...', previous: '...', results: [...] }
+        if (response && Array.isArray(response.results)) {
+            this.abandonedOrders = response.results;
+            this.totalAbandonedCount = response.count || response.results.length;
+        } else if (response && Array.isArray(response.data)) {
+            this.abandonedOrders = response.data;
+            this.totalAbandonedCount = response.count || response.data.length;
+        } else if (Array.isArray(response)) {
+            this.abandonedOrders = response;
+            this.totalAbandonedCount = response.length;
+        } else {
+            this.abandonedOrders = [];
+            this.totalAbandonedCount = 0;
+        }
       } catch (err: any) {
         console.error("Erreur lors de la récupération des abandons :", err);
         this.error = err.response?._data?.message || "Impossible de récupérer les paniers abandonnés.";

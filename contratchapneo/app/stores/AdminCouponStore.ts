@@ -2,38 +2,41 @@ import { defineStore } from 'pinia';
 
 // 1. Typage strict calqué sur le modèle Django
 export interface Coupon {
-  id: number;
+  id?: number;
   code: string;
   discount_type: 'percentage' | 'fixed';
-  discount_value: string | number; // Souvent renvoyé sous forme de string (DecimalField)
+  discount_value: string | number; 
   valid_from: string;
   valid_to: string;
   active: boolean;
   max_usages: number;
-  used_count: number;
+  used_count?: number; // Optionnel à la création
 }
 
 export const useAdminCouponStore = defineStore('adminCoupon', {
   state: () => ({
     coupons: [] as Coupon[],
+    currentCoupon: null as Coupon | null,
     isLoading: false,
     error: null as string | null,
   }),
 
   actions: {
+    // --------------------------------------------------
+    // LISTER LES COUPONS
+    // --------------------------------------------------
     async fetchCoupons() {
       this.isLoading = true;
       this.error = null;
+      const { $api } = useNuxtApp(); // ⚡️ Appel de ton instance personnalisée
 
       try {
-        // ⚡️ N'oublie pas le préfixe /api/ (si tu l'as configuré) pour éviter le conflit avec le panel admin Django
-        const response: any = await $fetch('http://localhost:8000/admin/coupons/', {
-          headers: {
-            // 'Authorization': `Bearer ${token}` -> À réactiver quand IsAdminUser sera en place
-          }
+        // Plus besoin de l'URL complète ni d'injecter le token manuellement
+        const response: any = await $api('/ecommerce/admin/coupons/', {
+          method: 'GET'
         });
+        console.log("RÉPONSE BRUTE DU BACKEND :", response);
 
-        // Extraction ultra-sécurisée : gère la pagination (results), la réponse standard (data) ou un tableau direct
         if (response && Array.isArray(response.results)) {
             this.coupons = response.results;
         } else if (response && Array.isArray(response.data)) {
@@ -41,13 +44,117 @@ export const useAdminCouponStore = defineStore('adminCoupon', {
         } else if (Array.isArray(response)) {
             this.coupons = response;
         } else {
-            console.warn("Format inattendu reçu du backend :", response);
             this.coupons = [];
         }
-        
       } catch (err: any) {
-        console.error("Erreur lors de la récupération des codes promo :", err);
-        this.error = err.response?._data?.message || "Erreur de connexion au serveur.";
+        console.error("Erreur (fetchCoupons) :", err);
+        this.error = err.response?._data?.message || "Impossible de charger la liste des codes promo.";
+      } finally {
+        this.isLoading = false;
+      }
+    },
+
+    // --------------------------------------------------
+    // CRÉER UN COUPON
+    // --------------------------------------------------
+    async createCoupon(payload: Coupon) {
+      this.isLoading = true;
+      this.error = null;
+      const { $api } = useNuxtApp();
+
+      try {
+        const response: any = await $api('/ecommerce/admin/coupons/create/', {
+          method: 'POST',
+          body: payload
+        });
+
+        if (response && response.data) {
+            this.coupons.unshift(response.data);
+        }
+        return response;
+      } catch (err: any) {
+        console.error("Erreur (createCoupon) :", err);
+        this.error = err.response?._data?.error || "Impossible de créer le code promo.";
+        throw err;
+      } finally {
+        this.isLoading = false;
+      }
+    },
+
+    // --------------------------------------------------
+    // DÉTAIL D'UN COUPON
+    // --------------------------------------------------
+    async getCoupon(id: number) {
+      this.isLoading = true;
+      this.error = null;
+      const { $api } = useNuxtApp();
+
+      try {
+        const response: any = await $api(`/ecommerce/admin/coupons/${id}/`, {
+          method: 'GET'
+        });
+
+        if (response && response.data) {
+            this.currentCoupon = response.data;
+        }
+        return response;
+      } catch (err: any) {
+        console.error(`Erreur (getCoupon ${id}) :`, err);
+        this.error = "Impossible de récupérer les détails du code promo.";
+        throw err;
+      } finally {
+        this.isLoading = false;
+      }
+    },
+
+    // --------------------------------------------------
+    // MODIFIER UN COUPON
+    // --------------------------------------------------
+    async updateCoupon(id: number, payload: Partial<Coupon>) {
+      this.isLoading = true;
+      this.error = null;
+      const { $api } = useNuxtApp();
+
+      try {
+        const response: any = await $api(`/ecommerce/admin/coupons/${id}/`, {
+          method: 'PUT',
+          body: payload
+        });
+
+        if (response && response.data) {
+            const index = this.coupons.findIndex(c => c.id === id);
+            if (index !== -1) {
+                this.coupons[index] = response.data;
+            }
+        }
+        return response;
+      } catch (err: any) {
+        console.error(`Erreur (updateCoupon ${id}) :`, err);
+        this.error = err.response?._data?.error || "Impossible de mettre à jour le code promo.";
+        throw err;
+      } finally {
+        this.isLoading = false;
+      }
+    },
+
+    // --------------------------------------------------
+    // SUPPRIMER UN COUPON
+    // --------------------------------------------------
+    async deleteCoupon(id: number) {
+      this.isLoading = true;
+      this.error = null;
+      const { $api } = useNuxtApp();
+
+      try {
+        await $api(`/ecommerce/admin/coupons/${id}/`, {
+          method: 'DELETE'
+        });
+
+        this.coupons = this.coupons.filter(c => c.id !== id);
+      } catch (err: any) {
+        console.error(`Erreur (deleteCoupon ${id}) :`, err);
+        this.error = err.response?._data?.error || "Impossible de supprimer ce code promo.";
+        throw err;
       } finally {
         this.isLoading = false;
       }

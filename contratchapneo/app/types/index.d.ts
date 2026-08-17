@@ -46,6 +46,17 @@ declare global {
       is_active: boolean;
       is_verified: boolean;
   }
+  interface Order {
+    id: string;
+    status: string;
+    status_label: string;
+    total_amount: number;
+    buyer_email?: string;
+    client_email?: string; // Plan B (Compta)
+    created_at?: string;
+    date_transaction?: string; // Plan B (Compta)
+    order_items: any[];
+  }
 }
 
 export {}
