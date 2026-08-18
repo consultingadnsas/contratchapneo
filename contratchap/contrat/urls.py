@@ -1,6 +1,7 @@
 from django.urls import path
 from .views import (
     AdminContractDetailView,
+    AdminContractRevisionDetailView,
     AdminPackDetailView,
     CategoryDetailWithContractsView, 
     CategoryListView, 
@@ -19,7 +20,9 @@ from .views import (
     AdminPackListCreateView,
     AdminPackDetailView,
     AdminContractRevision,
-    AdminContractRevisionDownloadView
+    AdminContractRevisionDownloadView,
+    AdminCustomContractListView, 
+    AdminCustomContractDetailView
 )
 
 urlpatterns = [
@@ -46,8 +49,11 @@ urlpatterns = [
     path('revision-requests/', ContractRevisionRequestView.as_view(), name='contract-revision-requests'),
     path('admin-contrat/', AdminContractListCreateView.as_view(), name="admin-contract"),
     path('admin-contrat/revision/', AdminContractRevision.as_view(), name="admin-revision"),
+    path('admin/revisions/<uuid:pk>/', AdminContractRevisionDetailView.as_view(), name='admin-revision-detail'),
     path('admin/revisions/<uuid:pk>/download/', AdminContractRevisionDownloadView.as_view(), name='admin-revision-download'),
     path('admin-pack/', AdminPackListCreateView.as_view(), name="admin-packs"),
     path('admin-pack/<uuid:pack_id>/', AdminPackDetailView.as_view(), name="admin-pack-detail"),
     path('admin-contrat/<uuid:contrat_id>/', AdminContractDetailView.as_view(), name="admin-contract-detail"),
+    path('admin/custom-requests/', AdminCustomContractListView.as_view(), name='admin-custom-requests-list'),
+    path('admin/custom-requests/<uuid:pk>/', AdminCustomContractDetailView.as_view(), name='admin-custom-request-detail'),
 ]

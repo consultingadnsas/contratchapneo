@@ -634,6 +634,47 @@ class AdminContractRevision(APIView):
             status=status.HTTP_200_OK
         )
 
+class AdminContractRevisionDetailView(APIView):
+    permission_classes = [IsAdminUser]
+
+    def patch(self, request, pk):
+        """ Met à jour une révision (ex: valider le statut) """
+        revision = get_object_or_404(ContractRevision, pk=pk)
+        
+        # ⚡️ CONTOURNEMENT : On modifie manuellement le statut pour ignorer le read_only_fields
+        if 'status' in request.data:
+            revision.status = request.data['status']
+            revision.save(update_fields=['status'])
+            
+        serializer = ContractRevisionSerializer(revision, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({'data': serializer.data}, status=status.HTTP_200_OK)
+            
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class AdminCustomContractDetailView(APIView):
+    permission_classes = [IsAdminUser]
+
+    def patch(self, request, pk):
+        """ Met à jour un contrat sur mesure """
+        contract = get_object_or_404(CustomedContract, pk=pk)
+        
+        # ⚡️ CONTOURNEMENT : On force la modification du booléen
+        if 'is_wrotten' in request.data:
+            # On convertit le texte 'true' ou 'false' venant du Javascript en vrai Booléen Python
+            is_wrotten_val = str(request.data['is_wrotten']).lower() == 'true'
+            contract.is_wrotten = is_wrotten_val
+            contract.save(update_fields=['is_wrotten'])
+            
+        serializer = CustomedContractSerializer(contract, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({'data': serializer.data}, status=status.HTTP_200_OK)
+            
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 class AdminContractRevisionDownloadView(APIView):
     permission_classes = [IsAdminUser]
 
@@ -767,3 +808,34 @@ class AdminPackDetailView(APIView):
         pack = get_object_or_404(Pack, id=pack_id)
         pack.delete()
         return Response({"message": "Pack supprimé avec succès"}, status=status.HTTP_204_NO_CONTENT)
+
+class AdminCustomContractListView(APIView):
+    permission_classes = [IsAdminUser]
+
+    def get(self, request):
+        """ Récupère toutes les demandes de contrats sur mesure pour l'admin """
+        # On trie du plus récent au plus ancien
+        custom_contracts = CustomedContract.objects.all().order_by('-created_at')
+        serializer = CustomedContractSerializer(custom_contracts, many=True)
+        return Response({'data': serializer.data}, status=status.HTTP_200_OK)
+
+class AdminCustomContractDetailView(APIView):
+    permission_classes = [IsAdminUser]
+
+    def patch(self, request, pk):
+        """ Met à jour un contrat sur mesure """
+        contract = get_object_or_404(CustomedContract, pk=pk)
+        
+        # ⚡️ CONTOURNEMENT : On force la modification du booléen
+        if 'is_wrotten' in request.data:
+            # On convertit le texte 'true' ou 'false' venant du Javascript en vrai Booléen Python
+            is_wrotten_val = str(request.data['is_wrotten']).lower() == 'true'
+            contract.is_wrotten = is_wrotten_val
+            contract.save(update_fields=['is_wrotten'])
+            
+        serializer = CustomedContractSerializer(contract, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({'data': serializer.data}, status=status.HTTP_200_OK)
+            
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
