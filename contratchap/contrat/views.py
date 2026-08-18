@@ -335,18 +335,16 @@ class ContractTagsView(APIView):
 # ==========================================
 
 class PacksView(APIView):
-
     permission_classes = [AllowAny]
     authentication_classes = []
 
     def get(self, request):
-
-        """ Vue pour récupérer tous les packs que nous proposons"""
-
-        pack = Pack.objects.all()
+        """ Vue pour récupérer uniquement les packs ACTIFS pour la boutique """
+        
+        # ⚡️ CORRECTION : On filtre pour ne garder que les packs en ligne
+        pack = Pack.objects.filter(is_active=True)
 
         serializer = PackModelSerializer(pack, many=True)
-
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 # ==========================================

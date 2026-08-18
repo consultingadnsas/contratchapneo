@@ -134,9 +134,21 @@ export default {
         const selectedPreviewText = ref<string>(''); 
 
         const openViewModal = async(contratId:string) => {
-            await contratStore.getSpecificContract(contratId);
-            selectedPreviewText.value = contratStore.contrat?.document_preview || '';
-            isViewOpen.value = true; 
+            
+            // ⚡️ VÉRIFICATION : L'utilisateur possède-t-il au moins un pack actif ?
+            if (profileStore.activePacks && profileStore.activePacks.length > 0) {
+                
+                // Il a un abonnement valide -> Redirection directe au remplissage !
+                editContract(contratId);
+
+            } else {
+                
+                // Il n'a pas d'abonnement (ou est déconnecté) -> Ouverture de la modale d'aperçu
+                await contratStore.getSpecificContract(contratId);
+                selectedPreviewText.value = contratStore.contrat?.document_preview || '';
+                isViewOpen.value = true; 
+                
+            }
         }
 
         onMounted(async () => {            

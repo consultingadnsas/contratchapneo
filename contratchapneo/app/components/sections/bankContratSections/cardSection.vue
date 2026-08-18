@@ -92,15 +92,18 @@
             
             <div class="packages-grid">
                 <packCards 
-                    v-for="(pack, index) in packagesList" 
-                    :key="index"
-                    :planType="pack.planType"
-                    :title="pack.title"
-                    :price="pack.price"
-                    :description="pack.description"
-                    :features="pack.features"
-                    :buttonLabel="pack.buttonLabel"
-                />
+                v-for="pack in packStore.packs" 
+                :key="pack.id"
+                :title="pack.title"
+                :description="pack.description"
+                :price="pack.prix"
+                :promoPrice="pack.prix_promo" 
+                :nombreCredits="pack.nombre_credits"
+                :nombreCustomedContract="pack.nombre_customed_contract"
+                :nombreCartesPro="pack.nombre_cartes_pro"
+                :dureeValiditeJours="pack.duree_validite_jours"
+                :planType="pack.prix < 30000 ? 'basique' : (pack.prix < 60000 ? 'business' : 'business-pro')"
+            />
             </div>
         </div>
 
@@ -144,6 +147,7 @@ import { useContratStore } from '../../../stores/contratStore'
 import { useCartStore } from '../../../stores/cartStore'
 import { useProfileStore } from '../../../stores/profileStore'
 import { useRouter, useRoute } from 'vue-router'
+import { usePackStore } from '../../../stores/packStore'
 
 export default {
     components: {
@@ -159,6 +163,7 @@ export default {
         const contratStore = useContratStore();
         const cartStore = useCartStore();
         const profileStore = useProfileStore();
+        const packStore = usePackStore();
 
         const activeCategoryId = ref((route.query.category as string) || '');
         const searchQuery = ref((route.query.q as string) || '');
@@ -236,10 +241,22 @@ export default {
         const isViewOpen = ref<boolean>(false);
         const textToShow = ref<string | null>(null);
         
-        const openViewModal = async(contratId:string) => {
-            await contratStore.getSpecificContract(contratId);
-            textToShow.value = contratStore.contrat?.document_preview;
-            isViewOpen.value = true; 
+       const openViewModal = async(contratId:string) => {
+            
+            // ⚡️ CORRECTION : On vérifie s'il possède au moins un pack actif
+            if (profileStore.activePacks && profileStore.activePacks.length > 0) {
+                
+                // Il a un abonnement valide -> Go au remplissage !
+                fillContract(contratId);
+
+            } else {
+                
+                // Il n'a pas d'abonnement (ou est déconnecté) -> Modale d'aperçu
+                await contratStore.getSpecificContract(contratId);
+                textToShow.value = contratStore.contrat?.document_preview;
+                isViewOpen.value = true; 
+                
+            }
         }
 
         watch(() => route.query.category, (newCategoryId) => {
@@ -272,13 +289,17 @@ export default {
             } else {
                 contratStore.getContracts(1, activeCategoryId.value);
             }
+
+            if (packStore.packs.length === 0) {
+                packStore.fetchPacks();
+            }
         });
 
         return {
             router, activeCategoryId, handlePageChange, searchQuery,
             contratStore, cartStore, profileStore, textToShow, isOpen, openModal,
             isViewOpen, openViewModal, addTocart, fillContract,
-            packagesList // 👈 Exposer la liste au template
+            packagesList, packStore // 👈 Exposer la liste au template
         }
     }
 }

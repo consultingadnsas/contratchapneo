@@ -55,8 +55,13 @@
           </div>
         </div>
 
-        <div v-else>
-          <p>Ce contrat ne nécessite aucune information à remplir.</p>
+        <!-- ⚡️ MODIFICATION ICI : État sans balises -->
+        <div v-else class="no-tags-state">
+          <p class="ready-text">Ce document ne nécessite aucune information supplémentaire. Il est prêt !</p>
+          <generatorButton 
+            label="Télécharger le document" 
+            @click="submitForm" 
+          />
         </div>
     </form>
 </template>
@@ -107,7 +112,6 @@ export default {
       }
     });
 
-    // 🔹 Navigation
     const nextTag = () => {
       if (currentTagIndex.value < uniqueTags.value.length - 1) {
         currentTagIndex.value++
@@ -121,7 +125,7 @@ export default {
     }
 
     const handleFormSubmit = () => {
-      if (!isCurrentFieldValid.value) return; 
+      if (uniqueTags.value.length > 0 && !isCurrentFieldValid.value) return; 
 
       if (currentTagIndex.value < uniqueTags.value.length - 1) {
         nextTag();
@@ -130,13 +134,10 @@ export default {
       }
     };
 
-    // 🔹 Scroll vers le champ dans le document
-    // ⚡️ CORRECTION : Émission du bon nom d'événement
     const scrollToField = (tagName: string) => {
       emit('focus-field', tagName)
     }
 
-    // 🔹 Mise à jour en temps réel
     watch(formData, (newValues) => {
       emit('update-data', newValues)
     }, { deep: true })
@@ -152,7 +153,8 @@ export default {
     }
 
     const submitForm = () => {
-      if (isCurrentFieldValid.value) {
+      // ⚡️ MODIFICATION ICI : On autorise la soumission s'il n'y a pas de balises OU si le champ est valide
+      if (uniqueTags.value.length === 0 || isCurrentFieldValid.value) {
         emit('submit-data', formData.value)
       }
     }
@@ -177,7 +179,7 @@ export default {
 </script>
 
 <style scoped>
-/* Les styles restent exactement les mêmes ! */
+/* Conserve tous tes styles originaux ici */
 .contrat-form {
   display: flex;
   flex-direction: column;
@@ -199,19 +201,26 @@ export default {
   background-color: #ffebee;
   color: #c62828;
 }
-.submit-btn {
-  padding: 0.75rem 1.5rem;
-  background-color: #202b4a; 
-  color: white;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  font-weight: bold;
+
+/* ⚡️ MODIFICATION ICI : Nouveaux styles pour l'état sans balises */
+.no-tags-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 1.5rem;
+  padding: 2rem;
+  background-color: #f8fafc;
+  border-radius: 12px;
+  border: 1px dashed #cbd5e1;
 }
-.submit-btn:disabled {
-  background-color: #9e9e9e;
-  cursor: not-allowed;
+
+.ready-text {
+  color: #334155;
+  font-weight: 500;
+  margin: 0;
 }
+
 .input-group {
   position: relative;
   margin-bottom: 2rem;

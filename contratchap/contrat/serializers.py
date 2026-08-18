@@ -103,10 +103,17 @@ class PackModelSerializer(serializers.ModelSerializer):
             'id', 
             'title', 
             'description', 
-            'prix', 
+            'prix',
+            'prix_promo', # ⚡️ Ajouté
+            'nombre_credits', # ⚡️ Ajouté
+            'custom_contract_included', # ⚡️ Ajouté
+            'nombre_customed_contract', # ⚡️ Ajouté
+            'consultation_pro_incluse', # ⚡️ Ajouté
+            'nombre_cartes_pro', # ⚡️ Ajouté
+            'duree_validite_jours', # ⚡️ Ajouté
             'picture', 
             'created_at'
-        ]  # adaptez
+        ]
 
 class AdminPackSerializer(serializers.ModelSerializer):
     class Meta:

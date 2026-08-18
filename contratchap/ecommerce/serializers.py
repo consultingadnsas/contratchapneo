@@ -260,14 +260,13 @@ class OrderItemSerializer(serializers.ModelSerializer):
 
 class OrderSerializer(serializers.ModelSerializer):
     order_items  = OrderItemSerializer(many=True, read_only=True)
-    status_label = serializers.CharField(
-        source='get_status_display',
-        read_only=True
-    )
+    status_label = serializers.CharField(source='get_status_display', read_only=True)
     buyer_email  = serializers.EmailField(read_only=True)
-    
-    # 🎁 NOUVEAU : Récupérer le nom du coupon utilisé pour l'historique
     coupon_code  = serializers.SerializerMethodField()
+    
+    # ⚡️ 1. DÉCLARATION DES NOUVEAUX CHAMPS
+    client_name = serializers.SerializerMethodField()
+    client_phone = serializers.SerializerMethodField()
 
     class Meta:
         model  = Order
@@ -276,8 +275,12 @@ class OrderSerializer(serializers.ModelSerializer):
             'status',
             'status_label',
             'total_amount',
-            'discount_amount', # 🚨 Ajoute ce champ si tu l'as créé dans ton models.py
-            'coupon_code',     # <- Ajouté
+            'discount_amount',
+            'coupon_code',
+            # 'user',  <-- Tu peux les retirer, on n'en a plus besoin !
+            # 'guest', <--
+            'client_name',  # ⚡️ 2. AJOUT AUX FIELDS
+            'client_phone', # ⚡️ 2. AJOUT AUX FIELDS
             'buyer_email',
             'order_items',
             'created_at',
@@ -286,10 +289,29 @@ class OrderSerializer(serializers.ModelSerializer):
         read_only_fields = fields
 
     def get_coupon_code(self, obj):
-        # Si la commande est liée à un coupon, on renvoie son nom
         if hasattr(obj, 'coupon') and obj.coupon:
             return obj.coupon.code
         return None
+
+    # ⚡️ 3. LOGIQUE D'EXTRACTION DU NOM
+    def get_client_name(self, obj):
+        if obj.guest:
+            return obj.guest.full_name
+        if obj.user:
+            # Sécurité avec getattr au cas où un user n'aurait pas de first_name
+            first = getattr(obj.user, 'first_name', '')
+            last = getattr(obj.user, 'last_name', '')
+            full_name = f"{first} {last}".strip()
+            return full_name if full_name else obj.user.username
+        return "Nom inconnu"
+
+    # ⚡️ 4. LOGIQUE D'EXTRACTION DU TÉLÉPHONE
+    def get_client_phone(self, obj):
+        if obj.guest:
+            return obj.guest.phone_number
+        if obj.user and hasattr(obj.user, 'phone_number'):
+            return obj.user.phone_number
+        return "Non renseigné"
 
 
 class CheckoutSerializer(serializers.Serializer):

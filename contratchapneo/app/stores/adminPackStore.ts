@@ -1,16 +1,15 @@
 import { defineStore } from "pinia"
 import { ref } from 'vue'
+import { useNuxtApp } from '#imports' // Assure-toi d'avoir cet import si tu es sur Nuxt 3
 
 export interface Packs {
     id?: string,
     title: string,
     description: string,
     prix: number,
-    promo_price?: number | null, // ⚡️ Ajout de promo_price
-    isPromoActive?: boolean,     // ⚡️ Champ frontend pour gérer le switch
+    prix_promo?: number | null,  // ⚡️ CORRECTION : On utilise prix_promo
+    isPromoActive?: boolean,     
     nombre_credits: number,
-    // Note: Le modèle Django semble ne pas retourner "contrats" directement 
-    // ou alors c'est un champ spécifique. On le garde optionnel pour la souplesse.
     custom_contract_included: boolean,
     nombre_customed_contract: number,
     nombre_cartes_pro: number,
@@ -31,7 +30,6 @@ export const useAdminPackStore = defineStore('adminPackId', ()=>{
     const packs = ref<Packs[]>([]);
 
     // -- Action : Récupérer tous les packs --
-    // -- Action : Récupérer tous les packs --
     const fetchPacks = async () => {
         isLoading.value = true;
         error.value = null;
@@ -41,17 +39,18 @@ export const useAdminPackStore = defineStore('adminPackId', ()=>{
             if(response){
                 const data = response.data ? response.data : response;
                 
-                // ⚡️ LE BOUCLIER : On force le typage en Nombre pour éviter le warning "false"
                 packs.value = data.map((pack: any) => ({
                     ...pack,
                     prix: Number(pack.prix) || 0,
-                    promo_price: pack.promo_price ? Number(pack.promo_price) : null,
+                    // ⚡️ CORRECTION : On map bien depuis pack.prix_promo
+                    prix_promo: pack.prix_promo ? Number(pack.prix_promo) : null,
                     nombre_credits: Number(pack.nombre_credits) || 0,
                     nombre_customed_contract: Number(pack.nombre_customed_contract) || 0,
                     nombre_cartes_pro: Number(pack.nombre_cartes_pro) || 0,
                     duree_validite_jours: Number(pack.duree_validite_jours) || 30,
                     
-                    isPromoActive: Number(pack.promo_price) > 0
+                    // ⚡️ CORRECTION
+                    isPromoActive: Number(pack.prix_promo) > 0
                 }));
             }
         } catch(err:any){
@@ -73,8 +72,8 @@ export const useAdminPackStore = defineStore('adminPackId', ()=>{
             });
             if (response) {
                 const newPack = response.data ? response.data : response;
-                // On ajoute le champ local pour l'interface
-                newPack.isPromoActive = newPack.promo_price > 0;
+                // ⚡️ CORRECTION
+                newPack.isPromoActive = newPack.prix_promo > 0;
                 packs.value.push(newPack);
                 return newPack;
             }
@@ -103,7 +102,8 @@ export const useAdminPackStore = defineStore('adminPackId', ()=>{
                     packs.value.splice(index, 1, {
                         ...packs.value[index],
                         ...updatedData,
-                        isPromoActive: updatedData.promo_price > 0
+                        // ⚡️ CORRECTION
+                        isPromoActive: updatedData.prix_promo > 0
                     });
                 }
                 return updatedData;
