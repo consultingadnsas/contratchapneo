@@ -3,10 +3,12 @@ from .views import (
     LegalProfessionalListView, 
     FilterOptionsView,
     DownloadProCardFromPack,
-    ProAdminView
+    ProAdminView,
+    LegalProfessionalRegistrationView
 )
 
 urlpatterns = [
+    path('registration/', LegalProfessionalRegistrationView.as_view(), name='pro-registration'),
     path('professionals/', LegalProfessionalListView.as_view(), name='professional-list'),
     path('professionals/filters/', FilterOptionsView.as_view(), name='professional-filters'),
     path('professionals/download/<uuid:pro_id>/', DownloadProCardFromPack.as_view(), name='download-pro-card'),

@@ -5,12 +5,31 @@ from rest_framework import status
 from django.db.models import Q
 from django.shortcuts import get_object_or_404
 from .models import Country, LegalDomain, LegalProfessional, ProCardDownload
-from .serializers import CountrySerializer, LegalDomainSerializer, LegalProfessionalSerializer
+from .serializers import CountrySerializer, LegalDomainSerializer, LegalProfessionalSerializer, LegalProfessionalRegistrationSerializer
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from contrat.models import UserPack
 from django.http import FileResponse
 from django.utils.text import slugify
 from django.db import transaction
+
+class LegalProfessionalRegistrationView(APIView):
+    """
+    POST /register/professional/
+    Accepts nested user data + professional fields.
+    Returns the created professional data (with nested country/domains).
+    """
+    permission_classes = []   # Public access
+
+    def post(self, request, format=None):
+        serializer = LegalProfessionalRegistrationSerializer(data=request.data)
+        if serializer.is_valid():
+            professional = serializer.save()
+
+            # Use a read‑only serializer to return full nested objects (country, domains, etc.)
+            output_serializer = LegalProfessionalSerializer(professional)
+            return Response(output_serializer.data, status=status.HTTP_201_CREATED)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class LegalProfessionalListView(APIView):
     """
