@@ -1,5 +1,5 @@
 from docxtpl import DocxTemplate
-from django.http import FileResponse
+from django.http import FileResponse, Http404
 import tempfile
 import os
 import io
@@ -621,6 +621,50 @@ class AdminContractDetailView(APIView):
             status=status.HTTP_204_NO_CONTENT
         )
 
+class AdminContractRevision(APIView):
+
+    permission_classes = [IsAdminUser]
+
+    def get(self, request):
+
+        revision_contract = ContractRevision.objects.all()
+
+        serializer = ContractRevisionSerializer(revision_contract, many=True)
+
+        return Response(
+            {'data': serializer.data},
+            status=status.HTTP_200_OK
+        )
+
+class AdminContractRevisionDownloadView(APIView):
+    permission_classes = [IsAdminUser]
+
+    def get(self, request, pk):
+        revision = get_object_or_404(ContractRevision, pk=pk)
+
+        file_type = request.query_params.get('file_type', 'original')
+        if file_type == 'original':
+            file_field = revision.original_file
+            default_name = f"original_{revision.subject}.pdf"
+        elif file_type == 'revised':
+            file_field = revision.revised_file
+            default_name = f"revised_{revision.subject}.pdf"
+        else:
+            return Response(
+                {"error": "file_type must be 'original' or 'revised'"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        if not file_field:
+            raise Http404(f"{file_type.capitalize()} file not found for this revision.")
+
+        # Serve the file as a download (attachment)
+        response = FileResponse(file_field.open('rb'), as_attachment=True)
+        # Optionally set a custom filename
+        response['Content-Disposition'] = f'attachment; filename="{default_name}"'
+        return response
+
+        
 # ==========================================
 # 3. URL: /api/admin/contract/
 # ==========================================

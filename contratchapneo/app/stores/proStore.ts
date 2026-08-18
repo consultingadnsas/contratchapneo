@@ -364,6 +364,99 @@ export const useProStore = defineStore('proStore', () => {
         }
     };
 
+    const registerProfessional = async (registrationData: any) => {
+        isLoading.value = true;
+        error.value = null;
+
+        try {
+            // POST to the public registration endpoint
+            const response = await $api('/register/professional/', {
+                method: 'POST',
+                body: registrationData   // $api will JSON‑stringify this automatically
+            });
+
+            // On success, store the returned professional in `professional.value`
+            // (it already contains nested country and domains from the read‑only serializer)
+            professional.value = {
+                ...response,
+                profile_picture: resolveMediaUrl(response.profile_picture)
+            };
+
+            console.log('✅ Inscription réussie pour', response.email || response.id);
+            return true;
+
+        } catch (err: any) {
+            console.error('❌ Erreur registerProfessional:', err);
+
+            // Extract error messages from the API response
+            const errorData = err.response?._data;
+            if (typeof errorData === 'object') {
+                // DRF validation errors are usually an object with field names
+                const messages = Object.values(errorData).flat().join(' ');
+                error.value = messages || "Erreur lors de l'inscription.";
+            } else {
+                error.value = errorData?.error || err.message || "Erreur de connexion.";
+            }
+            return false;
+
+        } finally {
+            isLoading.value = false;
+        }
+    };
+
+    const downloadRevisionFile = async (revisionId: string, fileType: 'original' | 'revised' = 'original') => {
+        isLoading.value = true;
+        error.value = null;
+
+        try {
+            const url = `/admin/revisions/${revisionId}/download/?file_type=${fileType}`;
+            const response = await $api.raw(url, {
+                method: 'GET',
+                responseType: 'blob',
+            });
+
+            // Extraire le nom du fichier depuis les headers
+            let filename = `${fileType}_contract_revision.pdf`; // fallback
+            const contentDisposition = response.headers.get('content-disposition');
+            if (contentDisposition && contentDisposition.includes('filename=')) {
+                const filenameMatch = contentDisposition.match(/filename="?([^"]+)"?/);
+                if (filenameMatch && filenameMatch.length === 2) {
+                    filename = filenameMatch[1];
+                }
+            }
+
+            const blob = response._data as Blob;
+            const urlBlob = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = urlBlob;
+            link.setAttribute('download', filename);
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            window.URL.revokeObjectURL(urlBlob);
+
+            console.log(`✅ Fichier de révision téléchargé : ${filename}`);
+            return true;
+        } catch (err: any) {
+            console.error('❌ Erreur downloadRevisionFile:', err);
+            // Gestion des erreurs (comme pour downloadProCard)
+            if (err.response && err.response._data instanceof Blob) {
+                try {
+                    const errorText = await err.response._data.text();
+                    const errorJson = JSON.parse(errorText);
+                    error.value = errorJson.error || "Erreur lors du téléchargement.";
+                } catch (e) {
+                    error.value = "Une erreur inattendue est survenue.";
+                }
+            } else {
+                error.value = err.message || "Erreur de connexion.";
+            }
+            return false;
+        } finally {
+            isLoading.value = false;
+        }
+    };
+
     return {
         // 🚨 CRITIQUE : J'AI SUPPRIMÉ `cartStore` D'ICI !
         isLoading,
@@ -381,6 +474,8 @@ export const useProStore = defineStore('proStore', () => {
         downloadProCard,
         addPro,
         updatePro,
-        deletePro
+        deletePro,
+        registerProfessional,
+        downloadRevisionFile
     };
 });
