@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from .models import Category, Contrat, CustomedContract, Pack, UserPack, ContractRevision
 from account.models import CustomUser
+from ecommerce.models import GuestInfo
 
 class CategorySerializer(serializers.ModelSerializer):
 
@@ -35,42 +36,40 @@ class ContratSerializer(serializers.ModelSerializer):
         ]
 
 class CustomedContractSerializer(serializers.ModelSerializer):
+    client_name = serializers.SerializerMethodField(read_only=True)
+    category_name = serializers.SerializerMethodField(read_only=True)
+
     class Meta:
         model = CustomedContract
         fields = [
-            'id',
-            'subject',
-            'phone_number',
-            'email',
-            'description',
-            'price',
-            'is_wrotten',
-            'user',
-            'user_pack',
-            'created_at',
-            'updated_at',
+            'id', 'subject', 'phone_number', 'email', 'description', 
+            'price', 'is_wrotten', 'user', 'user_pack', 
+            'client_name', 'category','created_at', 'category_name', 'updated_at'
         ]
-        read_only_fields = ['id', 'is_wrotten', 'user', 'user_pack', 'created_at', 'updated_at']
+        read_only_fields = ['id', 'is_wrotten', 'user', 'user_pack', 'client_name', 'category_name', 'created_at', 'updated_at']
 
-    def validate_subject(self, value):
-        if len(value.strip()) < 5:
-            raise serializers.ValidationError('Le sujet est trop court.')
-        return value.strip()
+    def get_client_name(self, obj):
+        # 1. Si l'utilisateur est connecté (CustomUser)
+        if obj.user:
+            first_name = getattr(obj.user, 'first_name', '')
+            last_name = getattr(obj.user, 'last_name', '')
+            full_name = f"{first_name} {last_name}".strip()
+            if full_name:
+                return full_name
 
-    def validate_phone_number(self, value):
-        import re
-        cleaned = re.sub(r'\s+', '', value.strip())
-        if not re.match(r'^\+?\d{8,15}$', cleaned):
-            raise serializers.ValidationError('Numéro de téléphone invalide. Ex : +2250701234567 ou 0701234567.')
-        return cleaned
+        # 2. S'il n'est pas connecté, on cherche dans GuestInfo via l'email
+        if obj.email:
+            # On prend la toute dernière info associée à cet email
+            guest = GuestInfo.objects.filter(email=obj.email).order_by('-created_at').first()
+            if guest and guest.full_name:
+                return guest.full_name.strip()
 
-    def validate_description(self, value):
-        if len(value.strip()) < 20:
-            raise serializers.ValidationError('La description doit être plus détaillée.')
-        return value.strip()
-
-    def validate_email(self, value):
-        return value.lower().strip()
+        return None
+    
+    def get_category_name(self, obj):
+        if obj.category:
+            return obj.category.title
+        return "Catégorie non spécifiée"
 
 class CategoryWithContractsSerializer(serializers.ModelSerializer):
     # On utilise le related_name défini dans le modèle Contrat
@@ -121,66 +120,38 @@ class AdminPackSerializer(serializers.ModelSerializer):
         fields = '__all__' # Expose tous les champs du modèle
 
 class ContractRevisionSerializer(serializers.ModelSerializer):
-    # 💡 Petit bonus Contratchap : On ajoute ce champ pour que ton front-end 
-    # récupère directement "En attente" au lieu de "PENDING"
     status_display = serializers.CharField(source='get_status_display', read_only=True)
+    client_name = serializers.SerializerMethodField(read_only=True)
     original_file = serializers.FileField(required=True)
 
     class Meta:
         model = ContractRevision
         fields = [
-            'id',
-            'subject',
-            'phone_number',
-            'email',
-            'client_instructions',
-            'original_file',  # Le fichier soumis par le client
-            'revised_file',   # Le fichier renvoyé par le juriste
-            'price',
-            'promo_price',
-            'status',
-            'status_display',
-            'is_revised',
-            'expert_comments',
-            'user',
-            'user_pack',
-            'created_at',
-            'updated_at',
+            'id', 'subject', 'phone_number', 'email', 'client_instructions',
+            'original_file', 'revised_file', 'price', 'promo_price', 'status',
+            'status_display', 'is_revised', 'expert_comments', 'user', 'user_pack',
+            'client_name', # ⚡️ Le champ calculé
+            'created_at', 'updated_at',
         ]
-        
-        # 🚨 TRÈS IMPORTANT : On verrouille tous les champs que l'utilisateur 
-        # ne doit pas pouvoir manipuler lors de la soumission de sa demande.
         read_only_fields = [
-            'id', 
-            'revised_file', 
-            'price', 
-            'promo_price', 
-            'status', 
-            'status_display', 
-            'is_revised', 
-            'expert_comments', 
-            'user', 
-            'user_pack', 
-            'created_at', 
-            'updated_at'
+            'id', 'revised_file', 'price', 'promo_price', 'status', 
+            'status_display', 'is_revised', 'expert_comments', 'user', 
+            'user_pack', 'client_name', 'created_at', 'updated_at'
         ]
 
-    def validate_subject(self, value):
-        if len(value.strip()) < 5:
-            raise serializers.ValidationError('Le sujet est trop court.')
-        return value.strip()
+    def get_client_name(self, obj):
+        # 1. CustomUser
+        if obj.user:
+            first_name = getattr(obj.user, 'first_name', '')
+            last_name = getattr(obj.user, 'last_name', '')
+            full_name = f"{first_name} {last_name}".strip()
+            if full_name:
+                return full_name
 
-    def validate_phone_number(self, value):
-        import re
-        cleaned = re.sub(r'\s+', '', value.strip())
-        if not re.match(r'^\+?\d{8,15}$', cleaned):
-            raise serializers.ValidationError('Numéro de téléphone invalide. Ex : +2250701234567 ou 0701234567.')
-        return cleaned
+        # 2. GuestInfo
+        if obj.email:
+            guest = GuestInfo.objects.filter(email=obj.email).order_by('-created_at').first()
+            if guest and guest.full_name:
+                return guest.full_name.strip()
 
-    def validate_client_instructions(self, value):
-        if len(value.strip()) < 10:
-            raise serializers.ValidationError('Les instructions doivent être un peu plus détaillées pour guider nos juristes.')
-        return value.strip()
-
-    def validate_email(self, value):
-        return value.lower().strip()
+        return None

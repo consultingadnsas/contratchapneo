@@ -9,6 +9,7 @@ import { useNuxtApp } from '#imports'
 export interface ContractRevision {
     id: string;
     subject: string;
+    client_name?: string;
     phone_number: string;
     email: string;
     client_instructions: string;
@@ -29,6 +30,8 @@ export interface ContractRevision {
 export interface CustomContractRequest {
     id: string;
     subject: string;
+    client_name?: string;
+    category_name?: string | null;
     phone_number: string;
     email: string;
     description: string;
@@ -79,22 +82,29 @@ export const useAdminRequestsStore = defineStore('adminRequestsStore', () => {
     };
 
     // -- Télécharger un fichier (Original ou Révisé) --
+    // -- Télécharger un fichier (Original ou Révisé) --
     const downloadRevisionFile = async (revisionId: string, fileType: 'original' | 'revised') => {
         isLoading.value = true;
         error.value = null;
         try {
-            // Basé sur ton URL : path('admin/revisions/<uuid:pk>/download/', AdminContractRevisionDownloadView.as_view())
             const response: any = await $api(`/contrat/admin/revisions/${revisionId}/download/?file_type=${fileType}`, {
                 method: 'GET',
                 responseType: 'blob'
             });
 
-            // Création du lien de téléchargement
-            const blob = new Blob([response], { type: 'application/pdf' });
+            // ⚡️ CORRECTION : On utilise le type MIME réel renvoyé par Django (Word ou PDF)
+            const blob = new Blob([response], { type: response.type });
             const url = window.URL.createObjectURL(blob);
             const link = document.createElement('a');
             link.href = url;
-            link.setAttribute('download', `${fileType}_document_${revisionId}.pdf`); 
+            
+            // ⚡️ CORRECTION : Déduction automatique de l'extension selon le type MIME
+            let ext = '.pdf'; // Par défaut
+            if (response.type.includes('word') || response.type.includes('document')) {
+                ext = '.docx';
+            }
+
+            link.setAttribute('download', `${fileType}_document_${revisionId}${ext}`); 
             document.body.appendChild(link);
             link.click();
             link.parentNode?.removeChild(link);

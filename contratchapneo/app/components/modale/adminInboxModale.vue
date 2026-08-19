@@ -16,17 +16,31 @@
           <span class="gray-text">Reçu le {{ message.formattedDate }} à {{ message.formattedTime }}</span>
         </div>
 
-        <!-- Informations Client (Mises en avant) -->
+        <!-- Informations Client & Sujet -->
         <div class="client-details">
+          
           <div class="info-block">
-            <p class="label-text">Nom du Client / Sujet</p>
-            <p class="client-name break-word">{{ message.clientName || message.subject }}</p>
+            <p class="label-text">Nom du Client</p>
+            <p class="client-name break-word">{{ message.clientName }}</p>
+
+            <div style="margin-top: 1.5rem;" v-if="message.type === 'custom'">
+              <p class="label-text">Catégorie</p>
+              <p class="dark-text font-bold break-word" style="font-size: 1.05rem; margin: 0 0 0.5rem 0;">
+                {{ message.categoryName || 'Non spécifiée' }}
+              </p>
+              <p class="label-text">Sujet du contrat</p>
+              <p class="dark-text font-bold break-word" style="font-size: 1.05rem; margin: 0;">
+                {{ message.subject }}
+              </p>
+            </div> 
           </div>
+          
           <div class="info-block">
             <p class="label-text">Email de contact</p>
             <p class="client-email break-word">{{ message.email }}</p>
             <span v-if="message.phone_number" class="client-phone break-word">{{ message.phone_number }}</span>
           </div>
+          
         </div>
 
         <!-- Zone du message -->

@@ -12,23 +12,24 @@
 
         <h3> {{ formTitle }} </h3>
 
-        <!-- Ajout du v-model et des bonnes options -->
+        <!-- ⚡️ CORRECTION : Utilisation de category et dynamicContractTypes -->
         <BaseSelect 
             id="custom-contract-type"
-            label="Sélectionner votre type de contrat"
-            v-model="checkoutform.contract_type"
-            :options="contractTypes"
-            placeholder="Choisissez une option..."
+            label="Sélectionner votre catégorie de contrat"
+            v-model="checkoutform.category"
+            :options="dynamicContractTypes"
+            placeholder="Choisissez une catégorie..."
             required
         />
 
+        <!-- ⚡️ CORRECTION : Utilisation de full_name pour correspondre au backend -->
         <BaseInput 
             id="custom-name"
             label="Nom complet / nom de la société" 
-            name="name" 
+            name="full_name" 
             type="text" 
             placeholder="Entrez votre nom ou raison sociale"
-            v-model="checkoutform.name"
+            v-model="checkoutform.full_name"
             required
         />
 
@@ -52,18 +53,16 @@
             required
         />
 
-        <!-- Correction du name et du v-model -->
         <BaseInput 
             id="custom-subject"
             label="Sujet" 
             name="subject" 
             type="text" 
-            placeholder="Entrez l'objet de votre demande"
+            placeholder="Entrez l'objet de votre demande (Ex: Rachat d'actions)"
             v-model="checkoutform.subject"
             required
         />
 
-        <!-- Ajout du v-model -->
         <BaseArea 
             id="custom-description"
             label="Description détaillée"
@@ -83,17 +82,18 @@
 </template>
 
 <script>
-import { ref, reactive } from 'vue'
+// ⚡️ NOUVEAU : Import de onMounted et computed
+import { ref, reactive, onMounted, computed } from 'vue' 
 import BaseInput from '../input/BaseInput.vue'
 import checkoutButton from '../buttons/checkoutButton.vue'
 import BaseSelect from '../input/BaseSelect.vue'
 import BaseArea from '../input/BaseArea.vue'
-import BaseNotification from '../tools/baseNotification.vue' // <-- IMPORT AJOUTÉ
+import BaseNotification from '../tools/baseNotification.vue' 
 
 import { useCartStore } from '../../stores/cartStore'
-import {useContratStore} from '../../stores/contratStore'
+import { useContratStore } from '../../stores/contratStore'
 
-import {useRouter, useRoute} from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 
 export default {
     components: {
@@ -110,19 +110,35 @@ export default {
         }
     },
 
-    emits: ['success'], // <-- CORRIGÉ (2 "s")
+    emits: ['success'], 
     setup(props, { emit }) {
 
         const router = useRouter();
-        const route = useRoute()
+        const route = useRoute();
 
         const cartStore = useCartStore();
         const contratStore = useContratStore();
 
-        // 1. Déclaration de toutes les variables nécessaires au backend
+        // ⚡️ NOUVEAU : On charge les catégories dynamiquement au montage du composant
+        onMounted(async () => {
+            // On évite de refaire l'appel si les catégories sont déjà dans le store
+            if (contratStore.categories.length === 0) {
+                await contratStore.getCategories();
+            }
+        });
+
+        // ⚡️ NOUVEAU : On transforme la liste du backend pour qu'elle corresponde à ce qu'attend <BaseSelect>
+        const dynamicContractTypes = computed(() => {
+            return contratStore.categories.map(cat => ({
+                value: cat.id,     // L'UUID à envoyer au backend
+                name: cat.title    // Le texte affiché à l'utilisateur
+            }));
+        });
+
+        // ⚡️ CORRECTION : Alignement strict des clés avec le Serializer Django
         const checkoutform = reactive({
-            contract_type: "",
-            name: "",
+            category: "",      // Remplacé contract_type par category
+            full_name: "",     // Remplacé name par full_name
             email: "",
             phone_number: "",
             subject: "",
@@ -131,7 +147,6 @@ export default {
 
         const loading = ref(false)
 
-        // 2. Gestion de la notification
         const notify = ref({
             show: false,
             type: 'success',
@@ -143,22 +158,13 @@ export default {
             notify.value = { show: true, type, title, message };
         };
 
-        // 3. Options adaptées pour un contrat sur-mesure
-        const contractTypes = [
-            { value: "prestation", name: "Contrat de prestation de services" },
-            { value: "travail", name: "Contrat de travail" },
-            { value: "partenariat", name: "Contrat de partenariat" },
-            { value: "cession", name: "Contrat de cession" },
-            { value: "autre", name: "Autre besoin spécifique" }
-        ]
-
-        // 4. Fonction de validation
         const validateForm = () => {
-            if (!checkoutform.contract_type) {
-                showNotification('error', 'Type manquant', 'Veuillez sélectionner le type de contrat.');
+            // ⚡️ CORRECTION DES VÉRIFICATIONS avec les nouvelles clés
+            if (!checkoutform.category) {
+                showNotification('error', 'Catégorie manquante', 'Veuillez sélectionner la catégorie de contrat.');
                 return false;
             }
-            if (!checkoutform.name.trim()) {
+            if (!checkoutform.full_name.trim()) {
                 showNotification('error', 'Nom manquant', 'Votre nom complet ou raison sociale est requis.');
                 return false;
             }
@@ -200,17 +206,15 @@ export default {
             return true;
         }
 
-        // 5. Soumission sécurisée
         const submitForm = async () => {
             if (!validateForm()) return; 
 
             loading.value = true
 
             try {
-                // 3. Appel au VRAI store en passant les données du formulaire
+                // On envoie le formulaire qui possède désormais "category" et "full_name"
                 await contratStore.submitCustomContract(checkoutform);
                 
-                // Si aucune erreur n'a été levée, on affiche le succès
                 showNotification(
                     'success', 
                     'Demande envoyée !', 
@@ -219,10 +223,10 @@ export default {
                 
                 emit('success')
 
-                // Réinitialisation du formulaire
+                // Réinitialisation avec les bonnes clés
                 Object.assign(checkoutform, {
-                    contract_type: "",
-                    name: "",
+                    category: "",
+                    full_name: "",
                     email: "",
                     phone_number: "",
                     subject: "",
@@ -232,7 +236,6 @@ export default {
                 router.push('/order/checkout');
 
             } catch (err) {
-                // Si le store renvoie une erreur (throw error), on atterrit ici
                 showNotification('error', 'Erreur d\'envoi', 'Une erreur est survenue lors de la soumission de votre demande.');
             } finally {
                 loading.value = false
@@ -248,7 +251,7 @@ export default {
             loading,
             submitForm,
             notify,
-            contractTypes
+            dynamicContractTypes // ⚡️ NOUVEAU : On expose la liste générée au template
         }
     }
 }

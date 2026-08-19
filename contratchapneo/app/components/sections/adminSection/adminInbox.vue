@@ -62,11 +62,17 @@
               </div>
             </td>
             
-            <!-- Type (Badges Pastel) -->
+            <!-- Type (Badges Pastel) & Sujet -->
             <td>
-              <span class="pastel-badge" :class="msg.type === 'review' ? 'badge-blue' : 'badge-purple'">
-                {{ msg.type === 'review' ? 'Révision' : 'Sur-Mesure' }}
-              </span>
+                <div>
+                  <span class="pastel-badge" :class="msg.type === 'review' ? 'badge-blue' : 'badge-purple'">
+                    {{ msg.type === 'review' ? 'Révision' : 'Sur-Mesure' }}
+                  </span>
+                </div>
+
+               <span v-if="msg.type === 'custom'" class="dark-text text-sm font-bold" style="margin-top: 0.4rem;">
+                  {{ msg.categoryName }}
+                </span>
             </td>
             
             <!-- Statut -->
@@ -160,7 +166,8 @@ export default {
       const revisions = adminStore.revisions.map(rev => ({
         ...rev,
         type: 'review',
-        clientName: rev.email.split('@')[0],
+        // ⚡️ CORRECTION : On utilise d'abord le vrai nom, sinon on coupe l'email (pour les visiteurs non connectés)
+        clientName: rev.client_name || rev.email.split('@')[0], 
         formattedDate: formatDate(rev.created_at),
         formattedTime: formatTime(rev.created_at),
         isRead: rev.status !== 'PENDING' 
@@ -169,7 +176,9 @@ export default {
       const customRequests = adminStore.customRequests.map(req => ({
         ...req,
         type: 'custom',
-        clientName: req.email.split('@')[0], 
+        // ⚡️ CORRECTION : Même logique ici
+        clientName: req.client_name || req.email.split('@')[0], 
+        categoryName: req.category_name,
         status: req.is_wrotten ? 'Terminé' : 'En attente', 
         status_display: req.is_wrotten ? 'Terminé' : 'En attente',
         formattedDate: formatDate(req.created_at),

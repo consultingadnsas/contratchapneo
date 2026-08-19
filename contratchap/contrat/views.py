@@ -684,10 +684,10 @@ class AdminContractRevisionDownloadView(APIView):
         file_type = request.query_params.get('file_type', 'original')
         if file_type == 'original':
             file_field = revision.original_file
-            default_name = f"original_{revision.subject}.pdf"
+            prefix = "original_"
         elif file_type == 'revised':
             file_field = revision.revised_file
-            default_name = f"revised_{revision.subject}.pdf"
+            prefix = "revised_"
         else:
             return Response(
                 {"error": "file_type must be 'original' or 'revised'"},
@@ -697,10 +697,16 @@ class AdminContractRevisionDownloadView(APIView):
         if not file_field:
             raise Http404(f"{file_type.capitalize()} file not found for this revision.")
 
-        # Serve the file as a download (attachment)
+        # ⚡️ CORRECTION : On extrait l'extension exacte (.docx, .pdf, .doc...)
+        ext = os.path.splitext(file_field.name)[1]
+        default_name = f"{prefix}{revision.subject}{ext}"
+
         response = FileResponse(file_field.open('rb'), as_attachment=True)
-        # Optionally set a custom filename
         response['Content-Disposition'] = f'attachment; filename="{default_name}"'
+        
+        # ⚡️ NOUVEAU : On expose les headers pour que le frontend puisse lire le nom du fichier
+        response['Access-Control-Expose-Headers'] = 'Content-Disposition'
+        
         return response
 
         
@@ -767,10 +773,20 @@ class AdminCategory(APIView):
         )
 
     def delete(self, request):
-        # Supprimer une catégorie
-        category_id = request.data.get('id')
+        # ⚡️ CORRECTION : On récupère l'ID depuis l'URL (?id=...) et non depuis le body
+        category_id = request.query_params.get('id')
+        
+        if not category_id:
+            return Response(
+                {"message": "L'identifiant de la catégorie est requis."}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+            
         category = get_object_or_404(Category, id=category_id)
+        
+        # Supprime la catégorie (et ses contrats liés si on_delete=CASCADE dans tes modèles)
         category.delete()
+        
         return Response(
             {"message": "Catégorie supprimée avec succès"}, 
             status=status.HTTP_204_NO_CONTENT

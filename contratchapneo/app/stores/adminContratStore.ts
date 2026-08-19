@@ -78,14 +78,16 @@ export const useAdminContratStore = defineStore('adminContrat', () => {
     const deleteCategory = async (categoryId: string) => {
         isLoading.value = true;
         try {
-            // ⚡️ CORRECTION : On envoie l'ID dans le Body (data) comme Django l'attend
-            await $api(`/contrat/admin-category/`, { 
-                method: "DELETE",
-                body: { id: categoryId } 
+            // ⚡️ CORRECTION : L'ID est passé en paramètre URL (?id=...) et on enlève le body
+            await $api(`/contrat/admin-category/?id=${categoryId}`, { 
+                method: "DELETE"
             });
+            
+            // Mise à jour de l'interface en retirant la catégorie
             categories.value = categories.value.filter(c => c.id !== categoryId);
+            
         } catch (err: any) {
-            console.error(err);
+            console.error("Erreur lors de la suppression :", err);
         } finally {
             isLoading.value = false;
         }
@@ -196,7 +198,7 @@ export const useAdminContratStore = defineStore('adminContrat', () => {
     const fetchCustomContracts = async () => {
         isLoading.value = true;
         try {
-            const response = await $api<CustomContract[]>('/contrat/custom-requests/', { method: 'GET' });
+            const response = await $api<CustomContract[]>('/contrat/admin/custom-requests/', { method: 'GET' });
             
             // ⚡️ CORRECTION : On vérifie que Django a bien renvoyé un tableau (JSON)
             // S'il renvoie une chaîne de caractères (comme une page HTML), on force l'erreur.
@@ -245,4 +247,4 @@ export const useAdminContratStore = defineStore('adminContrat', () => {
         fetchCustomContracts
     };
 
-}, { persist: true });
+})
