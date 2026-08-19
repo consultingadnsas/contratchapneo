@@ -147,7 +147,7 @@ class AdminAccountingView(ListAPIView):
     # 💡 Astuce Contratchap : Pour la compta, il est souvent plus logique 
     # de ne récupérer que les commandes effectivement PAYÉES (status='paid').
     # Si tu veux vraiment toutes les commandes, remplace `.filter(status='paid')` par `.all()`
-    queryset = Order.objects.filter(status='paid').order_by('-created_at')
+    queryset = Order.objects.all().order_by('-created_at')
     
     serializer_class = AccountingOrderSerializer
     pagination_class = AdminPagination
