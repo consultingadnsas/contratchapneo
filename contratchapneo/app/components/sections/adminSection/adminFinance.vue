@@ -7,148 +7,156 @@
       </div>
     </div>
 
+    <!-- 1. KPI GRID -->
     <div class="kpi-grid">
-      
+      <!-- KPI 1 : Chiffre d'Affaires -->
       <div class="kpi-card">
         <div class="kpi-header">
           <div class="kpi-title">
-            <div class="icon-box-light bg-blue-light">
-              <component :is="BanknotesIcon" class="icon-sm" />
-            </div>
+            <div class="icon-box-light bg-blue-light"><component :is="BanknotesIcon" class="icon-sm" /></div>
             <span class="dark-text font-bold">Chiffre d'Affaires</span>
           </div>
-          <div class="mini-bars">
-            <div class="bar bar-low"></div><div class="bar bar-mid"></div><div class="bar bar-high bg-blue"></div>
-          </div>
+          <div class="mini-bars"><div class="bar bar-low"></div><div class="bar bar-mid"></div><div class="bar bar-high bg-blue"></div></div>
         </div>
         <div class="kpi-body">
-          <h2 class="amount">
-            {{ formatCurrency(financeStore.accountancy?.global?.total_revenue) }} 
-            <span class="currency">FCFA</span>
-          </h2>
+          <h2 class="amount">{{ formatCurrency(financeStore.accountancy?.global?.total_revenue) }} <span class="currency">FCFA</span></h2>
         </div>
         <p class="kpi-footer">Total des commandes payées</p>
       </div>
 
+      <!-- KPI 2 : Ventes Réussies -->
       <div class="kpi-card">
         <div class="kpi-header">
           <div class="kpi-title">
-            <div class="icon-box-light bg-green-light" style="background: #d1fae5; color: #059669;">
-              <component :is="ChartPieIcon" class="icon-sm" />
-            </div>
+            <div class="icon-box-light bg-green-light"><component :is="ChartPieIcon" class="icon-sm" /></div>
             <span class="dark-text font-bold">Ventes Réussies</span>
           </div>
-          <div class="mini-bars">
-            <div class="bar bar-mid"></div><div class="bar bar-low"></div><div class="bar bar-high bg-green" style="background: #059669;"></div>
-          </div>
+          <div class="mini-bars"><div class="bar bar-mid"></div><div class="bar bar-low"></div><div class="bar bar-high bg-green"></div></div>
         </div>
-        <div class="kpi-body">
-          <h2 class="amount">{{ financeStore.accountancy?.transactions_status?.successful || 0 }}</h2>
-        </div>
+        <div class="kpi-body"><h2 class="amount">{{ financeStore.accountancy?.transactions_status?.successful || 0 }}</h2></div>
         <p class="kpi-footer">Commandes avec statut "Payé"</p>
       </div>
 
+      <!-- KPI 3 : En Attente -->
       <div class="kpi-card">
         <div class="kpi-header">
           <div class="kpi-title">
-            <div class="icon-box-light bg-orange-light">
-              <component :is="ShoppingCartIcon" class="icon-sm" />
-            </div>
+            <div class="icon-box-light bg-orange-light"><component :is="ShoppingCartIcon" class="icon-sm" /></div>
             <span class="dark-text font-bold">En Attente</span>
           </div>
-          <div class="mini-bars">
-            <div class="bar bar-high"></div><div class="bar bar-mid"></div><div class="bar bar-low bg-orange"></div>
-          </div>
+          <div class="mini-bars"><div class="bar bar-high"></div><div class="bar bar-mid"></div><div class="bar bar-low bg-orange"></div></div>
         </div>
-        <div class="kpi-body">
-          <h2 class="amount">{{ financeStore.accountancy?.transactions_status?.pending || 0 }}</h2>
-        </div>
+        <div class="kpi-body"><h2 class="amount">{{ financeStore.accountancy?.transactions_status?.pending || 0 }}</h2></div>
         <p class="kpi-footer">Paiements non finalisés</p>
       </div>
-
     </div>
 
-    <div class="middle-grid">
+    <!-- 2. LIGNE HAUTE : COURBE (2/3) + DONUT (1/3) -->
+    <div class="charts-grid-top">
       <div class="chart-panel">
         <div class="panel-header">
           <div>
-            <h4 class="dark-text font-bold text-lg">Performance des Ventes</h4>
-            <p class="gray-text text-sm">Volume mensuel des revenus générés</p>
+            <h4 class="dark-text font-bold text-lg">Évolution des revenus</h4>
+            <p class="gray-text text-sm">Volume mensuel généré</p>
           </div>
         </div>
-        
-        <div class="chart-container">
-          <div class="chart-tooltip">425 580 FCFA</div>
-          <div class="chart-dashed-line"></div>
-          
-          <svg viewBox="0 0 800 250" class="svg-chart" preserveAspectRatio="none">
-            <defs>
-              <linearGradient id="chartGradient" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stop-color="#10b981" stop-opacity="0.3" />
-                <stop offset="100%" stop-color="#10b981" stop-opacity="0.0" />
-              </linearGradient>
-            </defs>
-            <line x1="0" y1="50" x2="800" y2="50" class="grid-line" />
-            <line x1="0" y1="100" x2="800" y2="100" class="grid-line" />
-            <line x1="0" y1="150" x2="800" y2="150" class="grid-line" />
-            <line x1="0" y1="200" x2="800" y2="200" class="grid-line" />
-            <path d="M0,200 C100,180 150,80 250,120 C350,160 400,40 500,40 C600,40 650,160 700,140 C750,120 800,50 800,50 L800,250 L0,250 Z" fill="url(#chartGradient)"/>
-            <path d="M0,200 C100,180 150,80 250,120 C350,160 400,40 500,40 C600,40 650,160 700,140 C750,120 800,50 800,50" fill="none" stroke="#10b981" stroke-width="4" stroke-linecap="round"/>
-            <circle cx="500" cy="40" r="6" fill="#ffffff" stroke="#10b981" stroke-width="3" />
-          </svg>
-          
-          <div class="chart-labels">
-            <span>Jan</span><span>Fév</span><span>Mar</span><span>Avr</span><span>Mai</span><span>Juin</span><span>Juil</span><span>Aoû</span><span>Sep</span>
-          </div>
+        <div class="chart-container" style="height: 280px; position: relative;">
+          <RevenueChart :revenue-data="financeStore.computedMonthlyRevenue" />
+        </div>
+      </div>
+
+      <div class="panel-card flex-col-center">
+        <div class="panel-header text-center">
+          <h4 class="dark-text font-bold text-lg">Répartition des statuts</h4>
+        </div>
+        <div style="flex-grow: 1; display: flex; align-items: center; justify-content: center; position: relative; width: 100%;">
+          <StatusDonutChart :status-stats="financeStore.accountancy?.transactions_status || { successful: 0, pending: 0, failed: 0 }" />
         </div>
       </div>
     </div>
 
-    <div class="bottom-section panel-card">
+    <!-- 3. LIGNE MILIEU : DEMANDES (Pleine largeur) -->
+    <div class="panel-card">
       <div class="panel-header">
-        <h4 class="dark-text font-bold text-lg">Transactions Récentes</h4>
+        <div>
+          <h4 class="dark-text font-bold text-lg">Demandes de services personnalisés</h4>
+          <p class="gray-text text-sm">Comparaison des volumes : Sur-mesure vs Révisions de contrats</p>
+        </div>
       </div>
+      <div class="chart-container" style="height: 280px; position: relative;">
+        <DemandBarChart :demand-data="financeStore.demandStats" />
+      </div>
+    </div>
+
+    <!-- 4. LIGNE BASSE : PACKS (1/2) + PROS (1/2) -->
+    <div class="charts-grid-bottom">
+      <div class="chart-panel">
+        <div class="panel-header">
+          <div>
+            <h4 class="dark-text font-bold text-lg">Ventes de Packs</h4>
+            <p class="gray-text text-sm">Volume mensuel des packs écoulés</p>
+          </div>
+        </div>
+        <div class="chart-container" style="height: 260px; position: relative;">
+          <PackChart :chart-data-array="financeStore.packStats" />
+        </div>
+      </div>
+
+      <div class="chart-panel">
+        <div class="panel-header">
+          <div>
+            <h4 class="dark-text font-bold text-lg">Sollicitations des Pros</h4>
+            <p class="gray-text text-sm">Mises en relation avec les experts</p>
+          </div>
+        </div>
+        <div class="chart-container" style="height: 260px; position: relative;">
+          <ProChart :chart-data-array="financeStore.proStats" />
+        </div>
+      </div>
+    </div>
+
+    <!-- 5. LIGNE FINALE : TOP CONTRATS (Pleine largeur) -->
+    <div class="panel-card mt-6">
+      <div class="panel-header">
+        <div>
+          <h4 class="dark-text font-bold text-lg">Palmarès des Contrats</h4>
+          <p class="gray-text text-sm">Les Contrats les plus téléchargés</p>
+        </div>
+      </div>
+      <div class="chart-container" style="height: 300px; position: relative;">
+        <ContratChart :top-data="financeStore.topContractsStats" />
+      </div>
+    </div>
+
+    <!-- 6. LIGNE FINALE : TOP PACKS (1/2) + TOP PROS (1/2) -->
+    <div class="charts-grid-bottom mt-6">
       
-      <div class="table-responsive">
-        <p v-if="financeStore.isLoading" class="gray-text text-center py-4">Chargement des transactions...</p>
-        
-        <table v-else class="minimal-table">
-          <thead>
-            <tr>
-              <th>Réf</th>
-              <th>Produit</th>
-              <th>Client</th>
-              <th>Date</th>
-              <th>Prix</th>
-              <th class="text-right">Statut</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="tx in financeStore.transactions" :key="tx.id">
-              
-              <td class="gray-text font-bold">#{{ tx.id.substring(0, 8).toUpperCase() }}</td>
-              
-              <td class="dark-text font-bold">{{ getProductName(tx) }}</td>
-              
-              <td class="dark-text">{{ getClientName(tx) }}</td>
-              
-              <td class="gray-text">{{ formatDate(tx.created_at) }}</td>
-              
-              <td class="dark-text font-bold">{{ formatCurrency(tx.amount) }} F</td>
-              
-              <td class="text-right">
-                <span class="status-pill" :class="getStatusClass(tx.status)">
-                  {{ tx.status_labels || tx.status }}
-                </span>
-              </td>
-            </tr>
-            
-            <tr v-if="financeStore.transactions.length === 0">
-              <td colspan="6" class="text-center gray-text py-4">Aucune transaction trouvée.</td>
-            </tr>
-          </tbody>
-        </table>
+      <!-- Classement des Packs (Pie Chart) -->
+      <div class="chart-panel">
+        <div class="panel-header">
+          <div>
+            <h4 class="dark-text font-bold text-lg">Palmarès des Packs</h4>
+            <p class="gray-text text-sm">Les offres groupées les plus vendues</p>
+          </div>
+        </div>
+        <div class="chart-container" style="height: 300px; position: relative;">
+          <TopPacksChart :top-data="financeStore.topPacksStats" />
+        </div>
       </div>
+
+      <!-- Classement des Pros (Polar Area Chart) -->
+      <div class="chart-panel">
+        <div class="panel-header">
+          <div>
+            <h4 class="dark-text font-bold text-lg">Classement des Experts</h4>
+            <p class="gray-text text-sm">Les professionnels les plus sollicités</p>
+          </div>
+        </div>
+        <div class="chart-container" style="height: 300px; position: relative;">
+          <TopProChart :top-data="financeStore.topProsStats" />
+        </div>
+      </div>
+
     </div>
 
   </div>
@@ -157,94 +165,40 @@
 <script lang="ts">
 import { markRaw, onMounted } from 'vue';
 import { 
-  BanknotesIcon, 
-  ChartPieIcon, 
-  ShoppingCartIcon,
-  DocumentChartBarIcon,
-  CalculatorIcon,
-  ChevronRightIcon
+  BanknotesIcon, ChartPieIcon, ShoppingCartIcon, DocumentChartBarIcon, CalculatorIcon, ChevronRightIcon
 } from '@heroicons/vue/24/outline';
 
-// ⚡️ Import de ton store tel que créé précédemment
 import { useAdminTransactStore } from '../../../stores/adminTransactStore'; 
+import RevenueChart from '../../charts/revenuCharts.vue'; 
+import StatusDonutChart from '../../charts/statutCharts.vue';
+import DemandBarChart from '../../charts/demandChart.vue';
+import PackChart from '../../charts/packChart.vue';
+import ProChart from '../../charts/proChart.vue';
+import ContratChart from '../../charts/contratChart.vue';
+import TopPacksChart from '../../charts/topPackChart.vue';
+import TopProChart from '../../charts/topProChart.vue'
 
 export default {
   name: 'AdminFinance',
+  components: {
+    RevenueChart, StatusDonutChart, DemandBarChart, PackChart, ProChart, ContratChart, TopPacksChart, TopProChart,
+  },
   setup() {
-    
-    // Initialisation du store
     const financeStore = useAdminTransactStore();
 
     onMounted(async () => {
-      // ⚡️ On lance les DEUX requêtes API (La liste + La compta)
       await financeStore.fetchTransact();
       await financeStore.fetchAccountancy();
     });
 
-    // ⚡️ FORMATER LES PRIX
     const formatCurrency = (amount: number | string | undefined) => {
       const num = Number(amount) || 0;
       return num.toLocaleString('fr-FR');
     };
 
-    // ⚡️ FORMATER LA DATE (Ex: 24 Août 2026)
-    const formatDate = (dateString: string) => {
-      if (!dateString) return '-';
-      const date = new Date(dateString);
-      return date.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' });
-    };
-
-    // ⚡️ EXTRAIRE LE NOM DU PRODUIT (Depuis tx.order.order_items)
-    const getProductName = (tx: any) => {
-      // Vérifier si la commande et ses items existent
-      const items = tx.order?.order_items;
-      if (!items || items.length === 0) return 'Article inconnu';
-      
-      // On cherche le nom du contrat ou du pack (ajuste les noms de champs selon ton backend)
-      const firstItem = items[0];
-      const itemName = firstItem.contrat?.title || firstItem.pack?.nom || 'Produit';
-
-      if (items.length === 1) return itemName;
-      return `${itemName} (+${items.length - 1})`;
-    };
-
-    // ⚡️ EXTRAIRE LE NOM DU CLIENT (Guest ou User)
-    const getClientName = (tx: any) => {
-      const order = tx.order;
-      if (!order) return 'Client Inconnu';
-      
-      // Si c'est un invité (guest checkout)
-      if (order.guest && order.guest.full_name) {
-        return order.guest.full_name;
-      }
-      
-      // Si c'est un utilisateur enregistré
-      if (order.user) {
-        return `${order.user.first_name || ''} ${order.user.last_name || ''}`.trim() || order.user.email;
-      }
-      
-      return 'Client Inconnu';
-    };
-
-    // ⚡️ ATTRIBUER LA COULEUR SELON LE STATUT
-    const getStatusClass = (status: string) => {
-      // Les statuts viennent de ton TransactionStatus (PENDING, SUCCESSFUL, FAILED, CANCELED)
-      const s = status ? status.toUpperCase() : '';
-      if (s === 'SUCCESSFUL') return 'pill-green';
-      if (s === 'PENDING') return 'pill-yellow';
-      if (s === 'FAILED' || s === 'CANCELED') return 'pill-gray';
-      return 'pill-gray';
-    };
-
     return {
       financeStore,
       formatCurrency,
-      formatDate,
-      getProductName,
-      getClientName,
-      getStatusClass,
-      
-      // Icônes
       BanknotesIcon: markRaw(BanknotesIcon),
       ChartPieIcon: markRaw(ChartPieIcon),
       ShoppingCartIcon: markRaw(ShoppingCartIcon),
@@ -257,85 +211,73 @@ export default {
 </script>
 
 <style scoped>
-/* Conserve 100% du CSS de ton code précédent ! */
-/* J'ai seulement ajouté de quoi centrer le texte "Aucune transaction" et les loaders dans le template */
-.py-4 { padding-top: 1.5rem; padding-bottom: 1.5rem; }
-
-/* ... Ton CSS d'origine ... */
+/* STRUCTURE DE BASE */
 .finance-wrapper {
-  --bg-main: #f8fafc;
   --bg-panel: #ffffff;
   --text-dark: #1e293b;
   --text-gray: #94a3b8;
-  --accent-green: #10b981; 
-  
-  display: flex; flex-direction: column; gap: 2rem;
-  font-family: 'Inter', sans-serif; padding-bottom: 2rem;
+  display: flex; 
+  flex-direction: column; 
+  gap: 1.5rem; /* Espace global réduit pour compacter l'interface */
+  font-family: 'Inter', sans-serif; 
+  padding-bottom: 2rem;
 }
+
+/* TYPOGRAPHIE ET UTILITAIRES */
 .dark-text { color: var(--text-dark); }
 .gray-text { color: var(--text-gray); }
 .font-bold { font-weight: 700; }
 .text-lg { font-size: 1.1rem; }
 .text-sm { font-size: 0.8rem; }
 .text-center { text-align: center; }
-.text-right { text-align: right; }
-.flex-align { display: flex; align-items: center; gap: 0.8rem; }
-.mb-3 { margin-bottom: 1rem; }
-.icon-sm { width: 20px; height: 20px; }
-.icon-gray { color: var(--text-gray); }
-.panel-card { background: var(--bg-panel); border-radius: 24px; padding: 1.5rem; box-shadow: 0 10px 40px rgba(0,0,0,0.03); border: 1px solid #f1f5f9; }
-.panel-header { margin-bottom: 1.5rem; }
+.flex-col-center { display: flex; flex-direction: column; height: 100%; }
+
+/* HEADER */
 .header-section { margin-bottom: 0.5rem; }
-.title-and-tabs { display: flex; justify-content: space-between; align-items: center; }
 .section-title { font-size: 1.4rem; color: var(--text-dark); font-weight: 700; margin: 0; }
-@media (max-width: 768px) { .hidden-mobile { display: none; } }
-.kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; }
-.kpi-card { background: var(--bg-panel); border-radius: 24px; padding: 1.5rem; box-shadow: 0 10px 40px rgba(0,0,0,0.03); border: 1px solid #f1f5f9; display: flex; flex-direction: column; justify-content: space-between; }
-.kpi-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
+
+/* PANNEAUX ET CARTES */
+.chart-panel, .panel-card, .kpi-card { 
+  background: var(--bg-panel); 
+  border-radius: 20px; 
+  padding: 1.5rem; 
+  box-shadow: 0 4px 20px rgba(0,0,0,0.03); 
+  border: 1px solid #f1f5f9; 
+}
+.panel-header { margin-bottom: 1rem; }
+
+/* GRILLE DES KPIS (3 colonnes) */
+.kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; }
+.kpi-card { display: flex; flex-direction: column; justify-content: space-between; }
+.kpi-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
 .kpi-title { display: flex; align-items: center; gap: 0.8rem; }
+.kpi-body { display: flex; align-items: center; gap: 1rem; margin-bottom: 0.5rem; }
+.amount { margin: 0; font-size: 1.6rem; font-weight: 800; color: var(--text-dark); }
+.currency { font-size: 0.9rem; color: var(--text-gray); font-weight: 600; }
+.kpi-footer { margin: 0; font-size: 0.75rem; color: var(--text-gray); }
+
+/* ICONES ET MINI BARRES */
 .icon-box-light { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; }
+.icon-sm { width: 20px; height: 20px; }
 .bg-blue-light { background: #eff6ff; color: #3b82f6; }
 .bg-orange-light { background: #fff7ed; color: #f97316; }
-.bg-purple-light { background: #faf5ff; color: #a855f7; }
+.bg-green-light { background: #d1fae5; color: #059669; }
 .mini-bars { display: flex; gap: 4px; align-items: flex-end; height: 24px; }
 .bar { width: 6px; border-radius: 4px; background: #e2e8f0; }
-.bar-low { height: 40%; }
-.bar-mid { height: 70%; }
-.bar-high { height: 100%; }
-.bg-blue { background: #3b82f6; }
-.bg-orange { background: #f97316; }
-.bg-purple { background: #a855f7; }
-.kpi-body { display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem; }
-.amount { margin: 0; font-size: 1.8rem; font-weight: 800; color: var(--text-dark); letter-spacing: -0.5px; }
-.currency { font-size: 1rem; color: var(--text-gray); font-weight: 600; }
-.badge { padding: 0.3rem 0.6rem; border-radius: 50px; font-size: 0.75rem; font-weight: 700; }
-.badge-green { background: #d1fae5; color: #059669; }
-.badge-red { background: #fee2e2; color: #dc2626; }
-.kpi-footer { margin: 0; font-size: 0.75rem; color: var(--text-gray); }
-.middle-grid { display: grid; grid-template-columns: 1fr; gap: 1.5rem; }
-@media (min-width: 1024px) { .middle-grid { grid-template-columns: 2fr 1fr; } }
-.chart-panel { background: var(--bg-panel); border-radius: 24px; padding: 1.5rem; box-shadow: 0 10px 40px rgba(0,0,0,0.03); border: 1px solid #f1f5f9; }
-.chart-container { position: relative; width: 100%; height: 300px; margin-top: 2rem; display: flex; flex-direction: column; justify-content: flex-end; }
-.svg-chart { width: 100%; height: 250px; overflow: visible; }
-.grid-line { stroke: #f1f5f9; stroke-width: 1; stroke-dasharray: 4; }
-.chart-tooltip { position: absolute; top: -10px; left: 50%; transform: translateX(-50%); background: #1e293b; color: white; padding: 0.4rem 0.8rem; border-radius: 8px; font-size: 0.8rem; font-weight: 600; z-index: 10; }
-.chart-tooltip::after { content: ''; position: absolute; bottom: -4px; left: 50%; transform: translateX(-50%); border-width: 5px 5px 0; border-style: solid; border-color: #1e293b transparent transparent transparent; }
-.chart-dashed-line { position: absolute; top: 25px; bottom: 30px; left: 50%; width: 1px; border-left: 2px dashed #10b981; z-index: 5; opacity: 0.3; }
-.chart-labels { display: flex; justify-content: space-between; width: 100%; margin-top: 10px; color: var(--text-gray); font-size: 0.75rem; font-weight: 500; }
-.side-panel { display: flex; flex-direction: column; gap: 1.5rem; }
-.insight-btn { display: flex; justify-content: space-between; align-items: center; background: #f8fafc; padding: 1rem; border-radius: 16px; border: 1px solid #f1f5f9; margin-bottom: 0.8rem; cursor: pointer; transition: 0.2s; }
-.insight-btn:hover { background: #f1f5f9; }
-.promo-box { display: flex; flex-direction: column; align-items: center; background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%); }
-.promo-illustration { font-size: 3rem; margin-bottom: 1rem; }
-.btn-upgrade { background: var(--accent-green); color: white; border: none; padding: 0.8rem 1.5rem; border-radius: 50px; font-weight: 700; width: 100%; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3); }
-.btn-upgrade:hover { background: #059669; transform: translateY(-2px); }
-.table-responsive { overflow-x: auto; }
-.minimal-table { width: 100%; border-collapse: collapse; text-align: left; min-width: 700px; }
-.minimal-table th { color: #cbd5e1; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; padding-bottom: 1.5rem; }
-.minimal-table td { padding: 1.2rem 0; border-bottom: 1px solid #f8fafc; vertical-align: middle; }
-.minimal-table tr:last-child td { border-bottom: none; }
-.status-pill { padding: 0.4rem 1rem; border-radius: 50px; font-size: 0.75rem; font-weight: 700; display: inline-block; }
-.pill-green { background: #d1fae5; color: #059669; }
-.pill-yellow { background: #fef3c7; color: #d97706; }
-.pill-gray { background: #f1f5f9; color: #64748b; }
+.bar-low { height: 40%; } .bar-mid { height: 70%; } .bar-high { height: 100%; }
+.bg-blue { background: #3b82f6; } .bg-orange { background: #f97316; } .bg-green { background: #059669; }
+
+/* ⚡️ LES NOUVELLES GRILLES D'AGENCEMENT */
+
+/* Ligne Haute : Courbe (66%) + Donut (33%) */
+.charts-grid-top { display: grid; grid-template-columns: 1fr; gap: 1.5rem; }
+@media (min-width: 1024px) { 
+  .charts-grid-top { grid-template-columns: 2fr 1fr; } 
+}
+
+/* Ligne Basse : Packs (50%) + Pros (50%) */
+.charts-grid-bottom { display: grid; grid-template-columns: 1fr; gap: 1.5rem; }
+@media (min-width: 1024px) { 
+  .charts-grid-bottom { grid-template-columns: 1fr 1fr; } 
+}
 </style>

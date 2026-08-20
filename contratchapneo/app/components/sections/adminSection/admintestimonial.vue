@@ -6,7 +6,7 @@
         <span class="badge">{{ totalCount }} abandons récents</span>
       </div>
       <p class="gray-text">
-        Commandes validées mais non payées depuis plus de 2 heures.
+        Commandes validées mais non payées depuis plus de 1 heures.
       </p>
     </div>
 
