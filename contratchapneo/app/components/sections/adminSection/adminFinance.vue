@@ -4,11 +4,6 @@
     <div class="header-section">
       <div class="title-and-tabs">
         <h3 class="section-title">Analyses Financières</h3>
-        <div class="header-links hidden-mobile">
-          <span class="active-link">Aperçu</span>
-          <span>Rapports</span>
-          <span>Revenus</span>
-        </div>
       </div>
     </div>
 
@@ -259,10 +254,6 @@ export default {
 .header-section { margin-bottom: 0.5rem; }
 .title-and-tabs { display: flex; justify-content: space-between; align-items: center; }
 .section-title { font-size: 1.4rem; color: var(--text-dark); font-weight: 700; margin: 0; }
-.header-links { display: flex; gap: 2rem; font-weight: 600; font-size: 0.95rem; color: var(--text-gray); }
-.header-links span { cursor: pointer; transition: 0.2s; }
-.header-links span:hover { color: var(--text-dark); }
-.active-link { color: var(--text-dark); border-bottom: 2px solid var(--text-dark); padding-bottom: 4px; }
 @media (max-width: 768px) { .hidden-mobile { display: none; } }
 .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; }
 .kpi-card { background: var(--bg-panel); border-radius: 24px; padding: 1.5rem; box-shadow: 0 10px 40px rgba(0,0,0,0.03); border: 1px solid #f1f5f9; display: flex; flex-direction: column; justify-content: space-between; }
