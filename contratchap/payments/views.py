@@ -9,7 +9,8 @@ import os
 from django.http    import FileResponse
 from django.conf    import settings
 from django.shortcuts import get_object_or_404
-from django.db.models import F
+from django.db.models import F, Sum, Count, Q
+from django.db.models.functions import TruncMonth
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.decorators import (api_view, authentication_classes, permission_classes)
@@ -511,3 +512,60 @@ class AdminTransaction(ListAPIView):
     queryset = Transaction.objects.all().order_by('-id')
     serializer_class = TransactionSerializer
     pagination_class = AdminCartPagination
+
+# ========================================================
+# 2. Accounting & Statistics (Admin Section)
+# ========================================================
+
+class AdminAccountingSummaryView(APIView):
+    """
+    GET /payment/admin/accounting/
+    Retourne les statistiques financières de l'application.
+    Accessible uniquement aux administrateurs.
+    """
+    permission_classes = [IsAdminUser]
+
+    def get(self, request):
+        # 1. Revenu Total (uniquement les transactions réussies)
+        total_revenue = Transaction.objects.filter(
+            status=Transaction.TransactionStatus.SUCCESSFUL
+        ).aggregate(total=Sum('amount'))['total'] or 0
+
+        # 2. Compteur des transactions par statut
+        # Permet de voir le taux de succès, d'échec ou d'abandon
+        status_counts = Transaction.objects.aggregate(
+            successful=Count('id', filter=Q(status=Transaction.TransactionStatus.SUCCESSFUL)),
+            pending=Count('id', filter=Q(status=Transaction.TransactionStatus.PENDING)),
+            failed=Count('id', filter=Q(status=Transaction.TransactionStatus.FAILED)),
+            canceled=Count('id', filter=Q(status=Transaction.TransactionStatus.CANCELED))
+        )
+
+        # 3. Revenus et volume par méthode de paiement
+        # Ex: Combien a rapporté Stripe vs Mobile Money
+        revenue_by_method = Transaction.objects.filter(
+            status=Transaction.TransactionStatus.SUCCESSFUL
+        ).values('payment_method').annotate(
+            total_revenue=Sum('amount'),
+            transaction_count=Count('id')
+        ).order_by('-total_revenue')
+
+        # 4. Évolution des revenus par mois (les 12 derniers mois actifs)
+        monthly_revenue = Transaction.objects.filter(
+            status=Transaction.TransactionStatus.SUCCESSFUL
+        ).annotate(
+            month=TruncMonth('created_at')
+        ).values('month').annotate(
+            monthly_total=Sum('amount'),
+            count=Count('id')
+        ).order_by('-month')[:12]
+
+        # On renvoie toutes ces données au Frontend (ex: Nuxt/Vue.js) 
+        # pour construire des graphiques (Chart.js ou ApexCharts)
+        return Response({
+            'global': {
+                'total_revenue': total_revenue,
+            },
+            'transactions_status': status_counts,
+            'revenue_by_method': list(revenue_by_method),
+            'monthly_evolution': list(monthly_revenue)
+        }, status=status.HTTP_200_OK)

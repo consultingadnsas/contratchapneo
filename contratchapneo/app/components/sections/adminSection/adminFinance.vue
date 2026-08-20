@@ -7,10 +7,8 @@
       </div>
     </div>
 
-    <!-- ⚡️ LES KPIs SONT MAINTENANT DYNAMIQUES -->
     <div class="kpi-grid">
       
-      <!-- KPI 1 : Chiffre d'Affaires Total -->
       <div class="kpi-card">
         <div class="kpi-header">
           <div class="kpi-title">
@@ -24,12 +22,14 @@
           </div>
         </div>
         <div class="kpi-body">
-          <h2 class="amount">{{ formatCurrency(financeStore.totalRevenue) }} <span class="currency">FCFA</span></h2>
+          <h2 class="amount">
+            {{ formatCurrency(financeStore.accountancy?.global?.total_revenue) }} 
+            <span class="currency">FCFA</span>
+          </h2>
         </div>
         <p class="kpi-footer">Total des commandes payées</p>
       </div>
 
-      <!-- KPI 2 : Ventes Validées -->
       <div class="kpi-card">
         <div class="kpi-header">
           <div class="kpi-title">
@@ -43,12 +43,11 @@
           </div>
         </div>
         <div class="kpi-body">
-          <h2 class="amount">{{ financeStore.totalSalesCount }}</h2>
+          <h2 class="amount">{{ financeStore.accountancy?.transactions_status?.successful || 0 }}</h2>
         </div>
         <p class="kpi-footer">Commandes avec statut "Payé"</p>
       </div>
 
-      <!-- KPI 3 : Commandes en Attente -->
       <div class="kpi-card">
         <div class="kpi-header">
           <div class="kpi-title">
@@ -62,14 +61,13 @@
           </div>
         </div>
         <div class="kpi-body">
-          <h2 class="amount">{{ financeStore.pendingOrdersCount }}</h2>
+          <h2 class="amount">{{ financeStore.accountancy?.transactions_status?.pending || 0 }}</h2>
         </div>
         <p class="kpi-footer">Paiements non finalisés</p>
       </div>
 
     </div>
 
-    <!-- GRAPHIQUE ET RAPPORTS (inchangés visuellement pour l'instant) -->
     <div class="middle-grid">
       <div class="chart-panel">
         <div class="panel-header">
@@ -106,14 +104,12 @@
       </div>
     </div>
 
-    <!-- ⚡️ LE TABLEAU AFFICHE LES VRAIES DONNÉES DJANGO -->
     <div class="bottom-section panel-card">
       <div class="panel-header">
         <h4 class="dark-text font-bold text-lg">Transactions Récentes</h4>
       </div>
       
       <div class="table-responsive">
-        <!-- Loader optionnel si ça charge -->
         <p v-if="financeStore.isLoading" class="gray-text text-center py-4">Chargement des transactions...</p>
         
         <table v-else class="minimal-table">
@@ -128,23 +124,25 @@
             </tr>
           </thead>
           <tbody>
-            <tr v-for="order in financeStore.transactions" :key="order.id">
-              <!-- Raccourci de l'UUID pour faire un style de facture propre -->
-              <td class="gray-text font-bold">#{{ order.id.substring(0, 8).toUpperCase() }}</td>
+            <tr v-for="tx in financeStore.transactions" :key="tx.id">
               
-              <!-- Affiche le 1er article acheté (ou '+X' s'il y en a plusieurs) -->
-              <td class="dark-text font-bold">{{ getProductName(order.lignes_achat) }}</td>
+              <td class="gray-text font-bold">#{{ tx.id.substring(0, 8).toUpperCase() }}</td>
               
-              <td class="dark-text">{{ order.client_name }}</td>
-              <td class="gray-text">{{ order.date_transaction }}</td>
-              <td class="dark-text font-bold">{{ formatCurrency(order.total_amount) }} F</td>
+              <td class="dark-text font-bold">{{ getProductName(tx) }}</td>
+              
+              <td class="dark-text">{{ getClientName(tx) }}</td>
+              
+              <td class="gray-text">{{ formatDate(tx.created_at) }}</td>
+              
+              <td class="dark-text font-bold">{{ formatCurrency(tx.amount) }} F</td>
+              
               <td class="text-right">
-                <!-- Le CSS s'adapte au vrai statut Django ('paid', 'pending'...) -->
-                <span class="status-pill" :class="getStatusClass(order.status)">
-                  {{ order.status_label }}
+                <span class="status-pill" :class="getStatusClass(tx.status)">
+                  {{ tx.status_labels || tx.status }}
                 </span>
               </td>
             </tr>
+            
             <tr v-if="financeStore.transactions.length === 0">
               <td colspan="6" class="text-center gray-text py-4">Aucune transaction trouvée.</td>
             </tr>
@@ -167,47 +165,83 @@ import {
   ChevronRightIcon
 } from '@heroicons/vue/24/outline';
 
-// ⚡️ Import de ton store (Ajuste le chemin selon ton projet)
-import { useAdminFinanceStore } from '../../../stores/adminFinanceStore'; 
+// ⚡️ Import de ton store tel que créé précédemment
+import { useAdminTransactStore } from '../../../stores/adminTransactStore'; 
 
 export default {
   name: 'AdminFinance',
   setup() {
     
     // Initialisation du store
-    const financeStore = useAdminFinanceStore();
+    const financeStore = useAdminTransactStore();
 
-    // ⚡️ Appel automatique à l'API lors de l'ouverture de la page
     onMounted(async () => {
-      await financeStore.fetchTransactions();
+      // ⚡️ On lance les DEUX requêtes API (La liste + La compta)
+      await financeStore.fetchTransact();
+      await financeStore.fetchAccountancy();
     });
 
-    // ⚡️ Fonction utilitaire pour formater les prix (Ex: 150000 -> 150 000)
-    const formatCurrency = (amount: number | string) => {
+    // ⚡️ FORMATER LES PRIX
+    const formatCurrency = (amount: number | string | undefined) => {
       const num = Number(amount) || 0;
       return num.toLocaleString('fr-FR');
     };
 
-    // ⚡️ Fonction pour extraire proprement le nom du produit depuis la commande
-    const getProductName = (lignes: any[]) => {
-      if (!lignes || lignes.length === 0) return 'Article inconnu';
-      if (lignes.length === 1) return lignes[0].designation;
-      // Si la personne a acheté plusieurs articles d'un coup dans le panier
-      return `${lignes[0].designation} (+${lignes.length - 1})`;
+    // ⚡️ FORMATER LA DATE (Ex: 24 Août 2026)
+    const formatDate = (dateString: string) => {
+      if (!dateString) return '-';
+      const date = new Date(dateString);
+      return date.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' });
     };
 
-    // ⚡️ Attribution de la couleur CSS en fonction du statut technique Django
+    // ⚡️ EXTRAIRE LE NOM DU PRODUIT (Depuis tx.order.order_items)
+    const getProductName = (tx: any) => {
+      // Vérifier si la commande et ses items existent
+      const items = tx.order?.order_items;
+      if (!items || items.length === 0) return 'Article inconnu';
+      
+      // On cherche le nom du contrat ou du pack (ajuste les noms de champs selon ton backend)
+      const firstItem = items[0];
+      const itemName = firstItem.contrat?.title || firstItem.pack?.nom || 'Produit';
+
+      if (items.length === 1) return itemName;
+      return `${itemName} (+${items.length - 1})`;
+    };
+
+    // ⚡️ EXTRAIRE LE NOM DU CLIENT (Guest ou User)
+    const getClientName = (tx: any) => {
+      const order = tx.order;
+      if (!order) return 'Client Inconnu';
+      
+      // Si c'est un invité (guest checkout)
+      if (order.guest && order.guest.full_name) {
+        return order.guest.full_name;
+      }
+      
+      // Si c'est un utilisateur enregistré
+      if (order.user) {
+        return `${order.user.first_name || ''} ${order.user.last_name || ''}`.trim() || order.user.email;
+      }
+      
+      return 'Client Inconnu';
+    };
+
+    // ⚡️ ATTRIBUER LA COULEUR SELON LE STATUT
     const getStatusClass = (status: string) => {
-      if (status === 'paid') return 'pill-green';
-      if (status === 'pending') return 'pill-yellow';
-      if (status === 'cancelled' || status === 'refunded') return 'pill-gray';
+      // Les statuts viennent de ton TransactionStatus (PENDING, SUCCESSFUL, FAILED, CANCELED)
+      const s = status ? status.toUpperCase() : '';
+      if (s === 'SUCCESSFUL') return 'pill-green';
+      if (s === 'PENDING') return 'pill-yellow';
+      if (s === 'FAILED' || s === 'CANCELED') return 'pill-gray';
       return 'pill-gray';
     };
 
     return {
-      financeStore, // <-- On exporte le store pour le Template
+      financeStore,
       formatCurrency,
+      formatDate,
       getProductName,
+      getClientName,
       getStatusClass,
       
       // Icônes

@@ -3,6 +3,7 @@ import { ref } from 'vue';
 import { useNuxtApp } from '#app';
 import type { Order, OrderItem } from './orderStore';
 
+// --- INTERFACES DES TRANSACTIONS ---
 export interface Transaction {
     id: string;
     order: Order;
@@ -15,43 +16,63 @@ export interface Transaction {
     created_at: string;
 }
 
+// --- INTERFACES DE LA COMPTABILITÉ (Basé sur notre vue Django) ---
+export interface AccountingSummary {
+    global: {
+        total_revenue: number;
+    };
+    transactions_status: {
+        successful: number;
+        pending: number;
+        failed: number;
+        canceled: number;
+    };
+    revenue_by_method: Array<{
+        payment_method: string;
+        total_revenue: number;
+        transaction_count: number;
+    }>;
+    monthly_evolution: Array<{
+        month: string; // La date formatée renvoyée par Django
+        monthly_total: number;
+        count: number;
+    }>;
+}
+
 export const useAdminTransactStore = defineStore('adminTransac', () => {
     
     const { $api } = useNuxtApp();
 
+    // --- STATE ---
     const transactions = ref<Transaction[]>([]);
+    const accountancy = ref<AccountingSummary | null>(null); // 🌟 Nouvel état pour la compta
     const isLoading = ref<boolean>(false);
     const error = ref<string | null>(null);
 
     // --- ACTIONS ---
+
+    // 1. Récupérer les transactions (Déjà parfait)
     async function fetchTransact() {
         isLoading.value = true;
         error.value = null;
 
         try {
             let allTransactions: Transaction[] = [];
-            
-            // ⚡️ On commence par la première page
-            let currentEndpoint: string | null = '/payments/admin/';
+            let currentEndpoint: string | null = '/payments/admin/'; // Vérifie bien ton URL
 
-            // ⚡️ Tant qu'il y a une page suivante (next), on continue de boucler
             while (currentEndpoint) {
                 const response = await $api<any>(currentEndpoint, { method: 'GET' });
 
                 if (response && response.results) {
-                    // C'est une réponse paginée de Django
                     allTransactions = [...allTransactions, ...response.results];
                     
-                    // Si Django renvoie une URL absolue (http://localhost:8000/api/...), 
-                    // on nettoie l'URL pour ne garder que le chemin relatif pour notre $api Nuxt
                     if (response.next) {
                         const url = new URL(response.next);
-                        currentEndpoint = url.pathname + url.search; // ex: /api/payments/admin/?page=2
+                        currentEndpoint = url.pathname + url.search;
                     } else {
-                        currentEndpoint = null; // Plus de page, on arrête la boucle
+                        currentEndpoint = null;
                     }
                 } else {
-                    // Si le backend n'a finalement pas activé la pagination
                     allTransactions = response?.data || response || [];
                     currentEndpoint = null;
                 }
@@ -67,10 +88,38 @@ export const useAdminTransactStore = defineStore('adminTransac', () => {
         }
     }
 
+    // 2. Récupérer le rapport comptable (COMPLÉTÉ)
+    async function fetchAccountancy() {
+        isLoading.value = true;
+        error.value = null;
+
+        try {
+            // 🌟 On appelle la route Django créée précédemment. 
+            // Vérifie que l'URL correspond exactement à ce que tu as dans ton urls.py côté Django.
+            const response = await $api<AccountingSummary>('/payments/admin/accounting/', { 
+                method: 'GET' 
+            });
+
+            // On stocke la réponse dans notre état
+            accountancy.value = response;
+
+        } catch (err: any) {
+            error.value = err.message || "Une erreur est survenue lors de la récupération des rapports comptables.";
+            console.error("Erreur fetchAccountancy:", err);
+        } finally {
+            isLoading.value = false;
+        }
+    }
+
+    // --- RETURN ---
     return {
+        // State
         transactions,
+        accountancy, // 🌟 Ne pas oublier de l'exporter
         isLoading,
         error,
-        fetchTransact
+        // Actions
+        fetchTransact,
+        fetchAccountancy // 🌟 Ne pas oublier de l'exporter
     };
 });
