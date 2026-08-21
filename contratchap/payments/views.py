@@ -605,6 +605,27 @@ class AdminAccountingSummaryView(APIView):
             count=Sum('quantity')
         ).order_by('month')
 
+        # ⚡️ NOUVEAU : Packs Monthly (Évolution des packs vendus par mois)
+        packs_monthly = OrderItem.objects.filter(
+            order__status='paid',
+            pack__isnull=False
+        ).annotate(
+            month=TruncMonth('order__created_at')
+        ).values('month').annotate(
+            count=Sum('quantity')
+        ).order_by('month')
+
+        # ⚡️ NOUVEAU : Pros Monthly (Évolution des sollicitations pro par mois)
+        pros_monthly = OrderItem.objects.filter(
+            order__status='paid',
+            pro__isnull=False
+        ).annotate(
+            month=TruncMonth('order__created_at')
+        ).values('month').annotate(
+            count=Sum('quantity')
+        ).order_by('month')
+
+        # ⚡️ Mise à jour du dictionnaire de réponse
         return Response({
             'global': {
                 'total_revenue': total_revenue,
@@ -616,5 +637,9 @@ class AdminAccountingSummaryView(APIView):
             'top_packs': list(top_packs),
             'top_pros': top_pros_formatted,
             'custom_contracts_monthly': list(custom_contracts_monthly),
-            'revisions_monthly': list(revisions_monthly)
+            'revisions_monthly': list(revisions_monthly),
+            
+            # ⚡️ AJOUT DES DEUX NOUVELLES VARIABLES ICI
+            'packs_monthly': list(packs_monthly),
+            'pros_monthly': list(pros_monthly)
         }, status=status.HTTP_200_OK)
