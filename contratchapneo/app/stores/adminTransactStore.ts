@@ -1,108 +1,63 @@
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
 import { useNuxtApp } from '#app';
-import type { Order, OrderItem } from './orderStore';
+import type { Order } from './orderStore';
 
-// --- INTERFACES DES TRANSACTIONS ---
-export interface Transaction {
-    id: string;
-    order: Order;
-    amount: number;
-    status: string;
-    status_labels: string;
-    payment_method: string;
-    provider_reference: string;
-    error_message: string;
-    created_at: string;
-}
-
-// --- INTERFACES DE LA COMPTABILITÉ (Basé sur notre vue Django) ---
-export interface AccountingSummary {
-    global: {
-        total_revenue: number;
-    };
-    transactions_status: {
-        successful: number;
-        pending: number;
-        failed: number;
-        canceled: number;
-    };
-    revenue_by_method: Array<{
-        payment_method: string;
-        total_revenue: number;
-        transaction_count: number;
-    }>;
-    monthly_evolution: Array<{
-        month: string; // La date formatée renvoyée par Django
-        monthly_total: number;
-        count: number;
-    }>;
-}
+// --- INTERFACES ---
+// (Garde tes interfaces Transaction et AccountingSummary telles quelles, elles sont parfaites)
 
 export const useAdminTransactStore = defineStore('adminTransac', () => {
-    
+
     const { $api } = useNuxtApp();
 
     // --- STATE ---
     const transactions = ref<Transaction[]>([]);
-    const accountancy = ref<AccountingSummary | null>(null); // 🌟 Nouvel état pour la compta
+    const accountancy = ref<AccountingSummary | null>(null);
     const isLoading = ref<boolean>(false);
     const error = ref<string | null>(null);
 
+    // 🌟 NOUVEAU : État pour gérer la pagination
+    const totalCount = ref<number>(0);
+    const currentPage = ref<number>(1);
+
     // --- ACTIONS ---
 
-    // 1. Récupérer les transactions (Déjà parfait)
-    async function fetchTransact() {
+    // 1. Récupérer les transactions (Une seule page à la fois)
+    async function fetchTransact(page: number = 1, tab: string = 'models', search: string = '') {
         isLoading.value = true;
         error.value = null;
 
         try {
-            let allTransactions: Transaction[] = [];
-            let currentEndpoint: string | null = '/payments/admin/'; // Vérifie bien ton URL
+            const response = await $api<any>('/payments/admin/', {
+                method: 'GET',
+                params: { page, tab, search } // ⚡️ Envoi des filtres à Django
+            });
 
-            while (currentEndpoint) {
-                const response = await $api<any>(currentEndpoint, { method: 'GET' });
-
-                if (response && response.results) {
-                    allTransactions = [...allTransactions, ...response.results];
-                    
-                    if (response.next) {
-                        const url = new URL(response.next);
-                        currentEndpoint = url.pathname + url.search;
-                    } else {
-                        currentEndpoint = null;
-                    }
-                } else {
-                    allTransactions = response?.data || response || [];
-                    currentEndpoint = null;
-                }
+            if (response && response.results) {
+                transactions.value = response.results;
+                totalCount.value = response.count || 0;
+                currentPage.value = page;
+            } else {
+                transactions.value = response?.data || response || [];
             }
-
-            transactions.value = allTransactions;
-            
         } catch (err: any) {
-            error.value = err.message || "Une erreur est survenue lors de la récupération des transactions.";
-            console.error("Erreur fetchTransact:", err);
+            error.value = err.message || "Une erreur est survenue lors de la récupération des rapports comptables.";
+            console.error("Erreur fetchAccountancy:", err);
         } finally {
-            isLoading.value = false;
+          isLoading.value = false;
         }
     }
 
-    // 2. Récupérer le rapport comptable (COMPLÉTÉ)
+    // 2. Récupérer le rapport comptable (Inchangé)
     async function fetchAccountancy() {
         isLoading.value = true;
         error.value = null;
 
         try {
-            // 🌟 On appelle la route Django créée précédemment. 
-            // Vérifie que l'URL correspond exactement à ce que tu as dans ton urls.py côté Django.
-            const response = await $api<AccountingSummary>('/payments/admin/accounting/', { 
-                method: 'GET' 
+            const response = await $api<AccountingSummary>('/payments/admin/accounting/', {
+                method: 'GET'
             });
-
-            // On stocke la réponse dans notre état
             accountancy.value = response;
-
         } catch (err: any) {
             error.value = err.message || "Une erreur est survenue lors de la récupération des rapports comptables.";
             console.error("Erreur fetchAccountancy:", err);
@@ -115,11 +70,14 @@ export const useAdminTransactStore = defineStore('adminTransac', () => {
     return {
         // State
         transactions,
-        accountancy, // 🌟 Ne pas oublier de l'exporter
+        accountancy,
         isLoading,
         error,
+        totalCount,    // 🌟 Exporté pour le frontend
+        currentPage,   // 🌟 Exporté pour le frontend
+
         // Actions
         fetchTransact,
-        fetchAccountancy // 🌟 Ne pas oublier de l'exporter
+        fetchAccountancy
     };
 });

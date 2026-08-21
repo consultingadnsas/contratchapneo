@@ -9,7 +9,7 @@ import os
 from django.http    import FileResponse
 from django.conf    import settings
 from django.shortcuts import get_object_or_404
-from django.db.models import F, Sum, Count, Q
+from django.db.models import Sum, Count, Q
 from django.db.models.functions import TruncMonth
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
@@ -24,7 +24,7 @@ from rest_framework.pagination import PageNumberPagination
 
 
 from ecommerce.models import Order
-from contrat.models   import Contrat, ContractRevision
+from contrat.models   import ContractRevision
 from .models          import Transaction
 from .serializers     import (
     TransactionSerializer,
@@ -478,26 +478,6 @@ class DownloadContractView(APIView):
         email = request.query_params.get('email', '').lower().strip()
         return (order.guest is not None and order.guest.email == email)
 
-# ─────────────────────────────────────────
-# HELPERS PRIVÉS
-# ─────────────────────────────────────────
-
-def _increment_downloads(order: Order):
-    """
-    Incrémente Contrat.downloads pour chaque contrat de la commande.
-    F() évite les race conditions si deux webhooks arrivent simultanément.
-    """
-    contrat_ids = [
-        item.contrat_id
-        for item in order.order_items.all()
-        if item.contrat_id is not None
-    ]
-    if contrat_ids:
-        Contrat.objects.filter(id__in=contrat_ids).update(
-            downloads=F('downloads') + 1
-        )
-
-
 # ========================================================
 # 1. Get Transaction 5(Admin Section)
 # ========================================================
@@ -509,9 +489,36 @@ class AdminCartPagination(PageNumberPagination):
 
 class AdminTransaction(ListAPIView):
     permission_classes = [IsAdminUser]
-    queryset = Transaction.objects.all().order_by('-id')
     serializer_class = TransactionSerializer
     pagination_class = AdminCartPagination
+
+    def get_queryset(self):
+        queryset = Transaction.objects.all().order_by('-id')
+        
+        # 1. Filtre par onglet (tab)
+        tab = self.request.query_params.get('tab', 'models')
+        
+        if tab == 'packs':
+            # On utilise order_items et pack
+            queryset = queryset.filter(order__order_items__pack__isnull=False).distinct()
+        elif tab == 'custom':
+            # On utilise order_items et contrat_customed
+            queryset = queryset.filter(order__order_items__contrat_customed__isnull=False).distinct()
+        else: # models
+            # On utilise order_items et contrat
+            queryset = queryset.filter(order__order_items__contrat__isnull=False).distinct()
+
+        # 2. Recherche (search)
+        search = self.request.query_params.get('search', None)
+        if search:
+            # On cherche dans l'email invité ou l'email du user connecté
+            queryset = queryset.filter(
+                Q(order__guest__email__icontains=search) |
+                Q(order__user__email__icontains=search) |
+                Q(id__icontains=search) 
+            ).distinct()
+            
+        return queryset
 
 # ========================================================
 # 2. Accounting & Statistics (Admin Section)

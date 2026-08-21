@@ -1,6 +1,6 @@
 import { defineStore } from "pinia"
 import { ref } from 'vue'
-import { useNuxtApp } from '#imports' 
+import { useNuxtApp } from '#imports'
 
 // ==========================================
 // 1. INTERFACES (Typage strict basé sur tes modèles)
@@ -13,8 +13,8 @@ export interface ContractRevision {
     phone_number: string;
     email: string;
     client_instructions: string;
-    original_file: string; 
-    revised_file: string | null; 
+    original_file: string;
+    revised_file: string | null;
     price: number;
     promo_price: number;
     status: 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'REJECTED';
@@ -49,13 +49,13 @@ export interface CustomContractRequest {
 // ==========================================
 
 export const useAdminRequestsStore = defineStore('adminRequestsStore', () => {
-    
+
     const { $api } = useNuxtApp();
 
     // --- STATE ---
     const isLoading = ref<boolean>(false);
     const error = ref<string | null>(null);
-    
+
     const revisions = ref<ContractRevision[]>([]);
     const customRequests = ref<CustomContractRequest[]>([]);
 
@@ -65,23 +65,22 @@ export const useAdminRequestsStore = defineStore('adminRequestsStore', () => {
 
     // -- Lister les révisions --
     const fetchRevisions = async () => {
-        isLoading.value = true;
-        error.value = null;
-        try {
-            // Basé sur ton URL : path('admin-contrat/revision/', AdminContractRevision.as_view())
-            const response = await $api<any>('/contrat/admin-contrat/revision/', { method: 'GET' });
-            if (response && response.data) {
-                revisions.value = response.data;
-            }
-        } catch (err: any) {
-            error.value = err.message || "Erreur lors de la récupération des révisions";
-            console.error(err);
-        } finally {
-            isLoading.value = false;
+      isLoading.value = true;
+      error.value = null;
+      try {
+        // Basé sur ton URL : path('admin-contrat/revision/', AdminContractRevision.as_view())
+        const response = await $api<any>('/contrat/admin-contrat/revision/', { method: 'GET' });
+        if (response && response.data) {
+          revisions.value = response.data;
         }
+      } catch (err: any) {
+        error.value = err.message || "Erreur lors de la récupération des révisions";
+        console.error(err);
+      } finally {
+        isLoading.value = false;
+      }
     };
 
-    // -- Télécharger un fichier (Original ou Révisé) --
     // -- Télécharger un fichier (Original ou Révisé) --
     const downloadRevisionFile = async (revisionId: string, fileType: 'original' | 'revised') => {
         isLoading.value = true;
@@ -97,19 +96,19 @@ export const useAdminRequestsStore = defineStore('adminRequestsStore', () => {
             const url = window.URL.createObjectURL(blob);
             const link = document.createElement('a');
             link.href = url;
-            
+
             // ⚡️ CORRECTION : Déduction automatique de l'extension selon le type MIME
             let ext = '.pdf'; // Par défaut
             if (response.type.includes('word') || response.type.includes('document')) {
                 ext = '.docx';
             }
 
-            link.setAttribute('download', `${fileType}_document_${revisionId}${ext}`); 
+            link.setAttribute('download', `${fileType}_document_${revisionId}${ext}`);
             document.body.appendChild(link);
             link.click();
             link.parentNode?.removeChild(link);
             window.URL.revokeObjectURL(url);
-            
+
         } catch (err: any) {
             error.value = err.message || "Erreur lors du téléchargement du fichier";
             throw err;

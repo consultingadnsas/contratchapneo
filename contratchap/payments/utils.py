@@ -5,7 +5,7 @@ from django.core.mail import send_mail
 from django.conf import settings
 from django.db.models import F
 
-from contrat.models import Contrat
+from contrat.models import Contrat, Pack
 from ecommerce.models import Order
 
 # --- Fichier PDF Unique Générique ---
@@ -48,16 +48,19 @@ def stream_zip(contrats: list, pros: list, order_id) -> FileResponse:
 
 def _increment_downloads(order: Order):
     """
-    Incrémente Contrat.downloads pour chaque contrat de la commande.
+    Incrémente les téléchargements des contrats et packs de la commande.
     F() évite les race conditions si deux webhooks arrivent simultanément.
     """
-    contrat_ids = [
-        item.contrat_id
-        for item in order.order_items.all()
-        if item.contrat_id is not None
-    ]
+    items = order.order_items.all()
+    contrat_ids = [item.contrat_id for item in items if item.contrat_id is not None]
+    pack_ids = [item.pack_id for item in items if item.pack_id is not None]
+
     if contrat_ids:
         Contrat.objects.filter(id__in=contrat_ids).update(
+            downloads=F('downloads') + 1
+        )
+    if pack_ids:
+        Pack.objects.filter(id__in=pack_ids).update(
             downloads=F('downloads') + 1
         )
 
