@@ -61,7 +61,7 @@
           </div>
         </div>
         <div class="chart-container" style="height: 280px; position: relative;">
-          <RevenueChart :revenue-data="financeStore.computedMonthlyRevenue" />
+          <RevenueChart :revenue-data="computedMonthlyRevenue" />
         </div>
       </div>
 
@@ -84,7 +84,7 @@
         </div>
       </div>
       <div class="chart-container" style="height: 280px; position: relative;">
-        <DemandBarChart :demand-data="financeStore.demandStats" />
+        <DemandBarChart :demand-data="demandStats" />
       </div>
     </div>
 
@@ -98,7 +98,7 @@
           </div>
         </div>
         <div class="chart-container" style="height: 260px; position: relative;">
-          <PackChart :chart-data-array="financeStore.packStats" />
+          <PackChart :chart-data-array="packStats" />
         </div>
       </div>
 
@@ -110,7 +110,7 @@
           </div>
         </div>
         <div class="chart-container" style="height: 260px; position: relative;">
-          <ProChart :chart-data-array="financeStore.proStats" />
+          <ProChart :chart-data-array="proStats" />
         </div>
       </div>
     </div>
@@ -124,7 +124,7 @@
         </div>
       </div>
       <div class="chart-container" style="height: 300px; position: relative;">
-        <ContratChart :top-data="financeStore.topContractsStats" />
+        <ContratChart :top-data="topContractsStats" />
       </div>
     </div>
 
@@ -140,7 +140,7 @@
           </div>
         </div>
         <div class="chart-container" style="height: 300px; position: relative;">
-          <TopPacksChart :top-data="financeStore.topPacksStats" />
+          <TopPacksChart :top-data="topPacksStats" />
         </div>
       </div>
 
@@ -153,7 +153,7 @@
           </div>
         </div>
         <div class="chart-container" style="height: 300px; position: relative;">
-          <TopProChart :top-data="financeStore.topProsStats" />
+          <TopProChart :top-data="topProsStats" />
         </div>
       </div>
 
@@ -163,7 +163,7 @@
 </template>
 
 <script lang="ts">
-import { markRaw, onMounted } from 'vue';
+import { computed, markRaw, onMounted } from 'vue';
 import { 
   BanknotesIcon, ChartPieIcon, ShoppingCartIcon, DocumentChartBarIcon, CalculatorIcon, ChevronRightIcon
 } from '@heroicons/vue/24/outline';
@@ -187,7 +187,7 @@ export default {
     const financeStore = useAdminTransactStore();
 
     onMounted(async () => {
-      await financeStore.fetchTransact();
+      // Optionnel : tu peux ne fetcher que fetchAccountancy si tu n'as pas besoin de la liste complète ici
       await financeStore.fetchAccountancy();
     });
 
@@ -196,9 +196,73 @@ export default {
       return num.toLocaleString('fr-FR');
     };
 
+    // ⚡️ HELPER : Transforme un tableau Django de dates en tableau de 12 mois pour les graphiques
+    const mapMonthlyData = (dataArray: Array<any> | undefined, valueKey: string = 'count') => {
+      const months = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+      if (!dataArray) return months;
+      
+      dataArray.forEach(item => {
+        const date = new Date(item.month);
+        if (!isNaN(date.getTime())) {
+          months[date.getMonth()] += Number(item[valueKey] || 0);
+        }
+      });
+      return months;
+    };
+
+    // ⚡️ TRADUCTEURS POUR LES GRAPHIQUES (COMPUTED)
+    
+    const computedMonthlyRevenue = computed(() => 
+      mapMonthlyData(financeStore.accountancy?.monthly_evolution, 'monthly_total')
+    );
+
+    const demandStats = computed(() => ({
+      customContracts: mapMonthlyData(financeStore.accountancy?.custom_contracts_monthly),
+      revisions: mapMonthlyData(financeStore.accountancy?.revisions_monthly)
+    }));
+
+    // (Note: Si packs_monthly et pros_monthly n'existent pas encore côté Django, ça renverra juste des 0)
+    const packStats = computed(() => mapMonthlyData((financeStore.accountancy as any)?.packs_monthly));
+    const proStats = computed(() => mapMonthlyData((financeStore.accountancy as any)?.pros_monthly));
+
+    const topContractsStats = computed(() => {
+      const raw = financeStore.accountancy?.top_contracts || [];
+      return { 
+        labels: raw.map((c: any) => c.contrat__title || 'Inconnu'), 
+        data: raw.map((c: any) => c.total_sold || 0) 
+      };
+    });
+
+    const topPacksStats = computed(() => {
+      const raw = financeStore.accountancy?.top_packs || [];
+      return { 
+        labels: raw.map((p: any) => p.pack__title || 'Inconnu'), 
+        data: raw.map((p: any) => p.total_sold || 0) 
+      };
+    });
+
+    const topProsStats = computed(() => {
+      const raw = financeStore.accountancy?.top_pros || [];
+      return { 
+        labels: raw.map((p: any) => p.name || 'Inconnu'), 
+        data: raw.map((p: any) => p.total_sold || 0) 
+      };
+    });
+
     return {
       financeStore,
       formatCurrency,
+      
+      // Données traduites exposées au template
+      computedMonthlyRevenue,
+      demandStats,
+      packStats,
+      proStats,
+      topContractsStats,
+      topPacksStats,
+      topProsStats,
+
+      // Icones
       BanknotesIcon: markRaw(BanknotesIcon),
       ChartPieIcon: markRaw(ChartPieIcon),
       ShoppingCartIcon: markRaw(ShoppingCartIcon),
