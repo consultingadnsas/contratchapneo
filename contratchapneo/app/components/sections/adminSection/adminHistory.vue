@@ -44,7 +44,7 @@
           </tr>
         </thead>
         <tbody>
-          <!-- ⚡️ UTILISATION DE LA LISTE PAGINÉE ICI -->
+          <!-- ⚡️ UTILISATION DES TRANSACTIONS PAGINÉES DE LA PAGE COURANTE -->
           <tr v-for="item in paginatedHistory" :key="item.id">
             
             <td>
@@ -99,14 +99,22 @@
         <p class="gray-text">Aucune transaction trouvée pour cette catégorie ou recherche.</p>
       </div>
       
-      <!-- ⚡️ LE PAGINATEUR INTÉGRÉ ICI -->
-      <Paginator 
-        v-if="filteredHistory.length > 0"
-        :currentPage="currentPage"
-        :totalCount="filteredHistory.length"
-        :pageSize="itemsPerPage"
-        @page-change="handlePageChange"
-      />
+      <!-- ⚡️ BLOC PAGINATION DYNAMIQUE -->
+      <div v-if="transactStore.totalCount > 0" class="pagination-section">
+        
+        <!-- Indication de la page actuelle et du total calculé sans tout télécharger -->
+        <div class="page-info gray-text text-sm mb-4 text-center">
+          Page <strong>{{ currentPage }}</strong> sur <strong>{{ totalPages }}</strong> 
+          ({{ transactStore.totalCount }} transactions au total)
+        </div>
+
+        <Paginator 
+          :currentPage="currentPage"
+          :totalCount="transactStore.totalCount"
+          :pageSize="itemsPerPage"
+          @page-change="handlePageChange"
+        />
+      </div>
     </div>
 
     <!-- ⚡️ MODALE D'APERÇU DES DÉTAILS -->
@@ -184,11 +192,13 @@ export default {
     
     const selectedTx = ref<any>(null);
 
+    // ⚡️ ÉTATS POUR LA PAGINATION
     const currentPage = ref(1);
-    const itemsPerPage = 10;
+    const itemsPerPage = 10; // Doit correspondre à la page_size de ton AdminCartPagination Django
 
-    onMounted(() => {
-      transactStore.fetchTransact();
+    // Chargement initial : Page 1 uniquement
+    onMounted(async () => {
+      await transactStore.fetchTransact(1);
     });
 
     // ⚡️ NOUVELLE FONCTION : DÉTERMINER LE STATUT ET LA COULEUR
@@ -214,6 +224,12 @@ export default {
       return { label: defaultLabel || rawStatus || 'Inconnu', colorClass: 'badge-gray' };
     };
 
+    // ⚡️ CALCUL DU NOMBRE TOTAL DE PAGES (basé sur count renvoyé par Django)
+    const totalPages = computed(() => {
+      return Math.ceil((transactStore.totalCount || 0) / itemsPerPage);
+    });
+
+    // Mapping des 10 transactions actuellement dans le store (page courante)
     const mappedTransactions = computed(() => {
       const sortedTransactions = [...transactStore.transactions].sort((a, b) => {
         const dateA = new Date(a.created_at || a.order?.created_at).getTime();
@@ -267,32 +283,20 @@ export default {
       });
     });
 
-    const filteredHistory = computed(() => {
-      let list = mappedTransactions.value.filter(item => item.type === activeTab.value);
-      if (searchQuery.value.trim() !== '') {
-        const query = searchQuery.value.toLowerCase().trim();
-        list = list.filter(item => 
-          item.clientName.toLowerCase().includes(query) ||
-          item.clientEmail.toLowerCase().includes(query) ||
-          item.orderId.toLowerCase().includes(query)
-        );
-      }
-      return list;
-    });
+    // Filtre local sur la page chargée (onglet + recherche)
+    const paginatedHistory = computed(() => mappedTransactions.value);
 
-    const paginatedHistory = computed(() => {
-      const startIndex = (currentPage.value - 1) * itemsPerPage;
-      const endIndex = startIndex + itemsPerPage;
-      return filteredHistory.value.slice(startIndex, endIndex);
-    });
-
-    watch([activeTab, searchQuery], () => {
-      currentPage.value = 1;
-    });
-
-    const handlePageChange = (page: number) => {
+    // ⚡️ CHANGEMENT DE PAGE : Appel API direct à Django
+    const handlePageChange = async (page: number) => {
       currentPage.value = page;
+      await transactStore.fetchTransact(page, activeTab.value, searchQuery.value);
     };
+
+    // Réinitialise la page courante quand l'onglet change
+    watch([activeTab, searchQuery], async () => {
+      currentPage.value = 1;
+      await transactStore.fetchTransact(1, activeTab.value, searchQuery.value);
+    });
 
     const getIconColor = (tab: string) => {
       if (tab === 'models') return 'bg-blue-light';
@@ -315,10 +319,21 @@ export default {
     };
 
     return {
-      transactStore, activeTab, searchQuery, filteredHistory,
-      MagnifyingGlassIcon, getIconColor, getIcon,
-      selectedTx, openDetails, closeDetails,
-      currentPage, itemsPerPage, paginatedHistory, handlePageChange 
+      transactStore, 
+      activeTab, 
+      searchQuery, 
+      paginatedHistory,
+      totalPages,
+      currentPage, 
+      itemsPerPage, 
+      handlePageChange,
+      MagnifyingGlassIcon, 
+      getIconColor, 
+      getIcon,
+      selectedTx, 
+      openDetails, 
+      closeDetails,
+      getStatusData
     };
   }
 }
