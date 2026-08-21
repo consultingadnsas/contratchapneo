@@ -23,6 +23,7 @@
                 />
             </div>
 
+            <!-- MOTIF DE LA RUPTURE -->
             <BaseSelect
                 v-model="modelValue.motif"
                 id="motif"
@@ -48,7 +49,7 @@
                 />
             </div>
 
-            <!-- Options CDI -->
+            <!-- ── OPTIONS CDI ── -->
             <template v-if="modelValue.contractType === 'cdi'">
                 <div class="grid-2">
                     <BaseInput
@@ -79,7 +80,7 @@
                 </div>
             </template>
 
-            <!-- Options CDD -->
+            <!-- ── OPTIONS CDD ── -->
             <template v-if="modelValue.contractType === 'cdd'">
                 <BaseInput
                     v-model="modelValue.totalGrossSalary"
@@ -90,8 +91,10 @@
                     placeholder="3000000"
                     required
                 />
+                
+                <!-- Si l'employeur rompt le CDD plus tôt que prévu -->
                 <BaseInput
-                    v-if="modelValue.motif === 'rupture_anticipee'"
+                    v-if="modelValue.motif === 'rupture_anticipee_employeur'"
                     v-model="modelValue.remainingMonths"
                     id="remainingMonths"
                     type="number"
@@ -100,8 +103,20 @@
                     placeholder="3"
                     required
                 />
+                
+                <!-- Si le salarié démissionne de son CDD (Rupture anticipée employé) -->
+                <BaseInput
+                    v-if="modelValue.motif === 'rupture_anticipee_salarie'"
+                    v-model="modelValue.employerDamages"
+                    id="employerDamages"
+                    type="number"
+                    min="0"
+                    label="Dommages réclamés par l'employeur (FCFA) - Optionnel"
+                    placeholder="150000"
+                />
             </template>
 
+            <!-- SALAIRES & CONGÉS DE PRÉSENCE -->
             <div class="grid-2">
                 <BaseInput
                     v-model="modelValue.daysWorkedInLastMonth"
@@ -115,11 +130,10 @@
                 <BaseInput
                     v-model="modelValue.remainingLeaveDays"
                     id="remainingLeaveDays"
-                    type="number"
-                    min="0"
-                    step="0.5"
+                    type="text"
+                    inputmode="decimal"
                     label="Congés payés restants (jours)"
-                    placeholder="15"
+                    placeholder="15,5"
                 />
             </div>
 
@@ -132,7 +146,7 @@
 
             <div v-if="errorMessage" class="alert error">{{ errorMessage }}</div>
 
-            <!-- Bouton en bas du panneau gauche -->
+            <!-- BOUTON DE CALCUL -->
             <main-button 
                 label="Calculer mes droits & indemnités"
                 :isLoading="isCalculating"
@@ -165,54 +179,20 @@ export default defineComponent({
 </script>
 
 <style scoped>
-/* ── Style de la carte (Glassmorphism) ── */
-.panel-card {
-    background: rgba(255, 255, 255, 0.025);
-    backdrop-filter: blur(25px);
-    -webkit-backdrop-filter: blur(25px);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 24px;
-    padding: 2.2rem;
-    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
-}
-
-.panel-header {
-    display: flex;
-    align-items: center;
-    gap: 0.8rem;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-    padding-bottom: 1.2rem;
-    margin-bottom: 1.5rem;
-}
+.panel-card { background: rgba(255, 255, 255, 0.025); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 24px; padding: 2.2rem; box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35); }
+.panel-header { display: flex; align-items: center; gap: 0.8rem; border-bottom: 1px solid rgba(255, 255, 255, 0.08); padding-bottom: 1.2rem; margin-bottom: 1.5rem; }
 .panel-header h3 { font-size: 1.15rem; font-weight: 700; color: #f8fafc; margin: 0; }
-
 .calc-form { display: flex; flex-direction: column; gap: 1.25rem; }
 .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; width: 100%; }
-
-.toggle-card {
-    background: rgba(0, 0, 0, 0.25);
-    border: 1px solid rgba(255, 255, 255, 0.07);
-    border-radius: 12px;
-    padding: 0.9rem 1.1rem;
-}
-.toggle-label {
-    display: flex; align-items: center; gap: 0.8rem; cursor: pointer; font-size: 0.9rem; color: #cbd5e1;
-}
+.toggle-card { background: rgba(0, 0, 0, 0.25); border: 1px solid rgba(255, 255, 255, 0.07); border-radius: 12px; padding: 0.9rem 1.1rem; }
+.toggle-label { display: flex; align-items: center; gap: 0.8rem; cursor: pointer; font-size: 0.9rem; color: #cbd5e1; }
 .toggle-label input[type="checkbox"] { width: 1.15rem; height: 1.15rem; accent-color: #32f459; cursor: pointer; }
-
-:deep(.form-input), :deep(.form-select) {
-    background-color: rgba(0, 0, 0, 0.3) !important;
-    border: 1px solid rgba(255, 255, 255, 0.1) !important;
-    color: white !important; border-radius: 12px !important; padding: 0.8rem 1rem !important; font-size: 0.92rem !important;
-}
+:deep(.form-input), :deep(.form-select) { background-color: rgba(0, 0, 0, 0.3) !important; border: 1px solid rgba(255, 255, 255, 0.1) !important; color: white !important; border-radius: 12px !important; padding: 0.8rem 1rem !important; font-size: 0.92rem !important; }
 :deep(.form-input:focus), :deep(.form-select:focus) { border-color: #32f459 !important; box-shadow: 0 0 0 3px rgba(50, 244, 89, 0.15) !important; }
 :deep(.input-label) { color: #94a3b8 !important; margin-bottom: 0.35rem !important; font-size: 0.85rem !important; font-weight: 500 !important; }
-
 .submit-btn { width: 100%; padding: 1.15rem; border-radius: 14px; font-size: 1.02rem; font-weight: 700; margin-top: 0.8rem; transition: all 0.3s ease; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3); }
 .submit-btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 15px 30px rgba(50, 244, 89, 0.25); }
-
 .alert { padding: 0.9rem; border-radius: 12px; font-size: 0.9rem; font-weight: 500; text-align: center; }
 .alert.error { background: rgba(239, 68, 68, 0.15); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.3); }
-
 @media (max-width: 992px) { .grid-2 { grid-template-columns: 1fr; } .panel-card { padding: 1.5rem; } }
 </style>

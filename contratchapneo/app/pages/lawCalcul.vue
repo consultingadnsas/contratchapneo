@@ -2,6 +2,10 @@
     <section class="calculator-section">
         <navbar />
 
+        <!-- Éléments de fond décoratifs -->
+        <div class="bg-shape shape-top-left"></div>
+        <div class="bg-shape shape-bottom-right"></div>
+
         <div class="calculator-header">
             <h1>Calcul des Droits</h1>
             <p>
@@ -82,10 +86,13 @@ export default defineComponent({
                 { name: "Départ à la retraite", value: "retraite" },
                 { name: "Décès du travailleur (Droits des ayants droit)", value: "deces" }
             ],
+            // ⚡️ NOUVELLES OPTIONS CDD
             cdd: [
                 { name: "Fin normale de CDD (Terme atteint)", value: "fin_cdd" },
-                { name: "Rupture anticipée abusive (par l'employeur)", value: "rupture_anticipee" },
-                { name: "Rupture pour faute lourde ou cas de force majeure", value: "cdd_faute" }
+                { name: "Rupture d'un commun accord (Amiable)", value: "commun_accord_cdd" },
+                { name: "Rupture anticipée abusive par l'employeur", value: "rupture_anticipee_employeur" },
+                { name: "Rupture anticipée par l'employé (Démission CDD)", value: "rupture_anticipee_salarie" },
+                { name: "Rupture pour faute lourde ou force majeure", value: "cdd_faute" }
             ]
         };
 
@@ -99,6 +106,7 @@ export default defineComponent({
             averageSalary: '',
             totalGrossSalary: '',
             remainingMonths: '',
+            employerDamages: '', // ⚡️ NOUVEAU CHAMP (Démission CDD)
             daysWorkedInLastMonth: '0',
             remainingLeaveDays: '0',
             preavisExecute: false,
@@ -160,13 +168,12 @@ export default defineComponent({
             cnpsEmployeeDeduction.value = 0;
             netAmount.value = 0;
 
-            // ⚡️ CORRECTION : Le bloc TRY englobe désormais TOUT le traitement
             try {
                 await new Promise(resolve => setTimeout(resolve, 300));
 
                 if (!formData.value.startDate || !formData.value.endDate) {
                     errorMessage.value = "Veuillez renseigner les dates d'embauche et de rupture.";
-                    return; // Le bloc finally sera maintenant bien exécuté après ce return !
+                    return;
                 }
 
                 const start = new Date(formData.value.startDate);
@@ -180,8 +187,12 @@ export default defineComponent({
                 const diffDays = (end.getTime() - start.getTime()) / (1000 * 3600 * 24);
                 const yearsOfSeniority = diffDays / 365.25;
                 const daysWorked = Math.max(0, Math.min(30, Number(formData.value.daysWorkedInLastMonth) || 0));
-                const remainingLeaves = Math.max(0, Number(formData.value.remainingLeaveDays) || 0);
+                
+                // ⚡️ NOUVEAU : GESTION DES VIRGULES POUR LES CONGÉS
+                const rawLeaveDays = String(formData.value.remainingLeaveDays || '0').replace(',', '.');
+                const remainingLeaves = Math.max(0, Number(rawLeaveDays) || 0);
 
+                // ── 1. LOGIQUE CDI ──
                 if (formData.value.contractType === 'cdi') {
                     const baseSalary = Number(formData.value.baseSalary);
                     const avgSalary = Number(formData.value.averageSalary);
@@ -276,6 +287,7 @@ export default defineComponent({
                         }
                     }
                 } 
+                // ── 2. LOGIQUE CDD ──
                 else if (formData.value.contractType === 'cdd') {
                     const totalGross = Number(formData.value.totalGrossSalary);
                     if (totalGross <= 0) {
@@ -307,7 +319,8 @@ export default defineComponent({
                         });
                     }
 
-                    if (formData.value.motif === 'fin_cdd') {
+                    // ⚡️ NOUVEAU : COMMUN ACCORD
+                    if (formData.value.motif === 'fin_cdd' || formData.value.motif === 'commun_accord_cdd') {
                         const precarite = totalGross * 0.03;
                         breakdown.value.push({
                             label: "Indemnité de Fin de Contrat (Prime de Précarité - 3%)",
@@ -316,14 +329,19 @@ export default defineComponent({
                             taxable: true,
                             cnps: true
                         });
-                        summaryMessage.value = "Le contrat ayant pris fin à sa date d'échéance sans poursuite en CDI, vous percevez la prime légale de précarité de 3 %.";
+                        if (formData.value.motif === 'commun_accord_cdd') {
+                            summaryMessage.value = "Dans le cadre d'une rupture d'un commun accord (amiable), la prime légale de précarité de 3 % reste due, sauf renonciation expresse des deux parties.";
+                        } else {
+                            summaryMessage.value = "Le contrat ayant pris fin à sa date d'échéance sans poursuite en CDI, vous percevez la prime légale de précarité de 3 %.";
+                        }
                     } 
-                    else if (formData.value.motif === 'rupture_anticipee') {
+                    // ⚡️ NOUVEAU : RUPTURE EMPLOYEUR
+                    else if (formData.value.motif === 'rupture_anticipee_employeur') {
                         const monthsLeft = Number(formData.value.remainingMonths) || 0;
                         const dommages = approxMonthly * monthsLeft;
 
                         breakdown.value.push({
-                            label: "Dommages & Intérêts (Rupture Anticipée CDD)",
+                            label: "Dommages & Intérêts (Rupture Anticipée Employeur)",
                             amount: dommages,
                             description: `Art. 15.9 : Rémunérations totales que vous auriez perçues jusqu'au terme prévu (${monthsLeft} mois restants).`,
                             taxable: false,
@@ -331,6 +349,20 @@ export default defineComponent({
                         });
                         summaryMessage.value = "La rupture anticipée et abusive par l'employeur oblige au versement indemnitaire de la totalité des mois restants jusqu'au terme du CDD.";
                     } 
+                    // ⚡️ NOUVEAU : RUPTURE SALARIÉ (DÉMISSION)
+                    else if (formData.value.motif === 'rupture_anticipee_salarie') {
+                        const dommagesSalarie = Number(formData.value.employerDamages) || 0;
+                        if (dommagesSalarie > 0) {
+                            breakdown.value.push({ 
+                                label: "Dommages & Intérêts dus à l'employeur", 
+                                amount: -dommagesSalarie,
+                                description: "Art. 15.9 : Compensation du préjudice subi par l'employeur suite à la rupture anticipée non justifiée par l'employé.", 
+                                taxable: false, 
+                                cnps: false 
+                            });
+                        }
+                        summaryMessage.value = "La rupture anticipée par l'employé annule le droit à la prime de précarité de 3 %. L'employeur est en droit de réclamer des dommages-intérêts réparant son préjudice.";
+                    }
                     else {
                         summaryMessage.value = "En cas de faute lourde ou de force majeure, la prime de précarité de 3 % de fin de CDD n'est pas due.";
                     }
@@ -341,7 +373,8 @@ export default defineComponent({
                     if (item.cnps) {
                         totalTaxableCNPS.value += item.amount;
                     } else {
-                        totalExempt.value += item.amount;
+                        // On additionne l'exonéré uniquement si c'est positif (pour ne pas fausser le total avec les retenues)
+                        if (item.amount > 0) totalExempt.value += item.amount;
                     }
                 });
 
@@ -358,7 +391,6 @@ export default defineComponent({
             } catch (error) {
                 errorMessage.value = "Une erreur technique est survenue lors du calcul de votre simulation.";
             } finally {
-                // ⚡️ GARANTIE ABSOLUE : isCalculating repasse TOUJOURS à false !
                 isCalculating.value = false;
             }
         };
@@ -388,7 +420,7 @@ export default defineComponent({
 .calculator-section {
     position: relative;
     width: 100%;
-    min-height: 100vh;
+    height: 100vh;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -428,6 +460,11 @@ export default defineComponent({
     z-index: 2;
     align-items: start;
 }
+
+/* Éléments de fond (Cercles floutés) */
+.bg-shape { position: absolute; border-radius: 50%; filter: blur(100px); z-index: 1; opacity: 0.45; pointer-events: none; }
+.shape-top-left { top: -5%; left: -5%; width: 450px; height: 450px; background: radial-gradient(circle, #32f459 0%, transparent 70%); }
+.shape-bottom-right { bottom: -5%; right: -5%; width: 500px; height: 500px; background: radial-gradient(circle, #068cec 0%, transparent 70%); }
 
 @media (max-width: 992px) {
     .calculator-grid {

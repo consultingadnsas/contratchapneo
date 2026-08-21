@@ -119,28 +119,15 @@ export default defineComponent({
 </script>
 
 <style scoped>
-/* ── Style de la carte ── */
-.panel-card {
-    background: rgba(255, 255, 255, 0.025);
-    backdrop-filter: blur(25px);
-    -webkit-backdrop-filter: blur(25px);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 24px;
-    padding: 2.2rem;
-    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
-}
-
+.panel-card { background: rgba(255, 255, 255, 0.025); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 24px; padding: 2.2rem; box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35); }
 .panel-header { display: flex; align-items: center; gap: 0.8rem; border-bottom: 1px solid rgba(255, 255, 255, 0.08); padding-bottom: 1.2rem; margin-bottom: 1.5rem; }
 .panel-header h3 { font-size: 1.15rem; font-weight: 700; color: #f8fafc; margin: 0; }
-
 .empty-state { text-align: center; padding: 4rem 2rem; color: #64748b; display: flex; flex-direction: column; align-items: center; gap: 1rem; }
 .empty-icon { width: 60px; height: 60px; border-radius: 50%; background: rgba(255, 255, 255, 0.03); border: 1px dashed rgba(255, 255, 255, 0.1); display: flex; align-items: center; justify-content: center; color: #475569; }
 .empty-icon svg { width: 30px; height: 30px; }
 .empty-state h4 { font-size: 1.1rem; color: #cbd5e1; margin: 0; }
 .empty-state p { font-size: 0.9rem; max-width: 320px; line-height: 1.5; margin: 0; }
-
 .results-wrapper { display: flex; flex-direction: column; gap: 1.8rem; animation: fadeIn 0.4s ease; }
-
 .highlight-card { background: linear-gradient(135deg, rgba(50, 244, 89, 0.12) 0%, rgba(21, 108, 169, 0.15) 100%); border: 1px solid rgba(50, 244, 89, 0.35); border-radius: 20px; padding: 2rem 1.5rem; text-align: center; box-shadow: 0 10px 30px rgba(50, 244, 89, 0.08); }
 .highlight-card.is-zero { background: rgba(239, 68, 68, 0.08); border-color: rgba(239, 68, 68, 0.35); }
 .highlight-label { font-size: 0.88rem; font-weight: 600; color: #a7f3d0; text-transform: uppercase; letter-spacing: 0.8px; display: block; margin-bottom: 0.6rem; }
@@ -149,13 +136,11 @@ export default defineComponent({
 .highlight-subtitle { font-size: 0.88rem; color: #cbd5e1; max-width: 90%; margin: 0 auto 1.2rem auto; line-height: 1.5; }
 .status-badge { display: inline-flex; align-items: center; gap: 0.5rem; background: rgba(50, 244, 89, 0.2); border: 1px solid rgba(50, 244, 89, 0.4); color: #32f459; padding: 0.4rem 1rem; border-radius: 999px; font-size: 0.82rem; font-weight: 700; }
 .badge-icon { width: 16px; height: 16px; }
-
 .summary-table { display: flex; flex-direction: column; gap: 0.8rem; border-top: 1px solid rgba(255, 255, 255, 0.08); border-bottom: 1px solid rgba(255, 255, 255, 0.08); padding: 1.2rem 0; }
 .summary-row { display: flex; justify-content: space-between; font-size: 0.92rem; color: #cbd5e1; }
 .summary-row.main-row { font-size: 1.05rem; color: #ffffff; font-weight: 600; }
 .summary-row.deduction { color: #fca5a5; font-weight: 600; }
 .summary-row.info { color: #fcd34d; font-size: 0.85rem; }
-
 .breakdown-list h4 { font-size: 0.9rem; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.6px; margin: 0 0 1rem 0; }
 .breakdown-item { background: rgba(0, 0, 0, 0.25); border: 1px solid rgba(255, 255, 255, 0.06); border-radius: 12px; padding: 1rem 1.2rem; margin-bottom: 0.7rem; }
 .breakdown-item.is-negative { border-color: rgba(239, 68, 68, 0.3); background: rgba(239, 68, 68, 0.05); }
@@ -169,7 +154,6 @@ export default defineComponent({
 .tag-tax { background: rgba(251, 191, 36, 0.12); color: #fcd34d; border: 1px solid rgba(251, 191, 36, 0.25); }
 .tag-cnps { background: rgba(56, 189, 248, 0.12); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.25); }
 .tag-free { background: rgba(50, 244, 89, 0.12); color: #32f459; border: 1px solid rgba(50, 244, 89, 0.25); }
-
 .legal-notes-card { background: rgba(0, 0, 0, 0.3); border: 1px solid rgba(255, 255, 255, 0.07); border-radius: 16px; padding: 1.4rem; }
 .legal-notes-card h4 { font-size: 0.95rem; color: #f8fafc; margin: 0 0 0.8rem 0; }
 .legal-notes-card ul { margin: 0; padding-left: 1.2rem; display: flex; flex-direction: column; gap: 0.6rem; }
@@ -177,6 +161,5 @@ export default defineComponent({
 .legal-notes-card strong { color: #cbd5e1; }
 
 @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-
 @media (max-width: 992px) { .panel-card { padding: 1.5rem; } }
 </style>

@@ -56,8 +56,11 @@
               </div>
             </td>
             
+            <!-- ⚡️ BADGE STATUT DYNAMIQUE -->
             <td>
-              <span class="gray-text">{{ item.statusLabel }}</span>
+              <span class="status-badge" :class="item.status.colorClass">
+                {{ item.status.label }}
+              </span>
             </td>
 
             <td>
@@ -134,7 +137,10 @@
           <div class="detail-row">
             <span class="label">Statut :</span>
             <span class="value">
-              {{ selectedTx.statusLabel }}
+              <!-- ⚡️ BADGE STATUT DANS LA MODALE -->
+              <span class="status-badge" :class="selectedTx.status.colorClass">
+                {{ selectedTx.status.label }}
+              </span>
             </span>
           </div>
 
@@ -156,7 +162,7 @@
 </template>
 
 <script lang="ts">
-import { ref, computed, onMounted, watch } from 'vue'; // ⚡️ Ajout de 'watch'
+import { ref, computed, onMounted, watch } from 'vue';
 import { 
   MagnifyingGlassIcon, 
   DocumentTextIcon, 
@@ -164,12 +170,12 @@ import {
   ScaleIcon
 } from '@heroicons/vue/24/outline';
 import { useAdminTransactStore } from '../../../stores/adminTransactStore';
-import Paginator from '../../tools/Paginator.vue'; // ⚡️ Ajuste le chemin vers ton composant Paginator
+import Paginator from '../../tools/Paginator.vue';
 
 export default {
   name: 'AdminHistory',
   components: {
-    Paginator // ⚡️ Enregistrement du composant
+    Paginator
   },
   setup() {
     const transactStore = useAdminTransactStore();
@@ -178,13 +184,35 @@ export default {
     
     const selectedTx = ref<any>(null);
 
-    // ⚡️ ÉTATS POUR LA PAGINATION
     const currentPage = ref(1);
-    const itemsPerPage = 10; // Tu peux modifier cette valeur pour afficher plus ou moins de transactions par page
+    const itemsPerPage = 10;
 
     onMounted(() => {
       transactStore.fetchTransact();
     });
+
+    // ⚡️ NOUVELLE FONCTION : DÉTERMINER LE STATUT ET LA COULEUR
+    const getStatusData = (txStatus: string, orderStatus: string, defaultLabel: string | null) => {
+      const rawStatus = (txStatus || orderStatus || '').toLowerCase();
+      
+      // Cas de succès (Vert)
+      if (['success', 'completed', 'paid', 'succès', 'payé', 'successful'].includes(rawStatus)) {
+        return { label: defaultLabel || 'Payé', colorClass: 'badge-green' };
+      }
+      
+      // Cas en attente (Orange)
+      if (['pending', 'en attente', 'processing'].includes(rawStatus)) {
+        return { label: defaultLabel || 'En attente', colorClass: 'badge-orange' };
+      }
+
+      // Cas d'échec / annulé (Rouge)
+      if (['failed', 'échoué', 'error', 'canceled', 'annulé'].includes(rawStatus)) {
+         return { label: defaultLabel || 'Échoué', colorClass: 'badge-red' };
+      }
+
+      // Cas par défaut (Gris)
+      return { label: defaultLabel || rawStatus || 'Inconnu', colorClass: 'badge-gray' };
+    };
 
     const mappedTransactions = computed(() => {
       const sortedTransactions = [...transactStore.transactions].sort((a, b) => {
@@ -219,17 +247,16 @@ export default {
         const dateStr = dateObj.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' });
         const timeStr = dateObj.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
 
-        const statusRaw = (tx.status || order.status || '').toLowerCase();
-        const isSuccess = ['success', 'completed', 'paid', 'succès', 'payé'].includes(statusRaw);
-        const finalStatusLabel = tx.status_label || tx.status_labels || order.status_label || order.status_labels || (isSuccess ? 'Payé' : 'Échoué');
+        // ⚡️ UTILISATION DE LA FONCTION DE STATUT
+        const providedLabel = tx.status_label || tx.status_labels || order.status_label || order.status_labels;
+        const statusData = getStatusData(tx.status, order.status, providedLabel);
 
         return {
           id: tx.id || Math.random().toString(),
           orderId: order.id || tx.id,
           type: itemType,
           productTypeLabel,
-          isSuccess,
-          statusLabel: finalStatusLabel,
+          status: statusData, // 👈 Objet contenant label et colorClass
           clientName,
           clientEmail,
           date: dateStr,
@@ -253,19 +280,16 @@ export default {
       return list;
     });
 
-    // ⚡️ NOUVEAU COMPUTED POUR COUPER LA LISTE SELON LA PAGE ACTIVE
     const paginatedHistory = computed(() => {
       const startIndex = (currentPage.value - 1) * itemsPerPage;
       const endIndex = startIndex + itemsPerPage;
       return filteredHistory.value.slice(startIndex, endIndex);
     });
 
-    // ⚡️ WATCHER : Réinitialiser à la page 1 si on change d'onglet ou si on fait une recherche
     watch([activeTab, searchQuery], () => {
       currentPage.value = 1;
     });
 
-    // ⚡️ FONCTION : Gérer le changement de page déclenché par le composant Paginator
     const handlePageChange = (page: number) => {
       currentPage.value = page;
     };
@@ -294,14 +318,49 @@ export default {
       transactStore, activeTab, searchQuery, filteredHistory,
       MagnifyingGlassIcon, getIconColor, getIcon,
       selectedTx, openDetails, closeDetails,
-      currentPage, itemsPerPage, paginatedHistory, handlePageChange // ⚡️ Exposer les nouvelles méthodes/variables pour le template
+      currentPage, itemsPerPage, paginatedHistory, handlePageChange 
     };
   }
 }
 </script>
 
 <style scoped>
-/* Le CSS reste inchangé par rapport à ta version précédente */
+/* ⚡️ AJOUT DES CLASSES DE BADGES */
+.status-badge {
+  display: inline-block;
+  padding: 0.35rem 0.8rem;
+  border-radius: 50px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.badge-green {
+  background-color: #d1fae5;
+  color: #059669;
+  border: 1px solid #a7f3d0;
+}
+
+.badge-orange {
+  background-color: #fef3c7;
+  color: #d97706;
+  border: 1px solid #fde68a;
+}
+
+.badge-red {
+  background-color: #fee2e2;
+  color: #dc2626;
+  border: 1px solid #fecaca;
+}
+
+.badge-gray {
+  background-color: #f1f5f9;
+  color: #64748b;
+  border: 1px solid #e2e8f0;
+}
+
+/* Le reste du CSS inchangé */
 .history-wrapper {
   --bg-main: #f8fafc; --bg-panel: #ffffff; --bg-panel-light: #f1f5f9; 
   --text-dark: #1e293b; --text-gray: #94a3b8; --accent-blue: #2563eb;
@@ -336,8 +395,6 @@ export default {
 .bg-blue-light { background: #eff6ff; color: #3b82f6; }
 .bg-purple-light { background: #faf5ff; color: #a855f7; }
 .bg-orange-light { background: #fff7ed; color: #f97316; }
-.dot-green { background-color: #10b981; box-shadow: 0 0 8px rgba(16, 185, 129, 0.4); }
-.dot-red { background-color: #ef4444; box-shadow: 0 0 8px rgba(239, 68, 68, 0.4); }
 .empty-state { text-align: center; padding: 3rem 0; }
 
 .pill-btn {
