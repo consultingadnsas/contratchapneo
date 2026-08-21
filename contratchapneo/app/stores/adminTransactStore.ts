@@ -37,6 +37,26 @@ export interface AccountingSummary {
         monthly_total: number;
         count: number;
     }>;
+    custom_contracts_monthly: Array<{
+        month: string;
+        count: number;
+    }>;
+    revisions_monthly: Array<{
+        month: string;
+        count: number;
+    }>;
+    top_contracts: Array<{
+        contrat__title: string;
+        total_sold: number;
+    }>;
+    top_packs: Array<{
+        pack__title: string;
+        total_sold: number;
+    }>;
+    top_pros: Array<{
+        name: string;
+        total_sold: number;
+    }>;
 }
 
 export const useAdminTransactStore = defineStore('adminTransac', () => {
@@ -98,207 +118,6 @@ export const useAdminTransactStore = defineStore('adminTransac', () => {
             isLoading.value = false;
         }
     }
-    // ⚡️ TRADUCTEUR POUR LE GRAPHIQUE
-    // Transforme { month: "2026-08-01", monthly_total: 150000 } en [0, 0, 0, 0, 0, 0, 0, 150000, 0, 0, 0, 0]
-    const computedMonthlyRevenue = computed(() => {
-        const months = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
-        
-        if (accountancy.value && accountancy.value.monthly_evolution) {
-            accountancy.value.monthly_evolution.forEach(item => {
-                // On transforme la chaîne de caractères (ex: "2026-10-01") en date Javascript
-                const dateObj = new Date(item.month);
-                
-                // On s'assure que la date est valide
-                if (!isNaN(dateObj.getTime())) {
-                    const monthIndex = dateObj.getMonth(); // Janvier = 0, Février = 1... Décembre = 11
-                    months[monthIndex] += Number(item.monthly_total || 0);
-                }
-            });
-        }
-        
-        return months;
-    });
-
-    // ⚡️ CALCUL DE LA DEMANDE : Sur-mesure vs Révisions
-    const demandStats = computed(() => {
-        // Tableaux pour stocker les quantités vendues sur 12 mois
-        const customContracts = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
-        const revisions = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
-
-        const orderList = transactions.value || [];
-
-        orderList.forEach((tx: any) => {
-            // On ne compte que les ventes réussies
-            const status = tx.status?.toLowerCase() || '';
-            if (status === 'paid' || status === 'successful') {
-                
-                // Récupération du mois de la transaction
-                const dateStr = tx.created_at || (tx.order && tx.order.created_at);
-                if (dateStr) {
-                    const dateObj = new Date(dateStr);
-                    if (!isNaN(dateObj.getTime())) {
-                        const monthIndex = dateObj.getMonth();
-
-                        // On parcourt les articles de la commande
-                        const items = tx.order?.order_items || [];
-                        items.forEach((item: any) => {
-                            // On vérifie si c'est un contrat sur-mesure
-                            if (item.contrat_customed || item.customised_contract) {
-                                customContracts[monthIndex] += (item.quantity || 1);
-                            }
-                            // On vérifie si c'est une révision
-                            if (item.contract_revision || item.revision_subject) {
-                                revisions[monthIndex] += (item.quantity || 1);
-                            }
-                        });
-                    }
-                }
-            }
-        });
-
-        return { customContracts, revisions };
-    });
-
-    // ⚡️ CALCUL : Demande des Packs
-    const packStats = computed(() => {
-        const counts = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
-        const orderList = transactions.value || [];
-
-        orderList.forEach((tx: any) => {
-            const status = tx.status?.toLowerCase() || '';
-            if (status === 'paid' || status === 'successful') {
-                const dateStr = tx.created_at || (tx.order && tx.order.created_at);
-                if (dateStr) {
-                    const dateObj = new Date(dateStr);
-                    if (!isNaN(dateObj.getTime())) {
-                        const monthIndex = dateObj.getMonth();
-                        const items = tx.order?.order_items || tx.order_items || tx.order?.lignes_achat || [];
-                        
-                        items.forEach((item: any) => {
-                            // Détection des Packs
-                            if (item.pack || item.pack_title) {
-                                counts[monthIndex] += (item.quantity || 1);
-                            }
-                        });
-                    }
-                }
-            }
-        });
-        return counts;
-    });
-
-    // ⚡️ CALCUL : Demande des Professionnels (Pros)
-    const proStats = computed(() => {
-        const counts = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
-        const orderList = transactions.value || [];
-
-        orderList.forEach((tx: any) => {
-            const status = tx.status?.toLowerCase() || '';
-            if (status === 'paid' || status === 'successful') {
-                const dateStr = tx.created_at || (tx.order && tx.order.created_at);
-                if (dateStr) {
-                    const dateObj = new Date(dateStr);
-                    if (!isNaN(dateObj.getTime())) {
-                        const monthIndex = dateObj.getMonth();
-                        const items = tx.order?.order_items || tx.order_items || tx.order?.lignes_achat || [];
-                        
-                        items.forEach((item: any) => {
-                            // Détection des Pros (Avocats, Notaires, etc.)
-                            if (item.pro || item.pro_name) {
-                                counts[monthIndex] += (item.quantity || 1);
-                            }
-                        });
-                    }
-                }
-            }
-        });
-        return counts;
-    });
-    // ⚡️ CALCUL : Top 5 des contrats les plus populaires
-    const topContractsStats = computed(() => {
-        const contractCounts: Record<string, number> = {};
-        const orderList = transactions.value || [];
-
-        orderList.forEach((tx: any) => {
-            const status = tx.status?.toLowerCase() || '';
-            if (status === 'paid' || status === 'successful') {
-                const items = tx.order?.order_items || tx.order_items || tx.order?.lignes_achat || [];
-                
-                items.forEach((item: any) => {
-                    const designation = item.designation || item.contrat_title || '';
-                    
-                    // On cible uniquement les contrats standards (pas les packs ni le sur-mesure)
-                    if (designation.includes('Contrat') || item.contrat) {
-                        // On nettoie le titre pour l'affichage (enlève le préfixe "Contrat : " si présent)
-                        const cleanName = designation.replace('Contrat :', '').trim();
-                        if (cleanName) {
-                            contractCounts[cleanName] = (contractCounts[cleanName] || 0) + (item.quantity || 1);
-                        }
-                    }
-                });
-            }
-        });
-
-        // Tri décroissant et sélection des 5 premiers
-        const sorted = Object.entries(contractCounts)
-            .sort((a, b) => b[1] - a[1])
-            .slice(0, 5);
-
-        return {
-            labels: sorted.map(s => s[0]), // Les noms des contrats
-            data: sorted.map(s => s[1])    // Les quantités vendues
-        };
-    });
-
-    // ⚡️ CALCUL : Top 5 des Packs les plus vendus
-    const topPacksStats = computed(() => {
-        const counts: Record<string, number> = {};
-        const orderList = transactions.value || [];
-
-        orderList.forEach((tx: any) => {
-            const status = tx.status?.toLowerCase() || '';
-            if (status === 'paid' || status === 'successful') {
-                const items = tx.order?.order_items || tx.order_items || tx.order?.lignes_achat || [];
-                
-                items.forEach((item: any) => {
-                    const designation = item.designation || '';
-                    const packTitle = item.pack_title || (designation.includes('Pack') ? designation.replace('Pack :', '').trim() : null);
-                    
-                    if (packTitle) {
-                        counts[packTitle] = (counts[packTitle] || 0) + (item.quantity || 1);
-                    }
-                });
-            }
-        });
-
-        const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 5);
-        return { labels: sorted.map(s => s[0]), data: sorted.map(s => s[1]) };
-    });
-
-    // ⚡️ CALCUL : Top 5 des Pros les plus sollicités
-    const topProsStats = computed(() => {
-        const counts: Record<string, number> = {};
-        const orderList = transactions.value || [];
-
-        orderList.forEach((tx: any) => {
-            const status = tx.status?.toLowerCase() || '';
-            if (status === 'paid' || status === 'successful') {
-                const items = tx.order?.order_items || tx.order_items || tx.order?.lignes_achat || [];
-                
-                items.forEach((item: any) => {
-                    const designation = item.designation || '';
-                    const proName = item.pro_name || (designation.includes('Carte Expert') ? designation.replace('Carte Expert :', '').trim() : null);
-                    
-                    if (proName) {
-                        counts[proName] = (counts[proName] || 0) + (item.quantity || 1);
-                    }
-                });
-            }
-        });
-
-        const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 5);
-        return { labels: sorted.map(s => s[0]), data: sorted.map(s => s[1]) };
-    });
 
     return {
         // State

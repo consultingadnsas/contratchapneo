@@ -495,23 +495,17 @@ class AdminTransaction(ListAPIView):
     def get_queryset(self):
         queryset = Transaction.objects.all().order_by('-id')
         
-        # 1. Filtre par onglet (tab)
         tab = self.request.query_params.get('tab', 'models')
         
         if tab == 'packs':
-            # On utilise order_items et pack
             queryset = queryset.filter(order__order_items__pack__isnull=False).distinct()
         elif tab == 'custom':
-            # On utilise order_items et contrat_customed
             queryset = queryset.filter(order__order_items__contrat_customed__isnull=False).distinct()
         else: # models
-            # On utilise order_items et contrat
             queryset = queryset.filter(order__order_items__contrat__isnull=False).distinct()
 
-        # 2. Recherche (search)
         search = self.request.query_params.get('search', None)
         if search:
-            # On cherche dans l'email invité ou l'email du user connecté
             queryset = queryset.filter(
                 Q(order__guest__email__icontains=search) |
                 Q(order__user__email__icontains=search) |
@@ -533,13 +527,10 @@ class AdminAccountingSummaryView(APIView):
     permission_classes = [IsAdminUser]
 
     def get(self, request):
-        # 1. Revenu Total (uniquement les transactions réussies)
         total_revenue = Transaction.objects.filter(
             status=Transaction.TransactionStatus.SUCCESSFUL
         ).aggregate(total=Sum('amount'))['total'] or 0
 
-        # 2. Compteur des transactions par statut
-        # Permet de voir le taux de succès, d'échec ou d'abandon
         status_counts = Transaction.objects.aggregate(
             successful=Count('id', filter=Q(status=Transaction.TransactionStatus.SUCCESSFUL)),
             pending=Count('id', filter=Q(status=Transaction.TransactionStatus.PENDING)),
@@ -547,8 +538,6 @@ class AdminAccountingSummaryView(APIView):
             canceled=Count('id', filter=Q(status=Transaction.TransactionStatus.CANCELED))
         )
 
-        # 3. Revenus et volume par méthode de paiement
-        # Ex: Combien a rapporté Stripe vs Mobile Money
         revenue_by_method = Transaction.objects.filter(
             status=Transaction.TransactionStatus.SUCCESSFUL
         ).values('payment_method').annotate(
@@ -556,7 +545,6 @@ class AdminAccountingSummaryView(APIView):
             transaction_count=Count('id')
         ).order_by('-total_revenue')
 
-        # 4. Évolution des revenus par mois (les 12 derniers mois actifs)
         monthly_revenue = Transaction.objects.filter(
             status=Transaction.TransactionStatus.SUCCESSFUL
         ).annotate(
@@ -566,13 +554,67 @@ class AdminAccountingSummaryView(APIView):
             count=Count('id')
         ).order_by('-month')[:12]
 
-        # On renvoie toutes ces données au Frontend (ex: Nuxt/Vue.js) 
-        # pour construire des graphiques (Chart.js ou ApexCharts)
+        from ecommerce.models import OrderItem
+
+        top_contracts = OrderItem.objects.filter(
+            order__status='paid',
+            contrat__isnull=False
+        ).values('contrat__title').annotate(
+            total_sold=Sum('quantity')
+        ).order_by('-total_sold')[:5]
+
+        # Top Packs
+        top_packs = OrderItem.objects.filter(
+            order__status='paid',
+            pack__isnull=False
+        ).values('pack__title').annotate(
+            total_sold=Sum('quantity')
+        ).order_by('-total_sold')[:5]
+
+        # Top Pros
+        top_pros = OrderItem.objects.filter(
+            order__status='paid',
+            pro__isnull=False
+        ).values('pro__first_name', 'pro__last_name').annotate(
+            total_sold=Sum('quantity')
+        ).order_by('-total_sold')[:5]
+
+        top_pros_formatted = [
+            {'name': f"{p['pro__first_name']} {p['pro__last_name']}", 'total_sold': p['total_sold']}
+            for p in top_pros
+        ]
+
+        # Custom Contracts Monthly
+        custom_contracts_monthly = OrderItem.objects.filter(
+            order__status='paid',
+            contrat_customed__isnull=False
+        ).annotate(
+            # 🌟 UTILISATION DE order__created_at pour la date
+            month=TruncMonth('order__created_at')
+        ).values('month').annotate(
+            count=Sum('quantity')
+        ).order_by('month')
+
+        # Contract Revisions Monthly 
+        revisions_monthly = OrderItem.objects.filter(
+            order__status='paid',
+            contract_revision__isnull=False 
+        ).annotate(
+            month=TruncMonth('order__created_at')
+        ).values('month').annotate(
+            count=Sum('quantity')
+        ).order_by('month')
+
         return Response({
             'global': {
                 'total_revenue': total_revenue,
             },
             'transactions_status': status_counts,
             'revenue_by_method': list(revenue_by_method),
-            'monthly_evolution': list(monthly_revenue)
+            'monthly_evolution': list(monthly_revenue),
+            'top_contracts': list(top_contracts),
+            'top_packs': list(top_packs),
+            'top_pros': top_pros_formatted,
+            'custom_contracts_monthly': list(custom_contracts_monthly),
+            'revisions_monthly': list(revisions_monthly)
         }, status=status.HTTP_200_OK)
