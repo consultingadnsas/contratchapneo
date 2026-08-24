@@ -5,6 +5,7 @@ import zipfile
 import io
 import tempfile
 import os
+import mimetypes
 
 from django.http    import FileResponse
 from django.conf    import settings
@@ -39,7 +40,11 @@ from .utils import (
     _send_download_email
 )
 
-from contrat.utils import fill_docx_template, convert_docx_to_pdf
+from contrat.utils import (
+    fill_docx_template,
+    convert_docx_to_pdf,
+    extract_tags_grouped_by_paragraph,
+)
 
 
 def _activate_paid_revisions(order: Order) -> None:
@@ -437,8 +442,27 @@ class DownloadContractView(APIView):
             with open(pdf_path, 'rb') as f:
                 return f.read()
 
+    def _contract_has_tags(self, item):
+        file_field = item.contrat.fichier_modele
+        if not file_field.name.lower().endswith('.docx'):
+            return False
+
+        tags_by_paragraph = extract_tags_grouped_by_paragraph(file_field.path)
+        return any(block.get('tags') for block in tags_by_paragraph)
+
+    def _stream_original_contract(self, item):
+        file_field = item.contrat.fichier_modele
+        filename = os.path.basename(file_field.name)
+        content_type = mimetypes.guess_type(filename)[0] or 'application/octet-stream'
+        response = FileResponse(file_field.open('rb'), content_type=content_type)
+        response['Content-Disposition'] = f'attachment; filename="{filename}"'
+        return response
+
     def _stream_single_contract(self, item):
         """Gère le téléchargement d'un unique contrat"""
+        if not self._contract_has_tags(item):
+            return self._stream_original_contract(item)
+
         pdf_bytes = self._generate_pdf_bytes(item)
         
         # On utilise io.BytesIO pour streamer depuis la RAM au lieu du disque
@@ -457,9 +481,14 @@ class DownloadContractView(APIView):
             
             # Ajout des contrats générés
             for index, item in enumerate(contract_items):
-                pdf_bytes = self._generate_pdf_bytes(item)
-                nom_fichier = f"Contrat_{item.contrat.titre}_{index+1}.pdf"
-                zip_file.writestr(nom_fichier, pdf_bytes)
+                if self._contract_has_tags(item):
+                    document_bytes = self._generate_pdf_bytes(item)
+                    nom_fichier = f"Contrat_{item.contrat.title}_{index+1}.pdf"
+                else:
+                    with item.contrat.fichier_modele.open('rb') as f:
+                        document_bytes = f.read()
+                    nom_fichier = os.path.basename(item.contrat.fichier_modele.name)
+                zip_file.writestr(nom_fichier, document_bytes)
             
             # Ajout des cartes de visite
             for index, item in enumerate(pro_items):

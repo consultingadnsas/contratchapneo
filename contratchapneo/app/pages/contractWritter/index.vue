@@ -56,7 +56,7 @@ const syncData = (newData: Record<string, any>) => {
     }
 };
 
-// 3. L'utilisateur a cliqué sur "Valider" dans la modale
+
 // 3. L'utilisateur a cliqué sur "Valider" dans la modale
 const submitToBackend = async () => {
     
@@ -94,6 +94,7 @@ const submitToBackend = async () => {
         console.error('Une erreur est survenue lors de l\'enregistrement des données', err);
     }
 };
+
 const handleFocusField = (tagName: string) => {
   if (previewRef.value) {
     previewRef.value.scrollToField(tagName);

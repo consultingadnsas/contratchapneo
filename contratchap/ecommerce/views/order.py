@@ -2,6 +2,8 @@ import tempfile
 import zipfile
 import io
 import os
+import mimetypes
+import shutil
 from PIL.DdsImagePlugin import item
 from PIL.Image import item
 from django.http import FileResponse
@@ -29,7 +31,12 @@ from ..helpers import (get_or_create_cart, set_cart_cookie_if_needed)
 from contrat.models import Contrat, CustomedContract, Pack, ContractRevision
 from pro.models import LegalProfessional
 
-from contrat.utils import fill_docx_template, convert_docx_to_pdf, send_documents_by_email_async
+from contrat.utils import (
+    fill_docx_template,
+    convert_docx_to_pdf,
+    extract_tags_grouped_by_paragraph,
+    send_documents_by_email_async,
+)
 
 # ─────────────────────────────────────────
 # ORDER VIEWS
@@ -173,19 +180,25 @@ class OrderDownloadView(APIView):
                     
                     if not contrat.fichier_modele or not contrat.fichier_modele.path:
                         continue  
-                        
-                    filled_docx_path = os.path.join(temp_dir, f"temp_{item.id}.docx")
-                    fill_docx_template(contrat.fichier_modele.path, user_inputs, filled_docx_path)
-                    
-                    pdf_filename = f"{contrat.title.replace(' ', '_')}_{order.id}.pdf"
-                    pdf_path = os.path.join(temp_dir, pdf_filename)
-                    
-                    convert_docx_to_pdf(filled_docx_path, temp_dir)
-                    generated_temp_pdf = os.path.join(temp_dir, f"temp_{item.id}.pdf")
-                    
-                    if os.path.exists(generated_temp_pdf):
-                        os.rename(generated_temp_pdf, pdf_path)
-                        generated_files.append((pdf_filename, pdf_path))
+
+                    if self._contract_has_tags(contrat):
+                        filled_docx_path = os.path.join(temp_dir, f"temp_{item.id}.docx")
+                        fill_docx_template(contrat.fichier_modele.path, user_inputs, filled_docx_path)
+
+                        filename = f"{contrat.title.replace(' ', '_')}_{order.id}.pdf"
+                        pdf_path = os.path.join(temp_dir, filename)
+
+                        convert_docx_to_pdf(filled_docx_path, temp_dir)
+                        generated_temp_pdf = os.path.join(temp_dir, f"temp_{item.id}.pdf")
+
+                        if os.path.exists(generated_temp_pdf):
+                            os.rename(generated_temp_pdf, pdf_path)
+                            generated_files.append((filename, pdf_path))
+                    else:
+                        filename = os.path.basename(contrat.fichier_modele.name)
+                        original_path = os.path.join(temp_dir, f"original_{item.id}_{filename}")
+                        shutil.copyfile(contrat.fichier_modele.path, original_path)
+                        generated_files.append((filename, original_path))
 
                 # --- CAS B : Professionnel ---
                 elif item.pro:
@@ -213,7 +226,7 @@ class OrderDownloadView(APIView):
                         email_attachments.append({
                             'filename': filename,
                             'content': f.read(),
-                            'mimetype': 'application/pdf'
+                            'mimetype': mimetypes.guess_type(filename)[0] or 'application/octet-stream'
                         })
                 
                 to_email = order.guest.email if order.guest else request.user.email
@@ -242,7 +255,7 @@ class OrderDownloadView(APIView):
                 buffer.seek(0)
                 
                 response = FileResponse(buffer, as_attachment=True, filename=filename)
-                response['Content-Type'] = 'application/pdf'
+                response['Content-Type'] = mimetypes.guess_type(filename)[0] or 'application/octet-stream'
             else:
                 zip_buffer = io.BytesIO()
                 with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_file:
@@ -257,6 +270,14 @@ class OrderDownloadView(APIView):
 
             response['Access-Control-Expose-Headers'] = 'Content-Disposition'
             return response
+
+    def _contract_has_tags(self, contrat):
+        filename = contrat.fichier_modele.name.lower()
+        if not filename.endswith('.docx'):
+            return False
+
+        tags_by_paragraph = extract_tags_grouped_by_paragraph(contrat.fichier_modele.path)
+        return any(block.get('tags') for block in tags_by_paragraph)
 
     def _can_access(self, request, order):
         if request.user.is_authenticated:
