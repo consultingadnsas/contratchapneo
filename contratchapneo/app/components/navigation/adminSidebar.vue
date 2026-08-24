@@ -24,7 +24,7 @@
       </template>
 
       <div class="logout">
-        <button class="nav-item btn-logout" @click="$emit('logout')">
+        <button class="nav-item btn-logout" @click="adminAuth.logout">
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="icon">
             <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15M12 9l-3 3m0 0 3 3m-3-3h12.75" />
           </svg>
@@ -38,6 +38,7 @@
 <script lang="ts">
 import { ref, computed, PropType, Component } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+import { useAdminAuthStore } from '../../stores/adminAuthStore';
 
 // 🔥 MODIFICATION : On remplace isActive par route
 export interface MenuItem {
@@ -58,6 +59,7 @@ export default {
     const route = useRoute();
     const router = useRouter();
     const isReduced = ref(false);
+    const adminAuth = useAdminAuthStore();
     
     const toggleReduce = () => isReduced.value = !isReduced.value;
 
@@ -77,6 +79,7 @@ export default {
 
     return { 
       isReduced, 
+      adminAuth,
       toggleReduce, 
       groupedMenu, 
       route, 
