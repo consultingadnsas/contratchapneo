@@ -312,10 +312,21 @@ class ContractTagsView(APIView):
                 doc.save(tmp_docx.name)
                 tmp_docx_path = tmp_docx.name
 
-            # 5. Conversion en PDF via ta fonction utils
+            # 5. Si le modèle ne contient PAS de balises, on renvoie directement le .docx
+            tags_blocks = extract_tags_grouped_by_paragraph(file_path=contrat.fichier_modele.path)
+            has_tags = any(block.get('tags') for block in tags_blocks)
+
+            if not has_tags:
+                # Renvoi du DOCX directement (pas de conversion en PDF)
+                docx_file = open(tmp_docx_path, 'rb')
+                response = FileResponse(docx_file, content_type='application/vnd.openxmlformats-officedocument.wordprocessingml.document')
+                response['Content-Disposition'] = f'attachment; filename="contrat_{contrat.title}.docx"'
+                return response
+
+            # 6. Conversion en PDF via ta fonction utils
             pdf_path = convert_docx_to_pdf(tmp_docx_path)
 
-            # 6. Envoi du fichier en réponse
+            # 7. Envoi du fichier en réponse
             pdf_file = open(pdf_path, 'rb')
             response = FileResponse(pdf_file, content_type='application/pdf')
             response['Content-Disposition'] = f'attachment; filename="contrat_{contrat.title}.pdf"'
@@ -401,19 +412,30 @@ class DownloadContractFromPack(APIView):
                 tmp_docx_path = os.path.join(temp_dir, f"temp_{contrat.id}.docx")
                 doc.save(tmp_docx_path)
 
-                # Conversion en PDF
-                convert_docx_to_pdf(tmp_docx_path, temp_dir)
-                generated_temp_pdf = os.path.join(temp_dir, f"temp_{contrat.id}.pdf")
+                # Vérifier la présence de balises dans le modèle
+                tags_blocks = extract_tags_grouped_by_paragraph(file_path=contrat.fichier_modele.path)
+                has_tags = any(block.get('tags') for block in tags_blocks)
 
-                if not os.path.exists(generated_temp_pdf):
-                    return Response(
-                        {"error": "Erreur lors de la conversion du document en PDF."},
-                        status=status.HTTP_500_INTERNAL_SERVER_ERROR
-                    )
+                if not has_tags:
+                    # Pas de balises : on renvoie le DOCX rempli directement
+                    with open(tmp_docx_path, 'rb') as f:
+                        generated_bytes = f.read()
+                    generated_ext = '.docx'
+                else:
+                    # Conversion en PDF
+                    convert_docx_to_pdf(tmp_docx_path, temp_dir)
+                    generated_temp_pdf = os.path.join(temp_dir, f"temp_{contrat.id}.pdf")
 
-                # On lit les bytes du PDF AVANT que le TemporaryDirectory ne soit nettoyé
-                with open(generated_temp_pdf, 'rb') as f:
-                    pdf_bytes = f.read()
+                    if not os.path.exists(generated_temp_pdf):
+                        return Response(
+                            {"error": "Erreur lors de la conversion du document en PDF."},
+                            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                        )
+
+                    # On lit les bytes du PDF AVANT que le TemporaryDirectory ne soit nettoyé
+                    with open(generated_temp_pdf, 'rb') as f:
+                        generated_bytes = f.read()
+                    generated_ext = '.pdf'
 
             except Exception as e:
                 return Response(
@@ -439,15 +461,22 @@ class DownloadContractFromPack(APIView):
             locked_pack.save(update_fields=['credits_restants'])
 
         # 6. Envoi du fichier en réponse (depuis les bytes déjà lus en mémoire)
-        buffer = io.BytesIO(pdf_bytes)
+        buffer = io.BytesIO(generated_bytes)
         buffer.seek(0)
 
         safe_title = "".join(c for c in contrat.title if c.isalnum() or c in " _-").rstrip()
+        if generated_ext == '.pdf':
+            filename = f"contrat_{safe_title}.pdf"
+            content_type = 'application/pdf'
+        else:
+            filename = f"contrat_{safe_title}.docx"
+            content_type = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+
         response = FileResponse(
             buffer,
             as_attachment=True,
-            filename=f"contrat_{safe_title}.pdf",
-            content_type='application/pdf'
+            filename=filename,
+            content_type=content_type
         )
         response['Access-Control-Expose-Headers'] = 'Content-Disposition'
 

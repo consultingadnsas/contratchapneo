@@ -156,7 +156,13 @@ const getInputType = (tagName: string) => {
 }
 
 const submitForm = () => {
-  // ⚡️ SÉCURITÉ : On bloque aussi la soumission directe par le bouton si le dernier champ est vide
+  // ⚡️ SÉCURITÉ : Si le contrat ne contient aucune balise, on permet la soumission directe
+  if (uniqueTags.value.length === 0) {
+    emit('submit-data', formData.value)
+    return
+  }
+
+  // Sinon, on bloque la soumission si le champ courant est vide
   if (isCurrentFieldEmpty.value) return;
   emit('submit-data', formData.value)
 }

@@ -91,25 +91,46 @@ export const useProfileStore = defineStore('profile', () => {
         isLoading.value = true;
 
         try {
-            const response = await $api(`/contrat/packs/downloads/${contrat_id}/`, {
-                method: 'POST',
-                body: { user_inputs: payload },
-                responseType: 'blob' 
-            });
+                // Utiliser la variante "raw" pour récupérer le Response complet (headers + body)
+                const rawResp: any = await ($api as any).raw(`/contrat/packs/downloads/${contrat_id}/`, {
+                    method: 'POST',
+                    body: { user_inputs: payload },
+                    responseType: 'blob'
+                });
 
-            if (response) {
-                const blob = new Blob([response as any], { type: 'application/pdf' });
-                const url = window.URL.createObjectURL(blob);
-                const link = document.createElement('a');
-                link.href = url;
-                link.setAttribute('download', 'contrat_genere.pdf'); 
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-                window.URL.revokeObjectURL(url);
-                
-                console.log("Téléchargement lancé !");
-            }
+                if (rawResp && rawResp._data) {
+                    const responseBlob = rawResp._data as Blob;
+                    // Essayer d'extraire le content-type et le filename depuis les headers
+                    const contentType = rawResp.headers.get('content-type') || responseBlob.type || '';
+                    const disposition = rawResp.headers.get('content-disposition') || '';
+
+                    // Récupération du nom de fichier depuis Content-Disposition si présent
+                    let filename = 'contrat_genere';
+                    const match = /filename\*=UTF-8''(.+)|filename="?([^\";]+)"?/.exec(disposition);
+                    if (match) {
+                        filename = decodeURIComponent((match[1] || match[2] || filename).trim());
+                    } else if (contrat_id) {
+                        filename = `contrat_${contrat_id}`;
+                    }
+
+                    // Déterminer l'extension à partir du content-type
+                    let ext = '.pdf';
+                    if (contentType.includes('word') || contentType.includes('offic') || filename.toLowerCase().endsWith('.docx')) {
+                        ext = '.docx';
+                    }
+
+                    const blob = new Blob([responseBlob], { type: contentType || (ext === '.docx' ? 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' : 'application/pdf') });
+                    const url = window.URL.createObjectURL(blob);
+                    const link = document.createElement('a');
+                    link.href = url;
+                    link.setAttribute('download', filename.endsWith(ext) ? filename : `${filename}${ext}`);
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    window.URL.revokeObjectURL(url);
+
+                    console.log('Téléchargement lancé !');
+                }
         } catch (err: any) {
             console.error('Une erreur est survenue lors du téléchargement :', err);
             throw err; 
