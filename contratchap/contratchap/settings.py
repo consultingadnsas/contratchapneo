@@ -29,9 +29,9 @@ SECRET_KEY = config('SECRET_KEY')
 DEBUG = True
 
 ALLOWED_HOSTS = [
-    '.ngrok-free.app', 
-    '.ngrok-free.dev', 
-    'https://parameter-garage-pencil.ngrok-free.dev', 
+    '.ngrok-free.app',
+    '.ngrok-free.dev',
+    'https://parameter-garage-pencil.ngrok-free.dev',
     '127.0.0.1',
     'localhost',
     '172.30.144.1',
@@ -69,6 +69,7 @@ INSTALLED_APPS = [
     'ecommerce',
     'payments',
     'pro',
+    'lawcalcul'
 ]
 
 REST_FRAMEWORK = {
@@ -174,7 +175,7 @@ CORS_ALLOWED_ORIGINS = [
 CORS_ALLOW_CREDENTIALS = True
 
 # Seulement en dev
-# CORS_ALLOW_ALL_ORIGINS = True 
+# CORS_ALLOW_ALL_ORIGINS = True
 
 # PAIEMENT SETTINGS
 STRIPE_SECRET_KEY = config('STRIPE_SECRET_KEY')
