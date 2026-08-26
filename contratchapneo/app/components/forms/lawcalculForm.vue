@@ -5,8 +5,9 @@
         </div>
 
         <form @submit.prevent="$emit('submit')" class="calc-form">
-            
+
             <div class="grid-2">
+
                 <BaseSelect
                     v-model="modelValue.contractType"
                     id="contractType"
@@ -14,6 +15,7 @@
                     :options="contractOptions"
                     required
                 />
+
                 <BaseSelect
                     v-model="modelValue.categoriePro"
                     id="categoriePro"
@@ -91,7 +93,7 @@
                     placeholder="3000000"
                     required
                 />
-                
+
                 <!-- Si l'employeur rompt le CDD plus tôt que prévu -->
                 <BaseInput
                     v-if="modelValue.motif === 'rupture_anticipee_employeur'"
@@ -103,7 +105,7 @@
                     placeholder="3"
                     required
                 />
-                
+
                 <!-- Si le salarié démissionne de son CDD (Rupture anticipée employé) -->
                 <BaseInput
                     v-if="modelValue.motif === 'rupture_anticipee_salarie'"
@@ -147,7 +149,7 @@
             <div v-if="errorMessage" class="alert error">{{ errorMessage }}</div>
 
             <!-- BOUTON DE CALCUL -->
-            <main-button 
+            <main-button
                 label="Calculer mes droits & indemnités"
                 :isLoading="isCalculating"
                 type="submit"
