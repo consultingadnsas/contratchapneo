@@ -522,16 +522,23 @@ class AdminTransaction(ListAPIView):
     pagination_class = AdminCartPagination
 
     def get_queryset(self):
-        queryset = Transaction.objects.all().order_by('-id')
-        
-        tab = self.request.query_params.get('tab', 'models')
+        queryset = Transaction.objects.all().order_by('-created_at')
+        tab = self.request.query_params.get('tab', 'all')
         
         if tab == 'packs':
             queryset = queryset.filter(order__order_items__pack__isnull=False).distinct()
         elif tab == 'custom':
+            # On laisse uniquement le sur-mesure
             queryset = queryset.filter(order__order_items__contrat_customed__isnull=False).distinct()
-        else: # models
+        elif tab == 'revisions':
+            # ⚡️ NOUVEL ONGLET : Strictement les révisions
+            queryset = queryset.filter(order__order_items__contract_revision__isnull=False).distinct()
+        elif tab == 'pros':
+            queryset = queryset.filter(order__order_items__pro__isnull=False).distinct()
+        elif tab == 'models':
             queryset = queryset.filter(order__order_items__contrat__isnull=False).distinct()
+        elif tab == 'all':
+            pass 
 
         search = self.request.query_params.get('search', None)
         if search:
@@ -556,9 +563,19 @@ class AdminAccountingSummaryView(APIView):
     permission_classes = [IsAdminUser]
 
     def get(self, request):
+        # ⚡️ LA SOLUTION EST ICI : L'import doit être la toute première ligne de la fonction
+        from ecommerce.models import OrderItem
+
         total_revenue = Transaction.objects.filter(
             status=Transaction.TransactionStatus.SUCCESSFUL
         ).aggregate(total=Sum('amount'))['total'] or 0
+
+        # Maintenant, Python sait ce qu'est OrderItem quand il arrive ici !
+        total_models_sold = OrderItem.objects.filter(
+            order__status='paid', 
+            contrat__isnull=False,
+            pack__isnull=True 
+        ).aggregate(total=Sum('quantity'))['total'] or 0
 
         status_counts = Transaction.objects.aggregate(
             successful=Count('id', filter=Q(status=Transaction.TransactionStatus.SUCCESSFUL)),
@@ -582,8 +599,6 @@ class AdminAccountingSummaryView(APIView):
             monthly_total=Sum('amount'),
             count=Count('id')
         ).order_by('-month')[:12]
-
-        from ecommerce.models import OrderItem
 
         top_contracts = OrderItem.objects.filter(
             order__status='paid',
@@ -658,6 +673,7 @@ class AdminAccountingSummaryView(APIView):
         return Response({
             'global': {
                 'total_revenue': total_revenue,
+                'total_models_sold': total_models_sold
             },
             'transactions_status': status_counts,
             'revenue_by_method': list(revenue_by_method),

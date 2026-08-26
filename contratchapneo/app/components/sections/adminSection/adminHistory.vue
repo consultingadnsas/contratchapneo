@@ -22,6 +22,12 @@
         <button class="tab-btn" :class="{ active: activeTab === 'custom' }" @click="activeTab = 'custom'">
           Sur-Mesure
         </button>
+        <button class="tab-btn" :class="{ active: activeTab === 'revisions' }" @click="activeTab = 'revisions'">
+          Révisions
+        </button>
+        <button class="tab-btn" :class="{ active: activeTab === 'pros' }" @click="activeTab = 'pros'">
+          Experts
+        </button>
       </div>
     </div>
 
@@ -157,7 +163,16 @@
             <ul v-if="selectedTx.rawOrderItems && selectedTx.rawOrderItems.length > 0" class="items-list">
               <li v-for="(article, idx) in selectedTx.rawOrderItems" :key="idx">
                 <span class="check-icon">✓</span>
-                {{ article.contrat_title || article.pack_title || article.customised_contract || 'Article sans nom' }}
+                {{ 
+                  article.contrat_title || 
+                  article.pack_title || 
+                  article.pro_name || 
+                  article.pro?.name || 
+                  article.contract_revision_title || 
+                  article.contract_revision?.title || 
+                  article.customised_contract || 
+                  'Article sans nom' 
+                }}
               </li>
             </ul>
             <p v-else class="gray-text">Aucun détail d'article trouvé.</p>
@@ -175,7 +190,9 @@ import {
   MagnifyingGlassIcon, 
   DocumentTextIcon, 
   ArchiveBoxIcon, 
-  ScaleIcon
+  ScaleIcon,
+  BriefcaseIcon,
+  PencilSquareIcon
 } from '@heroicons/vue/24/outline';
 import { useAdminTransactStore } from '../../../stores/adminTransactStore';
 import Paginator from '../../tools/Paginator.vue';
@@ -187,7 +204,7 @@ export default {
   },
   setup() {
     const transactStore = useAdminTransactStore();
-    const activeTab = ref<'models' | 'packs' | 'custom'>('models');
+    const activeTab = ref<'models' | 'packs' | 'custom' | 'pros' | 'revisions'>('models');
     const searchQuery = ref('');
     
     const selectedTx = ref<any>(null);
@@ -196,9 +213,8 @@ export default {
     const currentPage = ref(1);
     const itemsPerPage = 10; // Doit correspondre à la page_size de ton AdminCartPagination Django
 
-    // Chargement initial : Page 1 uniquement
     onMounted(async () => {
-      await transactStore.fetchTransact(1);
+      await transactStore.fetchTransact(currentPage.value, activeTab.value, searchQuery.value);
     });
 
     // ⚡️ NOUVELLE FONCTION : DÉTERMINER LE STATUT ET LA COULEUR
@@ -247,9 +263,15 @@ export default {
         if (order.pack || tx.pack || order.order_type === 'pack' || orderItems[0]?.pack_title) {
           itemType = 'packs';
           productTypeLabel = 'Achat de pack';
-        } else if (order.custom_contract || tx.custom_contract || order.order_type === 'custom' || orderItems[0]?.customised_contract) {
+        } else if (orderItems.some((i: any) => i.contract_revision || i.contract_revision_id)) {
+          itemType = 'revisions'; // ⚡️ NOUVEAU
+          productTypeLabel = 'Révision de contrat';
+        } else if (order.custom_contract || tx.custom_contract || order.order_type === 'custom' || orderItems.some((i: any) => i.customised_contract || i.contrat_customed || i.contract_revision || i.contract_revision_id)) {
           itemType = 'custom';
           productTypeLabel = 'Demande sur-mesure';
+        }  else if (orderItems.some((i: any) => i.pro || i.pro_name || i.pro_id)) {
+          itemType = 'pros'; // ⚡️ DÉTECTION DU PRO
+          productTypeLabel = 'Sollicitation Expert';
         } else {
           itemType = 'models';
           productTypeLabel = 'Achat de contrat';
@@ -301,12 +323,16 @@ export default {
     const getIconColor = (tab: string) => {
       if (tab === 'models') return 'bg-blue-light';
       if (tab === 'packs') return 'bg-purple-light';
+      if (tab === 'pros') return 'bg-teal-light';
+      if (tab === 'revisions') return 'bg-pink-light';
       return 'bg-orange-light';
     };
 
     const getIcon = (tab: string) => {
       if (tab === 'models') return DocumentTextIcon;
       if (tab === 'packs') return ArchiveBoxIcon;
+      if (tab === 'pros') return BriefcaseIcon;
+      if (tab === 'revisions') return PencilSquareIcon;
       return ScaleIcon;
     };
 
@@ -327,7 +353,8 @@ export default {
       currentPage, 
       itemsPerPage, 
       handlePageChange,
-      MagnifyingGlassIcon, 
+      MagnifyingGlassIcon,
+      BriefcaseIcon,
       getIconColor, 
       getIcon,
       selectedTx, 
@@ -410,6 +437,8 @@ export default {
 .bg-blue-light { background: #eff6ff; color: #3b82f6; }
 .bg-purple-light { background: #faf5ff; color: #a855f7; }
 .bg-orange-light { background: #fff7ed; color: #f97316; }
+.bg-teal-light { background: #ccfbf1; color: #0f766e; }
+.bg-pink-light { background: #fce7f3; color: #db2777; }
 .empty-state { text-align: center; padding: 3rem 0; }
 
 .pill-btn {

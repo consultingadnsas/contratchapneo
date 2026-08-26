@@ -29,12 +29,15 @@
         <div class="kpi-header">
           <div class="kpi-title">
             <div class="icon-box-light bg-green-light"><component :is="ChartPieIcon" class="icon-sm" /></div>
-            <span class="dark-text font-bold">Ventes Réussies</span>
+            <span class="dark-text font-bold">Contrats Vendus</span>
           </div>
           <div class="mini-bars"><div class="bar bar-mid"></div><div class="bar bar-low"></div><div class="bar bar-high bg-green"></div></div>
         </div>
-        <div class="kpi-body"><h2 class="amount">{{ financeStore.accountancy?.transactions_status?.successful || 0 }}</h2></div>
-        <p class="kpi-footer">Commandes avec statut "Payé"</p>
+        <!-- ⚡️ Utilisation de la nouvelle variable -->
+        <div class="kpi-body">
+          <h2 class="amount">{{ financeStore.accountancy?.global?.total_models_sold || 0 }}</h2>
+        </div>
+        <p class="kpi-footer">Modèles classiques uniquement</p>
       </div>
 
       <!-- KPI 3 : En Attente -->
@@ -249,6 +252,36 @@ export default {
       };
     });
 
+    // ⚡️ CALCUL DYNAMIQUE : Uniquement les contrats classiques vendus
+    const totalContractsOnlySold = computed(() => {
+      let count = 0;
+      const orderList = financeStore.transactions || [];
+      
+      orderList.forEach((tx: any) => {
+        const status = tx.status?.toLowerCase() || '';
+        
+        // On ne compte que les transactions payées
+        if (['paid', 'successful', 'success', 'payé'].includes(status)) {
+          const items = tx.order?.order_items || tx.order_items || tx.order?.lignes_achat || [];
+          
+          items.forEach((item: any) => {
+            // Détection stricte
+            const isContract = item.contrat || item.contrat_title || (item.designation && item.designation.includes('Contrat'));
+            const isPack = item.pack || item.pack_title || (item.designation && item.designation.includes('Pack'));
+            const isCustom = item.customised_contract || item.contrat_customed;
+            const isRevision = item.contract_revision || item.contract_revision_id;
+            const isPro = item.pro || item.pro_name;
+
+            // Si c'est un contrat ET que ce n'est rien d'autre
+            if (isContract && !isPack && !isCustom && !isRevision && !isPro) {
+              count += (item.quantity || 1);
+            }
+          });
+        }
+      });
+      return count;
+    });
+
     return {
       financeStore,
       formatCurrency,
@@ -261,6 +294,7 @@ export default {
       topContractsStats,
       topPacksStats,
       topProsStats,
+      totalContractsOnlySold,
 
       // Icones
       BanknotesIcon: markRaw(BanknotesIcon),

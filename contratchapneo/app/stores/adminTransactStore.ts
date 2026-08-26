@@ -17,7 +17,7 @@ export interface Transaction {
 }
 
 export interface AccountingSummary {
-    global: { total_revenue: number; };
+    global: { total_revenue: number; total_models_sold: number; };
     transactions_status: { successful: number; pending: number; failed: number; canceled: number; };
     revenue_by_method: Array<{ payment_method: string; total_revenue: number; transaction_count: number; }>;
     monthly_evolution: Array<{ month: string; monthly_total: number; count: number; }>;
@@ -52,7 +52,12 @@ export const useAdminTransactStore = defineStore('adminTransac', () => {
         try {
             const response = await $api<any>('/payments/admin/', {
                 method: 'GET',
-                params: { page, tab, search }
+                params: { 
+                    page, 
+                    tab, 
+                    search, 
+                    t: Date.now() // ⚡️ ANTI-CACHE : Force le backend à donner du neuf !
+                }
             });
             if (response && response.results) {
                 transactions.value = response.results;
@@ -73,7 +78,10 @@ export const useAdminTransactStore = defineStore('adminTransac', () => {
         isLoading.value = true;
         error.value = null;
         try {
-            const response = await $api<AccountingSummary>('/payments/admin/accounting/', { method: 'GET' });
+            const response = await $api<AccountingSummary>('/payments/admin/accounting/', { 
+                method: 'GET',
+                params: { t: Date.now() } // ⚡️ ANTI-CACHE ICI AUSSI
+            });
             accountancy.value = response;
         } catch (err: any) {
             error.value = err.message || "Erreur lors de la récupération de la comptabilité.";

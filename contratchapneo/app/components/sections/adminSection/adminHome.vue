@@ -27,16 +27,21 @@
           <!-- ⚡️ CARTE 2 : CONTRATS VENDUS -->
           <div class="white-card">
             <div class="card-header">
-              <div class="icon-purple"><svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg></div>
+              <div class="icon-purple">
+                <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                </svg>
+              </div>
             </div>
             <div class="card-body">
-              <h2 class="dark-text">Contrats Vendus</h2>
-              <p class="gray-text">Modèles et packs téléchargés</p>
+              <!-- ⚡️ Nouveaux textes plus inclusifs -->
+              <h2 class="dark-text">Ventes Globales</h2>
+              <p class="gray-text">Tous services et produits confondus</p>
             </div>
             <div class="card-footer">
               <div class="stat-block-dark">
-                <span>Global</span>
-                <!-- ⚡️ Affichage dynamique de la quantité d'articles vendus -->
+                <span>Total Cumulé</span>
+                <!-- ⚡️ Le compteur affiche maintenant TOUT -->
                 <strong>{{ totalContractsSold }}</strong>
               </div>
             </div>
@@ -106,8 +111,8 @@ export default {
 
     // 1. Déclenchement des appels API au montage
     onMounted(async () => {
-      await transactStore.fetchTransact();
-      await transactStore.fetchAccountancy(); // ⚡️ Ajout de la compta pour le chiffre d'affaires
+     await transactStore.fetchTransact(1, 'all');
+     await transactStore.fetchAccountancy();
     });
 
     // 2. Helper : Formatage monétaire (ex: 2300000 -> 2 300 000)
@@ -136,63 +141,54 @@ export default {
       return { color: 'dot-gray', text: status || 'Inconnu' };
     };
 
-    // ⚡️ 5. CALCUL DYNAMIQUE : Nombre total de contrats/articles vendus
-    // ⚡️ 5. CALCUL DYNAMIQUE : Nombre total de contrats et packs vendus (Uniquement)
+    // 5. CALCUL DYNAMIQUE : Toutes les ventes réussies de la plateforme
     const totalContractsSold = computed(() => {
-      let count = 0;
-      const orderList = transactStore.transactions || [];
-      
-      orderList.forEach((tx: any) => {
-        const status = tx.status?.toLowerCase() || '';
-        
-        // On ne compte que ce qui a été payé
-        if (['paid', 'successful'].includes(status)) {
-          const items = tx.order?.order_items || tx.order_items || tx.order?.lignes_achat || [];
-          
-          items.forEach((item: any) => {
-            // On vérifie le type d'article (Django renvoie souvent ces infos dans order_items)
-            const isContract = item.contrat || item.contrat_title || (item.designation && item.designation.includes('Contrat'));
-            const isPack = item.pack || item.pack_title || (item.designation && item.designation.includes('Pack'));
-
-            // Si c'est un contrat ou un pack (on exclut les pros, le sur-mesure et les révisions)
-            if (isContract || isPack) {
-              count += (item.quantity || 1);
-            }
-          });
-        }
-      });
-      return count;
+      // Au lieu de compter les éléments de la page 1, 
+      // on utilise la statistique globale renvoyée par le backend (AccountingSummary)
+      return transactStore.accountancy?.transactions_status?.successful || 0;
     });
 
     // 6. Tableau des dernières activités
     const recentActivities = computed(() => {
       const sortedTransactions = [...transactStore.transactions].sort((a, b) => {
-        const dateA = new Date(a.created_at).getTime();
-        const dateB = new Date(b.created_at).getTime();
+        const dateA = new Date(a.created_at || a.order?.created_at).getTime();
+        const dateB = new Date(b.created_at || b.order?.created_at).getTime();
         return dateB - dateA;
       });
 
-      return sortedTransactions.slice(0, 7).map((t) => {
-        const styles = getStatusStyles(t.status);
-        const order = t.order || {};
+      return sortedTransactions.slice(0, 7).map((tx) => {
+        const styles = getStatusStyles(tx.status);
+        const order = tx.order || {};
+        const orderItems = order.order_items || order.items || tx.order_items || [];
         
         let actionType = 'Achat de contrat';
-        if (order.pack || t.pack || order.order_type === 'pack' || order.type === 'pack') {
+        
+        // ⚡️ DÉTECTION ROBUSTE UNIQUEMENT
+        const hasPack = order.pack || tx.pack || order.order_type === 'pack' || orderItems.some((i: any) => i.pack || i.pack_title || i.pack_id);
+        const hasCustom = order.custom_contract || tx.custom_contract || order.order_type === 'custom' || orderItems.some((i: any) => i.customised_contract || i.contrat_customed || i.contract_revision ||i.contract_revision_id);
+        const hasRevision = orderItems.some((i: any) => i.contract_revision || i.contract_revision_id);
+        const hasPro = orderItems.some((i: any) => i.pro || i.pro_name || i.pro_id);
+
+        if (hasPack) {
           actionType = 'Achat de pack';
-        } else if (order.custom_contract || t.custom_contract || order.order_type === 'custom' || order.type === 'custom') {
+        } else if (hasRevision) {
+          actionType = 'Révision de contrat';
+        } else if (hasCustom) {
           actionType = 'Demande sur-mesure';
+        }  else if (hasPro) {
+          actionType = 'Sollicitation Expert';
         }
         
-        const clientEmail = order.buyer_email || 'Email non renseigné';
+        const clientEmail = order.buyer_email || order.guest?.email || order.user?.email || 'Email non renseigné';
 
         return {
-          id: t.id,
+          id: tx.id || Math.random().toString(),
           action: actionType, 
           status: styles.text,
           statusColor: styles.color,
           client: clientEmail,
-          date: formatDate(t.created_at),
-          amount: new Intl.NumberFormat('fr-FR').format(t.amount || order.total_amount || 0), 
+          date: formatDate(tx.created_at || order.created_at),
+          amount: new Intl.NumberFormat('fr-FR').format(tx.amount || order.total_amount || 0), 
           icon: markRaw(CreditCardIcon), 
           colorClass: 'bg-gray-light' 
         };
