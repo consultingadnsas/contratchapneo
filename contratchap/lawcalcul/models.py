@@ -14,7 +14,10 @@ class SimulationDroits(models.Model):
         LIC_FAUTE_LOURDE = 'Licenciement_Faute_Lourde', 'Licenciement Faute Lourde'
         LIC_ECO = 'Licenciement_Eco', 'Licenciement Économique'
         FIN_CDD = 'Fin_CDD', 'Fin de CDD'
-        RUPTURE_ANTI_CDD = 'Rupture_Anticipee_CDD', 'Rupture Anticipée CDD'
+        COMMUN_ACCORD_CDD = 'Commun_Accord_CDD', "Rupture d'un commun accord"
+        RUPTURE_ANTI_EMPLOYE = 'Rupture_Anticipee_Employe', "Rupture anticipée par l'employé"
+        RUPTURE_ANTI_EMPLOYEUR = 'Rupture_Anticipee_Employeur', "Rupture anticipée abusive par l'employeur"
+        FAUTE_LOURDE_CDD = 'Faute_Lourde_CDD', "Rupture pour faute lourde"
         RETRAITE = 'Retraite', 'Retraite'
         DECES = 'Deces', 'Décès'
 

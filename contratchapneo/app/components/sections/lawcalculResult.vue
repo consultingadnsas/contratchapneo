@@ -80,13 +80,29 @@
                     <li><strong>Base de calcul :</strong> Cette estimation est produite selon le barème officiel conventionnel.</li>
                 </ul>
             </div>
+           <button class="btn-print" @click="downloadPDF" :disabled="isDownloading">
+                <svg v-if="!isDownloading" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="icon-sm">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3" />
+                </svg>
+                <span v-if="isDownloading">Génération du PDF en cours...</span>
+                <span v-else>Télécharger le Bordereau (PDF)</span>
+            </button>
 
+            <!-- ⚡️ Ton composant hors-écran -->
+            <LawCalculBordereau 
+                :breakdown="breakdown"
+                :totalGrossAmount="totalGrossAmount"
+                :cnpsEmployeeDeduction="cnpsEmployeeDeduction"
+                :netAmount="netAmount"
+                :summaryMessage="summaryMessage"
+            />
         </div>
     </div>
 </template>
 
 <script lang="ts">
-import { defineComponent, PropType } from 'vue';
+import { defineComponent, PropType, ref } from 'vue';
+import LawCalculBordereau from '../tools/lawBordereau.vue'
 
 interface BreakdownItem {
     label: string;
@@ -98,6 +114,7 @@ interface BreakdownItem {
 
 export default defineComponent({
     name: 'LawCalculResult',
+    components: { LawCalculBordereau },
     props: {
         hasCalculated: { type: Boolean, required: true },
         netAmount: { type: Number, required: true },
@@ -113,7 +130,71 @@ export default defineComponent({
         const formatCurrency = (value: number): string => {
             return new Intl.NumberFormat('fr-FR').format(Math.round(value)) + ' FCFA';
         };
-        return { formatCurrency };
+
+        const isDownloading = ref(false);
+
+        // ⚡️ NOUVEAU : Fonction de téléchargement PDF Finale
+        const downloadPDF = async () => {
+            isDownloading.value = true;
+            try {
+                const html2pdf = (await import('html2pdf.js')).default;
+                const element = document.getElementById('bordereau-pdf-content');
+                
+                if (element) {
+                    const opt = {
+                        margin:       10,
+                        filename:     'Bordereau_Droits_ContratChap.pdf',
+                        image:        { type: 'jpeg', quality: 0.98 },
+                        html2canvas:  { 
+                            scale: 2, 
+                            useCORS: true,
+                            onclone: (clonedDoc: any) => {
+                                const style = clonedDoc.createElement('style');
+                                style.innerHTML = `
+                                    /* 1. On rend le document VISIBLE uniquement sur le PDF */
+                                    #bordereau-pdf-content {
+                                        opacity: 1 !important;
+                                        position: relative !important;
+                                        background-color: #ffffff !important;
+                                    }
+
+                                    /* 2. On tue TOUTES les couleurs oklch de Tailwind */
+                                    *, ::before, ::after {
+                                        background-color: transparent !important;
+                                        color: #000000 !important;
+                                        border-color: #ddd !important;
+                                        outline-color: transparent !important;
+                                        text-decoration-color: transparent !important;
+                                        box-shadow: none !important;
+                                    }
+                                    
+                                    /* 3. On restaure le gris des tableaux avec du vrai Hexadécimal */
+                                    .bordereau-table th {
+                                        background-color: #f3f4f6 !important;
+                                    }
+                                    .final-total {
+                                        background-color: #e5e7eb !important;
+                                    }
+                                `;
+                                clonedDoc.head.appendChild(style);
+                            }
+                        },
+                        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+                    };
+
+                    await html2pdf().set(opt).from(element).save();
+                }
+            } catch (error) {
+                console.error("Erreur lors de la génération du PDF", error);
+            } finally {
+                isDownloading.value = false; 
+                document.querySelectorAll('canvas').forEach(c => {
+                    if(c.style.position === 'absolute') c.remove();
+                });
+            }
+        };
+
+        return { formatCurrency, isDownloading, downloadPDF };
     }
 });
 </script>
@@ -159,7 +240,26 @@ export default defineComponent({
 .legal-notes-card ul { margin: 0; padding-left: 1.2rem; display: flex; flex-direction: column; gap: 0.6rem; }
 .legal-notes-card li { font-size: 0.82rem; color: #94a3b8; line-height: 1.5; }
 .legal-notes-card strong { color: #cbd5e1; }
+.btn-print {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    width: 100%;
+    padding: 1rem;
+    background: #ffffff;
+    color: #0f172a;
+    border: none;
+    border-radius: 12px;
+    font-weight: 700;
+    font-size: 1rem;
+    cursor: pointer;
+    margin-top: 2rem;
+    transition: all 0.3s ease;
+}
+.btn-print:hover { background: #e2e8f0; transform: translateY(-2px); }
+.icon-sm { width: 20px; height: 20px; }
 
 @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-@media (max-width: 992px) { .panel-card { padding: 1.5rem; } }
+@media (min-width: 1028px) { .panel-card { padding: 1.5rem; } .btn-print { margin: 3rem;} }
 </style>

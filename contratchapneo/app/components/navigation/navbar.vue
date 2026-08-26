@@ -59,7 +59,21 @@ export default {
 
         const toggleMenu = () => { isMenuOpen.value = !isMenuOpen.value; };
         const closeMenu = () => { isMenuOpen.value = false; };
-        const handleScroll = () => { isScrolled.value = window.scrollY > 20; };
+
+        // Robust scroll detection: check multiple scroll sources and
+        // listen at document level with capture to catch scrolling in
+        // any overflowed container (works for pages using internal scroll).
+        const getScrollTop = () => {
+            try {
+                if (typeof window !== 'undefined' && window.scrollY !== undefined) return window.scrollY;
+                if (document.scrollingElement) return document.scrollingElement.scrollTop || 0;
+                return document.documentElement?.scrollTop || 0;
+            } catch (e) {
+                return 0;
+            }
+        };
+
+        const handleScroll = () => { isScrolled.value = getScrollTop() > 20; };
 
         // ── NOUVEAU : Fonction utilitaire pour extraire l'utilisateur proprement ──
         const getSafeUser = () => {
@@ -91,7 +105,10 @@ export default {
         });
 
         onMounted(async () => {
-            window.addEventListener('scroll', handleScroll);
+            // Capture scroll events from any bubbling/capturing target
+            document.addEventListener('scroll', handleScroll, { passive: true, capture: true } as any);
+            // Also keep a window listener as a fallback
+            window.addEventListener('scroll', handleScroll, { passive: true } as any);
             handleScroll();
 
             try {
@@ -111,7 +128,8 @@ export default {
         });
 
         onUnmounted(() => {
-            window.removeEventListener('scroll', handleScroll);
+            document.removeEventListener('scroll', handleScroll as EventListener);
+            window.removeEventListener('scroll', handleScroll as EventListener);
         });
 
         return { 
