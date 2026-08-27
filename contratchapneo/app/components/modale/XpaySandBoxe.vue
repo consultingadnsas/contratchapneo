@@ -120,6 +120,8 @@ export default defineComponent({
             case 'wave': return 'Wave'
             case 'orange_money': return 'Orange Money'
             case 'moov_money': return 'Moov Money'
+            case 'CARD':
+            case 'card': return 'Carte bancaire'
             case 'stripe': return 'Carte bancaire'
             default: return 'Inconnu'
           }

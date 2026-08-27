@@ -24,7 +24,7 @@
         v-bind="$attrs"
         @change="handleInput"
       >
-        <option value="" disabled selected v-if="placeholder">{{ placeholder }}</option>
+        <option value="" disabled v-if="placeholder">{{ placeholder }}</option>
         
         <slot>
           <option

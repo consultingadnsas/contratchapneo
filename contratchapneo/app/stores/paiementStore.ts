@@ -27,6 +27,16 @@ export const usePaiementStore = defineStore('paiement', () => {
     const error = ref<string | null>(null);
     const sandboxMode = ref(true);
     const tags = ref<Tags[] | null>(null);
+    const paiement = ref<Paiement>({
+        amount: 0,
+        channel: '',
+        referenceNumber: '',
+        customerEmail: '',
+        customerFirstName: '',
+        customerLastname: '',
+        customerPhoneNumber: '',
+        description: '',
+    });
 
     const setSandboxMode = (enabled: boolean) => {
         sandboxMode.value = enabled;
@@ -261,6 +271,7 @@ export const usePaiementStore = defineStore('paiement', () => {
         error,
         tags,
         sandboxMode,
+        paiement,
         setSandboxMode,
         downloadContracts,
         editContract,
