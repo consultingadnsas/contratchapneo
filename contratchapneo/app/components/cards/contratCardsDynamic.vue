@@ -20,7 +20,7 @@
       :image="image"
       :promoPrice="promoPrice" 
       @view="$emit('view')"
-      @buy="$emit('buy')"
+      @contrat-checkout="$emit('contrat-checkout')"
     />
   </div>
 </template>
@@ -45,7 +45,7 @@ export default {
     // ⚡️ NOUVEAU : On déclare promoPrice pour que le parent puisse le passer
     promoPrice: { type: [String, Number], default: null } 
   },
-  emits: ['view', 'buy', 'generate'],
+  emits: ['view', 'contrat-checkout', 'generate'],
   setup() {
     const profileStore = useProfileStore();
 

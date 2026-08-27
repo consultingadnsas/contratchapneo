@@ -1,10 +1,13 @@
 # views.py
 from rest_framework.views import APIView
+from rest_framework.generics import ListAPIView
+from rest_framework.permissions import IsAdminUser
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import AllowAny # Mets IsAuthenticated si l'utilisateur doit être connecté
 
 from .serializers import SimulationDroitsSerializer
+from .models import SimulationDroits
 from .utils import calculer_droits
 
 class SimulationCalculView(APIView):
@@ -36,3 +39,15 @@ class SimulationCalculView(APIView):
             },
             status=status.HTTP_201_CREATED
         )
+
+class SimulationAdminListView(ListAPIView):
+    """
+    GET /api/simulations/
+    Retourne la liste de toutes les simulations triées par date (de la plus récente à la plus ancienne).
+    Accès restreint aux administrateurs.
+    """
+    queryset = SimulationDroits.objects.all().order_by('-created_at')
+    serializer_class = SimulationDroitsSerializer
+    
+    # ⚡️ PERMISSION STRICTE : Seul un administrateur connecté peut accéder à cette route
+    permission_classes = [IsAdminUser]

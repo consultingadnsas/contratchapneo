@@ -33,7 +33,6 @@
         </div>
 
         <div v-else-if="currentStep === 2" class="calculator-grid fade-in">
-            <!-- Composant Formulaire (Gauche) -->
             <div class="left-col">
                 <div v-if="errorMessage || lawStore.error" class="alert error" role="alert" aria-live="assertive">
                     <strong>Erreur :</strong> {{ errorMessage || lawStore.error }}
@@ -50,7 +49,6 @@
                 />
             </div>
 
-            <!-- Composant Résultat (Droite) -->
             <div class="right-col">
                 <LawCalculResult 
                 :hasCalculated="hasCalculated"

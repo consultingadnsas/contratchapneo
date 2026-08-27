@@ -20,7 +20,7 @@ import { ref, markRaw } from 'vue';
 import { useRouter } from 'vue-router';
 import AdminSidebar, {MenuItem} from '../../components/navigation/adminSidebar.vue';
 import AdminContractsModule from '../../components/sections/adminSection/admincontrat/adminContrats.vue';
-import { HomeIcon, BanknotesIcon, UsersIcon, BookOpenIcon, InboxIcon, DocumentTextIcon, Cog8ToothIcon, TrashIcon, ShoppingBagIcon, SwatchIcon, GiftTopIcon } from '@heroicons/vue/24/outline';
+import { HomeIcon, BanknotesIcon, UsersIcon, BookOpenIcon, InboxIcon, DocumentTextIcon, CalculatorIcon, ShoppingBagIcon, SwatchIcon, GiftTopIcon } from '@heroicons/vue/24/outline';
 export default {
   name: 'AdminCataloguePage', 
   
@@ -42,6 +42,7 @@ export default {
       { id:'promo', label: 'Coupons & promo', route: '/admin/AdminPromo', icon: markRaw(GiftTopIcon), category: 'Tools'},
       { id: 'Cart', label: 'Panier', route: '/admin/AdminCart', icon: markRaw(ShoppingBagIcon), category: 'Catalogue' },
       { id: 'packs', label: 'Packs de contrat', route: '/admin/Adminpacks', icon : markRaw(SwatchIcon), category: 'Catalogue' },
+      { id: 'calculator', label: 'Outil de calcul', route: '/admin/AdminCalcul', icon: markRaw(CalculatorIcon), category: 'Tools'}
     ]);
 
     const handleLogout = () => {

@@ -10,8 +10,6 @@
           <div class="item-total">
               <span class="total-price">{{ (Number(item.price) * item.quantity).toLocaleString('fr-FR') }} FCFA</span>
               
-              <!-- ⚡️ LOGIQUE CORBEILLE : S'affiche si on n'est PAS dans le checkout, 
-                   OU ALORS si c'est explicitement un pack. -->
               <button 
                 v-if="!isCheckout || item.isPack"
                 type="button" 
@@ -24,15 +22,73 @@
       </div>
 
       <div class="order-summary">
-          <div class="summary-line"><span>Sous-total</span><span>{{ formattedTotalPrice }} FCFA</span></div>
-          <div class="summary-line"><span>J'ai un code promo</span><span>Gratuite</span></div>
-          <div class="summary-line total"><span>Total</span><span class="final-price">{{ formattedTotalPrice }} FCFA</span></div>
+          <!-- Sous-total -->
+          <div class="summary-line">
+            <span>Sous-total</span>
+            <span>{{ cartStore.formattedSubtotalPrice || formattedTotalPrice }} FCFA</span>
+          </div>
+          
+          <!-- Ligne de réduction active -->
+          <div v-if="hasActiveDiscount" class="summary-line discount-line">
+            <span>
+              Réduction 
+              <strong v-if="cartStore.cart?.coupon_code">({{ cartStore.cart.coupon_code }})</strong>
+            </span>
+            <div class="discount-actions">
+              <span class="discount-amount">- {{ formattedDiscount }} FCFA</span>
+              <button 
+                type="button" 
+                class="remove-coupon-btn" 
+                :disabled="cartStore.isLoading" 
+                @click.prevent="removePromoCode"
+                title="Retirer le code promo"
+              >
+                ✕
+              </button>
+            </div>
+          </div>
+
+          <!-- ⚡️ NOUVEAU : Caché si un code est déjà actif -->
+          <div v-if="!hasActiveDiscount" class="summary-line">
+            <span>J'ai un code promo</span>
+            <input type="checkbox" v-model="hasPromoCode" class="toggle" />
+          </div>
+
+          <!-- ⚡️ NOUVEAU : Caché si un code est déjà actif -->
+          <div v-if="!hasActiveDiscount && hasPromoCode" class="promo-code-container">
+            <input 
+              type="text" 
+              v-model="promoCode" 
+              placeholder="Entrez votre code" 
+              class="promo-input" 
+              :disabled="cartStore.isLoading"
+              @keyup.enter="applyPromoCode"
+            />
+            <button 
+              type="button" 
+              class="promo-apply-btn" 
+              :disabled="cartStore.isLoading || !promoCode.trim()"
+              @click="applyPromoCode"
+            >
+              {{ cartStore.isLoading ? '...' : 'Appliquer' }}
+            </button>
+          </div>
+
+          <!-- Retours visuels (Succès / Erreur) -->
+          <p v-if="couponError" class="promo-feedback error">{{ couponError }}</p>
+          <p v-if="couponSuccess" class="promo-feedback success">{{ couponSuccess }}</p>
+
+          <!-- Total final -->
+          <div class="summary-line total">
+            <span>Total</span>
+            <span class="final-price">{{ formattedTotalPrice }} FCFA</span>
+          </div>
       </div>
     </div>
 </template>
 
 <script lang="ts">
-import { computed } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { useCartStore } from '../../stores/cartStore';
 import placeholder from '@/assets/pictures/ContratChap/pexels-thirdman-5060819.jpg';
 
@@ -63,28 +119,24 @@ export default {
           itemImage = i.pro.profile_picture;
           targetId = i.pro.id; 
         }
-        // ⚡️ CORRECTION : On supporte à la fois "pack" (singulier) et "packs" (pluriel)
         else if (i.pack || i.packs) {
           const packObj = i.pack || i.packs;
           itemName = `Pack : ${packObj.title || packObj.name || 'Inconnu'}`; 
           itemImage = packObj.picture;
           targetId = packObj.id; 
         }
-        // ⚡️ AJOUT 1 : Contrat sur mesure
         else if (i.customed_contract || i.customized_contract) {
           const customObj = i.customed_contract || i.customized_contract;
           itemName = customObj.title || customObj.name || 'Contrat sur mesure';
           itemImage = customObj.picture || null;
           targetId = customObj.id;
         }
-        // ⚡️ AJOUT 2 : Révision de contrat
         else if (i.contract_revision || i.revision) {
           const revObj = i.contract_revision || i.revision;
           itemName = revObj.title || revObj.name || 'Révision de contrat';
           itemImage = revObj.picture || null;
           targetId = revObj.id;
         }
-        // ⚡️ AJOUT 3 : Sécurité ultime si le backend envoie directement le titre à la racine de l'item
         else if (i.title || i.name) {
           itemName = i.title || i.name;
         }
@@ -104,6 +156,62 @@ export default {
 
     const formattedTotalPrice = computed(() => cartStore.formattedTotalPrice);
 
+    // ⚡️ --- LOGIQUE CODE PROMO (Importée depuis la modale) --- ⚡️
+    const hasPromoCode = ref(false);
+    const promoCode = ref('');
+    const couponError = ref<string | null>(null);
+    const couponSuccess = ref<string | null>(null);
+
+    const hasActiveDiscount = computed(() => {
+      const discountVal = Number(cartStore.cart?.discount || 0);
+      const hasItems = (cartStore.cart?.items?.length || 0) > 0;
+      // ⚡️ CORRECTION : La réduction n'est active QUE s'il y a un montant de réduction ET des articles dans le panier
+      return discountVal > 0 && hasItems;
+    });
+
+    const formattedDiscount = computed(() => {
+      const discountVal = Number(cartStore.cart?.discount || 0);
+      return discountVal.toLocaleString('fr-FR');
+    });
+
+    const applyPromoCode = async () => {
+      if (!promoCode.value.trim() || cartStore.isLoading) return;
+      
+      couponError.value = null;
+      couponSuccess.value = null;
+
+      const success = await cartStore.applyCoupon(promoCode.value.trim());
+      if (success) {
+        couponSuccess.value = "Code promo appliqué !";
+        promoCode.value = '';
+      } else {
+        couponError.value = cartStore.error || "Ce code promo est invalide ou expiré.";
+      }
+    };
+
+    const removePromoCode = async () => {
+      if (cartStore.isLoading) return;
+      couponError.value = null;
+      couponSuccess.value = null;
+
+      try {
+        const success = await cartStore.removeCoupon();
+        if (success) {
+          couponSuccess.value = "Code promo retiré.";
+          promoCode.value = '';
+          
+          setTimeout(() => {
+            couponSuccess.value = null;
+          }, 3000);
+        } else {
+          couponError.value = cartStore.error || "Erreur lors de la suppression.";
+        }
+      } catch (e) {
+        couponError.value = "Une erreur est survenue.";
+      }
+    };
+
+    // --- LOGIQUE PANIER ---
     const removeFromCart = async (id: string) => {
       try {
         await cartStore.removeFromCart(id);
@@ -112,31 +220,21 @@ export default {
       }
     };
 
-    const decrease = async (id: string, qty: number) => {
-      if (qty <= 1) return;
-      try {
-        await cartStore.updateQuantity(id, qty - 1);
-      } catch (e) {
-        console.error("Erreur lors de la diminution:", e);
-      }
-    };
-
-    const increase = async (id: string, qty: number) => {
-      try {
-        await cartStore.updateQuantity(id, qty + 1);
-      } catch (e) {
-        console.error("Erreur lors de l'augmentation:", e);
-      }
-    };
-
     return {
       cartStore,
       cartItems,
       formattedTotalPrice,
       removeFromCart,
-      decrease,
-      increase,
       placeholder,
+      // On retourne les variables du code promo à la vue
+      hasPromoCode,
+      promoCode,
+      couponError,
+      couponSuccess,
+      hasActiveDiscount,
+      formattedDiscount,
+      applyPromoCode,
+      removePromoCode
     }
   }
 }
@@ -267,5 +365,97 @@ export default {
 
 .final-price {
   color: #202b4a;
+}
+/* ⚡️ --- STYLES CODE PROMO --- ⚡️ */
+.discount-line {
+  color: #16a34a;
+  align-items: center;
+}
+
+.discount-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.discount-amount {
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.remove-coupon-btn {
+  background: none;
+  border: none;
+  color: #dc2626;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: bold;
+  padding: 0 0.25rem;
+  transition: opacity 0.2s;
+}
+
+.remove-coupon-btn:hover {
+  opacity: 0.7;
+}
+
+.promo-code-container {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+  animation: slideDown 0.3s ease-out;
+}
+
+.promo-input {
+  flex: 1;
+  padding: 0.6rem 0.8rem;
+  border: 1px solid #ddd;
+  border-radius: 0.5rem;
+  font-size: 0.9rem;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.promo-input:focus {
+  border-color: #202b4a;
+}
+
+.promo-apply-btn {
+  background: #1a1a1a;
+  color: white;
+  border: none;
+  padding: 0 1rem;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 0.9rem;
+  transition: background 0.2s;
+}
+
+.promo-apply-btn:hover:not(:disabled) {
+  background: #333;
+}
+
+.promo-apply-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.promo-feedback {
+  font-size: 0.8rem;
+  margin: 0.25rem 0 0.75rem 0;
+  animation: slideDown 0.2s ease-out;
+}
+
+.promo-feedback.error {
+  color: #dc2626;
+}
+
+.promo-feedback.success {
+  color: #16a34a;
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 </style>

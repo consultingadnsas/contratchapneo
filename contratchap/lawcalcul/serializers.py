@@ -1,10 +1,20 @@
 from rest_framework import serializers
 from .models import SimulationDroits
+from .utils import calculer_droits
 
 class SimulationDroitsSerializer(serializers.ModelSerializer):
+    resultats_financiers = serializers.SerializerMethodField()
+
     class Meta:
         model = SimulationDroits
         fields = '__all__'
+
+    def get_resultats_financiers(self, obj):
+        # On repasse l'instance à ton "cerveau mathématique"
+        try:
+            return calculer_droits(obj)
+        except Exception:
+            return None # En cas d'erreur de calcul sur une vieille donnée
 
     def validate_email(self, value):
             return value.lower().strip()

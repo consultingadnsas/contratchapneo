@@ -49,17 +49,19 @@ export default {
         const handleReturnHome = async () => {
             isClearing.value = true;
             try {
-                // 1. On appelle l'action clearCart() du store pour vider l'API et le state local
+                // ⚡️ NOUVEAU : On s'assure de retirer le coupon côté serveur avant de vider
+                if (cartStore.cart?.coupon_code) {
+                    await cartStore.removeCoupon();
+                }
+                
                 await cartStore.clearCart();
                 console.log('🗑️ Panier vidé avec succès avant retour à l\'accueil.');
             } catch (err) {
-                // 2. Sécurité : si l'API échoue, on vide quand même le panier en local
-                // pour éviter de bloquer l'utilisateur
+                // ⚡️ NOUVEAU : En cas d'erreur, on écrase TOUT localement (y compris le coupon)
                 console.warn('⚠️ Erreur API lors du vidage, réinitialisation locale...', err);
-                cartStore.cart = { items: [] };
+                cartStore.cart = { items: [], discount: 0, coupon_code: null };
             } finally {
                 isClearing.value = false;
-                // 3. Redirection vers la page d'accueil
                 router.push('/');
             }
         };

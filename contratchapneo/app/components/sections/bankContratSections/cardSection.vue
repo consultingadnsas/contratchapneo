@@ -69,7 +69,7 @@
                         :promoPrice="contrat.promo_price"
                         :image="contrat.picture || undefined"
                         @view="openViewModal(contrat.id)" 
-                        @buy="addTocart(contrat.id)"
+                        @contrat-checkout="addTocart(contrat.id)"
                         @generate="fillContract(contrat.id)"
                     />
                 </div>
@@ -119,8 +119,6 @@
                 @close="isViewOpen = false"
                 @buy="(id) => { addTocart(id); isViewOpen = false; }"
             />
-
-            <cartBubble @open-cart="openModal()" />
         </Teleport>
     </div>
 </template>
@@ -223,9 +221,14 @@ export default {
 
         const addTocart = async (contratId: string) => {
             try {
+                // 1. On ajoute au panier
                 await cartStore.addToCart(contratId);
+                
+                // 2. ⚡️ NOUVEAU : On redirige immédiatement vers la page de checkout
+                router.push('/order/checkout/'); 
+                
             } catch (error: any) {
-                console.error("Erreur lors de l'ajout au panier", error)
+                console.error("Erreur lors de l'ajout au panier", error);
             }
         }
 

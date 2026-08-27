@@ -9,7 +9,7 @@
     
     <!-- La zone dynamique -->
     <main class="admin-main-content">
-      <AdminHistoryModule />
+      <AdminCalculList />
 
     </main>
   </div>
@@ -19,14 +19,14 @@
 import { ref, markRaw } from 'vue';
 import { useRouter } from 'vue-router';
 import AdminSidebar, {MenuItem} from '../../components/navigation/adminSidebar.vue';
-import AdminHistoryModule from '../../components/sections/adminSection/adminHistory.vue';
+import AdminCalculList from '../../components/sections/adminSection/adminCalculList.vue';
 import { HomeIcon, BanknotesIcon, UsersIcon, BookOpenIcon, InboxIcon, DocumentTextIcon, CalculatorIcon, ShoppingBagIcon, SwatchIcon, GiftTopIcon } from '@heroicons/vue/24/outline';
 export default {
-  name: 'AdminHistoryPage', 
+  name: 'AdminTestiPage', 
   
   components: { 
     AdminSidebar,
-    AdminHistoryModule // 👈 Un seul composant à charger
+    AdminCalculList
   },
 
   setup() {

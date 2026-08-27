@@ -27,10 +27,6 @@
             @close="isOpen = false"
         />
 
-        <cartBubble 
-            @open-cart="openModal()" 
-        />
-
     </div>
     
 </template>

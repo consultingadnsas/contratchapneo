@@ -132,20 +132,14 @@ export default {
         }
 
         // ── Soumission ────────────────────────────────────────────────────
-        // ── Soumission ────────────────────────────────────────────────────
         const submitForm = async () => {
             
-            // 🛑 On bloque la soumission si la validation échoue
             if (!validate()) {
                 return;
             }
 
-            // 🔥 LA CORRECTION EST ICI : Enregistrement de l'email en Cookie
-            // On utilise useCookie fourni par Nuxt (qui le gère automatiquement côté front et back)
-            // On lui donne une durée de vie (maxAge) d'une heure (3600 secondes)
             const backupEmailCookie = useCookie('backup_checkout_email', { maxAge: 3600 });
             backupEmailCookie.value = checkoutform.email;
-            console.log("💉 Email sécurisé dans le cookie avant paiement :", backupEmailCookie.value);
 
             try {
                 const payload = {
@@ -171,6 +165,22 @@ export default {
                     checkoutform.email
                 )
 
+                // ⚡️ NOUVEAU 1 : On force le backend à retirer le coupon de la session pour les prochains achats
+                if (cartStore.cart?.coupon_code) {
+                    try {
+                        await cartStore.removeCoupon();
+                    } catch (e) {
+                        console.warn("Nettoyage du coupon ignoré côté serveur", e);
+                    }
+                }
+
+                // ⚡️ NOUVEAU 2 : On nettoie radicalement le panier local
+                if (cartStore.cart) {
+                    cartStore.cart.items = [];
+                    cartStore.cart.discount = 0;
+                    cartStore.cart.coupon_code = null;
+                }-
+
                 // Envoi de l'événement de succès
                 emit('success', {
                     paymentMethod: checkoutform.payment_method,
@@ -186,7 +196,6 @@ export default {
                 })
 
             } catch (err) {
-                // ❌ Affichage de l'erreur API
                 showNotification('error', 'Échec de la commande', cartStore.error || "Une erreur est survenue lors de l'initialisation du paiement.");
                 console.error('Échec de la soumission :', err)
             }
