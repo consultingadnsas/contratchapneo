@@ -177,7 +177,7 @@ export default {
                 { value: 'wave',         name: 'Wave' },
                 { value: 'orange_money', name: 'Orange Money' },
                 { value: 'moov_money',   name: 'Moov Money' },
-                { value: 'stripe',       name: 'Carte Bancaire (Stripe)' },
+                { value: 'CARD',         name: 'Visa/MasterCard' },
             ],
             checkoutform,
             submitForm,

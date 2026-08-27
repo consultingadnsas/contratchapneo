@@ -117,7 +117,7 @@ class PaymentInitiateView(APIView):
             'merchantId'         : settings.XPAYE_MERCHANT_ID,
             'amount'             : int(order.total_amount),      # entier FCFA
             'description'        : f'Commande {str(order.id)[:8]}',
-            'channel'            : 'CARD',
+            'channel'            : payment_method,
             'countryCurrencyCode': '952',                        # FCFA XOF
             'referenceNumber'    : str(transaction.id),          # ← notre clé de récup
             'customerEmail'      : order.buyer_email,            # property Order
