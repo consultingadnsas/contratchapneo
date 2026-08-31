@@ -41,7 +41,7 @@
             <div class="form-wrapper">
                 <div class="form-header">
                     <h2>Créer un compte</h2>
-                    <p>Entrez vos données personnelles pour commencer.</p>
+                    <p></p>
                 </div>
 
                 <form @submit.prevent="submitForm" class="step-form">
@@ -141,7 +141,7 @@
                     </div>
 
                     <div class="login-link">
-                        <p>Vous avez déjà un compte ? <router-link to="/login">Connectez-vous</router-link></p>
+                        <p>Vous avez déjà un compte ? <router-link to="/auth/login">Connectez-vous</router-link></p>
                     </div>
 
                 </form>
@@ -274,7 +274,7 @@ export default {
     display: flex;
     width: 100%;
     min-height: 100vh;
-    background-color: #050505; /* Noir profond */
+    background: radial-gradient(circle at 50% 15%, #18223c 0%, #0a0e1a 100%);
     color: #ffffff;
     font-family: 'Inter', sans-serif;
 }
@@ -282,7 +282,7 @@ export default {
 /* --- PANNEAU GAUCHE (Stepper) --- */
 .stepper-sidebar {
     width: 45%;
-    background: radial-gradient(circle at top left, #1e4a3b, #050505 70%);
+    background: radial-gradient(circle at 50% 15%, #18223c 0%, #0a0e1a 100%);
     padding: 4rem;
     display: flex;
     flex-direction: column;
@@ -399,6 +399,7 @@ export default {
 
 .form-step {
     display: flex;
+    width: 100%;
     flex-direction: column;
     gap: 1.2rem;
     animation: fadeIn 0.4s ease-in-out;
@@ -414,12 +415,17 @@ export default {
 
 .form-actions {
     display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
     gap: 1rem;
     margin-top: 1rem;
 }
 
 .btn-back {
     background: transparent;
+    width: 50%;
+    height: 8vh;
     border: 1px solid rgba(255, 255, 255, 0.2);
     color: white;
     padding: 0 1.5rem;
@@ -434,6 +440,7 @@ export default {
 }
 
 .btn-next, .btn-submit {
+    width: 50%;
     flex: 1;
 }
 
