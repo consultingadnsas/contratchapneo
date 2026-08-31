@@ -22,11 +22,6 @@
 
         <footer-section/>
 
-        <cartModale
-            :isOpen="isOpen" 
-            @close="isOpen = false"
-        />
-
     </div>
     
 </template>

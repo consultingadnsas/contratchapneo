@@ -1,6 +1,12 @@
 <template>
     <div class="panel-card panel-right">
         <div class="panel-header">
+            <div class="panel-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 6a7.5 7.5 0 1 0 7.5 7.5h-7.5V6Z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 10.5H21A7.5 7.5 0 0 0 13.5 3v7.5Z" />
+                </svg>
+            </div>
             <h3>Estimation du Solde de Tout Compte</h3>
         </div>
 
@@ -30,6 +36,7 @@
                 </div>
             </div>
 
+            <!-- SYNTHÈSE FINANCIÈRE -->
             <div class="summary-table">
                 <div class="summary-row main-row">
                     <span>Total Brut Global</span>
@@ -53,6 +60,7 @@
                 </div>
             </div>
 
+            <!-- DÉTAIL DES RUBRIQUES DU CALCUL -->
             <div class="breakdown-list" v-if="breakdown.length > 0">
                 <h4>Détail des rubriques :</h4>
                 <div v-for="(item, index) in breakdown" :key="index" class="breakdown-item" :class="{ 'is-negative': item.amount < 0 }">
@@ -75,12 +83,13 @@
             <div class="legal-notes-card">
                 <h4>Notes Légales Importantes</h4>
                 <ul>
-                    <li><strong>Exonération Art. 117 CGI :</strong> Les indemnités légales de rupture sont exonérées d'impôts et de CNPS.</li>
+                    <li><strong>Exonération Art. 117 CGI :</strong> Les indemnités légales de rupture sont totalement exonérées d'impôts sur le revenu et de cotisations CNPS.</li>
                     <li><strong>Retenue CNPS 6,3 % :</strong> Appliquée uniquement sur l'assiette salariale soumise (plafonnée à 3 375 000 FCFA/mois).</li>
-                    <li><strong>Base de calcul :</strong> Cette estimation est produite selon le barème officiel conventionnel.</li>
+                    <li><strong>Base de calcul :</strong> Cette estimation est produite selon le barème officiel conventionnel et ne tient pas compte des accords d'entreprise plus favorables éventuels.</li>
                 </ul>
             </div>
-           <button class="btn-print" @click="downloadPDF" :disabled="isDownloading">
+            
+            <button class="btn-print" @click="downloadPDF" :disabled="isDownloading">
                 <svg v-if="!isDownloading" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="icon-sm">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3" />
                 </svg>
@@ -88,7 +97,7 @@
                 <span v-else>Télécharger le Bordereau (PDF)</span>
             </button>
 
-            <!-- ⚡️ Ton composant hors-écran -->
+            <!-- Composant PDF (Hors écran) -->
             <LawCalculBordereau 
                 :breakdown="breakdown"
                 :totalGrossAmount="totalGrossAmount"
@@ -102,7 +111,7 @@
 
 <script lang="ts">
 import { defineComponent, PropType, ref } from 'vue';
-import LawCalculBordereau from '../tools/lawBordereau.vue'
+import LawCalculBordereau from '../tools/lawBordereau.vue';
 
 interface BreakdownItem {
     label: string;
@@ -133,7 +142,6 @@ export default defineComponent({
 
         const isDownloading = ref(false);
 
-        // ⚡️ NOUVEAU : Fonction de téléchargement PDF Finale
         const downloadPDF = async () => {
             isDownloading.value = true;
             try {
@@ -151,14 +159,11 @@ export default defineComponent({
                             onclone: (clonedDoc: any) => {
                                 const style = clonedDoc.createElement('style');
                                 style.innerHTML = `
-                                    /* 1. On rend le document VISIBLE uniquement sur le PDF */
                                     #bordereau-pdf-content {
                                         opacity: 1 !important;
                                         position: relative !important;
                                         background-color: #ffffff !important;
                                     }
-
-                                    /* 2. On tue TOUTES les couleurs oklch de Tailwind */
                                     *, ::before, ::after {
                                         background-color: transparent !important;
                                         color: #000000 !important;
@@ -167,8 +172,6 @@ export default defineComponent({
                                         text-decoration-color: transparent !important;
                                         box-shadow: none !important;
                                     }
-                                    
-                                    /* 3. On restaure le gris des tableaux avec du vrai Hexadécimal */
                                     .bordereau-table th {
                                         background-color: #f3f4f6 !important;
                                     }
@@ -200,46 +203,281 @@ export default defineComponent({
 </script>
 
 <style scoped>
-.panel-card { background: rgba(255, 255, 255, 0.025); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 24px; padding: 2.2rem; box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35); }
-.panel-header { display: flex; align-items: center; gap: 0.8rem; border-bottom: 1px solid rgba(255, 255, 255, 0.08); padding-bottom: 1.2rem; margin-bottom: 1.5rem; }
-.panel-header h3 { font-size: 1.15rem; font-weight: 700; color: #f8fafc; margin: 0; }
-.empty-state { text-align: center; padding: 4rem 2rem; color: #64748b; display: flex; flex-direction: column; align-items: center; gap: 1rem; }
-.empty-icon { width: 60px; height: 60px; border-radius: 50%; background: rgba(255, 255, 255, 0.03); border: 1px dashed rgba(255, 255, 255, 0.1); display: flex; align-items: center; justify-content: center; color: #475569; }
+.panel-card {
+    background: rgba(255, 255, 255, 0.025);
+    backdrop-filter: blur(25px);
+    -webkit-backdrop-filter: blur(25px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 24px;
+    padding: 2.2rem;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
+}
+
+.panel-header {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    padding-bottom: 1.2rem;
+    margin-bottom: 1.5rem;
+}
+
+.panel-icon {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    background: rgba(50, 244, 89, 0.12);
+    color: #32f459;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.panel-icon svg {
+    width: 20px;
+    height: 20px;
+}
+
+.panel-header h3 {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: #f8fafc;
+    margin: 0;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 4rem 2rem;
+    color: #64748b;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+}
+
+.empty-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px dashed rgba(255, 255, 255, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #475569;
+}
+
 .empty-icon svg { width: 30px; height: 30px; }
-.empty-state h4 { font-size: 1.1rem; color: #cbd5e1; margin: 0; }
-.empty-state p { font-size: 0.9rem; max-width: 320px; line-height: 1.5; margin: 0; }
-.results-wrapper { display: flex; flex-direction: column; gap: 1.8rem; animation: fadeIn 0.4s ease; }
-.highlight-card { background: linear-gradient(135deg, rgba(50, 244, 89, 0.12) 0%, rgba(21, 108, 169, 0.15) 100%); border: 1px solid rgba(50, 244, 89, 0.35); border-radius: 20px; padding: 2rem 1.5rem; text-align: center; box-shadow: 0 10px 30px rgba(50, 244, 89, 0.08); }
-.highlight-card.is-zero { background: rgba(239, 68, 68, 0.08); border-color: rgba(239, 68, 68, 0.35); }
-.highlight-label { font-size: 0.88rem; font-weight: 600; color: #a7f3d0; text-transform: uppercase; letter-spacing: 0.8px; display: block; margin-bottom: 0.6rem; }
-.big-amount { font-size: clamp(2.2rem, 4vw, 2.8rem); font-weight: 800; color: #32f459; margin-bottom: 0.8rem; text-shadow: 0 0 30px rgba(50, 244, 89, 0.35); }
-.highlight-card.is-zero .big-amount { color: #f87171; text-shadow: none; }
-.highlight-subtitle { font-size: 0.88rem; color: #cbd5e1; max-width: 90%; margin: 0 auto 1.2rem auto; line-height: 1.5; }
-.status-badge { display: inline-flex; align-items: center; gap: 0.5rem; background: rgba(50, 244, 89, 0.2); border: 1px solid rgba(50, 244, 89, 0.4); color: #32f459; padding: 0.4rem 1rem; border-radius: 999px; font-size: 0.82rem; font-weight: 700; }
-.badge-icon { width: 16px; height: 16px; }
-.summary-table { display: flex; flex-direction: column; gap: 0.8rem; border-top: 1px solid rgba(255, 255, 255, 0.08); border-bottom: 1px solid rgba(255, 255, 255, 0.08); padding: 1.2rem 0; }
-.summary-row { display: flex; justify-content: space-between; font-size: 0.92rem; color: #cbd5e1; }
-.summary-row.main-row { font-size: 1.05rem; color: #ffffff; font-weight: 600; }
-.summary-row.deduction { color: #fca5a5; font-weight: 600; }
-.summary-row.info { color: #fcd34d; font-size: 0.85rem; }
-.breakdown-list h4 { font-size: 0.9rem; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.6px; margin: 0 0 1rem 0; }
-.breakdown-item { background: rgba(0, 0, 0, 0.25); border: 1px solid rgba(255, 255, 255, 0.06); border-radius: 12px; padding: 1rem 1.2rem; margin-bottom: 0.7rem; }
-.breakdown-item.is-negative { border-color: rgba(239, 68, 68, 0.3); background: rgba(239, 68, 68, 0.05); }
-.item-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.3rem; }
-.item-name { font-weight: 600; color: #ffffff; font-size: 0.92rem; }
-.item-val { font-weight: 700; color: #32f459; font-size: 0.98rem; }
+
+.empty-state h4 {
+    font-size: 1.1rem;
+    color: #cbd5e1;
+    margin: 0;
+}
+
+.empty-state p {
+    font-size: 0.9rem;
+    max-width: 320px;
+    line-height: 1.5;
+    margin: 0;
+}
+
+.results-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 1.8rem;
+    animation: fadeIn 0.4s ease;
+}
+
+.highlight-card {
+    background: linear-gradient(135deg, rgba(50, 244, 89, 0.12) 0%, rgba(21, 108, 169, 0.15) 100%);
+    border: 1px solid rgba(50, 244, 89, 0.35);
+    border-radius: 20px;
+    padding: 2rem 1.5rem;
+    text-align: center;
+    box-shadow: 0 10px 30px rgba(50, 244, 89, 0.08);
+}
+
+.highlight-card.is-zero {
+    background: rgba(239, 68, 68, 0.08);
+    border-color: rgba(239, 68, 68, 0.35);
+}
+
+.highlight-label {
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: #a7f3d0;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    display: block;
+    margin-bottom: 0.6rem;
+}
+
+.big-amount {
+    font-size: clamp(2.2rem, 4vw, 2.8rem);
+    font-weight: 800;
+    color: #32f459;
+    margin-bottom: 0.8rem;
+    text-shadow: 0 0 30px rgba(50, 244, 89, 0.35);
+}
+
+.highlight-card.is-zero .big-amount {
+    color: #f87171;
+    text-shadow: none;
+}
+
+.highlight-subtitle {
+    font-size: 0.88rem;
+    color: #cbd5e1;
+    max-width: 90%;
+    margin: 0 auto 1.2rem auto;
+    line-height: 1.5;
+}
+
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: rgba(50, 244, 89, 0.2);
+    border: 1px solid rgba(50, 244, 89, 0.4);
+    color: #32f459;
+    padding: 0.4rem 1rem;
+    border-radius: 999px;
+    font-size: 0.82rem;
+    font-weight: 700;
+}
+
+.badge-icon {
+    width: 16px;
+    height: 16px;
+}
+
+.summary-table {
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    padding: 1.2rem 0;
+}
+
+.summary-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.92rem;
+    color: #cbd5e1;
+}
+
+.summary-row.main-row {
+    font-size: 1.05rem;
+    color: #ffffff;
+    font-weight: 600;
+}
+
+.summary-row.deduction {
+    color: #fca5a5;
+    font-weight: 600;
+}
+
+.summary-row.info {
+    color: #fcd34d;
+    font-size: 0.85rem;
+}
+
+.breakdown-list h4 {
+    font-size: 0.9rem;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    margin: 0 0 1rem 0;
+}
+
+.breakdown-item {
+    background: rgba(0, 0, 0, 0.25);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 12px;
+    padding: 1rem 1.2rem;
+    margin-bottom: 0.7rem;
+}
+
+.breakdown-item.is-negative {
+    border-color: rgba(239, 68, 68, 0.3);
+    background: rgba(239, 68, 68, 0.05);
+}
+
+.item-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.3rem;
+}
+
+.item-name {
+    font-weight: 600;
+    color: #ffffff;
+    font-size: 0.92rem;
+}
+
+.item-val {
+    font-weight: 700;
+    color: #32f459;
+    font-size: 0.98rem;
+}
+
 .is-negative .item-val { color: #f87171; }
-.item-note { font-size: 0.82rem; color: #94a3b8; margin: 0 0 0.6rem 0; line-height: 1.4; }
-.item-tags { display: flex; gap: 0.4rem; }
-.tag { font-size: 0.7rem; font-weight: 600; padding: 0.2rem 0.6rem; border-radius: 6px; }
+
+.item-note {
+    font-size: 0.82rem;
+    color: #94a3b8;
+    margin: 0 0 0.6rem 0;
+    line-height: 1.4;
+}
+
+.item-tags {
+    display: flex;
+    gap: 0.4rem;
+}
+
+.tag {
+    font-size: 0.7rem;
+    font-weight: 600;
+    padding: 0.2rem 0.6rem;
+    border-radius: 6px;
+}
+
 .tag-tax { background: rgba(251, 191, 36, 0.12); color: #fcd34d; border: 1px solid rgba(251, 191, 36, 0.25); }
 .tag-cnps { background: rgba(56, 189, 248, 0.12); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.25); }
 .tag-free { background: rgba(50, 244, 89, 0.12); color: #32f459; border: 1px solid rgba(50, 244, 89, 0.25); }
-.legal-notes-card { background: rgba(0, 0, 0, 0.3); border: 1px solid rgba(255, 255, 255, 0.07); border-radius: 16px; padding: 1.4rem; }
-.legal-notes-card h4 { font-size: 0.95rem; color: #f8fafc; margin: 0 0 0.8rem 0; }
-.legal-notes-card ul { margin: 0; padding-left: 1.2rem; display: flex; flex-direction: column; gap: 0.6rem; }
-.legal-notes-card li { font-size: 0.82rem; color: #94a3b8; line-height: 1.5; }
+
+.legal-notes-card {
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    border-radius: 16px;
+    padding: 1.4rem;
+}
+
+.legal-notes-card h4 {
+    font-size: 0.95rem;
+    color: #f8fafc;
+    margin: 0 0 0.8rem 0;
+}
+
+.legal-notes-card ul {
+    margin: 0;
+    padding-left: 1.2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+}
+
+.legal-notes-card li {
+    font-size: 0.82rem;
+    color: #94a3b8;
+    line-height: 1.5;
+}
+
 .legal-notes-card strong { color: #cbd5e1; }
+
 .btn-print {
     display: flex;
     align-items: center;
@@ -257,9 +495,18 @@ export default defineComponent({
     margin-top: 2rem;
     transition: all 0.3s ease;
 }
+
 .btn-print:hover { background: #e2e8f0; transform: translateY(-2px); }
+
 .icon-sm { width: 20px; height: 20px; }
 
-@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-@media (min-width: 1028px) { .panel-card { padding: 1.5rem; } .btn-print { margin: 3rem;} }
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@media (min-width: 1028px) {
+    .panel-card { padding: 1.5rem; }
+    .btn-print { margin: 3rem;}
+}
 </style>

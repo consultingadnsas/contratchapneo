@@ -5,75 +5,23 @@
         </div>
 
         <form @submit.prevent="$emit('submit')" class="calc-form">
-
             <div class="grid-2">
-
-                <BaseSelect
-                    v-model="modelValue.contractType"
-                    id="contractType"
-                    label="Type de Contrat"
-                    :options="contractOptions"
-                    required
-                />
-
-                <BaseSelect
-                    v-model="modelValue.categoriePro"
-                    id="categoriePro"
-                    label="Catégorie Pro"
-                    :options="categorieOptions"
-                    required
-                />
+                <BaseSelect v-model="modelValue.contractType" id="contractType" label="Type de Contrat" :options="contractOptions" required />
+                <BaseSelect v-model="modelValue.categoriePro" id="categoriePro" label="Catégorie Pro" :options="categorieOptions" required />
             </div>
 
-            <!-- MOTIF DE LA RUPTURE -->
-            <BaseSelect
-                v-model="modelValue.motif"
-                id="motif"
-                label="Motif de la rupture"
-                :options="filteredMotifOptions"
-                required
-            />
+            <BaseSelect v-model="modelValue.motif" id="motif" label="Motif de la rupture" :options="filteredMotifOptions" required />
 
             <div class="grid-2">
-                <BaseInput
-                    v-model="modelValue.startDate"
-                    id="startDate"
-                    type="date"
-                    label="Date d'embauche"
-                    required
-                />
-                <BaseInput
-                    v-model="modelValue.endDate"
-                    id="endDate"
-                    type="date"
-                    label="Date de rupture"
-                    required
-                />
+                <BaseInput v-model="modelValue.startDate" id="startDate" type="date" label="Date d'embauche" required />
+                <BaseInput v-model="modelValue.endDate" id="endDate" type="date" label="Date de rupture" required />
             </div>
 
-            <!-- ── OPTIONS CDI ── -->
             <template v-if="modelValue.contractType === 'cdi'">
                 <div class="grid-2">
-                    <BaseInput
-                        v-model="modelValue.baseSalary"
-                        id="baseSalary"
-                        type="number"
-                        min="0"
-                        label="Salaire de base (FCFA)"
-                        placeholder="250000"
-                        required
-                    />
-                    <BaseInput
-                        v-model="modelValue.averageSalary"
-                        id="averageSalary"
-                        type="number"
-                        min="0"
-                        label="Salaire moyen (12 mois)"
-                        placeholder="310000"
-                        required
-                    />
+                    <BaseInput v-model="modelValue.baseSalary" id="baseSalary" type="number" min="0" label="Salaire de base (FCFA)" placeholder="250000" required />
+                    <BaseInput v-model="modelValue.averageSalary" id="averageSalary" type="number" min="0" label="Salaire moyen (12 mois)" placeholder="310000" required />
                 </div>
-
                 <div class="toggle-card" v-if="modelValue.motif !== 'faute_lourde' && modelValue.motif !== 'deces'">
                     <label class="toggle-label">
                         <input type="checkbox" v-model="modelValue.preavisExecute" />
@@ -82,61 +30,17 @@
                 </div>
             </template>
 
-            <!-- ── OPTIONS CDD ── -->
             <template v-if="modelValue.contractType === 'cdd'">
-                <BaseInput
-                    v-model="modelValue.totalGrossSalary"
-                    id="totalGrossSalary"
-                    type="number"
-                    min="0"
-                    label="Rémunération brute totale perçue (FCFA)"
-                    placeholder="3000000"
-                    required
-                />
-
-                <!-- Si l'employeur rompt le CDD plus tôt que prévu -->
-                <BaseInput
-                    v-if="modelValue.motif === 'rupture_anticipee_employeur'"
-                    v-model="modelValue.remainingMonths"
-                    id="remainingMonths"
-                    type="number"
-                    min="1"
-                    label="Mois restants jusqu'au terme prévu"
-                    placeholder="3"
-                    required
-                />
-
-                <!-- Si le salarié démissionne de son CDD (Rupture anticipée employé) -->
-                <BaseInput
-                    v-if="modelValue.motif === 'rupture_anticipee_salarie'"
-                    v-model="modelValue.employerDamages"
-                    id="employerDamages"
-                    type="number"
-                    min="0"
-                    label="Dommages réclamés par l'employeur (FCFA) - Optionnel"
-                    placeholder="150000"
-                />
+                <BaseInput v-model="modelValue.totalGrossSalary" id="totalGrossSalary" type="number" min="0" label="Rémunération brute totale perçue (FCFA)" placeholder="3000000" required />
+                
+                <BaseInput v-if="modelValue.motif === 'rupture_anticipee_employeur'" v-model="modelValue.remainingMonths" id="remainingMonths" type="number" min="1" label="Mois restants jusqu'au terme prévu" placeholder="3" required />
+                
+                <BaseInput v-if="modelValue.motif === 'rupture_anticipee_salarie'" v-model="modelValue.employerDamages" id="employerDamages" type="number" min="0" label="Dommages réclamés par l'employeur (FCFA) - Optionnel" placeholder="150000" />
             </template>
 
-            <!-- SALAIRES & CONGÉS DE PRÉSENCE -->
             <div class="grid-2">
-                <BaseInput
-                    v-model="modelValue.daysWorkedInLastMonth"
-                    id="daysWorkedInLastMonth"
-                    type="number"
-                    min="0"
-                    max="30"
-                    label="Jours travaillés (mois de sortie)"
-                    placeholder="15"
-                />
-                <BaseInput
-                    v-model="modelValue.remainingLeaveDays"
-                    id="remainingLeaveDays"
-                    type="text"
-                    inputmode="decimal"
-                    label="Congés payés restants (jours)"
-                    placeholder="15,5"
-                />
+                <BaseInput v-model="modelValue.daysWorkedInLastMonth" id="daysWorkedInLastMonth" type="number" min="0" max="30" label="Jours travaillés (mois de sortie)" placeholder="15" />
+                <BaseInput v-model="modelValue.remainingLeaveDays" id="remainingLeaveDays" type="text" inputmode="decimal" label="Congés payés restants (jours)" placeholder="15,5" />
             </div>
 
             <div class="toggle-card">
@@ -148,13 +52,7 @@
 
             <div v-if="errorMessage" class="alert error">{{ errorMessage }}</div>
 
-            <!-- BOUTON DE CALCUL -->
-            <main-button
-                label="Calculer mes droits & indemnités"
-                :isLoading="isCalculating"
-                type="submit"
-                class="submit-btn"
-            />
+            <main-button label="Calculer mes droits & indemnités" :isLoading="isCalculating" type="submit" class="submit-btn" />
         </form>
     </div>
 </template>
