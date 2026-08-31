@@ -373,7 +373,6 @@ class GenerateContractView(APIView):
 
 class DownloadContractView(APIView):
     permission_classes = [AllowAny]
-    authentication_classes = []
 
     def get(self, request, order_id):
         order = get_object_or_404(

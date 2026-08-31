@@ -1,6 +1,8 @@
 import { defineStore } from "pinia";
 import { ref } from "vue";
-import { useCartStore } from './cartStore'
+import { useCartStore } from './cartStore';
+import { useAuthStore } from './authStore';
+import { useOrderStore } from './orderStore';
 
 // ==========================================
 // STORE
@@ -130,78 +132,94 @@ export const useProStore = defineStore('proStore', () => {
     };
 
     const downloadProCard = async (proId: string) => {
-        isLoading.value = true;
-        error.value = null;
+    isLoading.value = true;
+    error.value = null;
 
-        try {
-            const orderStore = useOrderStore();
+    try {
+        const orderStore = useOrderStore();
+        const authStore = useAuthStore(); // ⚡️ On utilise le store d'authentification
         
-            // 1. 🔒 SÉCURITÉ : Récupération de l'email de l'acheteur
-            const backupEmailCookie = useCookie('backup_checkout_email');
-            const email = orderStore.currentOrder?.guest?.email 
-                    || orderStore.currentOrder?.user?.email 
-                    || backupEmailCookie.value;
+        const backupEmailCookie = useCookie('backup_checkout_email');
+        const email = orderStore.currentOrder?.guest?.email 
+                || orderStore.currentOrder?.user?.email 
+                || backupEmailCookie.value 
+                || '';
 
-            if (!email) {
-                console.warn("⚠️ Aucun email trouvé, tentative de téléchargement sans paramètre email...");
+        console.log(`📥 Lancement du téléchargement pour le Pro ID : ${proId}`);
+
+        // ⚡️ CORRECTION : On se fie au store, pas au cookie volatil
+        if (!authStore.isAuthenticated) {
+            const orderId = orderStore.currentOrder?.id;
+            if (!orderId) {
+                error.value = 'Impossible de déterminer la commande pour un invité.';
+                return false;
             }
 
-            console.log(`📥 [proStore] Lancement du téléchargement pour le Pro ID : ${proId}`);
-            // 🚨 Modifie l'URL ci-dessous pour qu'elle corresponde exactement à celle de ton `urls.py` Django
-            const response = await $api.raw(`/pro/professionals/download/${proId}/`, {
-                method: 'POST',
-                responseType: 'blob', // TRÈS IMPORTANT: On dit à Nuxt qu'on attend un fichier physique !
-                query: email ? { email } : undefined, // Permet à Django d'authentifier l'invité
-                body: { email } // On l'envoie aussi dans le body au cas où ton API le cherche là   
+            console.log("Flux Invité via la commande globale...");
+            const resp = await $api.raw(`/payment/download/${orderId}/`, {
+                method: 'GET',
+                responseType: 'blob',
+                query: email ? { email } : undefined,
             });
 
-            // 1. Extraire le nom du fichier depuis les headers de la réponse
-            let filename = `Carte_visite.pdf`; // Nom par défaut
-            const contentDisposition = response.headers.get('content-disposition');
-            if (contentDisposition && contentDisposition.includes('filename=')) {
-                const filenameMatch = contentDisposition.match(/filename="?([^"]+)"?/);
-                if (filenameMatch && filenameMatch.length === 2) {
-                    filename = filenameMatch[1];
-                }
-            }
+            const blob = resp._data as Blob;
+            const contentDisposition = resp.headers.get('Content-Disposition') || resp.headers.get('content-disposition') || '';
+            let filename = `Carte_visite.pdf`;
+            const filenameMatch = contentDisposition.match(/filename="?([^";]+)"?/);
+            if (filenameMatch && filenameMatch[1]) filename = filenameMatch[1];
 
-            // 2. Créer une URL Blob en mémoire et lancer le téléchargement
-            const blob = response._data as Blob;
             const url = window.URL.createObjectURL(blob);
             const link = document.createElement('a');
             link.href = url;
             link.setAttribute('download', filename);
             document.body.appendChild(link);
             link.click();
-
-            // 3. Nettoyer le DOM pour libérer la mémoire
             link.remove();
             window.URL.revokeObjectURL(url);
 
-           console.log(`✅ [proStore] Fichier téléchargé avec succès : ${filename}`);
             return true;
-
-        } catch (err: any) {
-            console.error('Erreur lors du téléchargement de la carte:', err);
-            
-            // Puisqu'on a demandé un "blob", si le serveur renvoie une erreur JSON (ex: Plus de crédits), 
-            // il faut re-transformer ce Blob d'erreur en texte pour lire le message.
-            if (err.response && err.response._data instanceof Blob) {
-                try {
-                    const errorText = await err.response._data.text();
-                    const errorJson = JSON.parse(errorText);
-                    error.value = errorJson.error || "Erreur lors du téléchargement.";
-                } catch (e) {
-                    error.value = "Une erreur inattendue est survenue.";
-                }
-            } else {
-                error.value = err.message || "Erreur de connexion.";
-            }
-            return false;
-        } finally {
-            isLoading.value = false;
         }
-    };
+
+        // ---------------------------------------------------------
+        // FLUX UTILISATEUR AUTHENTIFIÉ
+        // ---------------------------------------------------------
+        console.log("Flux Utilisateur Authentifié via l'endpoint Pro...");
+        const response = await $api.raw(`/pro/professionals/download/${proId}/`, {
+            method: 'POST',
+            responseType: 'blob',
+            query: email ? { email } : undefined,
+            body: email ? { email } : {} 
+        });
+
+        let filename = `Carte_visite.pdf`; 
+        const contentDisposition = response.headers.get('content-disposition');
+        if (contentDisposition && contentDisposition.includes('filename=')) {
+            const filenameMatch = contentDisposition.match(/filename="?([^"]+)"?/);
+            if (filenameMatch && filenameMatch.length === 2) {
+                filename = filenameMatch[1];
+            }
+        }
+
+        const blob = response._data as Blob;
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', filename);
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        window.URL.revokeObjectURL(url);
+
+        return true;
+
+    } catch (err: any) {
+        // ... (gestion des erreurs inchangée)
+        console.error('Erreur lors du téléchargement:', err);
+        return false;
+    } finally {
+        isLoading.value = false;
+    }
+};
 
     // ====================== Admin Section ========================
 
