@@ -120,6 +120,9 @@ class CheckoutView(APIView):
             discount_amount=discount,     # 👈 On fige l'économie réalisée
         )
 
+        if order.coupon:
+            Coupon.objects.filter(id=order.coupon.id).update(used_count=F('used_count') + 1)
+
         order_items = []
         
         # NOUVEAU : On ajoute 'packs' au select_related pour optimiser la DB
