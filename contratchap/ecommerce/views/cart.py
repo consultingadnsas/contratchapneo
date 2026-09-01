@@ -38,7 +38,6 @@ class ApplyCouponView(APIView):
     Applique un code promo au panier de l'utilisateur.
     """
     permission_classes = [AllowAny]
-    authentication_classes = []
 
     def post(self, request):
         cart = get_or_create_cart(request)
@@ -97,7 +96,6 @@ class CartDetailView(APIView):
     Retourne le panier courant avec ses lignes.
     """
     permission_classes = [AllowAny]
-    authentication_classes = []
 
     def get(self, request):
         cart = get_or_create_cart(request)
@@ -113,7 +111,6 @@ class CartAddItemView(APIView):
     Ajoute un contrat ou un professionnel au panier.
     """
     permission_classes = [AllowAny]
-    authentication_classes = []
 
     def post(self, request):
         serializer = AddToCartSerializer(data=request.data)
@@ -286,7 +283,6 @@ class CartItemUpdateView(APIView):
     """
     # AllowAny car les utilisateurs invités (sessions) peuvent aussi modifier leur panier
     permission_classes = [AllowAny]
-    authentication_classes = []
 
     def patch(self, request, contrat_id):
         # 1. On récupère le panier de l'utilisateur (ou de la session)
@@ -345,7 +341,6 @@ class CartRemoveItemView(APIView):
     Supprime une ligne du panier.
     """
     permission_classes = [AllowAny]
-    authentication_classes = []
 
     def delete(self, request, item_id):
         cart = get_or_create_cart(request)
@@ -368,7 +363,6 @@ class CartClearView(APIView):
     Vide entièrement le panier.
     """
     permission_classes = [AllowAny]
-    authentication_classes = []
 
     def delete(self, request):
         cart = get_or_create_cart(request)

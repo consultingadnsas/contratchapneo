@@ -70,11 +70,9 @@ export default {
       });
     };
 
-    onMounted(() => {
-      // On charge les catégories seulement si elles ne sont pas déjà en mémoire
-      if (categoryStore.categories.length === 0) {
-        categoryStore.getCategories();
-      }
+    onMounted(async () => {
+      // Exécution forcée à chaque chargement de la page
+      await categoryStore.getCategories();
     });
 
     return {

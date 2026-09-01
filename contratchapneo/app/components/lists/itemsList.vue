@@ -9,14 +9,6 @@
 
           <div class="item-total">
               <span class="total-price">{{ (Number(item.price) * item.quantity).toLocaleString('fr-FR') }} FCFA</span>
-              
-              <button 
-                v-if="!isCheckout || item.isPack"
-                type="button" 
-                class="remove-btn" 
-                :disabled="cartStore.isLoading" 
-                @click.prevent="removeFromCart(item.cartItemId)"
-              >🗑️</button>
           </div>
         </div>
       </div>

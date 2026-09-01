@@ -38,13 +38,14 @@ export const useAdminContratStore = defineStore('adminContrat', () => {
         isLoading.value = true;
         error.value = null;
         try {
-            const response = await $api<Category[]>('/contrat/admin-category/', { method: 'GET' });
-            
-            // ✅ On vérifie juste si response existe (et éventuellement si c'est un tableau)
+            const response = await $api<any>('/contrat/admin-category/', { method: 'GET' });
+
             if (response) {
-                categories.value = response;
-                // On map sur le tableau pour extraire les contrats de chaque catégorie
-                contracts.value = response.flatMap(category => category.contrats || []);
+                // ⚡️ Sécurité : on extrait le tableau peu importe le format renvoyé par Django
+                const rawData = response.data || response.results || response;
+
+                categories.value = rawData;
+                contracts.value = rawData.flatMap((category: any) => category.contrats || []);
                 console.log("Categories récupérées:", categories.value);
             }
         } catch (err: any) {
