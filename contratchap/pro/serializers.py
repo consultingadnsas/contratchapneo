@@ -13,17 +13,39 @@ class LegalDomainSerializer(serializers.ModelSerializer):
         fields = ['id', 'name', 'slug']
 
 class LegalProfessionalSerializer(serializers.ModelSerializer):
-    # On imbrique les sérialiseurs pour que Nuxt reçoive l'objet Pays et Domaines complets, pas juste leurs IDs
-    country = CountrySerializer(read_only=True)
-    domains = LegalDomainSerializer(many=True, read_only=True)
+    # On autorise l'écriture avec les IDs (PrimaryKeyRelatedField)
+    country = serializers.PrimaryKeyRelatedField(
+        queryset=Country.objects.all(), 
+        required=False, 
+        allow_null=True
+    )
+    domains = serializers.PrimaryKeyRelatedField(
+        queryset=LegalDomain.objects.all(), 
+        many=True, 
+        required=False
+    )
     
-    # Pour envoyer la version lisible du titre (ex: "Avocat" au lieu de "AVOCAT")
     title_display = serializers.CharField(source='get_title_display', read_only=True)
 
     class Meta:
         model = LegalProfessional
-        # On exclut le user Django pour des raisons de sécurité
         exclude = ['user']
+
+    # ⚡️ On force Django à transformer l'ID en objet complet (JSON) quand il répond à Nuxt
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        
+        # Transformation du pays
+        if instance.country:
+            representation['country'] = CountrySerializer(instance.country).data
+        else:
+            representation['country'] = None
+            
+        # Transformation des domaines
+        if hasattr(instance, 'domains'):
+            representation['domains'] = LegalDomainSerializer(instance.domains.all(), many=True).data
+            
+        return representation
 
 class LegalProfessionalRegistrationSerializer(serializers.ModelSerializer):
     # Nested user serializer – make it writable

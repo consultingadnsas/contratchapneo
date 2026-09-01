@@ -231,3 +231,40 @@ class ProAdminView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     # (La méthode delete reste inchangée)
+
+class CountryAdminView(APIView):
+    permission_classes = [IsAdminUser]
+
+    def get(self, request):
+        """Récupère TOUS les pays pour l'admin (contrairement à FilterOptionsView)"""
+        countries = Country.objects.all().order_by('name')
+        serializer = CountrySerializer(countries, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def post(self, request):
+        """Ajoute un nouveau pays"""
+        serializer = CountrySerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class DomainAdminView(APIView):
+    permission_classes = [IsAdminUser]
+
+    def get(self, request):
+        domains = LegalDomain.objects.all().order_by('name')
+        serializer = LegalDomainSerializer(domains, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def post(self, request):
+        data = request.data.copy()
+        # Génération automatique du slug s'il n'est pas fourni
+        if 'name' in data and not data.get('slug'):
+            data['slug'] = slugify(data['name'])
+
+        serializer = LegalDomainSerializer(data=data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
