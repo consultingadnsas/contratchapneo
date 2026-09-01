@@ -22,6 +22,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
+GEOIP_PATH = os.path.join(BASE_DIR, 'geoip')
+
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = config('SECRET_KEY')
 
@@ -69,7 +71,8 @@ INSTALLED_APPS = [
     'ecommerce',
     'payments',
     'pro',
-    'lawcalcul'
+    'lawcalcul',
+    'stats'
 ]
 
 REST_FRAMEWORK = {
@@ -91,6 +94,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'stats.middleware.VisitorTrackingMiddleware'
 ]
 
 ROOT_URLCONF = 'contratchap.urls'
