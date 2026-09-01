@@ -30,6 +30,7 @@ urlpatterns = [
     path('payments/', include('payments.urls')),
     path('pro/', include('pro.urls')),
     path('lawcalcul/', include('lawcalcul.urls')),
+    path('stats/', include('stats.urls')),
     path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
     # L'interface Swagger interactive :
     path('api/docs/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
