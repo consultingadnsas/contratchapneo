@@ -17,10 +17,21 @@
                 <BaseInput v-model="modelValue.endDate" id="endDate" type="date" label="Date de rupture" required />
             </div>
 
+            <!-- CHAMPS CDI AVEC EXPLICATIONS -->
             <template v-if="modelValue.contractType === 'cdi'">
                 <div class="grid-2">
-                    <BaseInput v-model="modelValue.baseSalary" id="baseSalary" type="number" min="0" label="Salaire de base (FCFA)" placeholder="250000" required />
-                    <BaseInput v-model="modelValue.averageSalary" id="averageSalary" type="number" min="0" label="Salaire moyen (12 mois)" placeholder="310000" required />
+                    <div class="input-group">
+                        <BaseInput v-model="modelValue.baseSalary" id="baseSalary" type="number" min="0" label="Salaire de base brut (FCFA)" placeholder="250000" required />
+                        <small class="helper-text">
+                            <i class="info-icon">i</i> Le salaire fixe nu inscrit au contrat, sans les primes ni indemnités.
+                        </small>
+                    </div>
+                    <div class="input-group">
+                        <BaseInput v-model="modelValue.averageSalary" id="averageSalary" type="number" min="0" label="Salaire moyen (12 mois)" placeholder="310000" required />
+                        <small class="helper-text">
+                            <i class="info-icon">i</i> Moyenne des salaires bruts (fixe + primes) perçus sur les 12 derniers mois.
+                        </small>
+                    </div>
                 </div>
                 <div class="toggle-card" v-if="modelValue.motif !== 'faute_lourde' && modelValue.motif !== 'deces'">
                     <label class="toggle-label">
@@ -30,6 +41,7 @@
                 </div>
             </template>
 
+            <!-- CHAMPS CDD -->
             <template v-if="modelValue.contractType === 'cdd'">
                 <BaseInput v-model="modelValue.totalGrossSalary" id="totalGrossSalary" type="number" min="0" label="Rémunération brute totale perçue (FCFA)" placeholder="3000000" required />
                 
@@ -38,11 +50,23 @@
                 <BaseInput v-if="modelValue.motif === 'rupture_anticipee_salarie'" v-model="modelValue.employerDamages" id="employerDamages" type="number" min="0" label="Dommages réclamés par l'employeur (FCFA) - Optionnel" placeholder="150000" />
             </template>
 
+            <!-- CONGÉS ET JOURS TRAVAILLÉS AVEC EXPLICATIONS -->
             <div class="grid-2">
-                <BaseInput v-model="modelValue.daysWorkedInLastMonth" id="daysWorkedInLastMonth" type="number" min="0" max="30" label="Jours travaillés (mois de sortie)" placeholder="15" />
-                <BaseInput v-model="modelValue.remainingLeaveDays" id="remainingLeaveDays" type="text" inputmode="decimal" label="Congés payés restants (jours)" placeholder="15,5" />
+                <div class="input-group">
+                    <BaseInput v-model="modelValue.daysWorkedInLastMonth" id="daysWorkedInLastMonth" type="number" min="0" max="30" label="Jours travaillés (mois de sortie)" placeholder="15" />
+                    <small class="helper-text">
+                        <i class="info-icon">i</i> Nombre de jours effectivement travaillés durant le mois de la rupture.
+                    </small>
+                </div>
+                <div class="input-group">
+                    <BaseInput v-model="modelValue.remainingLeaveDays" id="remainingLeaveDays" type="text" inputmode="decimal" label="Congés payés restants (jours)" placeholder="15.5" />
+                    <small class="helper-text">
+                        <i class="info-icon">i</i> Solde des congés acquis et non pris (généralement 2,2 jours par mois).
+                    </small>
+                </div>
             </div>
 
+            <!-- OPTION CNPS -->
             <div class="toggle-card">
                 <label class="toggle-label">
                     <input type="checkbox" v-model="modelValue.isDeclaredCNPS" />
@@ -83,7 +107,13 @@ export default defineComponent({
 .panel-header { display: flex; align-items: center; gap: 0.8rem; border-bottom: 1px solid rgba(255, 255, 255, 0.08); padding-bottom: 1.2rem; margin-bottom: 1.5rem; }
 .panel-header h3 { font-size: 1.15rem; font-weight: 700; color: #f8fafc; margin: 0; }
 .calc-form { display: flex; flex-direction: column; gap: 1.25rem; }
-.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; width: 100%; }
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; width: 100%; align-items: start; }
+
+/* STYLES DES TEXTES D'AIDE (BULLLES INFO INLINE) */
+.input-group { display: flex; flex-direction: column; gap: 0.4rem; width: 100%; }
+.helper-text { display: flex; align-items: flex-start; gap: 0.4rem; font-size: 0.75rem; color: #94a3b8; padding-left: 0.2rem; line-height: 1.35; }
+.info-icon { display: inline-flex; align-items: center; justify-content: center; min-width: 14px; width: 14px; height: 14px; border-radius: 50%; background: rgba(56, 189, 248, 0.15); color: #38bdf8; font-style: normal; font-weight: 700; font-size: 0.6rem; margin-top: 0.1rem; }
+
 .toggle-card { background: rgba(0, 0, 0, 0.25); border: 1px solid rgba(255, 255, 255, 0.07); border-radius: 12px; padding: 0.9rem 1.1rem; }
 .toggle-label { display: flex; align-items: center; gap: 0.8rem; cursor: pointer; font-size: 0.9rem; color: #cbd5e1; }
 .toggle-label input[type="checkbox"] { width: 1.15rem; height: 1.15rem; accent-color: #32f459; cursor: pointer; }

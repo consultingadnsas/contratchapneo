@@ -65,34 +65,27 @@
         </div>
 
         <!-- 🧭 PAGINATION -->
-        <div class="pagination-section" v-if="trackerStore.totalCount > 0">
-            <button 
-                :disabled="trackerStore.currentPage === 1" 
-                @click="changePage(trackerStore.currentPage - 1)"
-                class="page-btn"
-            >
-                Précédent
-            </button>
-            <span class="page-info">
-                Page {{ trackerStore.currentPage }} sur {{ totalPages }}
-            </span>
-            <button 
-                :disabled="trackerStore.currentPage >= totalPages" 
-                @click="changePage(trackerStore.currentPage + 1)"
-                class="page-btn"
-            >
-                Suivant
-            </button>
-        </div>
+        <Paginator 
+            v-if="trackerStore.totalCount > 0"
+            :currentPage="trackerStore.currentPage"
+            :totalCount="trackerStore.totalCount"
+            :pageSize="10"
+            @page-change="changePage"
+        />
     </div>
 </template>
 
 <script lang="ts">
-import { ref, computed, onMounted } from 'vue';
+import { ref, onMounted } from 'vue';
 import { useAdminTrackerStore } from '../../../stores/adminTrackerStore';
+// N'oublie pas d'ajuster le chemin d'import selon ton architecture
+import Paginator from '../../tools/Paginator.vue'; 
 
 export default {
     name: 'AdminTracker',
+    components: {
+        Paginator
+    },
     setup() {
         const trackerStore = useAdminTrackerStore();
 
@@ -102,10 +95,6 @@ export default {
             start_date: '',
             end_date: ''
         });
-
-        // Calcul du nombre total de pages (en supposant une pagination par défaut de 10)
-        const pageSize = 10;
-        const totalPages = computed(() => Math.ceil(trackerStore.totalCount / pageSize));
 
         // Actions
         const applyFilters = () => {
@@ -117,10 +106,9 @@ export default {
             trackerStore.fetchVisits(1);
         };
 
+        // Simplifié : Le Paginator gère déjà les limites (page > 0, etc.)
         const changePage = (newPage: number) => {
-            if (newPage > 0 && newPage <= totalPages.value) {
-                trackerStore.fetchVisits(newPage, filters.value);
-            }
+            trackerStore.fetchVisits(newPage, filters.value);
         };
 
         // Utilitaire de formatage de date (YYYY-MM-DD vers DD/MM/YYYY)
@@ -135,11 +123,10 @@ export default {
             trackerStore.fetchVisits();
         });
 
-        // N'oublie pas d'exposer tes variables et fonctions pour le template
+        // Exposition des variables pour le template
         return {
             trackerStore,
             filters,
-            totalPages,
             applyFilters,
             resetFilters,
             changePage,
@@ -267,31 +254,5 @@ export default {
     padding: 3rem !important;
 }
 
-/* 🧭 Pagination */
-.pagination-section {
-    display: flex;
-    justify-content: flex-end;
-    align-items: center;
-    gap: 1.5rem;
-    margin-top: 1.5rem;
-}
-.page-btn {
-    padding: 0.5rem 1rem;
-    border: 1px solid #d1d5db;
-    background: #ffffff;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: all 0.2s;
-}
-.page-btn:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-}
-.page-btn:not(:disabled):hover {
-    background: #f3f4f6;
-}
-.page-info {
-    font-size: 0.9rem;
-    color: #4b5563;
-}
+/* Note : Les styles de l'ancienne pagination ont été retirés, le Paginator apportant ses propres styles[cite: 8]. */
 </style>

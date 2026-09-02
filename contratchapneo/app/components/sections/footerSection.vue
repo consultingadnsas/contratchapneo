@@ -99,16 +99,13 @@ export default {
           { label: 'Contrats', path: '/contractBank' },
           { label: 'Contrat sur mesure', path: '/contractBank/customContrat' },
           { label: 'Experts', path: '/pro' },
-          { label: 'Outils de calculs', path: '/lawCalcul' },
-          { label: 'Centre d\'aide', path: '/services' }
         ]
       },
       {
         title: 'RESSOURCES',
         links: [
-          { label: 'Notre Blog', },
-          { label: 'Tutoriels',  },
-          { label: 'FAQ', }
+          { label: 'Outils de calculs', path: '/lawCalcul' },
+          { label: 'Centre d\'aide', path: '/services' }
         ]
       },
       {

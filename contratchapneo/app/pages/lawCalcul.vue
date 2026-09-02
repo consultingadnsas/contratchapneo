@@ -59,7 +59,8 @@ import LawCalculForm from '../components/forms/lawcalculForm.vue';
 import LawCalculResult from '../components/sections/lawcalculResult.vue';
 import { useLawCalculStore } from '../stores/lawCalculStore'; 
 
-interface BreakdownItem { label: string; amount: number; description: string; taxable: boolean; cnps: boolean; }
+// Mise à jour de l'interface avec l'article optionnel
+interface BreakdownItem { label: string; amount: number; description: string; taxable: boolean; cnps: boolean; article?: string; }
 
 export default defineComponent({
     name: 'LawCalculPage',
@@ -206,7 +207,7 @@ export default defineComponent({
 
                 await lawStore.calculateDroits(payload);
 
-                // ⚡️ INTÉGRATION BACKEND AVEC LES ARTICLES DE DROIT ⚡️
+                // ⚡️ INTÉGRATION BACKEND ⚡️
                 if (lawStore.resultats) {
                     const srv: any = lawStore.resultats;
                     
@@ -214,7 +215,8 @@ export default defineComponent({
                         breakdown.value.push({ 
                             label: "Indemnité Compensatrice de Congés Payés (ICCP)", 
                             amount: Number(srv.indemnite_conges), 
-                            description: `Calculée sur votre solde de ${remainingLeaves} jours ouvrables acquis et non consommés (Art. 25.8 CT).`, 
+                            description: `Calculée sur votre solde de ${remainingLeaves} jours ouvrables non consommés.`, 
+                            article: "Article 25.8 du Code du Travail",
                             taxable: true, cnps: true 
                         });
                     }
@@ -225,27 +227,35 @@ export default defineComponent({
                             breakdown.value.push({ 
                                 label: "Retenue pour Préavis non exécuté (Dû par le salarié)", 
                                 amount: amt, 
-                                description: `Art. 18.11 CT : En cas de démission, le préavis non travaillé est redevable par le salarié à l'employeur.`, 
+                                description: `Le préavis non travaillé est redevable par le salarié à l'employeur.`, 
+                                article: "Article 18.11 du Code du Travail",
                                 taxable: true, cnps: true 
                             });
                         } else {
                             breakdown.value.push({ 
                                 label: "Indemnité Compensatrice de Préavis (ICP)", 
                                 amount: amt, 
-                                description: `Art. 16 CCI : Préavis de rupture non exécuté conformément au barème légal de votre catégorie.`, 
+                                description: `Préavis de rupture non exécuté conformément au barème légal de votre catégorie.`, 
+                                article: "Article 34 de la CCI",
                                 taxable: true, cnps: true 
                             });
                         }
                     }
                     
                     if (srv.indemnite_licenciement && Number(srv.indemnite_licenciement) !== 0) {
-                        let indemLabel = formData.value.motif === 'retraite' ? "Indemnité de Départ à la Retraite (Art. 78 CCI)" : 
-                                         formData.value.motif === 'deces' ? "Indemnité de Décès versée aux ayants droit (Art. 44 CCI)" : 
+                        let indemLabel = formData.value.motif === 'retraite' ? "Indemnité de Départ à la Retraite" : 
+                                         formData.value.motif === 'deces' ? "Indemnité de Décès versée aux ayants droit" : 
                                          "Indemnité Légale de Licenciement (IL)";
+                        
+                        let articleBase = formData.value.motif === 'retraite' ? "Article 78 de la CCI" :
+                                          formData.value.motif === 'deces' ? "Article 44 de la CCI" :
+                                          "Article 42 de la CCI";
+
                         breakdown.value.push({ 
                             label: indemLabel, 
                             amount: Number(srv.indemnite_licenciement), 
-                            description: `Barème conventionnel (Art. 42 CCI) : 30 % jusqu'à 5 ans, 35 % de 6 à 10 ans, 40 % au-delà. Exonérée d'impôts (Art. 117 CGI).`, 
+                            description: `Barème conventionnel : 30 % jusqu'à 5 ans, 35 % de 6 à 10 ans, 40 % au-delà. Exonérée d'impôts.`, 
+                            article: articleBase,
                             taxable: false, cnps: false 
                         });
                     }
@@ -254,7 +264,8 @@ export default defineComponent({
                         breakdown.value.push({ 
                             label: "Indemnité de Fin de Contrat (Prime de Précarité - 3%)", 
                             amount: Number(srv.indemnite_fin_cdd), 
-                            description: `Art. 15.8 du Code du Travail : 3 % de la somme totale des rémunérations brutes perçues au cours du contrat.`, 
+                            description: `3 % de la somme totale des rémunérations brutes perçues au cours du contrat.`, 
+                            article: "Article 15.8 du Code du Travail",
                             taxable: true, cnps: true 
                         });
                     }
@@ -265,20 +276,22 @@ export default defineComponent({
                             breakdown.value.push({ 
                                 label: "Dommages & Intérêts (Rupture Anticipée Employeur)", 
                                 amount: amt, 
-                                description: `Art. 15.9 CT : Rémunérations totales que vous auriez perçues jusqu'au terme prévu du contrat.`, 
+                                description: `Rémunérations totales que vous auriez perçues jusqu'au terme prévu du contrat.`, 
+                                article: "Article 15.9 du Code du Travail",
                                 taxable: false, cnps: false 
                             });
                         } else {
                             breakdown.value.push({ 
                                 label: "Dommages & Intérêts dus à l'employeur", 
                                 amount: amt, 
-                                description: `Art. 15.9 CT : Compensation du préjudice subi par l'employeur suite à la rupture anticipée non justifiée par l'employé.`, 
+                                description: `Compensation du préjudice subi par l'employeur suite à la rupture anticipée non justifiée par l'employé.`, 
+                                article: "Article 15.9 du Code du Travail",
                                 taxable: false, cnps: false 
                             });
                         }
                     }
 
-                    // Calculs finaux avec Backend
+                    // Calculs finaux
                     breakdown.value.forEach(item => {
                         totalGrossAmount.value += item.amount;
                         if (item.cnps && item.amount > 0) totalTaxableCNPS.value += item.amount;
@@ -287,7 +300,7 @@ export default defineComponent({
 
                     cnpsEmployeeDeduction.value = formData.value.isDeclaredCNPS ? Math.max(0, Math.min(totalTaxableCNPS.value, 3375000)) * 0.063 : 0;
                     netAmount.value = totalGrossAmount.value - cnpsEmployeeDeduction.value;
-                    summaryMessage.value = "Ceci n'est qu'une estimation, contactez un professionel pour un meilleur suivi";
+                    summaryMessage.value = "Ceci n'est qu'une estimation, contactez un professionel pour un meilleur suivi.";
                     hasCalculated.value = true;
                     isCalculating.value = false;
                     return;
@@ -300,31 +313,33 @@ export default defineComponent({
                     const baseSalary = Number(formData.value.baseSalary);
                     const avgSalary = Number(formData.value.averageSalary);
 
-                    if (daysWorked > 0) breakdown.value.push({ label: "Salaire de présence (Mois de sortie)", amount: (baseSalary / 30) * daysWorked, description: `Prorata pour ${daysWorked} jour(s) travaillé(s) dans le mois de rupture.`, taxable: true, cnps: true });
-                    if (remainingLeaves > 0) breakdown.value.push({ label: "Indemnité Compensatrice de Congés Payés (ICCP)", amount: (baseSalary / 26) * remainingLeaves, description: `Calculée sur solde de ${remainingLeaves} jours ouvrables (Art. 25.8 CT).`, taxable: true, cnps: true });
+                    if (daysWorked > 0) breakdown.value.push({ label: "Salaire de présence (Mois de sortie)", amount: (baseSalary / 30) * daysWorked, description: `Prorata pour ${daysWorked} jour(s) travaillé(s) dans le mois de rupture.`, article: "Article 31.1 du Code du Travail", taxable: true, cnps: true });
+                    if (remainingLeaves > 0) breakdown.value.push({ label: "Indemnité Compensatrice de Congés Payés (ICCP)", amount: (baseSalary / 26) * remainingLeaves, description: `Calculée sur solde de ${remainingLeaves} jours ouvrables.`, article: "Article 25.8 du Code du Travail", taxable: true, cnps: true });
 
                     const currentYearMonths = end.getMonth() + 1;
-                    breakdown.value.push({ label: "Gratification annuelle (Prorata temporis)", amount: (baseSalary / 12) * currentYearMonths, description: `Prorata conventionnel pour présence sur l'année civile en cours (${currentYearMonths} mois).`, taxable: true, cnps: true });
+                    breakdown.value.push({ label: "Gratification annuelle (Prorata temporis)", amount: (baseSalary / 12) * currentYearMonths, description: `Prorata conventionnel pour présence sur l'année civile en cours (${currentYearMonths} mois).`, article: "Article 53 de la CCI", taxable: true, cnps: true });
 
                     if (formData.value.motif === 'faute_lourde') {
                         summaryMessage.value = "La faute lourde prive le salarié de l'indemnité de préavis et de l'indemnité légale de licenciement (Art. 18.16 CT). Seuls les congés payés et la gratification restent dus.";
                     } else if (formData.value.motif === 'demission') {
                         if (!formData.value.preavisExecute) {
                             const monthsPreavis = getPreavisMonths(formData.value.categoriePro, yearsOfSeniority);
-                            breakdown.value.push({ label: "Retenue pour Préavis non exécuté", amount: -(avgSalary * monthsPreavis), description: `Art. 18.11 CT : En cas de démission, le préavis non travaillé est redevable (${monthsPreavis} mois).`, taxable: true, cnps: true });
+                            breakdown.value.push({ label: "Retenue pour Préavis non exécuté", amount: -(avgSalary * monthsPreavis), description: `En cas de démission, le préavis non travaillé est redevable (${monthsPreavis} mois).`, article: "Article 18.11 du Code du Travail", taxable: true, cnps: true });
                         }
                         summaryMessage.value = "La démission n'ouvre pas droit à l'indemnité de licenciement. Un préavis non exécuté par le salarié démissionnaire est déduit de son solde.";
                     } else {
                         if (!formData.value.preavisExecute && formData.value.motif !== 'deces') {
                             const monthsPreavis = getPreavisMonths(formData.value.categoriePro, yearsOfSeniority);
-                            breakdown.value.push({ label: "Indemnité Compensatrice de Préavis (ICP)", amount: avgSalary * monthsPreavis, description: `Art. 16 CCI : Préavis de rupture non exécuté (${monthsPreavis} mois).`, taxable: true, cnps: true });
+                            breakdown.value.push({ label: "Indemnité Compensatrice de Préavis (ICP)", amount: avgSalary * monthsPreavis, description: `Préavis de rupture non exécuté (${monthsPreavis} mois).`, article: "Article 34 de la CCI", taxable: true, cnps: true });
                         }
                         if (yearsOfSeniority >= 1) {
                             let tranche1 = Math.min(yearsOfSeniority, 5) * 0.30 * avgSalary;
                             let tranche2 = yearsOfSeniority > 5 ? Math.min(yearsOfSeniority - 5, 5) * 0.35 * avgSalary : 0;
                             let tranche3 = yearsOfSeniority > 10 ? (yearsOfSeniority - 10) * 0.40 * avgSalary : 0;
-                            let indemLabel = formData.value.motif === 'retraite' ? "Indemnité de Départ à la Retraite (Art. 78 CCI)" : formData.value.motif === 'deces' ? "Indemnité de Décès (Art. 44 CCI)" : "Indemnité Légale de Licenciement (IL)";
-                            breakdown.value.push({ label: indemLabel, amount: tranche1 + tranche2 + tranche3, description: `Ancienneté continue de ${yearsOfSeniority.toFixed(2)} ans (Barème CCI Art. 42). Exonérée (Art. 117 CGI).`, taxable: false, cnps: false });
+                            let indemLabel = formData.value.motif === 'retraite' ? "Indemnité de Départ à la Retraite" : formData.value.motif === 'deces' ? "Indemnité de Décès" : "Indemnité Légale de Licenciement (IL)";
+                            let indemArticle = formData.value.motif === 'retraite' ? "Article 78 de la CCI" : formData.value.motif === 'deces' ? "Article 44 de la CCI" : "Article 42 de la CCI";
+                            
+                            breakdown.value.push({ label: indemLabel, amount: tranche1 + tranche2 + tranche3, description: `Ancienneté continue de ${yearsOfSeniority.toFixed(2)} ans. Exonérée (Art. 117 CGI).`, article: indemArticle, taxable: false, cnps: false });
                             summaryMessage.value = `Ancienneté validée : ${yearsOfSeniority.toFixed(2)} ans. Conformément à l'Art. 117 du CGI, l'indemnité légale de rupture est 100 % exonérée d'impôts et de CNPS.`;
                         } else {
                             summaryMessage.value = `Ancienneté estimée : ${(yearsOfSeniority * 12).toFixed(1)} mois. Le minimum légal de 1 an requis n'est pas atteint.`;
@@ -335,19 +350,19 @@ export default defineComponent({
                     const totalGross = Number(formData.value.totalGrossSalary);
                     const approxMonthly = (totalGross / Math.max(1, (diffDays / 30.416)));
 
-                    if (daysWorked > 0) breakdown.value.push({ label: "Salaire de présence (Mois de sortie)", amount: (approxMonthly / 30) * daysWorked, description: `Prorata pour ${daysWorked} jour(s).`, taxable: true, cnps: true });
-                    if (remainingLeaves > 0) breakdown.value.push({ label: "Indemnité Compensatrice de Congés Payés (ICCP)", amount: (approxMonthly / 26) * remainingLeaves, description: `Calculée sur solde de ${remainingLeaves} jours (Art. 25.8 CT).`, taxable: true, cnps: true });
+                    if (daysWorked > 0) breakdown.value.push({ label: "Salaire de présence (Mois de sortie)", amount: (approxMonthly / 30) * daysWorked, description: `Prorata pour ${daysWorked} jour(s).`, article: "Article 31.1 du Code du Travail", taxable: true, cnps: true });
+                    if (remainingLeaves > 0) breakdown.value.push({ label: "Indemnité Compensatrice de Congés Payés (ICCP)", amount: (approxMonthly / 26) * remainingLeaves, description: `Calculée sur solde de ${remainingLeaves} jours.`, article: "Article 25.8 du Code du Travail", taxable: true, cnps: true });
 
                     if (formData.value.motif === 'fin_cdd' || formData.value.motif === 'commun_accord_cdd') {
-                        breakdown.value.push({ label: "Indemnité de Fin de Contrat (Prime 3%)", amount: totalGross * 0.03, description: "Art. 15.8 du Code du Travail : 3 % de la somme totale des rémunérations brutes perçues.", taxable: true, cnps: true });
+                        breakdown.value.push({ label: "Indemnité de Fin de Contrat (Prime 3%)", amount: totalGross * 0.03, description: "3 % de la somme totale des rémunérations brutes perçues.", article: "Article 15.8 du Code du Travail", taxable: true, cnps: true });
                         summaryMessage.value = "Le contrat ayant pris fin, vous percevez la prime légale de précarité de 3 %.";
                     } else if (formData.value.motif === 'rupture_anticipee_employeur') {
                         const monthsLeft = Number(formData.value.remainingMonths) || 0;
-                        breakdown.value.push({ label: "Dommages & Intérêts (Rupture Employeur)", amount: approxMonthly * monthsLeft, description: `Art. 15.9 CT : Rémunérations jusqu'au terme prévu (${monthsLeft} mois restants).`, taxable: false, cnps: false });
+                        breakdown.value.push({ label: "Dommages & Intérêts (Rupture Employeur)", amount: approxMonthly * monthsLeft, description: `Rémunérations jusqu'au terme prévu (${monthsLeft} mois restants).`, article: "Article 15.9 du Code du Travail", taxable: false, cnps: false });
                         summaryMessage.value = "La rupture abusive oblige au versement indemnitaire de la totalité des mois restants.";
                     } else if (formData.value.motif === 'rupture_anticipee_salarie') {
                         const dommagesSalarie = Number(formData.value.employerDamages) || 0;
-                        if (dommagesSalarie > 0) breakdown.value.push({ label: "Dommages & Intérêts dus à l'employeur", amount: -dommagesSalarie, description: "Art. 15.9 CT : Compensation du préjudice subi par l'employeur.", taxable: false, cnps: false });
+                        if (dommagesSalarie > 0) breakdown.value.push({ label: "Dommages & Intérêts dus à l'employeur", amount: -dommagesSalarie, description: "Compensation du préjudice subi par l'employeur.", article: "Article 15.9 du Code du Travail", taxable: false, cnps: false });
                         summaryMessage.value = "La rupture anticipée par l'employé annule le droit à la prime de précarité de 3 %.";
                     } else {
                         summaryMessage.value = "En cas de faute lourde ou de force majeure, la prime de précarité de 3 % n'est pas due.";
@@ -376,6 +391,7 @@ export default defineComponent({
 </script>
 
 <style scoped>
+/* Les styles existants restent inchangés */
 .email-step-container { display: flex; justify-content: center; width: 100%; z-index: 2; margin-top: 2rem; }
 .email-card { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 20px; padding: 3rem; width: 100%; max-width: 500px; text-align: center; box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2); }
 .email-card h2 { font-size: 1.5rem; margin-bottom: 1rem; color: #ffffff; }

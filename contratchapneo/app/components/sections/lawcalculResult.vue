@@ -1,16 +1,9 @@
 <template>
     <div class="panel-card panel-right">
         <div class="panel-header">
-            <div class="panel-icon">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 6a7.5 7.5 0 1 0 7.5 7.5h-7.5V6Z" />
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 10.5H21A7.5 7.5 0 0 0 13.5 3v7.5Z" />
-                </svg>
-            </div>
             <h3>Estimation du Solde de Tout Compte</h3>
         </div>
 
-        <!-- A) ÉTAPE INITIALE (AVANT CALCUL) -->
         <div v-if="!hasCalculated" class="empty-state">
             <div class="empty-icon">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
@@ -21,7 +14,6 @@
             <p>Renseignez les paramètres de votre contrat à gauche puis lancez le calcul pour afficher l'estimation officielle de vos droits.</p>
         </div>
 
-        <!-- B) RÉSULTATS GÉNÉRÉS -->
         <div v-else class="results-wrapper">
             
             <div class="highlight-card" :class="{ 'is-zero': netAmount <= 0 }">
@@ -68,6 +60,15 @@
                         <span class="item-name">{{ item.label }}</span>
                         <span class="item-val">{{ formatCurrency(item.amount) }}</span>
                     </div>
+                    
+                    <!-- AJOUT DU BADGE ARTICLE DE LOI -->
+                    <div v-if="item.article" class="article-badge">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 21v-8.25M15.75 21v-8.25M8.25 21v-8.25M3 9l9-6 9 6m-1.5 12V10.332A48.36 48.36 0 0012 9.75c-2.551 0-5.056.2-7.5.582V21M3 21h18M12 6.75h.008v.008H12V6.75z" />
+                        </svg>
+                        Base légale : {{ item.article }}
+                    </div>
+                    
                     <p class="item-note">{{ item.description }}</p>
                     <div class="item-tags">
                         <span class="tag" :class="item.taxable ? 'tag-tax' : 'tag-free'">
@@ -97,7 +98,7 @@
                 <span v-else>Télécharger le Bordereau (PDF)</span>
             </button>
 
-            <!-- Composant PDF (Hors écran) -->
+            <!-- Composant PDF -->
             <LawCalculBordereau 
                 :breakdown="breakdown"
                 :totalGrossAmount="totalGrossAmount"
@@ -113,12 +114,14 @@
 import { defineComponent, PropType, ref } from 'vue';
 import LawCalculBordereau from '../tools/lawBordereau.vue';
 
+// Mise à jour de l'interface avec l'article optionnel
 interface BreakdownItem {
     label: string;
     amount: number;
     description: string;
     taxable: boolean;
     cnps: boolean;
+    article?: string;
 }
 
 export default defineComponent({
@@ -203,310 +206,67 @@ export default defineComponent({
 </script>
 
 <style scoped>
-.panel-card {
-    background: rgba(255, 255, 255, 0.025);
-    backdrop-filter: blur(25px);
-    -webkit-backdrop-filter: blur(25px);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 24px;
-    padding: 2.2rem;
-    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
-}
-
-.panel-header {
-    display: flex;
-    align-items: center;
-    gap: 0.8rem;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-    padding-bottom: 1.2rem;
-    margin-bottom: 1.5rem;
-}
-
-.panel-icon {
-    width: 38px;
-    height: 38px;
-    border-radius: 10px;
-    background: rgba(50, 244, 89, 0.12);
-    color: #32f459;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.panel-icon svg {
-    width: 20px;
-    height: 20px;
-}
-
-.panel-header h3 {
-    font-size: 1.15rem;
-    font-weight: 700;
-    color: #f8fafc;
-    margin: 0;
-}
-
-.empty-state {
-    text-align: center;
-    padding: 4rem 2rem;
-    color: #64748b;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 1rem;
-}
-
-.empty-icon {
-    width: 60px;
-    height: 60px;
-    border-radius: 50%;
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px dashed rgba(255, 255, 255, 0.1);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #475569;
-}
-
+/* Les styles existants restent inchangés */
+.panel-card { background: rgba(255, 255, 255, 0.025); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 24px; padding: 2.2rem; box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35); }
+.panel-header { display: flex; align-items: center; gap: 0.8rem; border-bottom: 1px solid rgba(255, 255, 255, 0.08); padding-bottom: 1.2rem; margin-bottom: 1.5rem; }
+.panel-header h3 { font-size: 1.15rem; font-weight: 700; color: #f8fafc; margin: 0; }
+.empty-state { text-align: center; padding: 4rem 2rem; color: #64748b; display: flex; flex-direction: column; align-items: center; gap: 1rem; }
+.empty-icon { width: 60px; height: 60px; border-radius: 50%; background: rgba(255, 255, 255, 0.03); border: 1px dashed rgba(255, 255, 255, 0.1); display: flex; align-items: center; justify-content: center; color: #475569; }
 .empty-icon svg { width: 30px; height: 30px; }
-
-.empty-state h4 {
-    font-size: 1.1rem;
-    color: #cbd5e1;
-    margin: 0;
-}
-
-.empty-state p {
-    font-size: 0.9rem;
-    max-width: 320px;
-    line-height: 1.5;
-    margin: 0;
-}
-
-.results-wrapper {
-    display: flex;
-    flex-direction: column;
-    gap: 1.8rem;
-    animation: fadeIn 0.4s ease;
-}
-
-.highlight-card {
-    background: linear-gradient(135deg, rgba(50, 244, 89, 0.12) 0%, rgba(21, 108, 169, 0.15) 100%);
-    border: 1px solid rgba(50, 244, 89, 0.35);
-    border-radius: 20px;
-    padding: 2rem 1.5rem;
-    text-align: center;
-    box-shadow: 0 10px 30px rgba(50, 244, 89, 0.08);
-}
-
-.highlight-card.is-zero {
-    background: rgba(239, 68, 68, 0.08);
-    border-color: rgba(239, 68, 68, 0.35);
-}
-
-.highlight-label {
-    font-size: 0.88rem;
-    font-weight: 600;
-    color: #a7f3d0;
-    text-transform: uppercase;
-    letter-spacing: 0.8px;
-    display: block;
-    margin-bottom: 0.6rem;
-}
-
-.big-amount {
-    font-size: clamp(2.2rem, 4vw, 2.8rem);
-    font-weight: 800;
-    color: #32f459;
-    margin-bottom: 0.8rem;
-    text-shadow: 0 0 30px rgba(50, 244, 89, 0.35);
-}
-
-.highlight-card.is-zero .big-amount {
-    color: #f87171;
-    text-shadow: none;
-}
-
-.highlight-subtitle {
-    font-size: 0.88rem;
-    color: #cbd5e1;
-    max-width: 90%;
-    margin: 0 auto 1.2rem auto;
-    line-height: 1.5;
-}
-
-.status-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    background: rgba(50, 244, 89, 0.2);
-    border: 1px solid rgba(50, 244, 89, 0.4);
-    color: #32f459;
-    padding: 0.4rem 1rem;
-    border-radius: 999px;
-    font-size: 0.82rem;
-    font-weight: 700;
-}
-
-.badge-icon {
-    width: 16px;
-    height: 16px;
-}
-
-.summary-table {
-    display: flex;
-    flex-direction: column;
-    gap: 0.8rem;
-    border-top: 1px solid rgba(255, 255, 255, 0.08);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-    padding: 1.2rem 0;
-}
-
-.summary-row {
-    display: flex;
-    justify-content: space-between;
-    font-size: 0.92rem;
-    color: #cbd5e1;
-}
-
-.summary-row.main-row {
-    font-size: 1.05rem;
-    color: #ffffff;
-    font-weight: 600;
-}
-
-.summary-row.deduction {
-    color: #fca5a5;
-    font-weight: 600;
-}
-
-.summary-row.info {
-    color: #fcd34d;
-    font-size: 0.85rem;
-}
-
-.breakdown-list h4 {
-    font-size: 0.9rem;
-    color: #94a3b8;
-    text-transform: uppercase;
-    letter-spacing: 0.6px;
-    margin: 0 0 1rem 0;
-}
-
-.breakdown-item {
-    background: rgba(0, 0, 0, 0.25);
-    border: 1px solid rgba(255, 255, 255, 0.06);
-    border-radius: 12px;
-    padding: 1rem 1.2rem;
-    margin-bottom: 0.7rem;
-}
-
-.breakdown-item.is-negative {
-    border-color: rgba(239, 68, 68, 0.3);
-    background: rgba(239, 68, 68, 0.05);
-}
-
-.item-head {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 0.3rem;
-}
-
-.item-name {
-    font-weight: 600;
-    color: #ffffff;
-    font-size: 0.92rem;
-}
-
-.item-val {
-    font-weight: 700;
-    color: #32f459;
-    font-size: 0.98rem;
-}
-
+.empty-state h4 { font-size: 1.1rem; color: #cbd5e1; margin: 0; }
+.empty-state p { font-size: 0.9rem; max-width: 320px; line-height: 1.5; margin: 0; }
+.results-wrapper { display: flex; flex-direction: column; gap: 1.8rem; animation: fadeIn 0.4s ease; }
+.highlight-card { background: linear-gradient(135deg, rgba(50, 244, 89, 0.12) 0%, rgba(21, 108, 169, 0.15) 100%); border: 1px solid rgba(50, 244, 89, 0.35); border-radius: 20px; padding: 2rem 1.5rem; text-align: center; box-shadow: 0 10px 30px rgba(50, 244, 89, 0.08); }
+.highlight-card.is-zero { background: rgba(239, 68, 68, 0.08); border-color: rgba(239, 68, 68, 0.35); }
+.highlight-label { font-size: 0.88rem; font-weight: 600; color: #a7f3d0; text-transform: uppercase; letter-spacing: 0.8px; display: block; margin-bottom: 0.6rem; }
+.big-amount { font-size: clamp(2.2rem, 4vw, 2.8rem); font-weight: 800; color: #32f459; margin-bottom: 0.8rem; text-shadow: 0 0 30px rgba(50, 244, 89, 0.35); }
+.highlight-card.is-zero .big-amount { color: #f87171; text-shadow: none; }
+.highlight-subtitle { font-size: 0.88rem; color: #cbd5e1; max-width: 90%; margin: 0 auto 1.2rem auto; line-height: 1.5; }
+.status-badge { display: inline-flex; align-items: center; gap: 0.5rem; background: rgba(50, 244, 89, 0.2); border: 1px solid rgba(50, 244, 89, 0.4); color: #32f459; padding: 0.4rem 1rem; border-radius: 999px; font-size: 0.82rem; font-weight: 700; }
+.badge-icon { width: 16px; height: 16px; }
+.summary-table { display: flex; flex-direction: column; gap: 0.8rem; border-top: 1px solid rgba(255, 255, 255, 0.08); border-bottom: 1px solid rgba(255, 255, 255, 0.08); padding: 1.2rem 0; }
+.summary-row { display: flex; justify-content: space-between; font-size: 0.92rem; color: #cbd5e1; }
+.summary-row.main-row { font-size: 1.05rem; color: #ffffff; font-weight: 600; }
+.summary-row.deduction { color: #fca5a5; font-weight: 600; }
+.summary-row.info { color: #fcd34d; font-size: 0.85rem; }
+.breakdown-list h4 { font-size: 0.9rem; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.6px; margin: 0 0 1rem 0; }
+.breakdown-item { background: rgba(0, 0, 0, 0.25); border: 1px solid rgba(255, 255, 255, 0.06); border-radius: 12px; padding: 1rem 1.2rem; margin-bottom: 0.7rem; }
+.breakdown-item.is-negative { border-color: rgba(239, 68, 68, 0.3); background: rgba(239, 68, 68, 0.05); }
+.item-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.3rem; }
+.item-name { font-weight: 600; color: #ffffff; font-size: 0.92rem; }
+.item-val { font-weight: 700; color: #32f459; font-size: 0.98rem; }
 .is-negative .item-val { color: #f87171; }
 
-.item-note {
-    font-size: 0.82rem;
-    color: #94a3b8;
-    margin: 0 0 0.6rem 0;
-    line-height: 1.4;
-}
-
-.item-tags {
-    display: flex;
+/* STYLE DU BADGE DE L'ARTICLE DE LOI */
+.article-badge {
+    display: inline-flex;
+    align-items: center;
     gap: 0.4rem;
-}
-
-.tag {
-    font-size: 0.7rem;
-    font-weight: 600;
-    padding: 0.2rem 0.6rem;
+    background: rgba(148, 163, 184, 0.15);
+    color: #cbd5e1;
+    padding: 0.3rem 0.6rem;
     border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    margin-bottom: 0.6rem;
+    border: 1px solid rgba(148, 163, 184, 0.3);
 }
+.article-badge svg { width: 14px; height: 14px; }
 
+.item-note { font-size: 0.82rem; color: #94a3b8; margin: 0 0 0.6rem 0; line-height: 1.4; }
+.item-tags { display: flex; gap: 0.4rem; }
+.tag { font-size: 0.7rem; font-weight: 600; padding: 0.2rem 0.6rem; border-radius: 6px; }
 .tag-tax { background: rgba(251, 191, 36, 0.12); color: #fcd34d; border: 1px solid rgba(251, 191, 36, 0.25); }
 .tag-cnps { background: rgba(56, 189, 248, 0.12); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.25); }
 .tag-free { background: rgba(50, 244, 89, 0.12); color: #32f459; border: 1px solid rgba(50, 244, 89, 0.25); }
-
-.legal-notes-card {
-    background: rgba(0, 0, 0, 0.3);
-    border: 1px solid rgba(255, 255, 255, 0.07);
-    border-radius: 16px;
-    padding: 1.4rem;
-}
-
-.legal-notes-card h4 {
-    font-size: 0.95rem;
-    color: #f8fafc;
-    margin: 0 0 0.8rem 0;
-}
-
-.legal-notes-card ul {
-    margin: 0;
-    padding-left: 1.2rem;
-    display: flex;
-    flex-direction: column;
-    gap: 0.6rem;
-}
-
-.legal-notes-card li {
-    font-size: 0.82rem;
-    color: #94a3b8;
-    line-height: 1.5;
-}
-
+.legal-notes-card { background: rgba(0, 0, 0, 0.3); border: 1px solid rgba(255, 255, 255, 0.07); border-radius: 16px; padding: 1.4rem; }
+.legal-notes-card h4 { font-size: 0.95rem; color: #f8fafc; margin: 0 0 0.8rem 0; }
+.legal-notes-card ul { margin: 0; padding-left: 1.2rem; display: flex; flex-direction: column; gap: 0.6rem; }
+.legal-notes-card li { font-size: 0.82rem; color: #94a3b8; line-height: 1.5; }
 .legal-notes-card strong { color: #cbd5e1; }
-
-.btn-print {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    width: 100%;
-    padding: 1rem;
-    background: #ffffff;
-    color: #0f172a;
-    border: none;
-    border-radius: 12px;
-    font-weight: 700;
-    font-size: 1rem;
-    cursor: pointer;
-    margin-top: 2rem;
-    transition: all 0.3s ease;
-}
-
+.btn-print { display: flex; align-items: center; justify-content: center; gap: 0.5rem; width: 100%; padding: 1rem; background: #ffffff; color: #0f172a; border: none; border-radius: 12px; font-weight: 700; font-size: 1rem; cursor: pointer; margin-top: 2rem; transition: all 0.3s ease; }
 .btn-print:hover { background: #e2e8f0; transform: translateY(-2px); }
-
 .icon-sm { width: 20px; height: 20px; }
-
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-@media (min-width: 1028px) {
-    .panel-card { padding: 1.5rem; }
-    .btn-print { margin: 3rem;}
-}
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+@media (min-width: 1028px) { .panel-card { padding: 1.5rem; } .btn-print { margin: 3rem;} }
 </style>
