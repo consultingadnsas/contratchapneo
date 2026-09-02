@@ -12,7 +12,7 @@
 
         <div v-else class="cards-container">
             <packCards 
-                v-for="pack in packStore.packs" 
+                v-for="pack in sortedPacks" 
                 :key="pack.id"
                 :title="pack.title"
                 :description="pack.description"
@@ -29,7 +29,7 @@
 </template>
 
 <script lang="ts">
-import { onMounted } from 'vue';
+import { onMounted, computed } from 'vue';
 import packCards from '../cards/packCards.vue';
 import mainButton from '../buttons/mainButton.vue';
 import { usePackStore } from '../../stores/packStore';
@@ -43,6 +43,12 @@ export default {
     setup() {
         const packStore = usePackStore();
 
+        // Création d'une copie triée du plus petit au plus grand prix
+        const sortedPacks = computed(() => {
+            // Le spread operator [...] empêche la modification directe du store Pinia
+            return [...packStore.packs].sort((a, b) => a.prix - b.prix);
+        });
+
         onMounted(() => {
             if (packStore.packs.length === 0) {
                 packStore.fetchPacks();
@@ -50,7 +56,8 @@ export default {
         });
 
         return {
-            packStore
+            packStore,
+            sortedPacks
         };
     }
 };

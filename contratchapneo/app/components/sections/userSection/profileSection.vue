@@ -37,7 +37,7 @@
                 <h3 class="section-subtitle">Explorer nos autres offres</h3>
                 <div class="packs-grid">
                     <pack-buying-card 
-                        v-for="(pack, index) in profileStore.availablePacks" 
+                        v-for="(pack, index) in sortedPacks" 
                         :key="'available-' + (pack.id || index)"
                         :title="pack.title" 
                         :price="pack.prix"
@@ -63,7 +63,7 @@
             
             <div class="packs-grid">
                 <pack-buying-card 
-                    v-for="(pack, index) in profileStore.availablePacks" 
+                    v-for="(pack, index) in sortedPacks" 
                     :key="pack.id || index"
                     :title="pack.title" 
                     :price="pack.prix"
@@ -163,6 +163,11 @@ export default {
                 description: 'Description indisponible' 
             };
         };
+        // Création d'une copie triée du plus petit au plus grand prix
+        const sortedPacks = computed(() => {
+            if (!profileStore.availablePacks) return [];
+            return [...profileStore.availablePacks].sort((a, b) => a.prix - b.prix);
+        });
 
         onMounted(async () => {
             await profileStore.fetchPacks();
@@ -174,6 +179,7 @@ export default {
             cartStore,
             profileStore,
             router,
+            sortedPacks,
             addToCart,
             getPlanType,
             getFullPackInfo,
