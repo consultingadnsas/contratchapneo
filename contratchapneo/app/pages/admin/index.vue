@@ -20,7 +20,7 @@ import AdminHome from '../../components/sections/adminSection/adminHome.vue';
 import AdminHeader from '../../components/heroSection/adminHeader.vue';
 import { useRouter } from 'vue-router';
 // Importe tes icônes ici...
-import { HomeIcon, BanknotesIcon, UsersIcon, BookOpenIcon, InboxIcon, DocumentTextIcon, CalculatorIcon, ShoppingBagIcon, SwatchIcon, GiftTopIcon } from '@heroicons/vue/24/outline';
+import { HomeIcon, BanknotesIcon, UsersIcon, BookOpenIcon, InboxIcon, DocumentTextIcon, CalculatorIcon, ShoppingBagIcon, SwatchIcon, GiftTopIcon, GlobeEuropeAfricaIcon } from '@heroicons/vue/24/outline';
 
 export default {
   name: 'AdminLayout',
@@ -39,7 +39,8 @@ export default {
       { id:'promo', label: 'Coupons & promo', route: '/admin/AdminPromo', icon: markRaw(GiftTopIcon), category: 'Tools'},
       { id: 'Cart', label: 'Panier', route: '/admin/AdminCart', icon: markRaw(ShoppingBagIcon), category: 'Catalogue' },
       { id: 'packs', label: 'Packs de contrat', route: '/admin/Adminpacks', icon : markRaw(SwatchIcon), category: 'Catalogue' },
-      { id: 'calculator', label: 'Outil de calcul', route: '/admin/AdminCalcul', icon: markRaw(CalculatorIcon), category: 'Tools'}
+      { id: 'calculator', label: 'Outil de calcul', route: '/admin/AdminCalcul', icon: markRaw(CalculatorIcon), category: 'Tools'},
+      { id: 'Tracker', label: 'Tracker', route: '/admin/AdminTracker', icon: markRaw(GlobeEuropeAfricaIcon), category: 'Tools'}
     ]);
 
 

@@ -19,7 +19,7 @@
       <div class="dossier-body floating-shadow">
         
         <div class="dossier-header">
-          <h2>Ouvrir votre compte</h2>
+          <h2>Accédez à votre compte</h2>
           <p>Connectez-vous pour accéder à votre pack de services juridiques.</p>
         </div>
 

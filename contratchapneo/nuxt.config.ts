@@ -31,6 +31,8 @@ export default defineNuxtConfig({
     public: {
       // Tout ce qui est ici sera accessible côté frontend
       stripePublicKey: process.env.STRIPE_PUBLIC_KEY,
+      // URL de base de l'API Django (ex: http://localhost:8000)
+      apiBase: process.env.API_BASE || 'http://localhost:8000'
     }
   }
 })

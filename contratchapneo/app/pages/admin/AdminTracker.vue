@@ -1,33 +1,34 @@
 <template>
-  <div class="admin-page-container">
+  <div class="admin-layout-container">
     
+    <!-- Ta barre latérale fixe -->
     <AdminSidebar 
       :menuItems="adminMenu" 
       @logout="handleLogout" 
-    />    
-    <main class="admin-content">
-      <AdminCouponSection />
-    </main>
+    />
+    
+    <main class="admin-main-content">
+      <AdminStat />
 
+    </main>
   </div>
 </template>
 
 <script lang="ts">
-import { defineComponent } from 'vue';
 import { ref, markRaw } from 'vue';
 import { useRouter } from 'vue-router';
 import AdminSidebar, {MenuItem} from '../../components/navigation/adminSidebar.vue';
-import AdminCouponSection from '../../components/sections/adminSection/AdminCoupon.vue';
+import AdminStat from '../../components/sections/adminSection/adminStat.vue';
 import { HomeIcon, BanknotesIcon, UsersIcon, BookOpenIcon, InboxIcon, DocumentTextIcon, CalculatorIcon, ShoppingBagIcon, SwatchIcon, GiftTopIcon, GlobeEuropeAfricaIcon } from '@heroicons/vue/24/outline';
-
-export default defineComponent({
-  name: 'AdminCouponsPage',
-  components: {
+export default {
+  name: 'AdminTestiPage', 
+  
+  components: { 
     AdminSidebar,
-    AdminCouponSection
+    AdminStat
   },
+
   setup() {
-    
     const router = useRouter();
 
     const adminMenu = ref<MenuItem[]>([
@@ -54,21 +55,30 @@ export default defineComponent({
       handleLogout
     }
   }
-});
+}
 </script>
 
 <style scoped>
-.admin-page-container {
-  min-height: 100vh;
-  background-color: #f8fafc;
+.admin-layout-container {
   display: flex;
+  height: 100vh;
+  overflow: hidden;
+  background-color: #f8fafc;
 }
 
-.admin-content {
+.admin-main-content {
   flex: 1;
-  padding: 2rem;
-  max-width: 1200px;
-  margin: 0 auto;
-  width: 100%;
+  padding: 1.5rem;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-bottom: calc(80px + env(safe-area-inset-bottom)); 
+}
+
+@media (max-width: 728px) {
+  .admin-main-content {
+    margin-left: 0;
+    margin-bottom: 80px;
+    padding: 1rem;
+  }
 }
 </style>
