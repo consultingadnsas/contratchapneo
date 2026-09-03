@@ -1,42 +1,44 @@
 <template>
-  <form @submit.prevent="handleLogin">
-    <h3>Connexion Administrateur</h3>
-    
-    <BaseInputVue 
-      v-model="credentials.username" 
-      label="Email ou Nom d'utilisateur" 
-      name="username" 
-      type="text" 
-      placeholder="Entrez votre email ou pseudo" 
-      :errorMessage="errorMessage.username"
-      required
-    />
-    
-    <BaseInputVue 
-      v-model="credentials.password" 
-      label="Mot de passe" 
-      name="password" 
-      type="password" 
-      placeholder="Entrez votre mot de passe" 
-      :errorMessage="errorMessage.password"
-      required
-    />
-    
-    <formButtonVue 
-      label="Connexion" 
-      type="submit" 
-      :isLoading="adminAuthStore.isLoading"
-    />
+  <div class="main-container">
+      <form @submit.prevent="handleLogin">
+        <h3>Connexion Administrateur</h3>
+        
+        <BaseInputVue 
+          v-model="credentials.username" 
+          label="Email ou Nom d'utilisateur" 
+          name="username" 
+          type="text" 
+          placeholder="Entrez votre email ou pseudo" 
+          :errorMessage="errorMessage.username"
+          required
+        />
+        
+        <BaseInputVue 
+          v-model="credentials.password" 
+          label="Mot de passe" 
+          name="password" 
+          type="password" 
+          placeholder="Entrez votre mot de passe" 
+          :errorMessage="errorMessage.password"
+          required
+        />
+        
+        <formButtonVue 
+          label="Connexion" 
+          type="submit" 
+          :isLoading="adminAuthStore.isLoading"
+        />
 
-    <div class="err-message-wrapper" v-if="adminAuthStore.error">
-      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z" />
-      </svg>
-      <p class="error-message">
-        {{ adminAuthStore.error }}
-      </p>
-    </div>
-  </form>
+        <div class="err-message-wrapper" v-if="adminAuthStore.error">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z" />
+          </svg>
+          <p class="error-message">
+            {{ adminAuthStore.error }}
+          </p>
+        </div>
+    </form>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -111,6 +113,15 @@ const handleLogin = async () => {
 </script>
 
 <style scoped>
+.main-container {
+  width: 100%;
+  max-width: 400px;
+  margin: auto;
+  padding: 2rem;
+  background-color: #fff;
+  border-radius: 10px;
+  box-shadow: 0px 4px 6px rgba(0,0,0,0.1);
+}
 .err-message-wrapper {
   padding: 10px;
   border-radius: 10px;

@@ -92,7 +92,7 @@
             
             <div class="packages-grid">
                 <packCards 
-                v-for="pack in packStore.packs" 
+                v-for="pack in sortedPacks" 
                 :key="pack.id"
                 :title="pack.title"
                 :description="pack.description"
@@ -140,7 +140,7 @@ import notifications from '../../tools/notifications.vue'
 import mainButton from '../../buttons/mainButton.vue'
 import contratCardsDynamic from '../../cards/contratCardsDynamic.vue'
 
-import { ref, onMounted, watch } from 'vue'
+import { ref, onMounted, watch, computed } from 'vue'
 import { useContratStore } from '../../../stores/contratStore'
 import { useCartStore } from '../../../stores/cartStore'
 import { useProfileStore } from '../../../stores/profileStore'
@@ -167,46 +167,11 @@ export default {
         const searchQuery = ref((route.query.q as string) || '');
         let debounceTimeout: NodeJS.Timeout;
 
-        // 📦 DONNÉES DES PACKAGES 
-        // Tu peux modifier ces informations pour qu'elles correspondent à tes vraies offres
-        const packagesList = ref([
-            {
-                title: 'Pack basic',
-                price: '29 000 FCFA',
-                oldPrice: '400 000 FCFA',
-                features: [
-                    'Accès à 10 documents juridiques payants',
-                    'Très petites entreprises ou consultants individuels'
-                ],
-                planType: 'basique',
-                description: 'Packs idéal pour les petites entreprises'
-            },
-            {
-                title: 'Pack business',
-                price: '49 000 FCFA',
-                oldPrice: '1 000 000 FCFA',
-                features: [
-                    'Accès à 12 documents juridiques payants',
-                    'Rédaction sur-mesure d\'un document juridique',
-                    'PME et startups de moins de 10 employés avec un volume de tache juridique modéré'
-                ],
-                planType: 'business',
-                description: 'Accédez à une fourniture de contrat bien plus épurée et d\'autres avantages intéressant'
-            },
-            {
-                title: 'Pack business pro',
-                price: '99 000 FCFA',
-                oldPrice: '1 500 000 FCFA',
-                features: [
-                    'Accès à 25 documents juridiques payants',
-                    'Rédaction sur-mesure de 3 documents juridiques',
-                    'Suivi par une équipe de juriste(appui & conseils personnalisés)',
-                    'PME et startups de plus de 10 employés avec un volume de tache juridique important'
-                ],
-                planType: 'business-pro',
-                description: 'Profitez de la pleine puissance de Contratchap. Accédez à une panoplie de contrats, de service, de conseil, et de nos outils de calcules'
-            }
-        ]);
+        const sortedPacks = computed(() => {
+            // Le spread operator [...] empêche la modification directe du store Pinia
+            return [...packStore.packs].sort((a, b) => a.prix - b.prix);
+        });
+        
 
         const handlePageChange = (page: number) => {
             if (searchQuery.value) {
@@ -301,8 +266,7 @@ export default {
         return {
             router, activeCategoryId, handlePageChange, searchQuery,
             contratStore, cartStore, profileStore, textToShow, isOpen, openModal,
-            isViewOpen, openViewModal, addTocart, fillContract,
-            packagesList, packStore // 👈 Exposer la liste au template
+            isViewOpen, openViewModal, addTocart, fillContract, sortedPacks, packStore // 👈 Exposer la liste au template
         }
     }
 }
@@ -560,7 +524,7 @@ export default {
 ========================================== */
 .filter-toolbar {
     width: 100%;
-    max-width: 1400px;
+    max-width: 2400px;
     display: flex;
     justify-content: flex-start;
     padding: 0 0.5rem;

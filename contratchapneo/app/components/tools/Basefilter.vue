@@ -122,7 +122,7 @@ export default {
     display: flex;
     gap: 0.5rem;
     width: 100%;
-    max-width: 600px; /* Ajusté pour une meilleure largeur */
+    max-width: 2400px; /* Ajusté pour une meilleure largeur */
     overflow-x: auto;
     padding-bottom: 0.5rem; /* Espace pour la barre de défilement */
     

@@ -7,35 +7,21 @@ export default defineNuxtPlugin(() => {
 
   const callVisit = async () => {
     try {
-      // Obtenir le CSRF token via un GET (le middleware Django créera le cookie)
+      // Un seul appel GET suffit pour réveiller le middleware Django
       await $fetch(endpoint, { method: 'GET', credentials: 'include' });
-
-      // Lire le cookie CSRF (document.cookie côté client)
-      const getCsrfFromCookie = () => {
-        const match = document.cookie.match(/(^|;)\s*csrftoken=([^;]+)/);
-        return match ? decodeURIComponent(match[2]) : null;
-      };
-
-      const csrf = getCsrfFromCookie();
-
-      await $fetch(endpoint, {
-        method: 'POST',
-        credentials: 'include',
-        headers: {
-          'X-CSRFToken': csrf || ''
-        }
-      });
     } catch (e) {
-      // Ne pas interrompre l'app si le tracker échoue
       console.error('Visit tracker error:', e);
     }
   };
 
-  // Appel initial au chargement client
-  callVisit();
+  // Variable pour mémoriser la page et éviter le double-ping au chargement initial
+  let lastRoute = null;
 
-  // Appel après chaque navigation côté client
-  router.afterEach(() => {
-    callVisit();
+  // Se déclenche à chaque changement de page (y compris le chargement initial)
+  router.afterEach((to) => {
+    if (lastRoute !== to.fullPath) {
+      lastRoute = to.fullPath;
+      callVisit();
+    }
   });
 });
