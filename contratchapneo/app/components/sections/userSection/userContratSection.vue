@@ -12,7 +12,7 @@
                     :title="contrat.title"
                     :description="contrat.description"
                     :image="contrat.picture || undefined"
-                    @view="openViewModal(contrat.id)" 
+                    @view="fillContract(contrat.id)" 
                     @buy="()=>{fillContract(contrat.id)}"
                 />
             </div>
@@ -31,7 +31,7 @@
                     :title="contrat.title"
                     :description="contrat.description"
                     :image="contrat.picture || undefined"
-                    @view="openViewModal(contrat.id)" 
+                    @view="fillContract(contrat.id)" 
                     @buy="()=>{fillContract(contrat.id)}"
                 />
             </div>

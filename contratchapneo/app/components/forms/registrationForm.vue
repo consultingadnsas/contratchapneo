@@ -191,7 +191,7 @@ export default {
 .phone-flex-container { display: flex; align-items: center; border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden; background: #ffffff; }
 .phone-flex-container:focus-within { border-color: var(--accent-blue, #2563eb); box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); }
 .country-select { background-color: #f8fafc; border: none; border-right: 1px solid #e2e8f0; padding: 0.75rem; font-size: 0.95rem; color: #475569; cursor: pointer; outline: none; }
-.phone-input { border: none !important; box-shadow: none !important; width: 100%; padding: 0.75rem 1rem; outline: none; }
+.phone-input { border: none !important; box-shadow: none !important; width: 100%; padding: 0.75rem 1rem; outline: none; color: #475569 }
 .error-message { color: #ef4444; font-size: 0.85rem; margin-top: 0.25rem; display: block; }
 .error-message-block { background: rgba(220, 38, 38, 0.1); color: #ef4444; border: 1px solid rgba(220, 38, 38, 0.3); padding: 0.75rem; border-radius: 8px; text-align: center; font-size: 0.85rem; }
 

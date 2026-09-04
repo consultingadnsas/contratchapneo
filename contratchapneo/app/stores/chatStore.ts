@@ -9,7 +9,7 @@ const intents = [
         keywords: ['bonjour', 'salut', 'coucou', 'hello', ],
         messages: [
             "Bonjour ! 👋",
-            "Je suis l'assistant virtuel de ContratChapNeo.",
+            "Je suis l'assistant virtuel de ContratChap.",
             "Que puis-je faire pour vous aujourd'hui ?"
         ]
     },
