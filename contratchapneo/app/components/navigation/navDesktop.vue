@@ -134,7 +134,25 @@ export default {
     }
 
     .dropdown-menu {
-        position: absolute; top: calc(100% + 12px); left: 50%; transform: translateX(-50%); width: 260px; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.6); border-radius: 16px; box-shadow: 0 12px 40px rgba(0, 0, 0, 0.1); padding: 0.5rem; list-style: none; margin: 0; z-index: 200;
+        position: absolute; 
+        top: calc(100% + 12px); 
+        left: 50%; 
+        transform: translateX(-50%); 
+        width: 260px; 
+        background: rgba(255, 255, 255, 0.95); 
+        backdrop-filter: blur(16px); 
+        -webkit-backdrop-filter: blur(16px); 
+        border: 1px solid rgba(255, 255, 255, 0.6); 
+        border-radius: 16px; 
+        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.1); 
+        padding: 0.5rem; 
+        list-style: none; 
+        margin: 0; 
+        z-index: 200;
+
+        /* ⚡️ ADDED: Scroll properties */
+        max-height: 350px; /* Adjust this value based on your preference */
+        overflow-y: auto; 
     }
     .dropdown-menu::before { content: ''; position: absolute; top: -12px; left: 0; width: 100%; height: 12px; }
 

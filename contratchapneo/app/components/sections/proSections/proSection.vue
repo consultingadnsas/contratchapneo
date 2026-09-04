@@ -311,4 +311,19 @@ header p{
         grid-template-columns: repeat(4, 1fr);
     }
 }
+@media (max-width: 767px) {
+    .toolbar {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 1rem;
+        padding: 1rem;
+    }
+    
+    .toolbar__filter,
+    .toolbar__select,
+    .toolbar__search {
+        width: 100%;
+        margin: 0;
+    }
+}
 </style>

@@ -237,4 +237,10 @@ export default {
   cursor: not-allowed;
   opacity: 1;
 }
+
+@media (max-width: 640px) {
+  .input-group {
+    min-width: 100%;
+  }
+}
 </style>

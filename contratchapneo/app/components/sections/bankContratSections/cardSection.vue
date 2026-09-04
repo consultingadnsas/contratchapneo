@@ -564,6 +564,13 @@ export default {
     }
 
     .search-container-large :deep(input) {
+        font-size: 1rem; 
+        padding-left: 3.5rem; 
+        position: relative; /* Sécurité supplémentaire pour mobile */
+        z-index: 10;
+    }
+
+    .search-container-large :deep(input) {
         font-size: 1rem; /* Texte légèrement plus petit */
         padding-left: 3.5rem; /* On réduit aussi un peu le décalage sur mobile */
     }

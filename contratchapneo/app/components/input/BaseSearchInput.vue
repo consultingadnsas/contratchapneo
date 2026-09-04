@@ -4,16 +4,7 @@
         :class="[`theme-${theme}`, { 'is-expanded': isExpanded || !isMobile, 'is-mobile': isMobile }]"
           v-click-outside="closeSearch"
     >
-        <button 
-            v-if="isMobile && !isExpanded" 
-            class="search-trigger" 
-            @click.stop="expandSearch"
-            aria-label="Ouvrir la recherche"
-        >
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="search-icon">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.604 10.604z" />
-            </svg>
-        </button>
+        
 
         <div class="search-input-wrapper">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="search-icon internal-icon">
@@ -118,25 +109,6 @@ export default {
   width: 100%; /* 👈 La barre prend 100% de la largeur du parent */
 }
 
-/* Style de la loupe seule sur Mobile */
-.search-trigger {
-  background: #f3f4f6;
-  border: 1px solid var(--border-color);
-  border-radius: 50%;
-  width: 2.8rem;
-  height: 2.8rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  color: #4b5563;
-  transition: background-color 0.2s;
-}
-
-.search-trigger:hover {
-  background-color: #e5e7eb;
-}
-
 /* --- THÈME SOMBRE --- */
 .search-container.theme-dark {
   --bg-color: rgba(255, 255, 255, 0.1); 
@@ -191,7 +163,7 @@ export default {
 
 .search-input-wrapper {
   position: relative;
-  display: none; 
+  display: flex; 
   align-items: center;
   width: 100%;
 }
@@ -251,8 +223,6 @@ export default {
     width: 100%;
     /* Pas de max-width fixe ici, le parent décide ! */
   }
-  .search-trigger { display: none; }
-  .search-input-wrapper { display: flex; }
 }
 
 @keyframes fadeIn {

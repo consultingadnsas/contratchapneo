@@ -20,6 +20,8 @@
 
         <testimonial-section/>
 
+        <chat-bot/>
+
         <footer-section/>
 
     </div>
@@ -38,7 +40,8 @@ import numberGreen from '../components/sections/numberGreen.vue';
 import testimonialSection from '../components/sections/testimonialSection.vue'
 import FooterSection from '../components/sections/footerSection.vue';
 import cartBubble from '../components/modale/cartBubble.vue';
-import cartModale from '../components/modale/cartModale.vue'
+import cartModale from '../components/modale/cartModale.vue';
+import ChatBot from '../components/tools/ChatBot.vue';
 
 import { ref } from 'vue'
 
@@ -57,6 +60,7 @@ export default {
         testimonialSection,
         cartBubble,
         cartModale,
+        ChatBot
     },
     setup() {
 

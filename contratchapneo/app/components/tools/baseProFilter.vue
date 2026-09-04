@@ -92,16 +92,28 @@ export default {
 
 .mobile-filter select {
   width: 100%;
-  padding: 0.75rem 1rem;
+  /* On ajoute un padding à droite (2.5rem) pour que le texte ne chevauche pas la flèche */
+  padding: 0.75rem 2.5rem 0.75rem 1rem; 
   font-size: 1rem;
   border: 1px solid #e2e8f0;
-  border-radius: 8px;
+  border-radius: 50px;
   background-color: #ffffff;
   color: #1a1a1a;
   cursor: pointer;
   outline: none;
-  /* Optionnel : cacher la flèche native pour mettre une custom */
-  /* appearance: none; */
+  
+  /* 1. On cache la flèche native du navigateur */
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  
+  /* 2. On ajoute une flèche SVG personnalisée */
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%234a5568' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-size: 1.1rem;
+  
+  /* 3. On décale la flèche vers la gauche (ex: à 15px du bord droit) */
+  background-position: right 10px center;
 }
 
 /* ==========================================
