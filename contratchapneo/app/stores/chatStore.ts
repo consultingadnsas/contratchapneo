@@ -209,8 +209,8 @@ export const useChatStore = defineStore('chat', () => {
     const executeAction = (action: string) => {
         if (action === 'redirect_simulateur') router.push('/simulateur');
         else if (action === 'redirect_contrats') router.push('/contractBank');
-        else if (action === 'redirect_contact') router.push('/contact'); 
-        else if (action === 'redirect_pro') router.push('/professionnels'); 
+        else if (action === 'redirect_contact') router.push('/services'); 
+        else if (action === 'redirect_pro') router.push('/pro'); 
         
         // NOUVEAU : Redirection vers la page de connexion pour achat
         else if (action === 'redirect_achat_pack') {
