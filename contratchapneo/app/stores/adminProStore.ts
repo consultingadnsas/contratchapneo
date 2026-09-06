@@ -129,6 +129,21 @@ export const useAdminProStore = defineStore('adminProStore', () => {
         }
     };
 
+    const deleteCountry = async (countryId: string | number) => {
+        isLoading.value = true;
+        error.value = null;
+        try {
+            await $api(`/pro/countries/admin/${countryId}/`, { method: 'DELETE' });
+            countries.value = countries.value.filter(c => c.id !== countryId);
+        } catch (err: any) {
+            const msg = err.response?._data?.error || err.data?.error || err.message || "Erreur lors de la suppression du pays.";
+            error.value = msg;
+            throw new Error(msg);
+        } finally {
+            isLoading.value = false;
+        }
+    };
+
     const fetchDomains = async () => {
         try {
             const response = await $api<any[]>('/pro/domains/admin/', { method: 'GET' });
@@ -157,6 +172,21 @@ export const useAdminProStore = defineStore('adminProStore', () => {
         }
     };
 
+    const deleteDomain = async (domainId: string | number) => {
+        isLoading.value = true;
+        error.value = null;
+        try {
+            await $api(`/pro/domains/admin/${domainId}/`, { method: 'DELETE' });
+            domains.value = domains.value.filter(d => d.id !== domainId);
+        } catch (err: any) {
+            const msg = err.response?._data?.error || err.data?.error || err.message || "Erreur lors de la suppression du domaine.";
+            error.value = msg;
+            throw new Error(msg);
+        } finally {
+            isLoading.value = false;
+        }
+    };
+
     return {
         pros,
         countries,
@@ -169,7 +199,9 @@ export const useAdminProStore = defineStore('adminProStore', () => {
         deletePro,
         fetchCountries,
         addCountry,
+        deleteCountry,
         fetchDomains,
-        addDomain
+        addDomain,
+        deleteDomain
     };
 });

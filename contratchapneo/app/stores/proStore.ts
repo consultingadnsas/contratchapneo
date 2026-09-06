@@ -31,6 +31,7 @@ export const useProStore = defineStore('proStore', () => {
     const professional = ref<LegalProfessional | null>(null);
     const countries = ref<Country[]>([]);
     const domains = ref<LegalDomain[]>([]);
+    const titles = ref<ProfessionalTitle[]>([]);
     const currentPage = ref(1);
     const totalCount = ref(0);
     const pageSize = ref(10);
@@ -40,16 +41,23 @@ export const useProStore = defineStore('proStore', () => {
     /**
      * 1. Récupérer la liste des professionnels avec filtres
      */
-    const getProfessionals = async (page: number = 1, domainSlug: string = '', countryCode: string = '', searchQuery: string = '') => {
+    const getProfessionals = async (
+        page: number = 1, 
+        title: string = '', 
+        countryCode: string = '', 
+        searchQuery: string = '',
+        domainSlug: string = ''
+    ) => {
         isLoading.value = true;
         error.value = null;
         
         try {
             // 1. On inclut la page dans les paramètres
             const params: Record<string, any> = { page }; 
-            if (domainSlug) params.domain = domainSlug;
+            if (title) params.title = title;
             if (countryCode) params.country = countryCode;
             if (searchQuery) params.q = searchQuery;
+            if (domainSlug) params.domain = domainSlug;
 
             const response = await $api<any>('/pro/professionals/', {
                 method: 'GET',
@@ -90,7 +98,7 @@ export const useProStore = defineStore('proStore', () => {
      */
     const getFilters = async () => {
         // SÉCURITÉ 1 : Si on a déjà les données en mémoire, on ne fait rien.
-        if (countries.value.length > 0 && domains.value.length > 0) {
+        if (countries.value.length > 0 && titles.value.length > 0 && domains.value.length > 0) {
             return;
         }
 
@@ -102,13 +110,14 @@ export const useProStore = defineStore('proStore', () => {
         isFetchingFilters.value = true; // On ferme le verrou !
 
         try {
-            const response = await $api<{ countries: Country[], domains: LegalDomain[] }>('/pro/professionals/filters/', {
+            const response = await $api<{ countries: Country[], domains: LegalDomain[], titles?: ProfessionalTitle[] }>('/pro/professionals/filters/', {
                 method: 'GET'
             });
 
             if (response) {
                 countries.value = response.countries || [];
                 domains.value = response.domains || [];
+                titles.value = response.titles || [];
                 console.log('Filtres récupérés avec succès');
             }
         } catch (err: any) {
@@ -445,6 +454,7 @@ export const useProStore = defineStore('proStore', () => {
         professional,
         countries,
         domains,
+        titles,
         currentPage,
         totalCount,
         pageSize,

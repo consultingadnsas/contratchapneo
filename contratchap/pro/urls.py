@@ -1,4 +1,5 @@
 from django.urls import path
+# pyrefly: ignore [missing-import]
 from .views import (
     CountryAdminView,
     DomainAdminView,
@@ -17,5 +18,7 @@ urlpatterns = [
     path('admin/', ProAdminView.as_view(), name="pro-admin"),
     path('admin/<uuid:pro_id>/', ProAdminView.as_view()),
     path('countries/admin/', CountryAdminView.as_view(), name='country-admin'),
+    path('countries/admin/<int:country_id>/', CountryAdminView.as_view(), name='country-admin-detail'),
     path('domains/admin/', DomainAdminView.as_view(), name='domain-admin'),
+    path('domains/admin/<int:domain_id>/', DomainAdminView.as_view(), name='domain-admin-detail'),
 ]

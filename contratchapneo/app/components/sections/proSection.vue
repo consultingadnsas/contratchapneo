@@ -60,15 +60,15 @@ export default {
             const allPros = proStore.professionals;
             if (!allPros || allPros.length === 0) return [];
 
-            const targets = ['avocat', 'notaire', 'juriste', 'conseill'];
+            const targets = ['AVOCAT', 'NOTAIRE', 'JURISTE', 'CONSEIL_JURIDIQUE'];
             const result: typeof allPros = [];
             const usedIds = new Set(); 
 
-            // 1. On cherche 1 profil pour chaque mot-clé
+            // 1. On cherche 1 profil pour chaque titre
             for (const target of targets) {
                 const found = allPros.find(pro => 
                     !usedIds.has(pro.id) && 
-                    pro.domains.some(d => d.slug.toLowerCase().includes(target) || d.name.toLowerCase().includes(target))
+                    (pro.title?.toUpperCase() === target || pro.title_display?.toLowerCase().includes(target.toLowerCase()))
                 );
                 
                 if (found) {
@@ -91,8 +91,8 @@ export default {
 
         // 🚀 Si on clique sur la carte depuis l'accueil, on l'envoie vers l'annuaire filtré
         const goToProDirectory = (pro: any) => {
-            const primaryDomain = pro.domains?.[0]?.slug || '';
-            router.push({ path: '/pro', query: { domaine: primaryDomain } });
+            const proTitle = pro.title || '';
+            router.push({ path: '/pro', query: { titre: proTitle || undefined } });
         };
 
         // --- Gestion des Animations ---

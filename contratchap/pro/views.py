@@ -2,7 +2,7 @@ import os
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from django.db.models import Q
+from django.db.models import Q, ProtectedError
 from django.shortcuts import get_object_or_404
 from .models import Country, LegalDomain, LegalProfessional, ProCardDownload
 from .serializers import CountrySerializer, LegalDomainSerializer, LegalProfessionalSerializer, LegalProfessionalRegistrationSerializer
@@ -46,9 +46,10 @@ class LegalProfessionalListView(APIView):
             .select_related('country')\
             .prefetch_related('domains')
         
-        # 2. Récupération des paramètres de l'URL (?country=...&domain=...&q=...)
-        country_code = request.query_params.get('country')
-        domain_slug = request.query_params.get('domain')
+        # 2. Récupération des paramètres de l'URL (?country=...&domain=...&title=...&q=...)
+        country_code = request.query_params.get('country') or request.query_params.get('pays')
+        domain_slug = request.query_params.get('domain') or request.query_params.get('domaine')
+        title = request.query_params.get('title') or request.query_params.get('titre')
         search_query = request.query_params.get('q')
 
         # 3. Application des filtres conditionnels
@@ -57,6 +58,9 @@ class LegalProfessionalListView(APIView):
         
         if domain_slug:
             professionals = professionals.filter(domains__slug__iexact=domain_slug)
+
+        if title:
+            professionals = professionals.filter(title__iexact=title)
         
         if search_query:
             # Recherche textuelle dans le nom, prénom ou la ville
@@ -75,8 +79,8 @@ class LegalProfessionalListView(APIView):
 
 class FilterOptionsView(APIView):
     """
-    Une seule APIView pour renvoyer les pays et domaines disponibles 
-    pour tes menus déroulants de filtrage sur le Frontend.
+    Une seule APIView pour renvoyer les pays, domaines et titres disponibles 
+    pour tes menus déroulants et boutons de filtrage sur le Frontend.
     """
     permission_classes = []
     authentication_classes = []
@@ -86,9 +90,28 @@ class FilterOptionsView(APIView):
         countries = Country.objects.filter(professionals__is_active=True).distinct()
         domains = LegalDomain.objects.filter(professionals__is_active=True).distinct()
 
+        # Titres professionnels : ceux ayant au moins un professionnel actif
+        active_titles = set(
+            LegalProfessional.objects.filter(is_active=True)
+            .values_list('title', flat=True)
+            .distinct()
+        )
+        titles = [
+            {'id': code, 'code': code, 'name': label, 'slug': code.lower()}
+            for code, label in LegalProfessional.TITLE_CHOICES
+            if code in active_titles
+        ]
+        # Si aucun pro actif, on renvoie tous les choix
+        if not titles:
+            titles = [
+                {'id': code, 'code': code, 'name': label, 'slug': code.lower()}
+                for code, label in LegalProfessional.TITLE_CHOICES
+            ]
+
         return Response({
             'countries': CountrySerializer(countries, many=True).data,
-            'domains': LegalDomainSerializer(domains, many=True).data
+            'domains': LegalDomainSerializer(domains, many=True).data,
+            'titles': titles
         }, status=status.HTTP_200_OK) 
     
 class DownloadProCardFromPack(APIView):
@@ -149,12 +172,21 @@ class DownloadProCardFromPack(APIView):
                     user_pack.cartes_pro_restantes -= 1
                     user_pack.save()
                     user_pack.pros_debloques.add(pro)
+                    try:
+                        ProCardDownload.objects.get_or_create(user=user, pro=pro)
+                    except Exception:
+                        pass
 
             except Exception as e:
                 return Response(
                     {"error": "Erreur lors de la déduction du crédit.", "detail": str(e)},
                     status=status.HTTP_500_INTERNAL_SERVER_ERROR
                 )
+        else:
+            try:
+                ProCardDownload.objects.get_or_create(user=user, pro=pro)
+            except Exception:
+                pass
 
         # Envoi du fichier (identique à avant)
         nom_fichier = (
@@ -202,7 +234,7 @@ class ProAdminView(APIView):
             )
 
     def get(self, request):
-        pro = LegalProfessional.objects.all()
+        pro = LegalProfessional.objects.all().select_related('country').prefetch_related('domains', 'downloads', 'debloque_par', 'order_items')
         # ⚡️ LA CORRECTION EST ICI : on ajoute context={'request': request}
         serializer = LegalProfessionalSerializer(pro, many=True, context={'request': request})
 
@@ -235,8 +267,12 @@ class ProAdminView(APIView):
 class CountryAdminView(APIView):
     permission_classes = [IsAdminUser]
 
-    def get(self, request):
-        """Récupère TOUS les pays pour l'admin (contrairement à FilterOptionsView)"""
+    def get(self, request, country_id=None):
+        """Récupère TOUS les pays ou un pays spécifique pour l'admin"""
+        if country_id:
+            country = get_object_or_404(Country, id=country_id)
+            serializer = CountrySerializer(country)
+            return Response(serializer.data, status=status.HTTP_200_OK)
         countries = Country.objects.all().order_by('name')
         serializer = CountrySerializer(countries, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
@@ -249,10 +285,29 @@ class CountryAdminView(APIView):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+    def delete(self, request, country_id=None):
+        """Supprime un pays"""
+        country_id = country_id or request.data.get('id')
+        country = get_object_or_404(Country, id=country_id)
+        try:
+            country.delete()
+            return Response({"message": "Pays supprimé avec succès."}, status=status.HTTP_200_OK)
+        except ProtectedError:
+            count = country.professionals.count()
+            return Response(
+                {"error": f"Impossible de supprimer ce pays car {count} expert(s) y sont rattaché(s)."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
 class DomainAdminView(APIView):
     permission_classes = [IsAdminUser]
 
-    def get(self, request):
+    def get(self, request, domain_id=None):
+        """Récupère TOUS les domaines ou un domaine spécifique pour l'admin"""
+        if domain_id:
+            domain = get_object_or_404(LegalDomain, id=domain_id)
+            serializer = LegalDomainSerializer(domain)
+            return Response(serializer.data, status=status.HTTP_200_OK)
         domains = LegalDomain.objects.all().order_by('name')
         serializer = LegalDomainSerializer(domains, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
@@ -268,3 +323,16 @@ class DomainAdminView(APIView):
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, domain_id=None):
+        """Supprime un domaine"""
+        domain_id = domain_id or request.data.get('id')
+        domain = get_object_or_404(LegalDomain, id=domain_id)
+        try:
+            domain.delete()
+            return Response({"message": "Domaine supprimé avec succès."}, status=status.HTTP_200_OK)
+        except ProtectedError:
+            return Response(
+                {"error": "Impossible de supprimer ce domaine car des données y sont associées."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
