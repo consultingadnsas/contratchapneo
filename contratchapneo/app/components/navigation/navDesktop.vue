@@ -31,9 +31,9 @@
             </NuxtLink>
             <transition name="dropdown-fade">
                 <ul v-if="isProDropdownOpen" class="dropdown-menu">
-                    <li v-for="legal in proStore.professionals" :key="legal.id">
-                        <NuxtLink :to="{ path: '/pro', query: { legal: legal.id } }">
-                            {{ legal.title }}
+                    <li v-for="title in proStore.titles" :key="title.id">
+                        <NuxtLink :to="{ path: '/pro', query: { title: title.id } }">
+                            {{ title.name }}
                         </NuxtLink>
                     </li>
                     <li v-if="proStore.isLoading"><span class="muted-text pl-3 text-sm">Chargement...</span></li>

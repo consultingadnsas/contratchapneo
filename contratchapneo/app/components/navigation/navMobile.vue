@@ -30,8 +30,8 @@
                     </div>
                     <transition name="accordion">
                         <ul v-if="isMobileProDropdownOpen" class="mobile-accordion__list">
-                            <li v-for="domain in proStore.domains" :key="domain.id">
-                                <NuxtLink :to="{ path: '/pro', query: { domaine: domain.slug } }" @click="close">{{ domain.name }}</NuxtLink>
+                            <li v-for="title in proStore.titles" :key="title.id">
+                                <NuxtLink :to="{ path: '/pro', query: { title: title.id } }" @click="close">{{ title.name }}</NuxtLink>
                             </li>
                             <li v-if="proStore.isLoading" class="pl-2 opacity-50 text-sm">Chargement...</li>
                         </ul>
