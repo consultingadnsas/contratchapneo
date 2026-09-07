@@ -82,7 +82,7 @@ export default defineComponent({
 
         const allMotifs = {
             cdi: [
-                { name: "Licenciement sans faute (Économique ou Personnel)", value: "licenciement_normal" },
+                { name: "Licenciement sans faute (Économique)", value: "licenciement_normal" },
                 { name: "Licenciement pour faute lourde", value: "faute_lourde" },
                 { name: "Démission du salarié", value: "demission" },
                 { name: "Départ à la retraite", value: "retraite" },

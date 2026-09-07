@@ -1,5 +1,6 @@
 from django.db.models import Q
 from rest_framework import serializers
+# pyrefly: ignore [missing-import]
 from .models import Country, LegalDomain, LegalProfessional
 from account.serializers import UserSerializer
 

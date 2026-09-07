@@ -11,6 +11,7 @@ export interface User {
   password: string;
   email: string;
   phone_number: string;
+  country_code?: string;
   user_type?: string;
 }
 
@@ -41,6 +42,7 @@ export const useAuthStore = defineStore('auth', () => {
     password: '',
     email: '',
     phone_number: '',
+    country_code: '',
     user_type: ''
   })
 
@@ -100,7 +102,7 @@ export const useAuthStore = defineStore('auth', () => {
 
       if (response) {
         console.log('Réponse de création', response)
-        await navigateTo('/auth/login');
+        return true;
       }
 
     } catch (err: any) {
@@ -230,6 +232,7 @@ export const useAuthStore = defineStore('auth', () => {
         password: '',
         email: '',
         phone_number: '',
+        country_code: '',
         user_type: ''
       };
 

@@ -4,7 +4,9 @@ from rest_framework.response import Response
 from rest_framework import status
 from django.db.models import Q, ProtectedError
 from django.shortcuts import get_object_or_404
+# pyrefly: ignore [missing-import]
 from .models import Country, LegalDomain, LegalProfessional, ProCardDownload
+# pyrefly: ignore [missing-import]
 from .serializers import CountrySerializer, LegalDomainSerializer, LegalProfessionalSerializer, LegalProfessionalRegistrationSerializer
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from contrat.models import UserPack

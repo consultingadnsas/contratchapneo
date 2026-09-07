@@ -27,6 +27,7 @@ from contrat.serializers import(ContratSerializer, PackSerializer)
 
 class RegisterView(APIView):
     permission_classes = [AllowAny]
+    authentication_classes = []
 
     def post(self, request, *args, **kwargs):
 
