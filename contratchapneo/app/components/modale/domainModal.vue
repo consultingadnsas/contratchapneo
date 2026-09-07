@@ -198,7 +198,7 @@ export default {
 .modal-content-manage { 
   background: #ffffff; 
   border-radius: 20px; 
-  width: 100%; 
+  width: fit-content; 
   max-width: 580px; 
   max-height: 88vh; 
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); 
@@ -314,6 +314,7 @@ export default {
   border: none; 
   transition: background 0.2s ease; 
   display: flex; 
+  justify-content: center;
   align-items: center; 
   gap: 0.5rem; 
   cursor: pointer; 
@@ -340,6 +341,9 @@ export default {
   color: #0f172a; 
 }
 .btn-sm { 
+  display: flex;
+  justify-content: center;
+  align-items: center;
   padding: 8px 18px; 
   font-size: 0.85rem; 
 }
@@ -378,6 +382,7 @@ export default {
 .items-list-container { 
   max-height: 250px; 
   overflow-y: auto; 
+  overflow-x: hidden;
   border: 1px solid #e2e8f0; 
   border-radius: 14px; 
   background: #ffffff; 
@@ -427,6 +432,7 @@ export default {
 }
 .action-icon-btn { 
   background: transparent; 
+  margin: -10rem;
   border: none; 
   color: #cbd5e1; 
   cursor: pointer; 
@@ -480,7 +486,7 @@ export default {
   border-bottom-left-radius: 20px; 
   border-bottom-right-radius: 20px; 
   display: flex; 
-  justify-content: flex-end; 
+  justify-content: center; 
   gap: 1rem; 
 }
 .icon-xs { width: 16px; height: 16px; }
