@@ -9,6 +9,7 @@ from .views import (
     PasswordResetConfirmView,
     PasswordResetTokenVerifyView,
     PasswordResetRequestView,
+    CheckAvailabilityView
 )
 from rest_framework_simplejwt.views import (
     TokenObtainPairView,
@@ -39,4 +40,7 @@ urlpatterns = [
     path('password-reseting/', PasswordResetRequestView.as_view(), name="password-reseting"),
     path('password-reset/confirm/', PasswordResetConfirmView.as_view(), name='password-reset-confirm'),
     path('password-reset/verify-token/', PasswordResetTokenVerifyView.as_view(), name='verify-token'),
+    
+    # Check availability
+    path('check-availability/', CheckAvailabilityView.as_view(), name='check-availability'),
 ]

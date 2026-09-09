@@ -33,6 +33,6 @@ export default {
 }
 
 @media (max-width: 1024px) {
-    .split-register-container { flex-direction: column; }
+    .split-register-container { flex-direction: column-reverse; }
 }
 </style>

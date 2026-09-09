@@ -30,6 +30,7 @@
             placeholder="Entrer username/email"
             v-model="loginForm.identifier"
             :errorMessage="errors.identifier"
+            label-color="#374151"
         />
 
         <BaseInput 
@@ -39,6 +40,7 @@
             v-model="loginForm.password"
             :errorMessage="errors.password"
             showPasswordToggle
+            label-color="#374151"
         />
 
 

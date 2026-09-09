@@ -1,6 +1,6 @@
 <template>
   <div class="input-group" :class="{ 'has-error': !!errorMessage, 'is-disabled': disabled }">
-    <label v-if="label" :for="inputId" class="input-label">
+    <label v-if="label" :for="inputId" class="input-label" :style="{ color: labelColor }">
       {{ label }}
       <span v-if="required" class="required-mark">*</span>
     </label>
@@ -110,6 +110,10 @@ export default {
     showPasswordToggle: {
       type: Boolean,
       default: false
+    },
+    labelColor: {
+      type: String,
+      default: '#ffffff'
     }
   },
   emits: ['update:modelValue', 'blur'],

@@ -376,3 +376,30 @@ class PasswordResetTokenVerifyView(APIView):
                 "valid": False,
                 "message": "Token invalide ou expiré"
             }, status=status.HTTP_400_BAD_REQUEST)
+
+class CheckAvailabilityView(APIView):
+    """
+    Vérifie si un email ou un nom d'utilisateur est déjà utilisé.
+    """
+    authentication_classes = []
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        email = request.data.get('email')
+        username = request.data.get('username')
+
+        if email:
+            if CustomUser.objects.filter(email=email).exists():
+                return Response(
+                    {'available': False, 'message': 'Cet email est déjà utilisé.'},
+                    status=status.HTTP_400_BAD_REQUEST # On peut renvoyer 400 ou 200, ici 400 est logique car l'erreur doit être levée côté frontend
+                )
+        
+        if username:
+            if CustomUser.objects.filter(username=username).exists():
+                return Response(
+                    {'available': False, 'message': 'Ce nom d\'utilisateur est déjà pris.'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+        return Response({'available': True}, status=status.HTTP_200_OK)

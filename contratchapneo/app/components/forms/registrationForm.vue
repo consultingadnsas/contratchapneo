@@ -74,7 +74,7 @@
 
                 <div class="form-actions" v-if="!isSuccess">
                     <button type="button" class="btn-back" v-if="currentStep > 1" @click="prevStep" :disabled="isSubmitting">Précédent</button>
-                    <mainButton v-if="currentStep < 3" type="button" label="Suivant" @click="nextStep" class="btn-next" />
+                    <mainButton v-if="currentStep < 3" type="button" label="Suivant" @click="nextStep" :isloading="isChecking" class="btn-next" />
                     <mainButton v-if="currentStep === 3" type="submit" label="S'inscrire" :isloading="isSubmitting" class="btn-submit" />
                 </div>
 
@@ -144,9 +144,29 @@ export default {
             return isValid;
         };
 
-        const nextStep = () => {
+        const isChecking = ref(false);
+
+        const nextStep = async () => {
             if (validateStep(props.currentStep)) {
-                emit('update:currentStep', props.currentStep + 1); // Indique au parent d'avancer
+                isChecking.value = true;
+                errors.value.email = '';
+                errors.value.username = '';
+                try {
+                    if (props.currentStep === 1) {
+                        await authStore.checkAvailability({ email: registrationForm.value.email });
+                    } else if (props.currentStep === 2) {
+                        await authStore.checkAvailability({ username: registrationForm.value.username });
+                    }
+                    emit('update:currentStep', props.currentStep + 1); // Indique au parent d'avancer
+                } catch (error: any) {
+                    if (props.currentStep === 1) {
+                        errors.value.email = error.message;
+                    } else if (props.currentStep === 2) {
+                        errors.value.username = error.message;
+                    }
+                } finally {
+                    isChecking.value = false;
+                }
             }
         };
 
@@ -186,7 +206,7 @@ export default {
         };
 
         return {
-            authStore, registrationForm, errors, isSubmitting, isSuccess,
+            authStore, registrationForm, errors, isSubmitting, isChecking, isSuccess,
             nextStep, prevStep, submitForm
         }
     }
