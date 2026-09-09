@@ -26,6 +26,13 @@ declare global {
       description?: string;
   }
 
+  interface ProfessionalTitle {
+      id?: string | number;
+      code: string;
+      name: string;
+      slug?: string;
+  }
+
   interface LegalProfessional {
       id: string;
       first_name: string;
@@ -43,6 +50,9 @@ declare global {
       country: Country;
       city: string;
       domains: LegalDomain[];
+      visiting_card?: string | null;
+      consultations?: number;
+      downloads_count?: number;
       is_active: boolean;
       is_verified: boolean;
   }

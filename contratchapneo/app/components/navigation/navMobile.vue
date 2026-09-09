@@ -30,8 +30,8 @@
                     </div>
                     <transition name="accordion">
                         <ul v-if="isMobileProDropdownOpen" class="mobile-accordion__list">
-                            <li v-for="domain in proStore.domains" :key="domain.id">
-                                <NuxtLink :to="{ path: '/pro', query: { domaine: domain.slug } }" @click="close">{{ domain.name }}</NuxtLink>
+                            <li v-for="title in proStore.titles" :key="title.id">
+                                <NuxtLink :to="{ path: '/pro', query: { title: title.id } }" @click="close">{{ title.name }}</NuxtLink>
                             </li>
                             <li v-if="proStore.isLoading" class="pl-2 opacity-50 text-sm">Chargement...</li>
                         </ul>
@@ -48,15 +48,23 @@
                 <li><NuxtLink to="/etudeContrat" @click="close">Revise ton contrat</NuxtLink></li>
                 <li><NuxtLink to="/about" @click="close">À propos</NuxtLink></li>
             </ul>
-            <a href="#" class="cta-mobile" @click="close">Connexion</a>
+            <!-- Si l'utilisateur n'est PAS connecté -->
+            <NuxtLink v-if="!isAuthenticated" to="/auth/login" class="cta-mobile" @click="close">Connexion</NuxtLink>
+
+            <!-- Si l'utilisateur EST connecté -->
+            <NuxtLink v-else to="/profile/dashboard" class="cta-mobile user-dashboard-btn" @click="close">
+                <span class="user-initials">{{ userInitials }}</span>
+                <span>Dashboard</span>
+            </NuxtLink>
         </div>
     </transition>
 </template>
 
 <script lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import { useContratStore } from '../../stores/contratStore'; 
 import { useProStore } from '../../stores/proStore';
+import { useAuthStore } from '../../stores/authStore';
 
 export default {
     name: 'MobileMenu',
@@ -67,6 +75,7 @@ export default {
     setup(props, { emit }) {
         const contratStore = useContratStore();
         const proStore = useProStore();
+        const authStore = useAuthStore();
 
         const isMobileDropdownOpen = ref<boolean>(false);
         const isMobileProDropdownOpen = ref<boolean>(false);
@@ -83,9 +92,32 @@ export default {
 
         const close = () => { emit('close'); };
 
+        const getSafeUser = () => {
+            if (authStore.user && authStore.user.user) {
+                return authStore.user.user;
+            }
+            return authStore.user || {};
+        };
+
+        const isAuthenticated = computed(() => {
+            const u = getSafeUser();
+            return !!u.email || !!u.username;
+        });
+
+        const userInitials = computed(() => {
+            const u = getSafeUser();
+            if (u.first_name && u.last_name) {
+                return (u.first_name.charAt(0) + u.last_name.charAt(0)).toUpperCase();
+            } else if (u.username) {
+                return u.username.substring(0, 2).toUpperCase();
+            }
+            return 'DB'; 
+        });
+
         return { 
             contratStore, proStore, 
-            isMobileDropdownOpen, isMobileProDropdownOpen, isMobileServicesDropdownOpen, close 
+            isMobileDropdownOpen, isMobileProDropdownOpen, isMobileServicesDropdownOpen, close,
+            isAuthenticated, userInitials
         };
     }
 }
@@ -116,6 +148,26 @@ export default {
 
 .cta-mobile { align-self: center; display: block; text-align: center; background: var(--primary-color); width: 70%; color: white; padding: 0.8rem 1.5rem; border-radius: 50px; font-weight: 600; font-size: 0.95rem; text-decoration: none; transition: opacity 0.2s; }
 .cta-mobile:hover { opacity: 0.85; }
+
+.cta-mobile.user-dashboard-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.user-initials {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    background-color: white;
+    color: var(--primary-color);
+    border-radius: 50%;
+    font-size: 0.75rem;
+    font-weight: 800;
+}
 
 .slide-down-enter-active, .slide-down-leave-active { transition: all 0.28s ease-out; }
 .slide-down-enter-from, .slide-down-leave-to { transform: translateY(-12px); opacity: 0; }

@@ -51,22 +51,34 @@
                 </div>
 
                 <!-- 📦 ÉTAPE 3 : Sécurité -->
-                <div v-show="currentStep === 3" class="form-step">
-                    <BaseInput label="Mot de passe" v-model="registrationForm.password" placeholder="Entrez un mot de passe" :errorMessage="errors.password" type="password" />
-                    <BaseInput label="Confirmer le mot de passe" v-model="registrationForm.confirm_password" placeholder="Répétez le mot de passe" :errorMessage="errors.confirm_password" type="password" />
+                <div v-show="currentStep === 3 && !isSuccess" class="form-step">
+                    <BaseInput label="Mot de passe" v-model="registrationForm.password" placeholder="Entrez un mot de passe" :errorMessage="errors.password" type="password" showPasswordToggle />
+                    <BaseInput label="Confirmer le mot de passe" v-model="registrationForm.confirm_password" placeholder="Répétez le mot de passe" :errorMessage="errors.confirm_password" type="password" showPasswordToggle />
                 </div>
 
-                <div class="error-message-block" v-if="authStore.error">
+                <!-- 📦 ÉTAPE 4 : Succès -->
+                <div v-if="isSuccess" class="form-step success-step">
+                    <div class="success-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                            <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                        </svg>
+                    </div>
+                    <h3>Inscription réussie !</h3>
+                    <p>Votre compte a été créé avec succès. Vous allez être redirigé vers la page de connexion dans quelques instants...</p>
+                </div>
+
+                <div class="error-message-block" v-if="authStore.error && !isSuccess">
                     <p>{{ authStore.error }}</p>
                 </div>
 
-                <div class="form-actions">
+                <div class="form-actions" v-if="!isSuccess">
                     <button type="button" class="btn-back" v-if="currentStep > 1" @click="prevStep" :disabled="isSubmitting">Précédent</button>
                     <mainButton v-if="currentStep < 3" type="button" label="Suivant" @click="nextStep" class="btn-next" />
                     <mainButton v-if="currentStep === 3" type="submit" label="S'inscrire" :isloading="isSubmitting" class="btn-submit" />
                 </div>
 
-                <div class="login-link">
+                <div class="login-link" v-if="!isSuccess">
                     <p>Vous avez déjà un compte ? <router-link to="/auth/login">Connectez-vous</router-link></p>
                 </div>
             </form>
@@ -89,6 +101,7 @@ export default {
     setup(props, { emit }) {
         const authStore = useAuthStore();
         const isSubmitting = ref(false);
+        const isSuccess = ref(false);
 
         const registrationForm = ref({
             first_name: "", last_name: "", email: "", username: "",
@@ -121,8 +134,9 @@ export default {
                 else if (!usernameRegex.test(registrationForm.value.username)) { errors.value.username = "Pas d'espaces autorisés"; isValid = false; }
                 if (!registrationForm.value.phone_number.trim()) { errors.value.phone_number = "Requis"; isValid = false; }
             } else if (step === 3) {
+                const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_])[A-Za-z\d\W_]{8,}$/;
                 if (!registrationForm.value.password) { errors.value.password = "Requis"; isValid = false; }
-                else if (registrationForm.value.password.length < 8) { errors.value.password = "8 caractères minimum"; isValid = false; }
+                else if (!passwordRegex.test(registrationForm.value.password)) { errors.value.password = "Min. 8 caractères, 1 maj, 1 min, 1 chiffre, 1 car. spécial"; isValid = false; }
                 if (registrationForm.value.password !== registrationForm.value.confirm_password) {
                     errors.value.confirm_password = "Les mots de passe ne correspondent pas"; isValid = false;
                 }
@@ -148,7 +162,7 @@ export default {
             if (validateStep(3)) {
                 isSubmitting.value = true;
                 try {
-                    await authStore.register({
+                    const success = await authStore.register({
                         username: registrationForm.value.username,
                         email: registrationForm.value.email,
                         phone_number: fullPhoneNumber,
@@ -156,6 +170,13 @@ export default {
                         first_name: registrationForm.value.first_name,
                         last_name: registrationForm.value.last_name
                     });
+                    
+                    if (success) {
+                        isSuccess.value = true;
+                        setTimeout(() => {
+                            navigateTo('/auth/login');
+                        }, 3000);
+                    }
                 } catch (error) {
                     console.error("L'inscription a échoué.", error);
                 } finally {
@@ -165,7 +186,7 @@ export default {
         };
 
         return {
-            authStore, registrationForm, errors, isSubmitting,
+            authStore, registrationForm, errors, isSubmitting, isSuccess,
             nextStep, prevStep, submitForm
         }
     }
@@ -191,13 +212,20 @@ export default {
 .phone-flex-container { display: flex; align-items: center; border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden; background: #ffffff; }
 .phone-flex-container:focus-within { border-color: var(--accent-blue, #2563eb); box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); }
 .country-select { background-color: #f8fafc; border: none; border-right: 1px solid #e2e8f0; padding: 0.75rem; font-size: 0.95rem; color: #475569; cursor: pointer; outline: none; }
-.phone-input { border: none !important; box-shadow: none !important; width: 100%; padding: 0.75rem 1rem; outline: none; }
+.phone-input { border: none !important; box-shadow: none !important; width: 100%; padding: 0.75rem 1rem; outline: none; color: #475569 }
 .error-message { color: #ef4444; font-size: 0.85rem; margin-top: 0.25rem; display: block; }
 .error-message-block { background: rgba(220, 38, 38, 0.1); color: #ef4444; border: 1px solid rgba(220, 38, 38, 0.3); padding: 0.75rem; border-radius: 8px; text-align: center; font-size: 0.85rem; }
 
 .login-link { text-align: center; margin-top: 2rem; font-size: 0.85rem; color: #888; }
 .login-link a { color: #ffffff; text-decoration: none; font-weight: 600; }
 .login-link a:hover { text-decoration: underline; color: var(--secondary-light-color); }
+
+/* Success Step */
+.success-step { text-align: center; align-items: center; padding: 2rem 0; }
+.success-icon { width: 64px; height: 64px; border-radius: 50%; background: rgba(34, 197, 94, 0.1); color: #22c55e; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem auto; }
+.success-icon svg { width: 32px; height: 32px; }
+.success-step h3 { font-size: 1.5rem; margin-bottom: 0.5rem; color: #f8fafc; }
+.success-step p { color: #94a3b8; line-height: 1.5; font-size: 0.95rem; }
 
 @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 

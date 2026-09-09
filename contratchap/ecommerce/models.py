@@ -296,7 +296,8 @@ class Order(models.Model):
             models.CheckConstraint(
                 condition=(
                     models.Q(user__isnull=False, guest__isnull=True) |
-                    models.Q(user__isnull=True,  guest__isnull=False)
+                    models.Q(user__isnull=True,  guest__isnull=False) |
+                    models.Q(user__isnull=True,  guest__isnull=True)
                 ),
                 name='order_user_or_guest_exclusive'
             )

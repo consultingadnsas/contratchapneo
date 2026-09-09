@@ -1,4 +1,6 @@
+from django.db.models import Q
 from rest_framework import serializers
+# pyrefly: ignore [missing-import]
 from .models import Country, LegalDomain, LegalProfessional
 from account.serializers import UserSerializer
 
@@ -26,10 +28,28 @@ class LegalProfessionalSerializer(serializers.ModelSerializer):
     )
     
     title_display = serializers.CharField(source='get_title_display', read_only=True)
+    consultations = serializers.SerializerMethodField()
+    downloads_count = serializers.SerializerMethodField()
 
     class Meta:
         model = LegalProfessional
         exclude = ['user']
+
+    def get_consultations(self, obj):
+        try:
+            pack_count = obj.debloque_par.count() if hasattr(obj, 'debloque_par') else 0
+            pcd_count = obj.downloads.count() if hasattr(obj, 'downloads') else 0
+            order_count = 0
+            if hasattr(obj, 'order_items'):
+                order_count = obj.order_items.filter(
+                    Q(order__status__iexact='paid') | Q(order__status__iexact='completed')
+                ).count()
+            return max(pack_count, pcd_count) + order_count
+        except Exception:
+            return 0
+
+    def get_downloads_count(self, obj):
+        return self.get_consultations(obj)
 
     # ⚡️ On force Django à transformer l'ID en objet complet (JSON) quand il répond à Nuxt
     def to_representation(self, instance):
@@ -44,6 +64,11 @@ class LegalProfessionalSerializer(serializers.ModelSerializer):
         # Transformation des domaines
         if hasattr(instance, 'domains'):
             representation['domains'] = LegalDomainSerializer(instance.domains.all(), many=True).data
+
+        # Nombre de téléchargements de la carte de visite (consultations)
+        consultations_count = self.get_consultations(instance)
+        representation['consultations'] = consultations_count
+        representation['downloads_count'] = consultations_count
             
         return representation
 

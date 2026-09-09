@@ -8,11 +8,11 @@
         <!-- ⚡️ NOUVEAU : Groupe de boutons -->
         <div class="header-buttons">
           <button class="btn-secondary-custom" @click="openCountryModal()">
-            <component :is="GlobeAltIcon" class="icon-sm" /> Ajouter un pays
+            <component :is="GlobeAltIcon" class="icon-sm" /> Gérer les pays ({{ countriesList.length }})
           </button>
 
           <button class="btn-secondary-custom" @click="openDomainModal()">
-            <component :is="BriefcaseIcon" class="icon-sm" /> Ajouter un domaine
+            <component :is="BriefcaseIcon" class="icon-sm" /> Gérer les domaines ({{ domainsList.length }})
           </button>
           
           <button class="btn-primary-custom" @click="openModal()">
@@ -100,57 +100,17 @@
       @save="saveExpert"
     />
 
-    <!-- ⚡️ NOUVEAU : Modale Pays -->
-    <div v-if="isCountryModalOpen" class="modal-overlay" @click.self="closeCountryModal">
-      <div class="modal-content-small">
-        <div class="modal-header">
-          <h3 class="modal-title">Ajouter un Pays</h3>
-          <button class="close-btn" @click="closeCountryModal">✕</button>
-        </div>
-        <div class="modal-body">
-          <div class="input-wrapper mb-3">
-            <label class="input-label">Nom du pays *</label>
-            <input type="text" v-model="newCountry.name" class="form-input" placeholder="Ex: Sénégal" />
-          </div>
-          <div class="input-wrapper mb-3">
-            <label class="input-label">Code ISO (2 lettres) *</label>
-            <input type="text" v-model="newCountry.code" class="form-input" placeholder="Ex: SN" maxlength="3" />
-          </div>
-          <label class="checkbox-label mt-3">
-            <input type="checkbox" v-model="newCountry.is_ohada_member" class="form-checkbox">
-            <span class="checkbox-text">Membre de l'espace OHADA</span>
-          </label>
-        </div>
-        <div class="modal-footer">
-          <secondButton label="Annuler" @click="closeCountryModal" />
-          <button class="btn-primary-custom" @click="saveCountry" :disabled="isLoading">Enregistrer</button>
-        </div>
-      </div>
-    </div>
+    <!-- ⚡️ Modale Gestion des Pays -->
+    <CountryModal 
+      v-if="isCountryModalOpen" 
+      @close="closeCountryModal" 
+    />
 
-    <!-- Modale Domaine -->
-<div v-if="isDomainModalOpen" class="modal-overlay" @click.self="closeDomainModal">
-    <div class="modal-content-small">
-        <div class="modal-header">
-            <h3 class="modal-title">Ajouter un Domaine</h3>
-            <button class="close-btn" @click="closeDomainModal">✕</button>
-        </div>
-        <div class="modal-body">
-            <div class="input-wrapper mb-3">
-                <label class="input-label">Nom du domaine / Acte uniforme *</label>
-                <input type="text" v-model="newDomain.name" class="form-input" placeholder="Ex: Droit des sociétés" />
-            </div>
-            <div class="input-wrapper mb-3">
-                <label class="input-label">Description (Optionnel)</label>
-                <textarea v-model="newDomain.description" class="form-input" rows="3" placeholder="Brève description..."></textarea>
-            </div>
-        </div>
-        <div class="modal-footer">
-            <secondButton label="Annuler" @click="closeDomainModal" />
-            <button class="btn-primary-custom" @click="saveDomain" :disabled="isLoading">Enregistrer</button>
-        </div>
-    </div>
-</div>
+    <!-- ⚡️ Modale Gestion des Domaines -->
+    <DomainModal 
+      v-if="isDomainModalOpen" 
+      @close="closeDomainModal" 
+    />
 
   </div>
 </template>
@@ -158,21 +118,22 @@
 <script lang="ts">
 import { ref, computed, markRaw, onMounted } from 'vue';
 import ExpertModal from '../../modale/expertModal.vue';
-import secondButton from '../../buttons/secondButton.vue';
+import CountryModal from '../../modale/countryModal.vue';
+import DomainModal from '../../modale/domainModal.vue';
 import { useAdminProStore } from '../../../stores/adminProStore'; 
 import { 
   UserPlusIcon, 
   MagnifyingGlassIcon, 
   CheckBadgeIcon, 
-  TrashIcon,
+  TrashIcon, 
   BriefcaseIcon,
   PencilSquareIcon,
-  GlobeAltIcon // ⚡️ NOUVEL IMPORT
+  GlobeAltIcon
 } from '@heroicons/vue/24/outline';
 
 export default {
   name: 'AdminExperts',
-  components: { ExpertModal, secondButton },
+  components: { ExpertModal, CountryModal, DomainModal },
   setup() {
     const adminProStore = useAdminProStore();
     
@@ -200,7 +161,7 @@ export default {
         visiting_card: pro.visiting_card,
         isVerified: pro.is_verified,
         isActive: pro.is_active,
-        consultations: 0
+        consultations: pro.consultations ?? pro.downloads_count ?? 0
       }));
     });
 
@@ -305,58 +266,14 @@ export default {
       }
     };
 
-    // ⚡️ NOUVEAU : Logique Modale Pays
+    // ⚡️ Gestion des modales Pays & Domaines
     const isCountryModalOpen = ref(false);
-    const newCountry = ref({ name: '', code: '', is_ohada_member: true });
-
-    const openCountryModal = () => {
-      newCountry.value = { name: '', code: '', is_ohada_member: true };
-      isCountryModalOpen.value = true;
-    };
-
-    const closeCountryModal = () => {
-      isCountryModalOpen.value = false;
-    };
-
-    const saveCountry = async () => {
-      if (!newCountry.value.name.trim() || !newCountry.value.code.trim()) {
-        alert("Le nom et le code du pays sont obligatoires.");
-        return;
-      }
-      try {
-        await adminProStore.addCountry(newCountry.value);
-        closeCountryModal();
-        alert("Pays ajouté avec succès !");
-      } catch(e) {
-        alert("Erreur lors de l'ajout du pays.");
-      }
-    };
+    const openCountryModal = () => { isCountryModalOpen.value = true; };
+    const closeCountryModal = () => { isCountryModalOpen.value = false; };
 
     const isDomainModalOpen = ref(false);
-const newDomain = ref({ name: '', description: '' });
-
-const openDomainModal = () => {
-    newDomain.value = { name: '', description: '' };
-    isDomainModalOpen.value = true;
-};
-
-const closeDomainModal = () => {
-    isDomainModalOpen.value = false;
-};
-
-const saveDomain = async () => {
-    if (!newDomain.value.name.trim()) {
-        alert("Le nom du domaine est obligatoire.");
-        return;
-    }
-    try {
-        await adminProStore.addDomain(newDomain.value);
-        closeDomainModal();
-        alert("Domaine ajouté avec succès !");
-    } catch(e) {
-        alert("Erreur lors de l'ajout du domaine.");
-    }
-};
+    const openDomainModal = () => { isDomainModalOpen.value = true; };
+    const closeDomainModal = () => { isDomainModalOpen.value = false; };
 
     onMounted(async () => {
       await adminProStore.fetchCountries(); // Charge les pays
@@ -377,15 +294,11 @@ const saveDomain = async () => {
       saveExpert,
       deleteExpert,
       isCountryModalOpen,
-      newCountry,
-      isDomainModalOpen,
-      newDomain,
       openCountryModal,
       closeCountryModal,
-      saveCountry,
+      isDomainModalOpen,
       openDomainModal,
       closeDomainModal,
-      saveDomain,
       countriesList: computed(() => adminProStore.countries),
       domainsList: computed(() => adminProStore.domains),
       isLoading: computed(() => adminProStore.isLoading),
@@ -444,22 +357,6 @@ const saveDomain = async () => {
 .stat-label { font-size: 0.7rem; color: var(--text-gray); text-transform: uppercase; letter-spacing: 0.5px; }
 .empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 4rem 2rem; background: var(--bg-panel); border-radius: 24px; text-align: center; border: 1px dashed #cbd5e1; }
 .icon-box-light { width: 64px; height: 64px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
-
-/* ⚡️ NOUVEAU : Styles pour la modale du Pays */
-.modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(15, 23, 42, 0.4); backdrop-filter: blur(4px); display: flex; justify-content: center; align-items: center; z-index: 1000; padding: 1rem; }
-.modal-content-small { background: #ffffff; border-radius: 20px; width: 100%; max-width: 450px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); display: flex; flex-direction: column; }
-.modal-header { display: flex; justify-content: space-between; align-items: center; padding: 1.5rem; border-bottom: 1px solid #f1f5f9; }
-.modal-title { margin: 0; font-size: 1.25rem; font-weight: 700; color: #0f172a; }
-.close-btn { background: #f1f5f9; border: none; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #64748b; cursor: pointer; transition: 0.2s; }
-.close-btn:hover { background: #e2e8f0; color: #0f172a; }
-.modal-body { padding: 1.5rem; }
-.form-input { width: 100%; padding: 0.7rem 1rem; border-radius: 12px; border: 1px solid #cbd5e1; outline: none; font-size: 0.95rem; }
-.form-input:focus { border-color: var(--accent-blue); box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); }
-.input-label { display: block; font-size: 0.85rem; font-weight: 600; color: #475569; margin-bottom: 0.4rem; }
-.checkbox-label { display: flex; align-items: center; gap: 0.6rem; cursor: pointer; }
-.form-checkbox { width: 1.1rem; height: 1.1rem; accent-color: var(--accent-blue); }
-.checkbox-text { font-size: 0.9rem; color: #475569; font-weight: 500; }
-.modal-footer { padding: 1.2rem 1.5rem; border-top: 1px solid #f1f5f9; background: #fafaf9; border-bottom-left-radius: 20px; border-bottom-right-radius: 20px; display: flex; justify-content: flex-end; gap: 1rem; }
 
 .domain-filter-box {
   min-width: 220px;

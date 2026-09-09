@@ -2,29 +2,33 @@
   <div class="filter-wrapper">
     
     <div class="mobile-filter">
-      <select :value="activeDomain" @change="onSelectChange">
-        <option value="">Tous les domaines</option>
-        <option v-for="domain in domains" :key="domain.id" :value="domain.slug">
-          {{ domain.name }}
+      <select :value="currentActive" @change="onSelectChange">
+        <option value="">{{ placeholder }}</option>
+        <option 
+          v-for="item in itemsList" 
+          :key="getItemKey(item)" 
+          :value="getItemValue(item)"
+        >
+          {{ getItemLabel(item) }}
         </option>
       </select>
     </div>
 
     <div class="desktop-filter">
       <button 
-        :class="{ active: activeDomain === '' }" 
-        @click="selectDomain('')"
+        :class="{ active: currentActive === '' }" 
+        @click="selectItem('')"
       >
         Tout
       </button>
       
       <button 
-        v-for="domain in domains" 
-        :key="domain.id" 
-        :class="{ active: activeDomain === domain.slug }"
-        @click="selectDomain(domain.slug)"
+        v-for="item in itemsList" 
+        :key="getItemKey(item)" 
+        :class="{ active: currentActive === getItemValue(item) }"
+        @click="selectItem(getItemValue(item))"
       >
-        {{ domain.name }}
+        {{ getItemLabel(item) }}
       </button>
     </div>
     
@@ -32,45 +36,81 @@
 </template>
 
 <script lang="ts">
-import { PropType } from 'vue';
+import { PropType, computed } from 'vue';
 
-export interface LegalDomain {
-    id: number;
-    name: string;
-    slug: string;
+export interface FilterItem {
+    id?: string | number;
+    name?: string;
+    label?: string;
+    code?: string;
+    slug?: string;
 }
 
 export default {
   name: 'BaseProFilter',
   
   props: {
-    domains: {
-        type: Array as PropType<LegalDomain[]>,
+    titles: {
+        type: Array as PropType<any[]>,
         default: () => []
     },
-    // NOUVEAU : On écoute le filtre actif dicté par l'URL/le parent
+    domains: {
+        type: Array as PropType<any[]>,
+        default: () => []
+    },
+    activeTitle: {
+        type: String,
+        default: ''
+    },
     activeDomain: {
         type: String,
         default: ''
+    },
+    placeholder: {
+        type: String,
+        default: 'Tous les titres'
     }
   },
   
-  emits: ['filter'],
+  emits: ['filter', 'update:activeTitle'],
   
   setup(props, { emit }) {
-    // Boutons Desktop
-    const selectDomain = (slug: string) => {
-      emit('filter', slug);
+    const itemsList = computed(() => {
+      if (props.titles && props.titles.length > 0) {
+        return props.titles;
+      }
+      return props.domains || [];
+    });
+
+    const currentActive = computed(() => {
+      if (props.activeTitle !== undefined && props.activeTitle !== '') {
+        return props.activeTitle;
+      }
+      return props.activeDomain || '';
+    });
+
+    const getItemKey = (item: any) => item.id || item.code || item.slug || item.name;
+    const getItemValue = (item: any) => item.code || item.slug || item.id || '';
+    const getItemLabel = (item: any) => item.name || item.label || item.title || '';
+
+    // Boutons Desktop & Select Mobile
+    const selectItem = (value: string) => {
+      emit('filter', value);
+      emit('update:activeTitle', value);
     };
 
-    // Select Mobile
     const onSelectChange = (event: Event) => {
       const target = event.target as HTMLSelectElement;
-      emit('filter', target.value);
+      selectItem(target.value);
     };
 
     return {
-      selectDomain,
+      itemsList,
+      currentActive,
+      getItemKey,
+      getItemValue,
+      getItemLabel,
+      selectItem,
       onSelectChange
     };
   }
@@ -83,7 +123,7 @@ export default {
    ========================================== */
 .filter-wrapper {
   width: 100%;
-  margin: 1rem 0;
+  margin: 0;
 }
 
 .desktop-filter {
@@ -126,11 +166,12 @@ export default {
 
   .desktop-filter {
     display: flex;
+    align-items: center;
     gap: 0.5rem;
     width: 100%;
     /* J'ai supprimé la limite de 600px pour que les boutons occupent la place qu'il faut dans ta toolbar */
     overflow-x: auto;
-    padding-bottom: 0.5rem;
+    padding-bottom: 0.25rem;
     
     /* Défilement fluide sur les appareils tactiles */
     -webkit-overflow-scrolling: touch;

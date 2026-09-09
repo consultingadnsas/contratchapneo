@@ -2,26 +2,10 @@
     <div class="page-wrapper">
         <main class="contact-center-page">
             <Navbar theme="light"/>
-            
-            <!-- ── HERO SECTION ── -->
             <section class="hero-section">
-                <div class="hero-content">
-                    <h1 class="main-title">
-                        Centre d'Appel & <span class="text-accent">Assistance.</span>
-                    </h1>
-                    <p class="hero-description muted-text">
-                        Le cabinet <strong>ADN Consulting SAS</strong> est à votre écoute. Contactez nos experts pour toute assistance juridique, fiscale ou technique concernant la plateforme ContratChap.
-                    </p>
-                </div>
             </section>
-
-            <!-- ── SECTION CONTACT PRINCIPALE (Importée) ── -->
-            <!-- Assure-toi que le chemin d'importation correspond à ton architecture -->
             <numberGreen />
-
-            <!-- ── SECTION FAQ (Importée) ── -->
             <faqSection />
-
         </main>
         <Footer />
     </div>
@@ -70,7 +54,7 @@ export default {
     overflow: hidden;
     display: flex;
     flex-direction: column;
-    margin-bottom: 3rem; 
+    margin-bottom: 1rem; 
 }
 
 .text-accent {
@@ -85,7 +69,7 @@ export default {
    1. HERO SECTION 
 ========================================== */
 .hero-section {
-    padding: 6rem 2rem 4rem 2rem;
+    padding: 4rem 2rem 0rem 2rem;
     display: flex;
     flex-direction: column;
     align-items: center;

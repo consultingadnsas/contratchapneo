@@ -243,6 +243,19 @@ export default defineComponent({
     width: 45px;
     height: 45px;
     transition: all ease-in-out 0.4s;
+    opacity: 0;
+    visibility: hidden;
+}
+
+.pro-card:hover .btn_container2 {
+    opacity: 1;
+    visibility: visible;
+}
+
+@media (max-width: 768px) {
+    .btn_container2 {
+        display: none !important;
+    }
 }
 
 .btn_container2:hover {

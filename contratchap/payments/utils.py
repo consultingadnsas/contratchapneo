@@ -64,6 +64,16 @@ def _increment_downloads(order: Order):
             downloads=F('downloads') + 1
         )
 
+    pro_items = [item for item in items if item.pro_id is not None]
+    if pro_items and order.user:
+        try:
+            from pro.models import ProCardDownload
+            for item in pro_items:
+                if item.pro:
+                    ProCardDownload.objects.get_or_create(user=order.user, pro=item.pro)
+        except Exception:
+            pass
+
 def _send_download_email(order: Order):
     """
     Envoie le lien de téléchargement après paiement confirmé.

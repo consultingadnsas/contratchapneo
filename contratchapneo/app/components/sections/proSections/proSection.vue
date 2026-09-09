@@ -7,26 +7,38 @@
         </header>
 
        <div class="toolbar">
-            <baseProFilter 
-                class="toolbar__filter" 
-                :domains="proStore.domains"
-                :activeDomain="activeDomainSlug" @filter="handleDomainFilter"
-            />
-            
-            <BaseCountrySelect 
-                class="toolbar__select" 
-                placeholder="Choisir le pays" 
-                :options="proStore.countries"
-                v-model="activeCountryCode"
-                @update:modelValue="handleCountryFilter"
-            />
-            
             <BaseSearchInput 
                 class="toolbar__search" 
                 placeholder="Trouver un professionnel"
                 v-model="searchQuery"
                 @update:modelValue="handleSearch"
             />
+
+            <div class="toolbar__filters-row">
+                <baseProFilter 
+                    class="toolbar__filter" 
+                    :titles="proStore.titles"
+                    :activeTitle="activeTitle" 
+                    @filter="handleTitleFilter"
+                />
+                
+                <BaseDomainSelect 
+                    class="toolbar__select" 
+                    placeholder="Choisir le domaine" 
+                    :options="proStore.domains"
+                    v-model="activeDomainSlug"
+                    @update:modelValue="handleDomainFilter"
+                />
+
+                <BaseCountrySelect 
+                    class="toolbar__select" 
+                    placeholder="Choisir le pays" 
+                    :options="proStore.countries"
+                    v-model="activeCountryCode"
+                    @update:modelValue="handleCountryFilter"
+                />
+            </div>
+            
         </div>
 
         <contractCardSkeleton v-if="proStore.isLoading" />
@@ -86,6 +98,7 @@ import ProCards from '../../cards/proCards.vue'
 import contractCardSkeleton from '../../cards/contractCardSkeleton.vue'
 import emptyState from '../../tools/emptyState.vue'
 import baseProFilter from '../../tools/baseProFilter.vue'
+import BaseDomainSelect from '../../input/BaseDomainSelect.vue'
 import BaseCountrySelect from '../../input/BaseCountrySelect.vue'
 import BaseSearchInput from '../../input/BaseSearchInput.vue'
 import Paginator from '../../tools/Paginator.vue'
@@ -100,7 +113,7 @@ import { useCartStore } from '../../../stores/cartStore'
 
 export default {
     components: {
-        ProCards, Paginator, BaseSearchInput, BaseCountrySelect,
+        ProCards, Paginator, BaseSearchInput, BaseCountrySelect, BaseDomainSelect,
         contractCardSkeleton, emptyState, cartModale, viewModale,
         baseProFilter, proModale
     },
@@ -112,17 +125,22 @@ export default {
         const cartStore = useCartStore();
 
         // 1. Initialiser avec ce qui se trouve dans l'URL (si présent)
-        const activeDomainSlug = ref((route.query.domaine as string) || '');
-        const activeCountryCode = ref('');
-        const searchQuery = ref('');
-        const currentPage = ref(1); // 👈 Ajout : On suit la page locale
+        const activeTitle = ref((route.query.titre as string) || (route.query.title as string) || '');
+        const activeDomainSlug = ref((route.query.domaine as string) || (route.query.domain as string) || '');
+        const activeCountryCode = ref((route.query.pays as string) || (route.query.country as string) || '');
+        const searchQuery = ref((route.query.q as string) || '');
+        const currentPage = ref(Number(route.query.page) || 1);
 
         // Fonction centralisée pour la recherche (avec la pagination)
         const fetchPros = (page = 1) => {
-            currentPage.value = page; // On garde en mémoire la page actuelle
-            // On suppose que ton store a une fonction qui prend (page, domaine, pays, recherche)
-            // Adapte le nom de la fonction selon ton store (fetchProfessionals ou getProfessionals)
-            proStore.getProfessionals(page, activeDomainSlug.value, activeCountryCode.value, searchQuery.value);
+            currentPage.value = page;
+            proStore.getProfessionals(
+                page, 
+                activeTitle.value, 
+                activeCountryCode.value, 
+                searchQuery.value,
+                activeDomainSlug.value
+            );
         }
 
         // 2. Gestionnaires de filtres
@@ -133,31 +151,53 @@ export default {
             if (searchTimeout) clearTimeout(searchTimeout);
             
             searchTimeout = setTimeout(() => {
-                fetchPros(1); // 👈 Nouvelle recherche = retour à la page 1
+                fetchPros(1);
             }, 300);
+        };
+
+        const handleTitleFilter = (title: string) => {
+            activeTitle.value = title;
+            router.push({ path: '/pro', query: { ...route.query, titre: title || undefined } });
+            fetchPros(1);
         };
 
         const handleDomainFilter = (slug: string) => {
             activeDomainSlug.value = slug;
             router.push({ path: '/pro', query: { ...route.query, domaine: slug || undefined } });
-            fetchPros(1); // 👈 Nouveau filtre = retour à la page 1
+            fetchPros(1);
         };
 
         const handleCountryFilter = (code: string) => {
             activeCountryCode.value = code;
-            fetchPros(1); // 👈 Nouveau filtre = retour à la page 1
+            router.push({ path: '/pro', query: { ...route.query, pays: code || undefined } });
+            fetchPros(1);
         };
 
-        // 👈 CORRECTION ICI : On utilise la fonction centralisée
-         const handlePageChange = (page: number) => {
+        const handlePageChange = (page: number) => {
             fetchPros(page);
         };
 
         // 3. Surveillance URL
-        watch(() => route.query.domaine, (newDomain) => {
-            const newSlug = (newDomain as string) || '';
-            if (activeDomainSlug.value !== newSlug) {
-                activeDomainSlug.value = newSlug;
+        watch(() => route.query.titre || route.query.title, (newTitle) => {
+            const title = (newTitle as string) || '';
+            if (activeTitle.value !== title) {
+                activeTitle.value = title;
+                fetchPros(1);
+            }
+        });
+
+        watch(() => route.query.domaine || route.query.domain, (newDomain) => {
+            const domain = (newDomain as string) || '';
+            if (activeDomainSlug.value !== domain) {
+                activeDomainSlug.value = domain;
+                fetchPros(1);
+            }
+        });
+
+        watch(() => route.query.pays || route.query.country, (newCountry) => {
+            const country = (newCountry as string) || '';
+            if (activeCountryCode.value !== country) {
+                activeCountryCode.value = country;
                 fetchPros(1);
             }
         });
@@ -183,20 +223,16 @@ export default {
 
         // 5. Chargement initial
         onMounted(async () => {
-            // On ne charge les filtres que s'ils n'existent pas encore dans le store
-            if (proStore.domains.length === 0) {
+            if (proStore.titles.length === 0 || proStore.countries.length === 0 || proStore.domains.length === 0) {
                 await proStore.getFilters();
             }
             
-            // On ne charge les pros que si la liste est vide ou si tu souhaites forcer le rafraîchissement
-            if (proStore.professionals.length === 0) {
-                fetchPros(1);
-            }
+            fetchPros(currentPage.value || 1);
         });
 
         return {
-            router, cartStore, proStore, searchQuery, activeDomainSlug, activeCountryCode,
-            handleSearch, handleDomainFilter, handleCountryFilter,
+            router, cartStore, proStore, searchQuery, activeTitle, activeDomainSlug, activeCountryCode,
+            handleSearch, handleTitleFilter, handleDomainFilter, handleCountryFilter,
             isOpen, openModal, isViewOpen, openViewModal, addToCart, handlePageChange
         }
     }
@@ -241,45 +277,53 @@ header p{
 }
 
 /* ==========================================
-   TOOLBAR : filtre + recherche côte à côte
+   TOOLBAR : Recherche en haut, filtres alignés
 ========================================== */
 .toolbar {
     width: 100%;
     max-width: 1200px;
     display: flex;
+    flex-direction: column;
     align-items: center;
-    justify-content: space-around;
-    gap: 0.75rem;
+    gap: 1.25rem;
     padding: 0.5rem;
 }
 
+.toolbar__search {
+    width: 100%;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.toolbar__filters-row {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+}
+
 .toolbar__filter {
+    flex: 1 1 auto;
     min-width: 0; 
     margin: 0; 
 }
 
-.toolbar__search {
-    flex: 0 0 auto; 
+.toolbar__select {
+    flex: 0 0 auto;
+    width: 190px;
+    min-width: 160px;
+}
+
+:deep(.search-container) {
+    width: 100%;
+    max-width: 100%;
 }
 
 :deep(.search-container.is-mobile.is-expanded) {
     width: auto;
     flex: 1 1 auto;
     min-width: 0;
-}
-
-/* ==========================================
-   TABLETTE (>= 768px)
-========================================== */
-@media (min-width: 768px) {
-
-   .toolbar__search {
-        flex: 1; /* 👈 Permet de grandir */
-        width: 100%; /* 👈 Prend l'espace disponible */
-        min-height: 10vh;
-        min-width: 300px;
-        margin-left: auto;
-    }
 }
 
 /* ==========================================
@@ -318,11 +362,19 @@ header p{
         gap: 1rem;
         padding: 1rem;
     }
+
+    .toolbar__filters-row {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.75rem;
+        width: 100%;
+    }
     
     .toolbar__filter,
     .toolbar__select,
     .toolbar__search {
         width: 100%;
+        max-width: 100%;
         margin: 0;
     }
 }

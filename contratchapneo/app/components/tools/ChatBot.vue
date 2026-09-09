@@ -92,18 +92,7 @@ export default defineComponent({
     font-family: 'Inter', sans-serif;
 }
 
-.chat-fab {
-    width: 60px;
-    height: 60px;
-    border-radius: 50%;
-    background: #0f172a;
-    color: white;
-    font-size: 1.5rem;
-    border: none;
-    cursor: pointer;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    transition: transform 0.2s;
-}
+
 .chat-fab:hover {
     transform: scale(1.05);
 }
@@ -133,7 +122,7 @@ export default defineComponent({
     width: 60px;
     height: 60px;
     border-radius: 50%;
-    background: #0f172a;
+    background: #156ca9;
     color: white;
     border: none;
     cursor: pointer;
@@ -156,7 +145,7 @@ export default defineComponent({
 }
 
 .chat-header {
-    background: #0f172a;
+    background: #156ca9;
     color: white;
     padding: 1rem;
     display: flex;

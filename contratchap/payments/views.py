@@ -26,13 +26,16 @@ from rest_framework.pagination import PageNumberPagination
 
 from ecommerce.models import Order
 from contrat.models   import ContractRevision
+# pyrefly: ignore [missing-import]
 from .models          import Transaction
+# pyrefly: ignore [missing-import]
 from .serializers     import (
     TransactionSerializer,
     PaymentInitiateSerializer,
     PaymentSimulateSerializer,
 )
 
+# pyrefly: ignore [missing-import]
 from .utils import (
     stream_single_pdf, 
     stream_zip, 
@@ -111,6 +114,9 @@ class PaymentInitiateView(APIView):
             first_name = getattr(order.user, 'first_name', '') or ''
             last_name  = getattr(order.user, 'last_name',  '') or ''
             phone      = getattr(order.user, 'phone_number', '') or ''
+            
+        import re
+        phone = re.sub(r'\D', '', str(phone))
 
         # ── Payload calé sur leur format sandbox ──────────────────────────
         xpaye_payload = {
