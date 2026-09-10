@@ -38,15 +38,16 @@ class ContratSerializer(serializers.ModelSerializer):
 class CustomedContractSerializer(serializers.ModelSerializer):
     client_name = serializers.SerializerMethodField(read_only=True)
     category_name = serializers.SerializerMethodField(read_only=True)
+    is_paid = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = CustomedContract
         fields = [
             'id', 'subject', 'phone_number', 'email', 'description', 
             'price', 'is_wrotten', 'user', 'user_pack', 
-            'client_name', 'category','created_at', 'category_name', 'updated_at'
+            'client_name', 'category','created_at', 'category_name', 'updated_at', 'is_paid'
         ]
-        read_only_fields = ['id', 'is_wrotten', 'user', 'user_pack', 'client_name', 'category_name', 'created_at', 'updated_at']
+        read_only_fields = ['id', 'is_wrotten', 'user', 'user_pack', 'client_name', 'category_name', 'created_at', 'updated_at', 'is_paid']
 
     def get_client_name(self, obj):
         # 1. Si l'utilisateur est connecté (CustomUser)
@@ -70,6 +71,11 @@ class CustomedContractSerializer(serializers.ModelSerializer):
         if obj.category:
             return obj.category.title
         return "Catégorie non spécifiée"
+        
+    def get_is_paid(self, obj):
+        if obj.user_pack is not None:
+            return True
+        return obj.orderitem_set.filter(order__status='paid').exists()
 
 class CategoryWithContractsSerializer(serializers.ModelSerializer):
     # On utilise le related_name défini dans le modèle Contrat
@@ -123,6 +129,7 @@ class ContractRevisionSerializer(serializers.ModelSerializer):
     status_display = serializers.CharField(source='get_status_display', read_only=True)
     client_name = serializers.SerializerMethodField(read_only=True)
     original_file = serializers.FileField(required=True)
+    is_paid = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = ContractRevision
@@ -131,12 +138,12 @@ class ContractRevisionSerializer(serializers.ModelSerializer):
             'original_file', 'revised_file', 'price', 'promo_price', 'status',
             'status_display', 'is_revised', 'expert_comments', 'user', 'user_pack',
             'client_name', # ⚡️ Le champ calculé
-            'created_at', 'updated_at',
+            'created_at', 'updated_at', 'is_paid'
         ]
         read_only_fields = [
             'id', 'revised_file', 'price', 'promo_price', 'status', 
             'status_display', 'is_revised', 'expert_comments', 'user', 
-            'user_pack', 'client_name', 'created_at', 'updated_at'
+            'user_pack', 'client_name', 'created_at', 'updated_at', 'is_paid'
         ]
 
     def get_client_name(self, obj):
@@ -155,3 +162,8 @@ class ContractRevisionSerializer(serializers.ModelSerializer):
                 return guest.full_name.strip()
 
         return None
+
+    def get_is_paid(self, obj):
+        if obj.user_pack is not None:
+            return True
+        return obj.order_items.filter(order__status='paid').exists()

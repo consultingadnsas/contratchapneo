@@ -654,7 +654,7 @@ class AdminContractRevision(APIView):
 
     def get(self, request):
 
-        revision_contract = ContractRevision.objects.all()
+        revision_contract = ContractRevision.objects.all().prefetch_related('order_items__order')
 
         serializer = ContractRevisionSerializer(revision_contract, many=True)
 
@@ -860,7 +860,7 @@ class AdminCustomContractListView(APIView):
     def get(self, request):
         """ Récupère toutes les demandes de contrats sur mesure pour l'admin """
         # On trie du plus récent au plus ancien
-        custom_contracts = CustomedContract.objects.all().order_by('-created_at')
+        custom_contracts = CustomedContract.objects.all().prefetch_related('orderitem_set__order').order_by('-created_at')
         serializer = CustomedContractSerializer(custom_contracts, many=True)
         return Response({'data': serializer.data}, status=status.HTTP_200_OK)
 

@@ -11,18 +11,25 @@
           <input type="text" v-model="searchQuery" placeholder="Rechercher un client, un email..." />
         </div>
       </div>
-
-      <div class="tabs-group">
-        <button class="tab-btn" :class="{ active: activeTab === 'all' }" @click="activeTab = 'all'">
-          Toutes
-        </button>
-        <button class="tab-btn" :class="{ active: activeTab === 'review' }" @click="activeTab = 'review'">
-          Révisions
-        </button>
-        <button class="tab-btn" :class="{ active: activeTab === 'custom' }" @click="activeTab = 'custom'">
-          Sur-Mesure
-        </button>
+      <div class="filter_group">
+        <div class="tabs-group">
+          <button class="tab-btn" :class="{ active: activeTab === 'all' }" @click="activeTab = 'all'">
+            Toutes
+          </button>
+          <button class="tab-btn" :class="{ active: activeTab === 'review' }" @click="activeTab = 'review'">
+            Révisions
+          </button>
+          <button class="tab-btn" :class="{ active: activeTab === 'custom' }" @click="activeTab = 'custom'">
+            Sur-Mesure
+          </button>
+        </div>
+        <select v-model="paymentFilter" class="payment-filter-select">
+          <option value="all">Tous les paiements</option>
+          <option value="paid">Payé uniquement</option>
+          <option value="unpaid">Non payé</option>
+        </select>
       </div>
+      
     </div>
 
     <!-- SPINNER -->
@@ -38,6 +45,7 @@
             <th>Date & Heure</th>
             <th>Client (Contact)</th>
             <th>Type de demande</th>
+            <th>Paiement</th>
             <th>Statut</th>
             <th class="text-right">Actions</th>
           </tr>
@@ -75,6 +83,12 @@
                 </span>
             </td>
             
+            <!-- Paiement -->
+            <td>
+              <span class="status-dot" :class="msg.is_paid ? 'dot-green' : 'dot-red'"></span>
+              <span class="dark-text font-bold">{{ msg.is_paid ? 'Payé' : 'Non payé' }}</span>
+            </td>
+
             <!-- Statut -->
             <td>
               <span class="status-dot" :class="getStatusDot(msg.status)"></span>
@@ -140,6 +154,7 @@ export default {
     const adminStore = useAdminRequestsStore();
     const activeTab = ref('all');
     const searchQuery = ref('');
+    const paymentFilter = ref('all'); // ⚡️ NOUVEAU : Filtre de paiement
     const selectedMessage = ref<any>(null);
 
     // ⚡️ NOUVEAU : Variables d'état pour la pagination
@@ -193,9 +208,17 @@ export default {
 
     const filteredMessages = computed(() => {
       let list = allMessages.value;
+      
       if (activeTab.value !== 'all') {
         list = list.filter(msg => msg.type === activeTab.value);
       }
+      
+      if (paymentFilter.value === 'paid') {
+        list = list.filter(msg => msg.is_paid);
+      } else if (paymentFilter.value === 'unpaid') {
+        list = list.filter(msg => !msg.is_paid);
+      }
+
       if (searchQuery.value) {
         const query = searchQuery.value.toLowerCase();
         list = list.filter(msg => 
@@ -213,8 +236,8 @@ export default {
       return filteredMessages.value.slice(startIndex, endIndex);
     });
 
-    // ⚡️ NOUVEAU : Réinitialiser la page à 1 quand on change d'onglet ou qu'on cherche
-    watch([activeTab, searchQuery], () => {
+    // ⚡️ NOUVEAU : Réinitialiser la page à 1 quand on change d'onglet, filtre ou qu'on cherche
+    watch([activeTab, searchQuery, paymentFilter], () => {
       currentPage.value = 1;
     });
 
@@ -268,7 +291,8 @@ export default {
     return {
       adminStore,
       activeTab, 
-      searchQuery, 
+      searchQuery,
+      paymentFilter,
       filteredMessages, 
       paginatedMessages, // Exposé au template
       currentPage,       // Exposé au template
@@ -296,6 +320,7 @@ export default {
 .search-box input { background: transparent; border: none; color: var(--text-dark); font-size: 0.9rem; outline: none; width: 100%; font-weight: 500; }
 .search-box input::placeholder { color: #cbd5e1; font-weight: 400; }
 .icon-gray { width: 18px; height: 18px; color: var(--text-gray); }
+.filter_group{display: flex; align-items: normal; justify-content: space-between; }
 .tabs-group { display: flex; background: var(--primary-color); border-radius: 50px; padding: 0.3rem; width: fit-content; }
 .tab-btn { background: transparent; border: none; color: #ffffff; font-size: 0.85rem; font-weight: 600; padding: 0.6rem 1.2rem; border-radius: 50px; cursor: pointer; transition: all 0.2s ease; }
 .tab-btn.active { background: var(--secondary-light-color); color: #ffffff; box-shadow: 0px 2px 10px rgba(0,0,0,0.05); }
@@ -319,6 +344,8 @@ export default {
 .dot-green { background-color: #10b981; box-shadow: 0 0 8px rgba(16, 185, 129, 0.4); }
 .dot-yellow { background-color: #f59e0b; }
 .dot-gray { background-color: #cbd5e1; }
+.dot-red { background-color: #ef4444; }
+.payment-filter-select {width:fit-content; height: fit-content; background: var(--bg-panel); border: 1px solid #e2e8f0; border-radius: 50px; padding: 1rem 1.2rem; color: var(--text-dark); font-size: 0.9rem; font-weight: 500; cursor: pointer; outline: none; box-shadow: 0 4px 10px rgba(0,0,0,0.02); }
 .pill-btn { display: inline-flex; align-items: center; justify-content: center; background: white; border: 1px solid #e2e8f0; color: var(--text-dark); padding: 0.5rem 1.2rem; border-radius: 50px; font-size: 0.8rem; font-weight: 600; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.02); transition: 0.2s; }
 .pill-btn:hover { background: #f8fafc; border-color: #cbd5e1; }
 .icon-sm { width: 16px; height: 16px; }

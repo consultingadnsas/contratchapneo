@@ -113,7 +113,7 @@ export default {
     },
     labelColor: {
       type: String,
-      default: '#ffffff'
+      default: '#374151'
     }
   },
   emits: ['update:modelValue', 'blur'],

@@ -244,7 +244,7 @@ const formatTime = (dateString: string | undefined) => {
 @keyframes adminSlideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 .modal-header { display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 1.5rem; border-bottom: 1px solid #e2e8f0; }
 .modal-header h4 { margin: 0; font-size: 1.1rem; color: #0f172a; font-weight: 700; }
-.close-btn { background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #94a3b8; transition: 0.2s; }
+.close-btn { background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #94a3b8; transition: 0.2s; width: fit-content; }
 .close-btn:hover { color: #e61010; }
 .modal-body { padding: 1.5rem; display: flex; flex-direction: column; gap: 1.5rem; }
 

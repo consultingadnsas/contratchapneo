@@ -215,12 +215,6 @@ export default {
                 // On envoie le formulaire qui possède désormais "category" et "full_name"
                 await contratStore.submitCustomContract(checkoutform);
                 
-                showNotification(
-                    'success', 
-                    'Demande envoyée !', 
-                    'Nos experts analyseront votre besoin et vous contacteront sous 24h.'
-                );
-                
                 emit('success')
 
                 // Réinitialisation avec les bonnes clés
