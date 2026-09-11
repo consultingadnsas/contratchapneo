@@ -1,13 +1,17 @@
+import secrets
+import string
 from django.core.mail import EmailMessage
 from django.conf import settings
-import uuid 
 from datetime import timedelta
 from django.utils import timezone
 from django.template.loader import render_to_string
 
 def generate_password_reset_token(user):
-    """Génère un token sécurisé et le sauvegarde en base"""
-    token = uuid.uuid4()
+    """Génère un token sécurisé à 6 caractères et le sauvegarde en base"""
+    # Alphabet sans caractères ambigus (optionnel mais recommandé pour les codes)
+    alphabet = string.ascii_uppercase + string.digits
+    short_token = ''.join(secrets.choice(alphabet) for _ in range(6))
+    
     expires_at = timezone.now() + timedelta(hours=1)
     
     # Import ici pour éviter les dépendances circulaires
@@ -17,10 +21,10 @@ def generate_password_reset_token(user):
     PasswordResetToken.objects.filter(user=user).delete()
     PasswordResetToken.objects.create(
         user=user,
-        token=token,
+        token=short_token,
         expires_at=expires_at
     )
-    return token
+    return short_token
 
 def send_welcome_email(user):
     """Envoie un email de bienvenue après l'inscription"""
@@ -49,6 +53,7 @@ def send_password_reset_email(user, reset_link):
     context = {
         'user': user,
         'reset_link': reset_link,
+        # La magie opère ici : split va automatiquement récupérer ton code à 6 caractères
         'token': reset_link.split('/')[-1],
         'frontend_url': settings.FRONTEND_URL,
     }
@@ -65,7 +70,7 @@ def send_password_reset_email(user, reset_link):
     email.send()
 
 def send_password_change_confirmation(user):
-    """Envoie un email de confirmation de changement de mot de passe"""
+    # Reste inchangé...
     subject = "Confirmation de changement de mot de passe"
     
     context = {

@@ -1,11 +1,20 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
-from datetime import datetime
+import secrets
+import string
 from django.utils.translation import gettext_lazy as _
 import uuid
 from django.utils import timezone
 from datetime import timedelta
 # Create your models here.
+
+def generate_short_token():
+    """ 
+        Générer un code de 6 caractères (lettres majuscules et chiffres)
+    """
+
+    alphabet = string.ascii_uppercase + string.digits
+    return ''.join(secrets.choice(alphabet) for _ in range(6))
 
 class CustomUser(AbstractUser):
 
@@ -24,7 +33,7 @@ class CustomUser(AbstractUser):
 
 class PasswordResetToken(models.Model):
     user = models.ForeignKey(to=CustomUser, on_delete=models.CASCADE)
-    token = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
+    token = models.CharField(max_length=6, default=generate_short_token, editable=False, unique=True)
     created_at = models.DateTimeField(auto_now_add=True)
     expires_at = models.DateTimeField()
     
