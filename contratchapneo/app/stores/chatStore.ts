@@ -52,8 +52,38 @@ const intents = [
     action: 'redirect_contact'
     },
     {
+        id: 'consultation_pro_avocat',
+        keywords: ['avocat', 'avocats'],
+        messages: [
+            "Votre situation nécessite une expertise juridique approfondie ? ⚖️",
+            "Nos avocats experts en droit OHADA sont à votre disposition.",
+            "Laissez-moi vous guider vers nos avocats."
+        ],
+        action: 'redirect_pro_avocat'
+    },
+    {
+        id: 'consultation_pro_juriste',
+        keywords: ['juriste', 'juristes'],
+        messages: [
+            "Votre situation nécessite une expertise juridique approfondie ? ⚖️",
+            "Nos juristes experts sont à votre disposition.",
+            "Laissez-moi vous guider vers nos juristes."
+        ],
+        action: 'redirect_pro_juriste'
+    },
+    {
+        id: 'consultation_pro_notaire',
+        keywords: ['notaire', 'notaires'],
+        messages: [
+            "Votre situation nécessite une expertise juridique approfondie ? ⚖️",
+            "Nos notaires partenaires sont à votre disposition.",
+            "Laissez-moi vous guider vers nos notaires."
+        ],
+        action: 'redirect_pro_notaire'
+    },
+    {
         id: 'consultation_pro',
-        keywords: ['pro', 'professionnel', 'expert', 'avocat', 'juriste', 'consultation', 'conseil', 'cabinet', 'aviser'],
+        keywords: ['pro', 'professionnel', 'expert', 'consultation', 'conseil', 'cabinet', 'aviser'],
         messages: [
             "Votre situation nécessite une expertise juridique approfondie ? ⚖️",
             "Nos experts en droit OHADA sont à votre disposition pour une consultation.",
@@ -211,6 +241,9 @@ export const useChatStore = defineStore('chat', () => {
         else if (action === 'redirect_contrats') router.push('/contractBank');
         else if (action === 'redirect_contact') router.push('/services'); 
         else if (action === 'redirect_pro') router.push('/pro'); 
+        else if (action === 'redirect_pro_avocat') router.push({ path: '/pro', query: { titre: 'avocat' } });
+        else if (action === 'redirect_pro_juriste') router.push({ path: '/pro', query: { titre: 'juriste' } });
+        else if (action === 'redirect_pro_notaire') router.push({ path: '/pro', query: { titre: 'notaire' } });
         
         // NOUVEAU : Redirection vers la page de connexion pour achat
         else if (action === 'redirect_achat_pack') {

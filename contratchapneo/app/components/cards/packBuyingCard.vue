@@ -4,7 +4,7 @@
             <h4 class="pro-title">{{ title }}</h4>
 
             <div class="price-section">
-                <span class="price-main">{{ price}} FCFA</span>
+                <span class="price-main">{{ formatPrice(price) }} FCFA</span>
                 <span class="price-suffix">/an</span>
             </div>
 
@@ -46,8 +46,8 @@ export default defineComponent({
             default: 'Découvrez notre pack basique et profitez de 10 contrats jurdiques.' 
         },
         price: { 
-            type: String, 
-            default: '25000.00 FCFA' 
+            type: [String, Number], 
+            default: 25000 
         },   
         buttonLabel: { 
             type: String, 
@@ -62,8 +62,13 @@ export default defineComponent({
     emits:['buy'],
     setup(){
         const router = useRouter();
+        const formatPrice = (p: string | number | null) => {
+            if (!p) return '';
+            return String(p).replace('.00', '').replace(/FCFA/i, '').trim();
+        };
         return{
             router,
+            formatPrice
         }
     }
 });
