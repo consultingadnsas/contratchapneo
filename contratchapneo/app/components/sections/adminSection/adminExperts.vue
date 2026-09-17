@@ -180,9 +180,12 @@ export default {
     });
 
     const getInitials = (name: string) => {
+      if (!name) return '';
       const cleanName = name.replace(/^(Me\.|Dr\.|Maître)\s+/i, '').trim();
-      const parts = cleanName.split(' ');
-      return parts.length > 1 ? (parts[0][0] + parts[1][0]).toUpperCase() : parts[0][0].toUpperCase();
+      const parts = cleanName.split(' ').filter(Boolean);
+      const first = parts[0]?.[0] || '';
+      const second = parts[1]?.[0] || '';
+      return (first + second).toUpperCase();
     };
 
     const getRoleColor = (role: string) => {

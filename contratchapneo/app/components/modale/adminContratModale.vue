@@ -107,7 +107,7 @@
 </template>
 
 <script lang="ts">
-import { ref, PropType } from 'vue';
+import { ref, type PropType } from 'vue';
 // ⚡️ NOUVEAU : Import de PhotoIcon
 import { DocumentArrowUpIcon, CheckCircleIcon, PhotoIcon } from '@heroicons/vue/24/outline';
 import BaseInput from '../input/BaseInput.vue';
@@ -170,14 +170,14 @@ export default {
 
     const handleFileUpload = (event: Event) => {
       const target = event.target as HTMLInputElement;
-      if (target.files && target.files.length > 0) localData.value.file = target.files[0];
+      if (target.files && target.files.length > 0) localData.value.file = target.files[0] || null;
     };
 
     // ⚡️ NOUVEAU : Gestion de l'upload d'image
     const handleImageUpload = (event: Event) => {
       const target = event.target as HTMLInputElement;
       if (target.files && target.files.length > 0) {
-        localData.value.picture = target.files[0];
+        localData.value.picture = target.files[0] || null;
       }
     };
 

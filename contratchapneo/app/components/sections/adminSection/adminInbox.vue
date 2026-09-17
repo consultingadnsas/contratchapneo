@@ -185,7 +185,8 @@ export default {
         clientName: rev.client_name || rev.email.split('@')[0], 
         formattedDate: formatDate(rev.created_at),
         formattedTime: formatTime(rev.created_at),
-        isRead: rev.status !== 'PENDING' 
+        isRead: rev.status !== 'PENDING',
+        categoryName: undefined
       }));
 
       const customRequests = adminStore.customRequests.map(req => ({

@@ -24,7 +24,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, PropType } from 'vue';
+import { defineComponent, type PropType } from 'vue';
 import mainButton from '../buttons/mainButton.vue';
 import {useRouter} from 'vue-router';
 

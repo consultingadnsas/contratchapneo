@@ -23,6 +23,7 @@ export interface ContractRevision {
     expert_comments: string | null;
     user: string | null;
     user_pack: string | null;
+    is_paid: boolean;
     created_at: string;
     updated_at: string;
 }
@@ -40,6 +41,7 @@ export interface CustomContractRequest {
     user: string | null;
     user_pack: string | null;
     final_document?: string | null;
+    is_paid: boolean;
     created_at: string;
     updated_at: string;
 }

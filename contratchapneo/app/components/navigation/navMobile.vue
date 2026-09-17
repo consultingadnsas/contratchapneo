@@ -93,10 +93,11 @@ export default {
         const close = () => { emit('close'); };
 
         const getSafeUser = () => {
-            if (authStore.user && authStore.user.user) {
-                return authStore.user.user;
+            const user = authStore.user as any;
+            if (user && user.user) {
+                return user.user;
             }
-            return authStore.user || {};
+            return user || {};
         };
 
         const isAuthenticated = computed(() => {

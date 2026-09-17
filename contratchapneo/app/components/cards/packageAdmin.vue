@@ -92,7 +92,7 @@
 </template>
 
 <script lang="ts">
-import { markRaw, PropType, onMounted } from 'vue';
+import { markRaw, type PropType, onMounted } from 'vue';
 import { TagIcon, CheckIcon, PlusIcon, TrashIcon, XMarkIcon } from '@heroicons/vue/24/outline';
 
 export default {
@@ -179,8 +179,8 @@ export default {
 .input-with-icon { display: flex; align-items: center; background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 10px; overflow: hidden; transition: 0.2s; }
 .input-with-icon:focus-within { border-color: #1e293b; }
 .border-orange:focus-within { border-color: #f97316; }
-.price-input { flex: 1; border: none; background: transparent; padding: 0.6rem 0.8rem; font-size: 1rem; color: #1e293b; outline: none; -moz-appearance: textfield; min-width: 0; }
-.price-input::-webkit-outer-spin-button, .price-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.price-input { flex: 1; border: none; background: transparent; padding: 0.6rem 0.8rem; font-size: 1rem; color: #1e293b; outline: none; appearance: textfield; -moz-appearance: textfield; min-width: 0; }
+.price-input::-webkit-outer-spin-button, .price-input::-webkit-inner-spin-button { appearance: none; -webkit-appearance: none; margin: 0; }
 .currency-suffix { padding: 0.6rem 0.8rem; background: #f1f5f9; color: #94a3b8; font-weight: 900; border-left: 1px solid #cbd5e1; }
 .promo-toggle-box { background: white; border: 1px solid #e2e8f0; border-radius: 16px; padding: 1rem; transition: 0.3s; }
 .promo-active-bg { background: #fffbeb; border-color: #fde68a; }

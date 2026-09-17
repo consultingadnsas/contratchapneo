@@ -38,7 +38,7 @@
             <td>
               <ul class="items-list">
                 <li v-for="item in order.order_items" :key="item.id" class="text-sm">
-                  &bull; {{ item.contrat_title || item.pack_title || item.pro_name || item.designation || 'Service Juridique' }}
+                  &bull; {{ getItemTitle(item) }}
                 </li>
               </ul>
             </td>
@@ -112,7 +112,7 @@
             <ul class="modal-items-list">
               <li v-for="item in selectedOrder.order_items" :key="item.id" class="modal-item">
                 <div class="item-name">
-                  {{ item.quantity }}x {{ item.contrat_title || item.pack_title || item.pro_name || item.designation || 'Article' }}
+                  {{ item.quantity }}x {{ getModalItemTitle(item) }}
                 </div>
                 <div class="item-price font-bold">{{ item.unit_price || 0 }} FCFA</div>
               </li>
@@ -190,6 +190,14 @@ const getClientName = (order: any) => {
 
 const getClientPhone = (order: any) => {
   return order.client_phone || 'Non renseigné';
+};
+
+const getItemTitle = (item: any) => {
+  return item.contrat_title || item.pack_title || item.pro_name || item.designation || 'Service Juridique';
+};
+
+const getModalItemTitle = (item: any) => {
+  return item.contrat_title || item.pack_title || item.pro_name || item.designation || 'Article';
 };
 
 // --- Formatage ---

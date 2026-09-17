@@ -62,7 +62,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, PropType } from 'vue';
+import { defineComponent, ref, type PropType } from 'vue';
 import type { Coupon } from '../../stores/AdminCouponStore'; // Ajuste le chemin si besoin
 
 export default defineComponent({

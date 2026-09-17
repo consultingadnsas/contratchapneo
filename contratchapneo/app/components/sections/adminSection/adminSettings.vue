@@ -198,7 +198,7 @@ export default {
     const getInitials = (name: string) => {
       const parts = name.split(' ');
       if (parts.length >= 2) {
-        return parts[0][0] + parts[1][0];
+        return (parts[0]?.charAt(0) || '') + (parts[1]?.charAt(0) || '');
       }
       return name ? name.charAt(0) : '?';
     };

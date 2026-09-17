@@ -145,7 +145,7 @@
 </template>
 
 <script lang="ts">
-import { ref, computed, watch, PropType } from 'vue';
+import { ref, computed, watch, type PropType } from 'vue';
 import BaseInput from '../input/BaseInput.vue';
 import mainButton from '../buttons/mainButton.vue';
 import secondButton from '../buttons/secondButton.vue';

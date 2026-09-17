@@ -37,7 +37,7 @@ export default {
         const chartOptions = {
             responsive: true,
             maintainAspectRatio: false,
-            indexAxis: 'y', // 👈 C'est ce qui rend le graphique horizontal
+            indexAxis: 'y' as const, // 👈 C'est ce qui rend le graphique horizontal
             plugins: {
                 legend: { display: false },
                 tooltip: { backgroundColor: '#1e293b', padding: 12, cornerRadius: 8 }

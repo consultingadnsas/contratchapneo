@@ -5,7 +5,7 @@
 <script lang="ts">
 import { computed } from 'vue';
 import { Doughnut } from 'vue-chartjs';
-import { Chart as ChartJS, Tooltip, Legend, ArcElement } from 'chart.js';
+import { Chart as ChartJS, Tooltip, Legend, ArcElement, type ChartOptions } from 'chart.js';
 
 // Enregistrement spécifique pour le donut
 ChartJS.register(Tooltip, Legend, ArcElement);
@@ -33,7 +33,7 @@ export default{
             }]
         }));
 
-        const chartOptions = {
+        const chartOptions: ChartOptions<'doughnut'> = {
             responsive: true,
             maintainAspectRatio: false,
             cutout: '78%', // Épaisseur du donut

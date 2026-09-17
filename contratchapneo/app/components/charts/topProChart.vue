@@ -5,7 +5,7 @@
 <script lang="ts">
 import { computed } from 'vue';
 import { PolarArea } from 'vue-chartjs';
-import { Chart as ChartJS, RadialLinearScale, ArcElement, Tooltip, Legend } from 'chart.js';
+import { Chart as ChartJS, RadialLinearScale, ArcElement, Tooltip, Legend, type ChartOptions } from 'chart.js';
 
 // Enregistrement des éléments spécifiques au Polar Area
 ChartJS.register(RadialLinearScale, ArcElement, Tooltip, Legend);
@@ -41,7 +41,7 @@ export default {
             }]
         }));
 
-        const chartOptions = {
+        const chartOptions: ChartOptions<'polarArea'> = {
             responsive: true, 
             maintainAspectRatio: false,
             scales: {

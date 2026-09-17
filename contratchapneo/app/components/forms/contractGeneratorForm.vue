@@ -97,7 +97,7 @@ export default {
       return Array.from(allTags);
     });
 
-    const currentTag = computed(() => uniqueTags.value[currentTagIndex.value])
+    const currentTag = computed(() => uniqueTags.value[currentTagIndex.value] || '')
 
     const isCurrentFieldValid = computed(() => {
       if (!currentTag.value) return false;

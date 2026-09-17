@@ -7,7 +7,7 @@ import { computed } from 'vue';
 import { Line } from 'vue-chartjs';
 import {
   Chart as ChartJS, CategoryScale, LinearScale, PointElement,
-  LineElement, Title, Tooltip, Legend, Filler
+  LineElement, Title, Tooltip, Legend, Filler, type ChartOptions
 } from 'chart.js';
 
 // Enregistrement spécifique pour la courbe
@@ -54,13 +54,13 @@ export default {
       }]
     }));
 
-    const chartOptions = {
+    const chartOptions: ChartOptions<'line'> = {
       responsive: true,
       maintainAspectRatio: false,
       
       // ⚡️ C'EST ICI QUE LA MAGIE OPÈRE POUR LE SURVOL
       interaction: {
-        mode: 'index',
+        mode: 'index' as const,
         intersect: false, // N'oblige pas la souris à toucher exactement la ligne
       },
       

@@ -207,7 +207,8 @@ export default {
       dataArray.forEach(item => {
         const date = new Date(item.month);
         if (!isNaN(date.getTime())) {
-          months[date.getMonth()] += Number(item[valueKey] || 0);
+          const m = date.getMonth();
+          months[m] = (months[m] ?? 0) + Number(item[valueKey] || 0);
         }
       });
       return months;
