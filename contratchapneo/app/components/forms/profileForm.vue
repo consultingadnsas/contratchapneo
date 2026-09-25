@@ -318,10 +318,10 @@ export default {
 }
 
 .form-actions {
-    width: fit-content;
+    width: 100%;
     gap: 1.5rem;
     display: flex;
-    justify-content: center; /* ou 'center' / 'flex-end' selon tes goûts */
+    justify-content: flex-start; /* ou 'center' / 'flex-end' selon tes goûts */
     margin-top: 0.5rem;
 }
 
