@@ -111,7 +111,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, PropType, ref } from 'vue';
+import { defineComponent, type PropType, ref } from 'vue';
 import LawCalculBordereau from '../tools/lawBordereau.vue';
 
 // Mise à jour de l'interface avec l'article optionnel
@@ -155,7 +155,7 @@ export default defineComponent({
                     const opt = {
                         margin:       10,
                         filename:     'Bordereau_Droits_ContratChap.pdf',
-                        image:        { type: 'jpeg', quality: 0.98 },
+                        image:        { type: 'jpeg' as const, quality: 0.98 },
                         html2canvas:  { 
                             scale: 2, 
                             useCORS: true,
@@ -185,7 +185,7 @@ export default defineComponent({
                                 clonedDoc.head.appendChild(style);
                             }
                         },
-                        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+                        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' as const }
                     };
 
                     await html2pdf().set(opt).from(element).save();

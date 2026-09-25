@@ -145,7 +145,7 @@
 </template>
 
 <script lang="ts">
-import { ref, computed, watch } from 'vue';
+import { ref, computed, watch, type PropType } from 'vue';
 import BaseInput from '../input/BaseInput.vue';
 import mainButton from '../buttons/mainButton.vue';
 import secondButton from '../buttons/secondButton.vue';
@@ -155,16 +155,16 @@ export default {
   components: { BaseInput, mainButton, secondButton },
   props: {
     expert: {
-      type: Object,
+      type: Object as PropType<any>,
       default: () => null
     },
     countries: {
-      type: Array,
+      type: Array as PropType<Country[]>,
       default: () => []
     },
     // ⚡️ NOUVEAU : Réception de la liste des domaines
     domains: {
-      type: Array,
+      type: Array as PropType<LegalDomain[]>,
       default: () => []
     }
   },

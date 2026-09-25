@@ -248,8 +248,8 @@ export default {
     // Mapping des 10 transactions actuellement dans le store (page courante)
     const mappedTransactions = computed(() => {
       const sortedTransactions = [...transactStore.transactions].sort((a, b) => {
-        const dateA = new Date(a.created_at || a.order?.created_at).getTime();
-        const dateB = new Date(b.created_at || b.order?.created_at).getTime();
+        const dateA = new Date(a.created_at || a.order?.created_at || 0).getTime();
+        const dateB = new Date(b.created_at || b.order?.created_at || 0).getTime();
         return dateB - dateA;
       });
 

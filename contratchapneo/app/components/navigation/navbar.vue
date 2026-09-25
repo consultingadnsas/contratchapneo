@@ -78,8 +78,9 @@ export default {
         // ── NOUVEAU : Fonction utilitaire pour extraire l'utilisateur proprement ──
         const getSafeUser = () => {
             // Si l'API a imbriqué l'utilisateur dans une clé "user" (ex: { user: { email: ... } })
-            if (authStore.user && authStore.user.user) {
-                return authStore.user.user;
+            const userObj = authStore.user as any;
+            if (userObj && userObj.user) {
+                return userObj.user;
             }
             // Sinon on retourne l'objet standard
             return authStore.user || {};

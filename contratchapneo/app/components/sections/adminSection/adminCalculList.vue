@@ -283,10 +283,10 @@ export default defineComponent({
 .btn-close {
     background: transparent;
     border: none;
-    margin: -10rem;
     font-size: 1.5rem;
     cursor: pointer;
     color: #6b7280;
+    width: fit-content
 }
 
 .btn-close:hover{

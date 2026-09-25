@@ -62,7 +62,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, PropType } from 'vue';
+import { defineComponent, ref, type PropType } from 'vue';
 import type { Coupon } from '../../stores/AdminCouponStore'; // Ajuste le chemin si besoin
 
 export default defineComponent({
@@ -108,7 +108,7 @@ export default defineComponent({
   padding: 1.2rem 1.5rem; border-bottom: 1px solid #e2e8f0;
 }
 .modal-header h4 { margin: 0; font-size: 1.1rem; color: #0f172a; font-weight: 700; }
-.close-btn { background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #94a3b8; transition: 0.2s; }
+.close-btn { background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #94a3b8; transition: 0.2s; width: fit-content; }
 .close-btn:hover { color: #0f172a; }
 .modal-body { padding: 1.5rem; display: flex; flex-direction: column; gap: 1rem; }
 .form-row { display: flex; gap: 1rem; }

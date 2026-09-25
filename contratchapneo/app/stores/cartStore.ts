@@ -12,6 +12,7 @@ export interface CartItem {
   contrat?: Contrat | null;
   pro?: ProItem | null;
   packs?: any | null;
+  pack?: any | null;
   // ⚡️ AJOUT : On supporte les clés de révision et de contrat sur mesure
   customed_contract?: RevisionCustomizedContract | null;
   customized_contract?: RevisionCustomizedContract | null;
@@ -44,7 +45,8 @@ export interface RevisionCustomizedContract {
   title: string;
   description: string;
   price: string;
-
+  picture?: string | null;
+  name?: string;
 }
 
 export const useCartStore = defineStore('cart', () => {
@@ -97,6 +99,13 @@ export const useCartStore = defineStore('cart', () => {
         normalizedItem.packs = {
           ...it.packs,
           picture: resolveMediaUrl(it.packs.picture)
+        };
+      }
+
+      if (it.pack) {
+        normalizedItem.pack = {
+          ...it.pack,
+          picture: resolveMediaUrl(it.pack.picture)
         };
       }
 

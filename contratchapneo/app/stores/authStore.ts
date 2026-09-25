@@ -311,6 +311,24 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
+  const checkAvailability = async (payload: { email?: string, username?: string }): Promise<boolean> => {
+    try {
+      const response = await $api<{ available: boolean, message?: string }>('/account/check-availability/', {
+        method: 'POST',
+        body: payload
+      });
+      if (response && !response.available) {
+        throw new Error(response.message || "Non disponible");
+      }
+      return true;
+    } catch (err: any) {
+      if (err.response && err.response._data && err.response._data.message) {
+          throw new Error(err.response._data.message);
+      }
+      throw err;
+    }
+  };
+
   return {
     user,
     isLoading,
@@ -325,6 +343,7 @@ export const useAuthStore = defineStore('auth', () => {
     updateProfile,
     resetPassword,
     ConfirmToken,
-    ChangePassword
+    ChangePassword,
+    checkAvailability
   }
 })

@@ -151,14 +151,14 @@ export default {
     // 6. Tableau des dernières activités
     const recentActivities = computed(() => {
       const sortedTransactions = [...transactStore.transactions].sort((a, b) => {
-        const dateA = new Date(a.created_at || a.order?.created_at).getTime();
-        const dateB = new Date(b.created_at || b.order?.created_at).getTime();
+        const dateA = new Date(a.created_at || a.order?.created_at || 0).getTime();
+        const dateB = new Date(b.created_at || b.order?.created_at || 0).getTime();
         return dateB - dateA;
       });
 
-      return sortedTransactions.slice(0, 7).map((tx) => {
+      return sortedTransactions.slice(0, 7).map((tx: any) => {
         const styles = getStatusStyles(tx.status);
-        const order = tx.order || {};
+        const order: any = tx.order || {};
         const orderItems = order.order_items || order.items || tx.order_items || [];
         
         let actionType = 'Achat de contrat';

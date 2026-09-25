@@ -13,10 +13,10 @@
             
             <!-- ⚡️ NOUVEAU : Logique d'affichage du prix avec ou sans promotion -->
             <div v-if="promoPrice && Number(promoPrice) > 0" class="pro-specialty price-wrapper">
-                <span class="old-price">{{ price }} FCFA</span>
-                <span class="new-price">{{ promoPrice }} FCFA</span>
+                <span class="old-price">{{ formatPrice(price) }} FCFA</span>
+                <span class="new-price">{{ formatPrice(promoPrice) }} FCFA</span>
             </div>
-            <p v-else class="pro-specialty">{{ price }} FCFA</p>
+            <p v-else class="pro-specialty">{{ formatPrice(price) }} FCFA</p>
             <!-- ============================================================= -->
 
         </div>
@@ -89,8 +89,14 @@ export default defineComponent({
             emit('view'); 
         }
 
+        const formatPrice = (p: string | number | null) => {
+            if (!p) return '';
+            return String(p).replace('.00', '').replace(/FCFA/i, '').trim();
+        };
+
         return {
-            viewContrat
+            viewContrat,
+            formatPrice
         };
     }
 });

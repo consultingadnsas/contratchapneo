@@ -54,11 +54,16 @@ export default {
     display: flex;
     grid-template-columns: 1fr 1fr; /* 50% formulaire, 50% image */
     height: 100vh;
-  }
+    background: radial-gradient(circle, #253154 30%, #141514 100%);
+    }
 
   .form-container {
     width: 100%;
-    height: 100vh; /* Re-déclare la hauteur stricte pour la grille */
+    height: 100vh;
+    background-image: url('/LOGO_CONTRATCHAP.png');
+    background-size: 25% auto;
+    background-position: left top;
+    background-repeat: no-repeat;
   }
 
   .overlay {

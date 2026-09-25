@@ -137,7 +137,6 @@
 
 <script lang="ts">
 import { computed } from 'vue'
-import type { LegalProfessional } from '../../../stores/proStore'
 import checkoutButton from '../buttons/checkoutButton.vue'
 
 export default {

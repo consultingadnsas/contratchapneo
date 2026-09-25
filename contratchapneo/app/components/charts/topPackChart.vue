@@ -5,7 +5,7 @@
 <script lang="ts">
 import { computed } from 'vue';
 import { Pie } from 'vue-chartjs';
-import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
+import { Chart as ChartJS, ArcElement, Tooltip, Legend, type ChartOptions } from 'chart.js';
 
 // Enregistrement des éléments spécifiques au Pie Chart
 ChartJS.register(ArcElement, Tooltip, Legend);
@@ -35,7 +35,7 @@ export default {
             }]
         }));
 
-        const chartOptions = {
+        const chartOptions: ChartOptions<'pie'> = {
             responsive: true, 
             maintainAspectRatio: false,
             plugins: {

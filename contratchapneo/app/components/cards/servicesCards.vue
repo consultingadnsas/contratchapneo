@@ -47,16 +47,25 @@
 </template>
 
 <script lang="ts">
-import { ref, onMounted, onUnmounted, nextTick, watch } from 'vue'; // nextTick et watch ajoutés
+import { ref, onMounted, onUnmounted, nextTick, watch, type PropType } from 'vue'; // nextTick et watch ajoutés
 import { useRoute } from 'vue-router';
 import serviceModale from '../modale/serviceModale.vue'; // Assurez-vous du bon chemin
+
+export interface Service {
+    id: string;
+    title: string;
+    shortTitle?: string;
+    icon: string;
+    image: string;
+    description: string;
+}
 
 export default {
     name: 'ServicesCards',
     components: { serviceModale }, // Déclaration du composant
     props: {
         services: {
-            type: Array,
+            type: Array as PropType<Service[]>,
             required: true,
             default: () => []
         }

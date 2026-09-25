@@ -264,9 +264,6 @@ export default {
 
                 await cartStore.addRevisionContractToCart(revisionId);
 
-                const message = response?.message || 'Votre demande de révision a bien été ajoutée au panier.';
-                showNotification('success', 'Succès !', `${message} Vous pouvez maintenant finaliser votre commande et payer pour valider l’envoi.`);
-
                 formData.value = { name: '', email: '', type: '', description: '', phonePrefix: '+225', phoneNumber: '' };
                 selectedFile.value = null;
 

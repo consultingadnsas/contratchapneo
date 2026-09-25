@@ -92,7 +92,7 @@ const uniqueTags = computed(() => {
   return Array.from(allTags);
 });
 
-const currentTag = computed(() => uniqueTags.value[currentTagIndex.value])
+const currentTag = computed(() => uniqueTags.value[currentTagIndex.value] || '')
 
 // ⚡️ AJOUT : Vérifie de manière réactive si le champ courant est vide
 const isCurrentFieldEmpty = computed(() => {

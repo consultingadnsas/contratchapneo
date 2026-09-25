@@ -166,14 +166,14 @@ export default {
                 
                 try {
                     // Si le mot de passe est vide, on l'enlève de l'objet pour ne pas l'écraser côté serveur
-                    const payload = { ...registrationForm.value };
+                    const payload: Partial<User> = { ...registrationForm.value };
                     if (!payload.password) {
                         delete payload.password;
                     }
 
                     // ⚠️ Ici, tu appelles register(), 
                     // mais tu devras créer une fonction updateProfile() dans ton store pour gérer l'API PUT/PATCH !
-                    await authStore.updateProfile(payload); // <--- À adapter selon ton store
+                    await authStore.updateProfile(payload as User); // <--- À adapter selon ton store
                     // 2. OPTION A (Moderne et fluide) : On refetch directement le profil pour 
                     // rafraîchir le nom dans le header et dans les champs de formulaire !
                     await authStore.getProfile();

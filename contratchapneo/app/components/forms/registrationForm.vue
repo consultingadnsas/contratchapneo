@@ -11,15 +11,15 @@
                 <!-- 📦 ÉTAPE 1 : Identité -->
                 <div v-show="currentStep === 1" class="form-step">
                     <div class="input-row">
-                        <BaseInput label="Prénom" v-model="registrationForm.first_name" placeholder="Ex: John" :errorMessage="errors.first_name" />
-                        <BaseInput label="Nom" v-model="registrationForm.last_name" placeholder="Ex: Doe" :errorMessage="errors.last_name" />
+                        <BaseInput label="Prénom" v-model="registrationForm.first_name" placeholder="Ex: John" :errorMessage="errors.first_name" label-color="#ffffff" />
+                        <BaseInput label="Nom" v-model="registrationForm.last_name" placeholder="Ex: Doe" :errorMessage="errors.last_name" label-color="#ffffff" />
                     </div>
-                    <BaseInput label="Email" v-model="registrationForm.email" placeholder="Ex: john.doe@gmail.com" :errorMessage="errors.email" />
+                    <BaseInput label="Email" v-model="registrationForm.email" placeholder="Ex: john.doe@gmail.com" :errorMessage="errors.email" label-color="#ffffff" />
                 </div>
 
                 <!-- 📦 ÉTAPE 2 : Compte -->
                 <div v-show="currentStep === 2" class="form-step">
-                    <BaseInput label="Nom d'utilisateur" v-model="registrationForm.username" placeholder="Ex: john_doe99" :errorMessage="errors.username" />
+                    <BaseInput label="Nom d'utilisateur" v-model="registrationForm.username" placeholder="Ex: john_doe99" :errorMessage="errors.username" label-color="#ffffff" />
                     
                     <div class="input-wrapper custom-phone-group">
                         <label class="input-label">N° de téléphone</label>
@@ -52,8 +52,8 @@
 
                 <!-- 📦 ÉTAPE 3 : Sécurité -->
                 <div v-show="currentStep === 3 && !isSuccess" class="form-step">
-                    <BaseInput label="Mot de passe" v-model="registrationForm.password" placeholder="Entrez un mot de passe" :errorMessage="errors.password" type="password" showPasswordToggle />
-                    <BaseInput label="Confirmer le mot de passe" v-model="registrationForm.confirm_password" placeholder="Répétez le mot de passe" :errorMessage="errors.confirm_password" type="password" showPasswordToggle />
+                    <BaseInput label="Mot de passe" v-model="registrationForm.password" placeholder="Entrez un mot de passe" :errorMessage="errors.password" type="password" showPasswordToggle  label-color="#ffffff" />
+                    <BaseInput label="Confirmer le mot de passe" v-model="registrationForm.confirm_password" placeholder="Répétez le mot de passe" :errorMessage="errors.confirm_password" type="password" showPasswordToggle label-color="#ffffff" />
                 </div>
 
                 <!-- 📦 ÉTAPE 4 : Succès -->
@@ -74,7 +74,7 @@
 
                 <div class="form-actions" v-if="!isSuccess">
                     <button type="button" class="btn-back" v-if="currentStep > 1" @click="prevStep" :disabled="isSubmitting">Précédent</button>
-                    <mainButton v-if="currentStep < 3" type="button" label="Suivant" @click="nextStep" class="btn-next" />
+                    <mainButton v-if="currentStep < 3" type="button" label="Suivant" @click="nextStep" :isloading="isChecking" class="btn-next" />
                     <mainButton v-if="currentStep === 3" type="submit" label="S'inscrire" :isloading="isSubmitting" class="btn-submit" />
                 </div>
 
@@ -144,9 +144,29 @@ export default {
             return isValid;
         };
 
-        const nextStep = () => {
+        const isChecking = ref(false);
+
+        const nextStep = async () => {
             if (validateStep(props.currentStep)) {
-                emit('update:currentStep', props.currentStep + 1); // Indique au parent d'avancer
+                isChecking.value = true;
+                errors.value.email = '';
+                errors.value.username = '';
+                try {
+                    if (props.currentStep === 1) {
+                        await authStore.checkAvailability({ email: registrationForm.value.email });
+                    } else if (props.currentStep === 2) {
+                        await authStore.checkAvailability({ username: registrationForm.value.username });
+                    }
+                    emit('update:currentStep', props.currentStep + 1); // Indique au parent d'avancer
+                } catch (error: any) {
+                    if (props.currentStep === 1) {
+                        errors.value.email = error.message;
+                    } else if (props.currentStep === 2) {
+                        errors.value.username = error.message;
+                    }
+                } finally {
+                    isChecking.value = false;
+                }
             }
         };
 
@@ -186,7 +206,7 @@ export default {
         };
 
         return {
-            authStore, registrationForm, errors, isSubmitting, isSuccess,
+            authStore, registrationForm, errors, isSubmitting, isChecking, isSuccess,
             nextStep, prevStep, submitForm
         }
     }

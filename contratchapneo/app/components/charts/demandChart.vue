@@ -6,7 +6,7 @@
 import { computed } from 'vue';
 import { Bar } from 'vue-chartjs';
 import {
-  Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend
+  Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, type ChartOptions
 } from 'chart.js';
 
 // Enregistrement spécifique pour le graphique en barres
@@ -49,7 +49,7 @@ export default {
             ]
         }));
 
-        const chartOptions = {
+        const chartOptions: ChartOptions<'bar'> = {
             responsive: true,
             maintainAspectRatio: false,
             plugins: {
@@ -78,8 +78,8 @@ export default {
                 ticks: { color: '#94a3b8', font: { family: 'Inter' } }
                 },
                 y: {
-                grid: { color: '#f1f5f9', strokeDasharray: [4, 4] }, // Lignes pointillées légères
-                border: { display: false },
+                grid: { color: '#f1f5f9' },
+                border: { display: false, dash: [4, 4] }, // Lignes pointillées légères
                 ticks: {
                     color: '#94a3b8',
                     stepSize: 1, // On compte des unités (1, 2, 3 demandes...)

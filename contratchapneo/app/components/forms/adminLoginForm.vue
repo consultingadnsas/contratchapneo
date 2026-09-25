@@ -11,6 +11,7 @@
           placeholder="Entrez votre email ou pseudo" 
           :errorMessage="errorMessage.username"
           required
+          label-color="#374151"
         />
         
         <BaseInputVue 
@@ -21,6 +22,7 @@
           placeholder="Entrez votre mot de passe" 
           :errorMessage="errorMessage.password"
           required
+          label-color="#374151"
         />
         
         <formButtonVue 

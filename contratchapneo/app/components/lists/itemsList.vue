@@ -99,7 +99,7 @@ export default {
       (cartStore.cart?.items ?? []).map(i => {
         let itemName = 'Article inconnu';
         let itemImage = null;
-        let targetId = i.id; 
+        let targetId: string | undefined = i.id; 
 
         if (i.contrat) {
           itemName = i.contrat.title;
@@ -113,24 +113,24 @@ export default {
         }
         else if (i.pack || i.packs) {
           const packObj = i.pack || i.packs;
-          itemName = `Pack : ${packObj.title || packObj.name || 'Inconnu'}`; 
-          itemImage = packObj.picture;
-          targetId = packObj.id; 
+          itemName = `Pack : ${packObj?.title || packObj?.name || 'Inconnu'}`; 
+          itemImage = packObj?.picture;
+          targetId = packObj?.id; 
         }
         else if (i.customed_contract || i.customized_contract) {
           const customObj = i.customed_contract || i.customized_contract;
-          itemName = customObj.title || customObj.name || 'Contrat sur mesure';
-          itemImage = customObj.picture || null;
-          targetId = customObj.id;
+          itemName = customObj?.title || customObj?.name || 'Contrat sur mesure';
+          itemImage = customObj?.picture || null;
+          targetId = customObj?.id;
         }
         else if (i.contract_revision || i.revision) {
           const revObj = i.contract_revision || i.revision;
-          itemName = revObj.title || revObj.name || 'Révision de contrat';
-          itemImage = revObj.picture || null;
-          targetId = revObj.id;
+          itemName = revObj?.title || revObj?.name || 'Révision de contrat';
+          itemImage = revObj?.picture || null;
+          targetId = revObj?.id;
         }
         else if (i.title || i.name) {
-          itemName = i.title || i.name;
+          itemName = i.title || i.name || 'Article inconnu';
         }
 
         return {

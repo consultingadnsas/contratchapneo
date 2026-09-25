@@ -101,7 +101,7 @@
 </template>
 
 <script lang="ts">
-import { PropType } from 'vue';
+import { type PropType } from 'vue';
 import { CheckCircleIcon, ArrowDownTrayIcon } from '@heroicons/vue/24/outline';
 import { useAdminRequestsStore } from '../../stores/adminRequestStore'; // Assure-toi que le chemin est bon
 

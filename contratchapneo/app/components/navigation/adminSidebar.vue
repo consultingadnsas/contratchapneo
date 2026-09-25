@@ -23,20 +23,21 @@
         </button>
       </template>
 
-      <div class="logout">
-        <button class="nav-item btn-logout" @click="adminAuth.logout">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="icon">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15M12 9l-3 3m0 0 3 3m-3-3h12.75" />
-          </svg>
-          <span class="nav-label" v-if="!isReduced">Se déconnecter</span>
-        </button>
-      </div>
     </nav>
+
+    <div class="logout">
+      <button class="nav-item btn-logout" @click="adminAuth.logout">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="icon">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15M12 9l-3 3m0 0 3 3m-3-3h12.75" />
+        </svg>
+        <span class="nav-label" v-if="!isReduced">Se déconnecter</span>
+      </button>
+    </div>
   </aside>
 </template>
 
 <script lang="ts">
-import { ref, computed, PropType, Component } from 'vue';
+import { ref, computed, type PropType, type Component } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useAdminAuthStore } from '../../stores/adminAuthStore';
 
@@ -107,9 +108,27 @@ export default {
 
 /* Scroll mobile (horizontal) invisible par défaut */
 .nav-menu { 
-  display: flex; width: 100%; justify-content: flex-start; align-items: center; 
+  display: flex; flex: 1; min-width: 0; justify-content: flex-start; align-items: center; 
   overflow-x: auto; gap: 0.5rem; padding: 0 1rem; 
   scrollbar-width: none; 
+}
+.nav-menu::-webkit-scrollbar{ display: none; }
+
+.logout {
+  padding-right: 1rem;
+  flex-shrink: 0;
+}
+
+.logout .btn-logout {
+  color: #ef4444 !important; /* Rouge */
+}
+
+.logout .btn-logout .icon {
+  stroke: #ef4444 !important;
+}
+
+.logout .btn-logout:hover {
+  background-color: rgba(239, 68, 68, 0.1);
 }
 .nav-menu::-webkit-scrollbar{ display: none; }
 
@@ -166,7 +185,7 @@ export default {
   
   /* --- GESTION DU SCROLL VERTICAL (BUREAU) --- */
   .nav-menu { 
-    flex-direction: column; width: 100%; gap: 0.4rem; align-items: flex-start; padding: 0; 
+    flex-direction: column; width: 100%; flex: 1; min-height: 0; gap: 0.4rem; align-items: flex-start; padding: 0; 
     overflow-y: auto; 
     overflow-x: hidden;
     
@@ -214,9 +233,6 @@ export default {
   .sidebar.is-reduced .nav-item { justify-content: center; padding: 1rem 0; }
   .nav-label { white-space: nowrap; }
   
-  .logout { margin-top: auto; width: 100%; padding-top: 1rem; flex-shrink: 0; }
-  .logout .btn-logout { color: #ffffff !important; }
-  .btn-logout:hover { color: red !important; }
-  .logout .btn-logout .icon { stroke: rgb(241, 22, 22) !important; }
+  .logout { margin-top: auto; width: 100%; padding-top: 1rem; flex-shrink: 0; padding-right: 0; }
 }
 </style>

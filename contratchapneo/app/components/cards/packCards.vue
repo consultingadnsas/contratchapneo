@@ -6,11 +6,11 @@
             <div class="price-section">
                 <!-- ⚡️ AFFICHAGE DYNAMIQUE DU PRIX -->
                 <template v-if="promoPrice && Number(promoPrice) > 0">
-                    <span class="price-old">{{ price }}</span>
-                    <span class="price-main">{{ promoPrice }}</span>
+                    <span class="price-old">{{ formatPrice(price) }}</span>
+                    <span class="price-main">{{ formatPrice(promoPrice) }}</span>
                 </template>
                 <template v-else>
-                    <span class="price-main">{{ price }} </span>
+                    <span class="price-main">{{ formatPrice(price) }} </span>
                 </template>
                 <span class="price-suffix">FCFA</span>
             </div>
@@ -37,7 +37,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, PropType, computed } from 'vue';
+import { defineComponent, type PropType, computed } from 'vue';
 import mainButton from '../buttons/mainButton.vue';
 import { useRouter } from 'vue-router';
 
@@ -67,6 +67,11 @@ export default defineComponent({
     setup(props) {
         
         const router = useRouter();
+
+        const formatPrice = (p: string | number | null) => {
+            if (!p) return '';
+            return String(p).replace('.00', '').replace(/FCFA/i, '').trim();
+        };
 
         const computedFeatures = computed(() => {
             const list = [];
@@ -98,7 +103,8 @@ export default defineComponent({
 
         return {
             router,
-            computedFeatures
+            computedFeatures,
+            formatPrice
         };
     }
 });

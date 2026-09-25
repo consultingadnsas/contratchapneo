@@ -36,7 +36,7 @@
 </template>
 
 <script lang="ts">
-import { PropType, computed } from 'vue';
+import { type PropType, computed } from 'vue';
 
 export interface FilterItem {
     id?: string | number;
