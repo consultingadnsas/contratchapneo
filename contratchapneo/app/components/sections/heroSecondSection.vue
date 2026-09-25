@@ -50,8 +50,8 @@
             <div class="pic-container">
                 <img src="/Accueil_2.png" alt="Contrats OHADA">
 
-                <stat-cards class="floating-card card-bottom-right"    title="Révision de contrat" @click="router.push('/etudeContrat')" />
-                <stat-cards class="floating-card card-bottom-left"   title="Calcul de droits" @click="router.push('/lawCalcul')" />
+                <stat-cards class="floating-card card-bottom-right"    title="Révision contrat" @click="router.push('/etudeContrat')" />
+                <stat-cards class="floating-card card-bottom-left"   title="Calcul droits" @click="router.push('/lawCalcul')" />
                 
                 <stat-cards class="floating-card card-top-left"  title="Centre d'appel" @click="router.push('/services')" />
                 <stat-cards class="floating-card card-top-right" title="Experts" @click="router.push('/pro')" />
@@ -482,9 +482,9 @@ export default defineComponent({
 
     .pic-wrapper { width: 50%; padding: 60px 40px; justify-content: flex-end; }
     .pic-container { width: 400px; }
-    .pic-container img { min-width: 400px; }
+    .pic-container img { min-width: 350px; margin-bottom: 1%; margin-left: 5%; }
     .pic-container::before {
-    top: 20%; left: 10%; width: 80%;
+    top: 9.5%; left: 7%; width: 85%;
 }
     
     .floating-card { width: 120px !important; min-height: 100px; }

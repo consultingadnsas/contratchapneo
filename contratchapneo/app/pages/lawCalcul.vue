@@ -28,7 +28,7 @@
                 <LawCalculForm 
                     v-model="formData"
                     :isCalculating="isCalculating || lawStore.isLoading"
-                    :errorMessage="errorMessage || lawStore.error"
+                    :errorMessage="errorMessage || lawStore.error || undefined"
                     :contractOptions="contractOptions"
                     :categorieOptions="categorieOptions"
                     :filteredMotifOptions="filteredMotifOptions"

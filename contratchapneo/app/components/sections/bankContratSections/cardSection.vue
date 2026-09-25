@@ -13,7 +13,7 @@
                 />
             </div>
 
-            <div class="action-buttons">
+            <div v-if="searchQuery.trim() === '' && activeCategoryId === ''" class="action-buttons">
                 <!-- Groupe : Contrat sur mesure -->
                 <div class="action-wrapper">
                     <div class="icon-bubble bubble-primary" @click="router.push('/contractBank/customContrat')">
@@ -68,9 +68,9 @@
                         :price="contrat.prix"
                         :promoPrice="contrat.promo_price"
                         :image="contrat.picture || undefined"
-                        @view="openViewModal(contrat.id)" 
-                        @contrat-checkout="addTocart(contrat.id)"
-                        @generate="fillContract(contrat.id)"
+                        @view="openViewModal(contrat.id!)" 
+                        @contrat-checkout="addTocart(contrat.id!)"
+                        @generate="fillContract(contrat.id!)"
                     />
                 </div>
                 

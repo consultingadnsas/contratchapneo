@@ -304,7 +304,7 @@ export default {
 .form-wrapper {
     width: 100%;
     max-width: 600px;
-    background: rgba(255, 255, 255, 0.02);
+    background: rgba(219, 216, 216, 0.224);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
     border: 1px solid rgba(255, 255, 255, 0.08);

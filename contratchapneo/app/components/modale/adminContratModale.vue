@@ -55,9 +55,9 @@
 
         <!-- Zone d'Upload pour le Document -->
         <div class="form-group mt-2">
-          <label>Fichier du modèle (PDF ou Word)</label>
+          <label>Fichier du modèle Word</label>
           <div class="file-upload-box">
-            <input type="file" id="contract-file" accept=".pdf,.doc,.docx" @change="handleFileUpload" />
+            <input type="file" id="contract-file" accept=".doc,.docx,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" @change="handleFileUpload" />
             <label for="contract-file" class="file-label">
               <div class="icon-circle">
                 <component :is="DocumentArrowUpIcon" class="icon-md" />
@@ -65,7 +65,7 @@
               <div class="upload-text">
                 <span v-if="!localData.file" class="dark-text font-bold">Cliquez pour uploader le fichier</span>
                 <span v-else class="text-green font-bold">{{ localData.file.name || 'Nouveau fichier sélectionné' }}</span>
-                <span v-if="!localData.file" class="gray-text text-sm">Formats acceptés : PDF, DOCX</span>
+                <span v-if="!localData.file" class="gray-text text-sm">Formats acceptés : DOC, DOCX</span>
               </div>
             </label>
           </div>
@@ -92,6 +92,10 @@
         </div>
 
         <BaseArera label="Ajouter une description" v-model="localData.description"/>
+
+        <div v-if="errorMessage" class="error-message">
+          {{ errorMessage }}
+        </div>
 
         <!-- Footer -->
         <div class="modal-footer">
@@ -140,6 +144,7 @@ export default {
       }
     }
     
+    const errorMessage = ref('');
     const localData = ref({
       id: null as string | null,
       title: '', 
@@ -182,6 +187,17 @@ export default {
     };
 
     const submitForm = () => {
+      errorMessage.value = '';
+      if (!localData.value.title || !localData.value.category || !localData.value.price || !localData.value.description) {
+        errorMessage.value = "Veuillez remplir tous les champs obligatoires (Titre, Catégorie, Prix, Description).";
+        return;
+      }
+      
+      if (!isEditing.value && !localData.value.file) {
+        errorMessage.value = "Veuillez uploader un fichier Word pour le modèle.";
+        return;
+      }
+
       const formData = new FormData();
       
       formData.append('title', localData.value.title);
@@ -215,7 +231,7 @@ export default {
       emit('save', formData, localData.value.id);
     };
 
-    return { 
+      return { 
       isEditing, 
       localData, 
       handleFileUpload, 
@@ -223,7 +239,8 @@ export default {
       submitForm, 
       DocumentArrowUpIcon, 
       CheckCircleIcon, 
-      PhotoIcon // ⚡️ NOUVEAU
+      PhotoIcon, // ⚡️ NOUVEAU
+      errorMessage
     };
   }
 }
@@ -283,6 +300,19 @@ export default {
 .font-bold { font-weight: 600; }
 .gray-text { color: #94a3b8; }
 .text-sm { font-size: 0.75rem; }
+
+/* ERROR MESSAGE */
+.error-message {
+  color: #ef4444;
+  background-color: #fee2e2;
+  border: 1px solid #fca5a5;
+  padding: 0.8rem;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  text-align: center;
+  font-weight: 500;
+  margin-top: 0.5rem;
+}
 
 /* FOOTER & BOUTONS */
 .modal-footer { display: flex; justify-content: flex-end; gap: 1rem; border-top: 1px solid #f1f5f9; padding-top: 1.5rem; margin-top: 0.5rem; }

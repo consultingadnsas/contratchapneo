@@ -45,7 +45,7 @@
 
         <li class="dropdown-item">
             <NuxtLink to="/services" class="dropdown-trigger">
-                Centre d'appel
+                Diagnostic juridique
             </NuxtLink>
         </li>
 

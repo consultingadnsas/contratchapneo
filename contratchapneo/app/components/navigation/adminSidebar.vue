@@ -1,13 +1,13 @@
 <template>
   <aside class="sidebar" :class="{ 'is-reduced': isReduced }">
     <div class="logo hidden-mobile">
-      <span class="logo-text" v-if="!isReduced">ContratChap</span>
+      <span class="logo-text" v-if="!isReduced" @click="router.push('/admin')" >ContratChap</span>
       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="toggle-icon" @click="toggleReduce">
         <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 0 1 6 3.75h2.25A2.25 2.25 0 0 1 10.5 6v2.25a2.25 2.25 0 0 1-2.25 2.25H6a2.25 2.25 0 0 1-2.25-2.25V6ZM3.75 15.75A2.25 2.25 0 0 1 6 13.5h2.25a2.25 2.25 0 0 1 2.25 2.25V18a2.25 2.25 0 0 1-2.25 2.25H6A2.25 2.25 0 0 1 3.75 18v-2.25ZM13.5 6a2.25 2.25 0 0 1 2.25-2.25H18A2.25 2.25 0 0 1 20.25 6v2.25A2.25 2.25 0 0 1 18 10.5h-2.25a2.25 2.25 0 0 1-2.25-2.25V6ZM13.5 15.75a2.25 2.25 0 0 1 2.25-2.25H18a2.25 2.25 0 0 1 2.25 2.25V18A2.25 2.25 0 0 1 18 20.25h-2.25A2.25 2.25 0 0 1 13.5 18v-2.25Z" />
       </svg>
     </div>
 
-    <nav class="nav-menu">
+    <nav class="nav-menu" ref="navMenuRef" @scroll="handleScroll">
       <template v-for="(group, category) in groupedMenu" :key="category">
         <div class="menu-category hidden-mobile" v-if="!isReduced">{{ category }}</div>
         
@@ -37,8 +37,8 @@
 </template>
 
 <script lang="ts">
-import { ref, computed, type PropType, type Component } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
+import { ref, computed, onMounted, type PropType, type Component } from 'vue';
+import { useRouter, useRoute } from 'vue-router';
 import { useAdminAuthStore } from '../../stores/adminAuthStore';
 
 // 🔥 MODIFICATION : On remplace isActive par route
@@ -49,6 +49,9 @@ export interface MenuItem {
   route: string; 
   category?: string;
 }
+
+let savedScrollTop = 0;
+let savedScrollLeft = 0;
 
 export default {
   name: 'AdminSidebar',
@@ -61,12 +64,31 @@ export default {
     const router = useRouter();
     const isReduced = ref(false);
     const adminAuth = useAdminAuthStore();
+    const navMenuRef = ref<HTMLElement | null>(null);
     
     const toggleReduce = () => isReduced.value = !isReduced.value;
 
     const navigate = (path: string) => {
       router.push(path);
     };
+
+    const handleScroll = (event: Event) => {
+      const target = event.target as HTMLElement;
+      savedScrollTop = target.scrollTop;
+      savedScrollLeft = target.scrollLeft;
+    };
+
+    onMounted(() => {
+      if (navMenuRef.value) {
+        // We use requestAnimationFrame to ensure the elements are fully rendered before setting scroll
+        requestAnimationFrame(() => {
+          if (navMenuRef.value) {
+            navMenuRef.value.scrollTop = savedScrollTop;
+            navMenuRef.value.scrollLeft = savedScrollLeft;
+          }
+        });
+      }
+    });
 
     const groupedMenu = computed(() => {
       const groups: Record<string, MenuItem[]> = {};
@@ -83,8 +105,11 @@ export default {
       adminAuth,
       toggleReduce, 
       groupedMenu, 
-      route, 
-      navigate 
+      route,
+      router,
+      navigate,
+      navMenuRef,
+      handleScroll
     };
   }
 }
@@ -178,7 +203,7 @@ export default {
   
   .logo { display: flex; align-items: center; justify-content: space-between; padding: 0 0.5rem; margin-bottom: 2rem; width: 100%; flex-shrink: 0; }
   .sidebar.is-reduced .logo { justify-content: center; }
-  .logo-text { font-weight: 800; font-size: 1.4rem; color: var(--secondary-light-color); letter-spacing: -0.5px; }
+  .logo-text { font-weight: 800; font-size: 1.4rem; color: var(--secondary-light-color); letter-spacing: -0.5px; cursor: pointer; }
   
   .toggle-icon { width: 24px; height: 24px; color: var(--sb-text); cursor: pointer; }
   .toggle-icon:hover { color: var(--sb-accent); }

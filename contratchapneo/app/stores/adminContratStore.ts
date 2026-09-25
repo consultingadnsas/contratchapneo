@@ -60,13 +60,14 @@ export const useAdminContratStore = defineStore('adminContrat', () => {
         isLoading.value = true;
         error.value = null;
         try {
-            const response = await $api<Category>('/contrat/admin-category/', {
+            const response = await $api<any>('/contrat/admin-category/', {
                 method: "POST",
                 body: payload
             });
             if (response) {
-                categories.value.unshift(response); // Ajoute au début de la liste locale
-                return response;
+                const newCat = response.data ? response.data : response;
+                categories.value.unshift(newCat); // Ajoute au début de la liste locale
+                return newCat;
             }
         } catch (err: any) {
             error.value = err.message || "Erreur lors de l'ajout de la catégorie";

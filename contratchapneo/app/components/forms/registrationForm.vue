@@ -193,9 +193,7 @@ export default {
                     
                     if (success) {
                         isSuccess.value = true;
-                        setTimeout(() => {
-                            navigateTo('/auth/login');
-                        }, 3000);
+                        navigateTo('/auth/successRegistration');
                     }
                 } catch (error) {
                     console.error("L'inscription a échoué.", error);

@@ -26,9 +26,9 @@
                         :promoPrice="contrat.promo_price"
                         :image="contrat.picture || undefined"
                         :data-index="index"
-                        @view="openViewModal(contrat.id)" 
-                        @contrat-checkout="addTocart(contrat.id)"
-                        @generate="() => editContract(contrat.id)" 
+                        @view="openViewModal(contrat.id!)" 
+                        @contrat-checkout="addTocart(contrat.id!)"
+                        @generate="() => editContract(contrat.id!)" 
                     />
                 </div>
 

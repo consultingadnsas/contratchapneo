@@ -54,13 +54,25 @@
         </div>
 
         <div class="form-actions">
-            <!-- ⚡️ LABEL ET STYLE DU BOUTON DYNAMIQUES -->
-            <mainButton 
+            <button 
                 type="submit" 
-                :label="showSuccess ? 'Enregistré !' : 'Mettre à jour'"
-                :isloading="isSubmitting"
-                :class="{ 'btn-success-state': showSuccess }"
-            />
+                class="custom-submit-btn"
+                :class="{ 'is-success': showSuccess, 'is-loading': isSubmitting }"
+                :disabled="isSubmitting || !isFormModified"
+            >
+                <span v-if="isSubmitting" class="spinner">
+                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" stroke-dasharray="32" stroke-linecap="round"></circle>
+                    </svg>
+                </span>
+                <span v-else-if="showSuccess" class="success-content">
+                    <svg class="check-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M20 6L9 17l-5-5"/>
+                    </svg>
+                    Enregistré !
+                </span>
+                <span v-else>Mettre à jour</span>
+            </button>
             <secondButton 
                 type="reset" 
                 label="Réinitialiser mon mot de passe"
@@ -77,7 +89,7 @@
 </template>
 
 <script lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import BaseInput from '../input/BaseInput.vue'
 import mainButton from '../buttons/mainButton.vue'
 import secondButton from '../buttons/secondButton.vue'
@@ -108,6 +120,12 @@ export default {
             password: "",
             email: "",
             phone_number: ""
+        });
+
+        const initialForm = ref<Partial<User>>({});
+
+        const isFormModified = computed(() => {
+            return JSON.stringify(registrationForm.value) !== JSON.stringify(initialForm.value);
         });
 
         const errors = ref({
@@ -177,6 +195,9 @@ export default {
                     // 2. OPTION A (Moderne et fluide) : On refetch directement le profil pour 
                     // rafraîchir le nom dans le header et dans les champs de formulaire !
                     await authStore.getProfile();
+                    
+                    // On met à jour l'état initial pour re-griser le bouton
+                    initialForm.value = { ...registrationForm.value };
                    
                     console.log("✅ Profil mis à jour et rafraîchi avec succès !");
                     // 3. EMIT : On notifie le parent que la mise à jour a été effectuée
@@ -216,6 +237,7 @@ export default {
                         password: "" // Toujours vide par sécurité
                     };
                     
+                    initialForm.value = { ...registrationForm.value };
                     console.log("Formulaire rempli avec :", registrationForm.value);
                 }
             } catch(e) {
@@ -230,7 +252,8 @@ export default {
             submitForm,
             isSubmitting,
             showSuccess,
-            router
+            router,
+            isFormModified
         }
     }
 }
@@ -295,10 +318,10 @@ export default {
 }
 
 .form-actions {
-    width: 100%;
+    width: fit-content;
     gap: 1.5rem;
     display: flex;
-    justify-content: flex-start; /* ou 'center' / 'flex-end' selon tes goûts */
+    justify-content: center; /* ou 'center' / 'flex-end' selon tes goûts */
     margin-top: 0.5rem;
 }
 
@@ -312,5 +335,78 @@ export default {
     text-align: center;
     font-size: 0.9rem;
     width: 100%;
+}
+
+/* ── Custom Submit Button (like mainButton but without arrow) ── */
+.custom-submit-btn {
+    background-color: var(--primary-color);
+    color: white;
+    display: flex;
+    gap: 1rem;
+    cursor: pointer;
+    width: 50%;
+    transition: all ease 0.2s;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    padding: 0.75rem 1.5rem; /* Ajustez le padding si nécessaire */
+    border-radius: 5rem; /* Ajustez le radius si nécessaire */
+    font-size: 1rem;
+}
+
+.custom-submit-btn:hover:not(:disabled) {
+    background: #135b8f;
+}
+
+.custom-submit-btn:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+}
+
+.custom-submit-btn.is-success {
+    background-color: #16a34a;
+}
+
+.custom-submit-btn.is-success:hover:not(:disabled) {
+    background-color: #15803d;
+}
+
+.custom-submit-btn .success-content {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.spinner {
+    display: inline-flex;
+    width: 20px;
+    height: 20px;
+    animation: spin 1s linear infinite;
+}
+
+.check-icon {
+    width: 20px;
+    height: 20px;
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@media (max-width: 768px) {
+    .custom-submit-btn {
+        width: 100%;
+    }
+}
+
+@media (max-width: 1280px) {
+    .custom-submit-btn {
+        width: 200px;
+    }
 }
 </style>

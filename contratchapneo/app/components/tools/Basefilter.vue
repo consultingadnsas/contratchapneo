@@ -20,7 +20,7 @@
         v-for="cat in categoryStore.categories" 
         :key="cat.id"
         :class="{ active: selectedCategoryId === cat.id }"
-        @click="selectCategory(cat.id)"
+        @click="selectCategory(cat.id!)"
       >
         {{ cat.title }}
       </button>

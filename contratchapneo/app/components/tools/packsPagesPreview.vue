@@ -107,8 +107,7 @@ const formattedBlocks = computed(() => {
 const scrollToField = (tagName: string) => {
   const elements = document.querySelectorAll<HTMLElement>(`[data-tag-anchor="${tagName}"]`);
   if (elements.length === 0) return;
-
-  elements[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
+  elements[0]?.scrollIntoView({ behavior: 'smooth', block: 'center' });
 
   elements.forEach(el => {
     el.classList.add('tag-highlight-pulse');
