@@ -100,7 +100,7 @@ export default {
 
 .sidebar {
   position: fixed; bottom: 0; left: 0; width: 100%; height: calc(65px + env(safe-area-inset-bottom));
-  background-color:var(--primary-color);
+  background-color:#135787;
   display: flex; justify-content: space-around; align-items: center; z-index: 100;
   box-shadow: 0px -4px 20px rgba(0, 0, 0, 0.02);
 }
