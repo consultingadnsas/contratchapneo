@@ -3,7 +3,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from .models import CustomUser, PasswordResetToken
 from .serializers import UserSerializer
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.permissions import AllowAny, IsAuthenticated, IsAdminUser
 from django.utils.translation import gettext_lazy as _
 from django.contrib.auth import authenticate
 from django.utils import timezone
@@ -403,3 +403,49 @@ class CheckAvailabilityView(APIView):
                 )
 
         return Response({'available': True}, status=status.HTTP_200_OK)
+
+class AdminUserListView(APIView):
+    """
+    Vue permettant à l'administrateur de voir tous les utilisateurs
+    et de savoir s'ils possèdent un pack.
+    """
+    permission_classes = [IsAdminUser]
+
+    def get(self, request):
+        users = CustomUser.objects.all().order_by('-date_joined')
+        
+        data = []
+        for user in users:
+            packs = UserPack.objects.filter(user=user)
+            has_pack = packs.exists()
+            has_active_pack = packs.filter(is_active=True).exists()
+            
+            # Serialize pack info
+            pack_list = []
+            for pack in packs:
+                pack_list.append({
+                    'id': pack.id,
+                    'pack_name': pack.pack.title if pack.pack else 'Inconnu',
+                    'is_active': pack.is_active,
+                    'credits_restants': pack.credits_restants,
+                    'customs_restants': pack.customs_restants,
+                    'cartes_pro_restantes': pack.cartes_pro_restantes,
+                    'expires_at': pack.expires_at,
+                })
+
+            data.append({
+                'id': user.id,
+                'username': user.username,
+                'email': user.email,
+                'phone_number': user.phone_number,
+                'first_name': user.first_name,
+                'last_name': user.last_name,
+                'user_type': user.user_type,
+                'is_active': user.is_active,
+                'date_joined': user.date_joined,
+                'has_pack': has_pack,
+                'has_active_pack': has_active_pack,
+                'packs': pack_list,
+            })
+            
+        return Response(data, status=status.HTTP_200_OK)

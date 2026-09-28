@@ -18,7 +18,7 @@ import { ref, markRaw } from 'vue';
 import { useRouter } from 'vue-router';
 import AdminSidebar, {MenuItem} from '../../components/navigation/adminSidebar.vue';
 import AdminCouponSection from '../../components/sections/adminSection/AdminCoupon.vue';
-import { HomeIcon, BanknotesIcon, UsersIcon, BookOpenIcon, InboxIcon, DocumentTextIcon, CalculatorIcon, ShoppingBagIcon, SwatchIcon, GiftTopIcon, GlobeEuropeAfricaIcon } from '@heroicons/vue/24/outline';
+import { HomeIcon, UserGroupIcon, BanknotesIcon, UsersIcon, BookOpenIcon, InboxIcon, DocumentTextIcon, CalculatorIcon, ShoppingBagIcon, SwatchIcon, GiftTopIcon, GlobeEuropeAfricaIcon } from '@heroicons/vue/24/outline';
 
 export default defineComponent({
   name: 'AdminCouponsPage',
@@ -33,7 +33,7 @@ export default defineComponent({
     const adminMenu = ref<MenuItem[]>([
       { id: 'overview', label: "Dashboard", route: '/admin', icon: markRaw(HomeIcon), category: 'General' },
       { id: 'history', label: 'Historiques', route: '/admin/AdminHistory', icon: markRaw(BookOpenIcon), category: 'General' },
-      { id: 'finance', label: 'Finances', route: '/admin/AdminFinance', icon: markRaw(BanknotesIcon), category: 'General' },
+      { id: 'users', label: 'Utilisateurs', route: '/admin/AdminUsers', icon: markRaw(UserGroupIcon), category: 'General' },      { id: 'finance', label: 'Finances', route: '/admin/AdminFinance', icon: markRaw(BanknotesIcon), category: 'General' },
       { id: 'inbox', label: 'Demandes clients', route: '/admin/AdminInbox', icon: markRaw(InboxIcon), category: 'General' },
       { id: 'contracts', label: 'Contrats', route: '/admin/AdminContrats', icon: markRaw(DocumentTextIcon), category: 'Catalogue' },
       { id: 'experts', label: 'Experts Juridiques', route: '/admin/AdminExperts', icon: markRaw(UsersIcon), category: 'Catalogue' },

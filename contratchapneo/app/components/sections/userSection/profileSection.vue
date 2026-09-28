@@ -23,6 +23,7 @@
                         :key="'expired-' + (item.id || index)"
                         :title="getFullPackInfo(item.pack).title" 
                         :price="getFullPackInfo(item.pack).prix"
+                        :prixPromo="getFullPackInfo(item.pack).prix_promo"
                         :description="getFullPackInfo(item.pack).description"
                         :planType="getPlanType(getFullPackInfo(item.pack).title)" 
                         :isActive="false"
@@ -41,6 +42,7 @@
                         :key="'available-' + (pack.id || index)"
                         :title="pack.title" 
                         :price="pack.prix"
+                        :prixPromo="pack.prix_promo"
                         :description="pack.description"
                         :planType="getPlanType(pack.title)"
                         buttonLabel="Acheter"
@@ -67,6 +69,7 @@
                     :key="pack.id || index"
                     :title="pack.title" 
                     :price="pack.prix"
+                    :prixPromo="pack.prix_promo"
                     :description="pack.description"
                     :planType="getPlanType(pack.title)"
                     @buy="addToCart(pack.id)"
@@ -85,6 +88,7 @@
                     :key="item.id || index"
                     :title="getFullPackInfo(item.pack).title" 
                     :price="getFullPackInfo(item.pack).prix"
+                    :prixPromo="getFullPackInfo(item.pack).prix_promo"
                     :description="getFullPackInfo(item.pack).description"
                     :planType="getPlanType(getFullPackInfo(item.pack).title)" 
                     :isActive="true"
@@ -159,7 +163,8 @@ export default {
             // Si on trouve le pack, on le renvoie. Sinon on renvoie des valeurs par défaut pour éviter les crashs.
             return foundPack || { 
                 title: 'Pack inconnu', 
-                prix: '0', 
+                prix: '0',
+                prix_promo: '0', 
                 description: 'Description indisponible' 
             };
         };

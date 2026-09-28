@@ -50,6 +50,7 @@
             </div>
         </div>
     </section>
+    <footerSection />
 </template>
 
 <script lang="ts">
@@ -57,14 +58,15 @@ import { ref, computed, watch, defineComponent } from 'vue';
 import navbar from '../components/navigation/navbar.vue';
 import LawCalculForm from '../components/forms/lawcalculForm.vue';
 import LawCalculResult from '../components/sections/lawcalculResult.vue';
-import { useLawCalculStore } from '../stores/lawCalculStore'; 
+import { useLawCalculStore } from '../stores/lawCalculStore';
+import footerSection from '../components/sections/footerSection.vue';
 
 // Mise à jour de l'interface avec l'article optionnel
 interface BreakdownItem { label: string; amount: number; description: string; taxable: boolean; cnps: boolean; article?: string; }
 
 export default defineComponent({
     name: 'LawCalculPage',
-    components: { navbar, LawCalculForm, LawCalculResult },
+    components: { navbar, LawCalculForm, LawCalculResult, footerSection },
     setup() {
         const lawStore = useLawCalculStore();
 

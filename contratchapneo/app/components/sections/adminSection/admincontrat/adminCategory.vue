@@ -264,7 +264,7 @@ export default {
 
 /* ⚡️ NOUVEAU CSS POUR LE PRIX PROMO */
 .price-wrapper { display: flex; align-items: center; gap: 0.5rem; margin-top: 0.2rem; }
-.old-price { color: #94a3b8; font-size: 0.75rem; text-decoration: line-through; }
+.old-price { color: #ef4444; font-size: 0.75rem; text-decoration: line-through; }
 .new-price { color: #10b981; font-weight: 700; font-size: 0.95rem; }
 
 .card-footer { display: flex; justify-content: flex-end; border-top: 1px solid #f1f5f9; padding-top: 1.2rem; }

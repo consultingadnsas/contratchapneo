@@ -33,7 +33,13 @@
 
               <div class="price-tag">
                 <span class="price-label">Prix du modèle</span>
-                <span class="price-amount">{{ formatPrice(contract?.prix) }} FCFA</span>
+                <template v-if="contract?.promo_price && Number(contract?.promo_price) > 0">
+                  <span class="price-amount price-promo">{{ formatPrice(contract?.promo_price) }} FCFA</span>
+                  <span class="price-old">{{ formatPrice(contract?.prix) }} FCFA</span>
+                </template>
+                <template v-else>
+                  <span class="price-amount">{{ formatPrice(contract?.prix) }} FCFA</span>
+                </template>
               </div>
             </div>
 
@@ -300,6 +306,18 @@ export default defineComponent({
 }
 .price-label  { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; color: #64748b; }
 .price-amount { font-size: 1.8rem; font-weight: 800; color: #156ca9; }
+
+.price-promo {
+    color: #16a34a !important; /* Vert contrat chap */
+}
+
+.price-old {
+    font-size: 1.1rem;
+    color: #ef4444; /* Rouge pastel pour prix barré */
+    text-decoration: line-through;
+    font-weight: 600;
+    margin-top: -4px;
+}
 
 /* Actions */
 .modal-actions {

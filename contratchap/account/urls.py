@@ -9,7 +9,8 @@ from .views import (
     PasswordResetConfirmView,
     PasswordResetTokenVerifyView,
     PasswordResetRequestView,
-    CheckAvailabilityView
+    CheckAvailabilityView,
+    AdminUserListView
 )
 from rest_framework_simplejwt.views import (
     TokenObtainPairView,
@@ -43,4 +44,7 @@ urlpatterns = [
     
     # Check availability
     path('check-availability/', CheckAvailabilityView.as_view(), name='check-availability'),
+    
+    # Admin users list
+    path('admin/users/', AdminUserListView.as_view(), name='admin-user-list'),
 ]

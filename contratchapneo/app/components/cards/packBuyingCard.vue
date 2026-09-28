@@ -4,8 +4,16 @@
             <h4 class="pro-title">{{ title }}</h4>
 
             <div class="price-section">
-                <span class="price-main">{{ formatPrice(price) }} FCFA</span>
-                <span class="price-suffix">/an</span>
+                <template v-if="prixPromo && Number(prixPromo) > 0">
+                    <div class="promo-price-wrapper">
+                        <span class="price-main price-promo">{{ formatPrice(prixPromo) }}</span>
+                        <span class="price-old">{{ formatPrice(price) }}</span>
+                    </div>
+                </template>
+                <template v-else>
+                    <span class="price-main">{{ formatPrice(price) }}</span>
+                </template>
+                <span :class="['price-suffix', {'price-promo': prixPromo && Number(prixPromo) > 0}]">FCFA/an</span>
             </div>
 
             <p class="description">{{ description }}</p>
@@ -48,6 +56,10 @@ export default defineComponent({
         price: { 
             type: [String, Number], 
             default: 25000 
+        },
+        prixPromo: {
+            type: [String, Number],
+            default: 0
         },   
         buttonLabel: { 
             type: String, 
@@ -142,11 +154,29 @@ export default defineComponent({
     gap: 0;
 }
 
+.promo-price-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
 .price-main {
     font-size: 1.8rem; 
     font-weight: 800;
     color: #111827;
     line-height: 1;
+}
+
+.price-promo {
+    color: #16a34a !important; /* Vert contrat chap */
+}
+
+.price-old {
+    font-size: 1.2rem;
+    color: #ef4444; /* Rouge pastel pour prix barré */
+    text-decoration: line-through;
+    font-weight: 600;
+    margin-top: 4px;
 }
 
 .price-suffix {

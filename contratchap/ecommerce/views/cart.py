@@ -145,7 +145,7 @@ class CartAddItemView(APIView):
                 contrat=contrat,
                 defaults={
                     'quantity'  : quantity,
-                    'unit_price': contrat.prix,
+                    'unit_price': contrat.promo_price if contrat.promo_price and contrat.promo_price > 0 else contrat.prix,
                 }
             )
             if not created:
@@ -173,7 +173,7 @@ class CartAddItemView(APIView):
                 customed_contract=customed_contract,
                 defaults={
                     'quantity'  : quantity,
-                    'unit_price': customed_contract.price,
+                    'unit_price': customed_contract.promo_price if customed_contract.promo_price and customed_contract.promo_price > 0 else customed_contract.price,
                 }
             )
             if not created:
@@ -188,7 +188,7 @@ class CartAddItemView(APIView):
                 packs=pack_obj, # 🚨 CORRECTION : "packs" (avec un 's'), car c'est le vrai nom de ton champ dans ton Model !
                 defaults={
                     'quantity'  : quantity,
-                    'unit_price': pack_obj.prix,
+                    'unit_price': pack_obj.prix_promo if pack_obj.prix_promo and pack_obj.prix_promo > 0 else pack_obj.prix,
                 }
             )
             if not created:
@@ -202,7 +202,7 @@ class CartAddItemView(APIView):
                 contract_revision=revision_request,
                 defaults={
                     'quantity': quantity,
-                    'unit_price': revision_request.price,
+                    'unit_price': revision_request.promo_price if revision_request.promo_price and revision_request.promo_price > 0 else revision_request.price,
                 }
             )
             if not created:
@@ -256,7 +256,7 @@ class CartAddPack(APIView):
             packs=pack_obj, # On utilise bien 'packs' (avec un 's') comme vu précédemment
             defaults={
                 'quantity': quantity,
-                'unit_price': pack_obj.prix,
+                'unit_price': pack_obj.prix_promo if pack_obj.prix_promo and pack_obj.prix_promo > 0 else pack_obj.prix,
             }
         )
 

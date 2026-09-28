@@ -7,8 +7,8 @@
             <numberGreen />
             <faqSection />
         </main>
-        <Footer />
     </div>
+     <Footer />
 </template>
 
 <script lang="ts">

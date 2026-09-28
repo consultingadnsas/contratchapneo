@@ -7,12 +7,13 @@
                 <!-- ⚡️ AFFICHAGE DYNAMIQUE DU PRIX -->
                 <template v-if="promoPrice && Number(promoPrice) > 0">
                     <span class="price-old">{{ formatPrice(price) }}</span>
-                    <span class="price-main">{{ formatPrice(promoPrice) }}</span>
+                    <span class="price-main price-promo">{{ formatPrice(promoPrice) }}</span>
+                    <span class="price-suffix price-promo">FCFA</span>
                 </template>
                 <template v-else>
                     <span class="price-main">{{ formatPrice(price) }} </span>
+                    <span class="price-suffix">FCFA</span>
                 </template>
-                <span class="price-suffix">FCFA</span>
             </div>
 
             <p class="description">{{ description }}</p>
@@ -121,9 +122,10 @@ export default defineComponent({
 .pro-title { font-size: 1.15rem; font-weight: 600; color: #1f2937; margin: 0; text-transform: capitalize; }
 .card-body { display: flex; flex-direction: column; gap: 1.5rem; padding: 0 1rem 1rem 1rem; }
 .price-section { display: flex; align-items: baseline; gap: 0; flex-wrap: wrap; }
-.price-old { font-size: 1.1rem; color: #9ca3af; text-decoration: line-through; margin-right: 0.6rem; font-weight: 600; }
+.price-old { font-size: 1.1rem; color: #ef4444; text-decoration: line-through; margin-right: 0.6rem; font-weight: 600; }
 .price-main { font-size: 1.8rem; font-weight: 800; color: #111827; line-height: 1; }
 .price-suffix { font-size: 0.95rem; color: #4b5563; margin-left: 4px; font-weight: 500; }
+.price-promo { color: #16a34a !important; }
 .description { font-size: 0.95rem; color: #4b5563; line-height: 1.5; margin: 0; }
 .features-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 0.85rem; }
 .features-list li { display: flex; align-items: flex-start; gap: 12px; font-size: 0.95rem; color: #1f2937; font-weight: 500; line-height: 1.4; }

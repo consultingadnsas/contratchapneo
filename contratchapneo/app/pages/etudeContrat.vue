@@ -8,19 +8,22 @@
             <EtudeContratRight />
         </div>
     </section>
+    <footerSection />
 </template>
 
 <script lang="ts">
 import navbar from '../components/navigation/navbar.vue';
 import EtudeContratLeft from '../components/sections/etudeContrat/etudeContratLeft.vue';
 import EtudeContratRight from '../components/sections/etudeContrat/etudeContratRight.vue';
+import footerSection from '~/components/sections/footerSection.vue';
 
 export default {
     name: 'EtudeContratPage',
     components: {
         navbar,
         EtudeContratLeft,
-        EtudeContratRight
+        EtudeContratRight,
+        footerSection
     },
     setup() {
         return {};

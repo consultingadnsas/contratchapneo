@@ -191,15 +191,15 @@ export default defineComponent({
 }
 
 .old-price {
-    color: #cbd5e1; /* Gris clair pour bien ressortir sur le fond */
+    color: #ef4444; /* Rouge pour le prix barré */
     font-size: 0.75rem;
     text-decoration: line-through;
     font-weight: 500;
-    opacity: 0.8;
+    opacity: 1;
 }
 
 .new-price {
-    color: #ffffff;
+    color: #22c55e; /* Vert pour le prix en promo */
     font-weight: 700;
     font-size: 0.9rem;
 }
