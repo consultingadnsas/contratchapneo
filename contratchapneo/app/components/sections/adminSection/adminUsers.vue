@@ -255,7 +255,7 @@ export default {
   min-width: 250px;
   padding: 0.75rem 1rem;
   border: 1px solid #cbd5e1;
-  border-radius: 6px;
+  border-radius: 50px;
   font-size: 0.95rem;
   outline: none;
 }
@@ -266,7 +266,7 @@ export default {
 .filter-select {
   padding: 0.75rem 1rem;
   border: 1px solid #cbd5e1;
-  border-radius: 6px;
+  border-radius: 50px;
   font-size: 0.95rem;
   outline: none;
   background-color: white;

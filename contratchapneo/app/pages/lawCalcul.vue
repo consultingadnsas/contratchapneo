@@ -28,7 +28,7 @@
                 <LawCalculForm 
                     v-model="formData"
                     :isCalculating="isCalculating || lawStore.isLoading"
-                    :errorMessage="errorMessage || lawStore.error || undefined"
+                    :errorMessage="errorMessage || lawStore.error"
                     :contractOptions="contractOptions"
                     :categorieOptions="categorieOptions"
                     :filteredMotifOptions="filteredMotifOptions"
@@ -50,7 +50,6 @@
             </div>
         </div>
     </section>
-    <footerSection />
 </template>
 
 <script lang="ts">
@@ -58,15 +57,14 @@ import { ref, computed, watch, defineComponent } from 'vue';
 import navbar from '../components/navigation/navbar.vue';
 import LawCalculForm from '../components/forms/lawcalculForm.vue';
 import LawCalculResult from '../components/sections/lawcalculResult.vue';
-import { useLawCalculStore } from '../stores/lawCalculStore';
-import footerSection from '../components/sections/footerSection.vue';
+import { useLawCalculStore } from '../stores/lawCalculStore'; 
 
-// Mise à jour de l'interface avec l'article optionnel
+// L'interface BreakdownItem inclut la clé 'article'
 interface BreakdownItem { label: string; amount: number; description: string; taxable: boolean; cnps: boolean; article?: string; }
 
 export default defineComponent({
     name: 'LawCalculPage',
-    components: { navbar, LawCalculForm, LawCalculResult, footerSection },
+    components: { navbar, LawCalculForm, LawCalculResult },
     setup() {
         const lawStore = useLawCalculStore();
 
@@ -84,7 +82,11 @@ export default defineComponent({
 
         const allMotifs = {
             cdi: [
-                { name: "Licenciement sans faute (Économique)", value: "licenciement_normal" },
+                { name: "Licenciement avec motif légitime (Personnel/Éco.)", value: "licenciement_normal" },
+                { name: "Licenciement abusif (Irrégulier / Sans motif)", value: "licenciement_abusif" },
+                { name: "Rupture d'un commun accord (Amiable)", value: "commun_accord_cdi" },
+                { name: "Rupture pour maladie de longue durée (> 6 mois)", value: "maladie" },
+                { name: "Rupture pour cas de force majeure", value: "force_majeure" },
                 { name: "Licenciement pour faute lourde", value: "faute_lourde" },
                 { name: "Démission du salarié", value: "demission" },
                 { name: "Départ à la retraite", value: "retraite" },
@@ -113,7 +115,9 @@ export default defineComponent({
             daysWorkedInLastMonth: '0',
             remainingLeaveDays: '0',
             preavisExecute: false,
-            isDeclaredCNPS: true
+            isDeclaredCNPS: true,
+            isTrialPeriod: false,
+            cddTransformsToCdi: false
         });
 
         const currentStep = ref(1);
@@ -144,6 +148,8 @@ export default defineComponent({
 
         watch(() => formData.value.contractType, (newType) => {
             formData.value.motif = newType === 'cdi' ? 'licenciement_normal' : 'fin_cdd';
+            formData.value.isTrialPeriod = false;
+            formData.value.cddTransformsToCdi = false;
             hasCalculated.value = false;
         });
 
@@ -178,6 +184,10 @@ export default defineComponent({
 
                 const motifMap: Record<string, string> = {
                     'licenciement_normal': 'Licenciement_Sans_Faute',
+                    'licenciement_abusif': 'Licenciement_Abusif',
+                    'commun_accord_cdi': 'Commun_Accord_CDI',
+                    'maladie': 'Maladie_Longue_Duree',
+                    'force_majeure': 'Force_Majeure',
                     'faute_lourde': 'Licenciement_Faute_Lourde',
                     'demission': 'Demission',
                     'retraite': 'Retraite',
@@ -204,26 +214,34 @@ export default defineComponent({
                     surtaux_accords: 0,
                     salaires_12_mois: formData.value.averageSalary ? [Number(formData.value.averageSalary)] : [],
                     preavis_effectue: formData.value.preavisExecute,
-                    jours_conges_acquis: remainingLeaves
+                    jours_conges_acquis: remainingLeaves,
+                    is_trial_period: formData.value.isTrialPeriod,
+                    cdd_transforms_to_cdi: formData.value.cddTransformsToCdi,
+                    remaining_months: Number(formData.value.remainingMonths) || 0,
+                    employer_damages: Number(formData.value.employerDamages) || 0
                 };
 
-                await lawStore.calculateDroits(payload);
+                // Tentative via Backend
+                try {
+                    await lawStore.calculateDroits(payload);
+                } catch (apiError) {
+                    console.warn("L'API Backend ne gère pas encore ce motif, bascule sur le moteur de calcul frontend local.");
+                }
 
-                // ⚡️ INTÉGRATION BACKEND ⚡️
-                if (lawStore.resultats) {
+                if (lawStore.resultats && lawStore.resultats.indemnite_licenciement !== undefined) {
                     const srv: any = lawStore.resultats;
                     
                     if (srv.indemnite_conges && Number(srv.indemnite_conges) !== 0) {
                         breakdown.value.push({ 
                             label: "Indemnité Compensatrice de Congés Payés (ICCP)", 
                             amount: Number(srv.indemnite_conges), 
-                            description: `Calculée sur votre solde de ${remainingLeaves} jours ouvrables non consommés.`, 
+                            description: `Calculée sur votre solde de ${remainingLeaves} jours ouvrables acquis et non consommés.`, 
                             article: "Article 25.8 du Code du Travail",
                             taxable: true, cnps: true 
                         });
                     }
                     
-                    if (srv.indemnite_preavis && Number(srv.indemnite_preavis) !== 0) {
+                    if (srv.indemnite_preavis && Number(srv.indemnite_preavis) !== 0 && !formData.value.isTrialPeriod) {
                         const amt = Number(srv.indemnite_preavis);
                         if (amt < 0) {
                             breakdown.value.push({ 
@@ -244,14 +262,14 @@ export default defineComponent({
                         }
                     }
                     
-                    if (srv.indemnite_licenciement && Number(srv.indemnite_licenciement) !== 0) {
-                        let indemLabel = formData.value.motif === 'retraite' ? "Indemnité de Départ à la Retraite" : 
-                                         formData.value.motif === 'deces' ? "Indemnité de Décès versée aux ayants droit" : 
-                                         "Indemnité Légale de Licenciement (IL)";
+                    if (srv.indemnite_licenciement && Number(srv.indemnite_licenciement) !== 0 && !formData.value.isTrialPeriod) {
+                        let indemLabel = "Indemnité Légale de Licenciement (IL)";
+                        let articleBase = "Article 42 de la CCI";
                         
-                        let articleBase = formData.value.motif === 'retraite' ? "Article 78 de la CCI" :
-                                          formData.value.motif === 'deces' ? "Article 44 de la CCI" :
-                                          "Article 42 de la CCI";
+                        if (formData.value.motif === 'retraite') { indemLabel = "Indemnité de Départ à la Retraite"; articleBase = "Article 78 de la CCI"; }
+                        else if (formData.value.motif === 'deces') { indemLabel = "Indemnité de Décès versée aux ayants droit"; articleBase = "Article 44 de la CCI"; }
+                        else if (formData.value.motif === 'commun_accord_cdi') { indemLabel = "Indemnité de Rupture Négociée (Base légale)"; articleBase = "Art. 18.13 CT / Art. 42 CCI"; }
+                        else if (formData.value.motif === 'maladie') { indemLabel = "Indemnité de Rupture pour Maladie Prolongée"; articleBase = "Article 43 de la CCI"; }
 
                         breakdown.value.push({ 
                             label: indemLabel, 
@@ -262,7 +280,7 @@ export default defineComponent({
                         });
                     }
 
-                    if (srv.indemnite_fin_cdd && Number(srv.indemnite_fin_cdd) !== 0) {
+                    if (srv.indemnite_fin_cdd && Number(srv.indemnite_fin_cdd) !== 0 && !formData.value.isTrialPeriod && !formData.value.cddTransformsToCdi) {
                         breakdown.value.push({ 
                             label: "Indemnité de Fin de Contrat (Prime de Précarité - 3%)", 
                             amount: Number(srv.indemnite_fin_cdd), 
@@ -272,28 +290,42 @@ export default defineComponent({
                         });
                     }
 
-                    if (srv.dommages_interets && Number(srv.dommages_interets) !== 0) {
+                    if (srv.dommages_interets && Number(srv.dommages_interets) !== 0 && !formData.value.isTrialPeriod) {
                         const amt = Number(srv.dommages_interets);
-                        if (amt > 0) {
+                        if (formData.value.contractType === 'cdi') {
                             breakdown.value.push({ 
-                                label: "Dommages & Intérêts (Rupture Anticipée Employeur)", 
+                                label: "Dommages & Intérêts (Licenciement Abusif)", 
                                 amount: amt, 
-                                description: `Rémunérations totales que vous auriez perçues jusqu'au terme prévu du contrat.`, 
-                                article: "Article 15.9 du Code du Travail",
+                                description: `Évaluation légale du préjudice selon le barème.`, 
+                                article: "Article 18.14 du Code du Travail",
                                 taxable: false, cnps: false 
                             });
                         } else {
-                            breakdown.value.push({ 
-                                label: "Dommages & Intérêts dus à l'employeur", 
-                                amount: amt, 
-                                description: `Compensation du préjudice subi par l'employeur suite à la rupture anticipée non justifiée par l'employé.`, 
-                                article: "Article 15.9 du Code du Travail",
-                                taxable: false, cnps: false 
-                            });
+                            if (amt > 0) {
+                                breakdown.value.push({ 
+                                    label: "Dommages & Intérêts (Rupture Anticipée Employeur)", 
+                                    amount: amt, 
+                                    description: `Rémunérations totales que vous auriez perçues jusqu'au terme prévu du contrat.`, 
+                                    article: "Article 15.9 du Code du Travail",
+                                    taxable: false, cnps: false 
+                                });
+                            } else {
+                                breakdown.value.push({ 
+                                    label: "Dommages & Intérêts dus à l'employeur", 
+                                    amount: amt, 
+                                    description: `Compensation du préjudice subi par l'employeur suite à la rupture anticipée non justifiée par l'employé.`, 
+                                    article: "Article 15.9 du Code du Travail",
+                                    taxable: false, cnps: false 
+                                });
+                            }
                         }
                     }
 
-                    // Calculs finaux
+                    // Synthèse dynamique Backend
+                    if (formData.value.isTrialPeriod) summaryMessage.value = "La rupture intervenant en période d'essai, la loi dispense de préavis, d'indemnité de licenciement et de prime de précarité (Art. 14.3 CT).";
+                    else if (formData.value.contractType === 'cdd' && formData.value.motif === 'fin_cdd' && formData.value.cddTransformsToCdi) summaryMessage.value = "Le passage en CDI ou le refus d'une offre de CDI annule légalement le droit à la prime de précarité de 3 % (Art. 15.8 CT).";
+                    else summaryMessage.value = "Ceci n'est qu'une estimation calculée selon les règles légales strictes, contactez un professionnel pour un meilleur suivi.";
+
                     breakdown.value.forEach(item => {
                         totalGrossAmount.value += item.amount;
                         if (item.cnps && item.amount > 0) totalTaxableCNPS.value += item.amount;
@@ -302,84 +334,109 @@ export default defineComponent({
 
                     cnpsEmployeeDeduction.value = formData.value.isDeclaredCNPS ? Math.max(0, Math.min(totalTaxableCNPS.value, 3375000)) * 0.063 : 0;
                     netAmount.value = totalGrossAmount.value - cnpsEmployeeDeduction.value;
-                    summaryMessage.value = "Ceci n'est qu'une estimation, contactez un professionel pour un meilleur suivi.";
                     hasCalculated.value = true;
                     isCalculating.value = false;
                     return;
                 }
 
-                // ⚡️ CALCUL FRONTEND (Secours) ⚡️
-                const daysWorked = Math.max(0, Math.min(30, Number(formData.value.daysWorkedInLastMonth) || 0));
+                // ⚡️ CALCUL FRONTEND LOCAL ⚡️ (S'exécute si le backend ne répond pas ou n'a pas les clés)
+                if (!hasCalculated.value) {
+                    const daysWorked = Math.max(0, Math.min(30, Number(formData.value.daysWorkedInLastMonth) || 0));
 
-                if (formData.value.contractType === 'cdi') {
-                    const baseSalary = Number(formData.value.baseSalary);
-                    const avgSalary = Number(formData.value.averageSalary);
+                    if (formData.value.contractType === 'cdi') {
+                        const baseSalary = Number(formData.value.baseSalary);
+                        const avgSalary = Number(formData.value.averageSalary);
 
-                    if (daysWorked > 0) breakdown.value.push({ label: "Salaire de présence (Mois de sortie)", amount: (baseSalary / 30) * daysWorked, description: `Prorata pour ${daysWorked} jour(s) travaillé(s) dans le mois de rupture.`, article: "Article 31.1 du Code du Travail", taxable: true, cnps: true });
-                    if (remainingLeaves > 0) breakdown.value.push({ label: "Indemnité Compensatrice de Congés Payés (ICCP)", amount: (baseSalary / 26) * remainingLeaves, description: `Calculée sur solde de ${remainingLeaves} jours ouvrables.`, article: "Article 25.8 du Code du Travail", taxable: true, cnps: true });
+                        if (daysWorked > 0) breakdown.value.push({ label: "Salaire de présence (Mois de sortie)", amount: (baseSalary / 30) * daysWorked, description: `Prorata pour ${daysWorked} jour(s) travaillé(s).`, article: "Article 31.1 du Code du Travail", taxable: true, cnps: true });
+                        if (remainingLeaves > 0) breakdown.value.push({ label: "Indemnité Compensatrice de Congés Payés (ICCP)", amount: (baseSalary / 26) * remainingLeaves, description: `Calculée sur solde de ${remainingLeaves} jours.`, article: "Article 25.8 du Code du Travail", taxable: true, cnps: true });
+                        
+                        const currentYearMonths = end.getMonth() + 1;
+                        breakdown.value.push({ label: "Gratification annuelle (Prorata temporis)", amount: (baseSalary / 12) * currentYearMonths, description: `Prorata conventionnel pour présence sur l'année civile en cours (${currentYearMonths} mois).`, article: "Article 53 de la CCI", taxable: true, cnps: true });
 
-                    const currentYearMonths = end.getMonth() + 1;
-                    breakdown.value.push({ label: "Gratification annuelle (Prorata temporis)", amount: (baseSalary / 12) * currentYearMonths, description: `Prorata conventionnel pour présence sur l'année civile en cours (${currentYearMonths} mois).`, article: "Article 53 de la CCI", taxable: true, cnps: true });
-
-                    if (formData.value.motif === 'faute_lourde') {
-                        summaryMessage.value = "La faute lourde prive le salarié de l'indemnité de préavis et de l'indemnité légale de licenciement (Art. 18.16 CT). Seuls les congés payés et la gratification restent dus.";
-                    } else if (formData.value.motif === 'demission') {
-                        if (!formData.value.preavisExecute) {
-                            const monthsPreavis = getPreavisMonths(formData.value.categoriePro, yearsOfSeniority);
-                            breakdown.value.push({ label: "Retenue pour Préavis non exécuté", amount: -(avgSalary * monthsPreavis), description: `En cas de démission, le préavis non travaillé est redevable (${monthsPreavis} mois).`, article: "Article 18.11 du Code du Travail", taxable: true, cnps: true });
-                        }
-                        summaryMessage.value = "La démission n'ouvre pas droit à l'indemnité de licenciement. Un préavis non exécuté par le salarié démissionnaire est déduit de son solde.";
-                    } else {
-                        if (!formData.value.preavisExecute && formData.value.motif !== 'deces') {
-                            const monthsPreavis = getPreavisMonths(formData.value.categoriePro, yearsOfSeniority);
-                            breakdown.value.push({ label: "Indemnité Compensatrice de Préavis (ICP)", amount: avgSalary * monthsPreavis, description: `Préavis de rupture non exécuté (${monthsPreavis} mois).`, article: "Article 34 de la CCI", taxable: true, cnps: true });
-                        }
-                        if (yearsOfSeniority >= 1) {
-                            let tranche1 = Math.min(yearsOfSeniority, 5) * 0.30 * avgSalary;
-                            let tranche2 = yearsOfSeniority > 5 ? Math.min(yearsOfSeniority - 5, 5) * 0.35 * avgSalary : 0;
-                            let tranche3 = yearsOfSeniority > 10 ? (yearsOfSeniority - 10) * 0.40 * avgSalary : 0;
-                            let indemLabel = formData.value.motif === 'retraite' ? "Indemnité de Départ à la Retraite" : formData.value.motif === 'deces' ? "Indemnité de Décès" : "Indemnité Légale de Licenciement (IL)";
-                            let indemArticle = formData.value.motif === 'retraite' ? "Article 78 de la CCI" : formData.value.motif === 'deces' ? "Article 44 de la CCI" : "Article 42 de la CCI";
-                            
-                            breakdown.value.push({ label: indemLabel, amount: tranche1 + tranche2 + tranche3, description: `Ancienneté continue de ${yearsOfSeniority.toFixed(2)} ans. Exonérée (Art. 117 CGI).`, article: indemArticle, taxable: false, cnps: false });
-                            summaryMessage.value = `Ancienneté validée : ${yearsOfSeniority.toFixed(2)} ans. Conformément à l'Art. 117 du CGI, l'indemnité légale de rupture est 100 % exonérée d'impôts et de CNPS.`;
+                        if (formData.value.isTrialPeriod) {
+                            summaryMessage.value = "La rupture intervenant en période d'essai, l'indemnité de préavis et l'indemnité de licenciement ne sont pas dues (Art. 14.3 et 18.1 CT).";
+                        } else if (['faute_lourde', 'force_majeure'].includes(formData.value.motif)) {
+                            summaryMessage.value = formData.value.motif === 'faute_lourde' 
+                                ? "La faute lourde prive le salarié de l'indemnité de préavis et de l'indemnité de licenciement (Art. 18.16 CT)." 
+                                : "La force majeure (Art. 18.9 CT) rompt le contrat immédiatement et exonère l'employeur du préavis et de l'indemnité de licenciement.";
+                        } else if (formData.value.motif === 'demission') {
+                            if (!formData.value.preavisExecute) {
+                                const monthsPreavis = getPreavisMonths(formData.value.categoriePro, yearsOfSeniority);
+                                breakdown.value.push({ label: "Retenue pour Préavis non exécuté", amount: -(avgSalary * monthsPreavis), description: `En cas de démission, le préavis non travaillé est redevable (${monthsPreavis} mois).`, article: "Article 18.11 du Code du Travail", taxable: true, cnps: true });
+                            }
+                            summaryMessage.value = "La démission n'ouvre pas droit à l'indemnité de licenciement. Un préavis non exécuté par le salarié démissionnaire est déduit de son solde.";
                         } else {
-                            summaryMessage.value = `Ancienneté estimée : ${(yearsOfSeniority * 12).toFixed(1)} mois. Le minimum légal de 1 an requis n'est pas atteint.`;
+                            if (['licenciement_normal', 'licenciement_abusif', 'maladie', 'retraite'].includes(formData.value.motif) && !formData.value.preavisExecute) {
+                                const monthsPreavis = getPreavisMonths(formData.value.categoriePro, yearsOfSeniority);
+                                breakdown.value.push({ label: "Indemnité Compensatrice de Préavis (ICP)", amount: avgSalary * monthsPreavis, description: `Préavis de rupture non exécuté (${monthsPreavis} mois).`, article: "Article 34 de la CCI", taxable: true, cnps: true });
+                            }
+                            
+                            if (yearsOfSeniority >= 1) {
+                                let tranche1 = Math.min(yearsOfSeniority, 5) * 0.30 * avgSalary;
+                                let tranche2 = yearsOfSeniority > 5 ? Math.min(yearsOfSeniority - 5, 5) * 0.35 * avgSalary : 0;
+                                let tranche3 = yearsOfSeniority > 10 ? (yearsOfSeniority - 10) * 0.40 * avgSalary : 0;
+                                
+                                let indemLabel = "Indemnité Légale de Licenciement (IL)";
+                                let indemArticle = "Article 42 de la CCI";
+                                if (formData.value.motif === 'retraite') { indemLabel = "Indemnité de Départ à la Retraite"; indemArticle = "Article 78 de la CCI"; }
+                                else if (formData.value.motif === 'deces') { indemLabel = "Indemnité de Décès versée aux ayants droit"; indemArticle = "Article 44 de la CCI"; }
+                                else if (formData.value.motif === 'commun_accord_cdi') { indemLabel = "Indemnité de Rupture Négociée (Base légale)"; indemArticle = "Art. 18.13 CT / Art. 42 CCI"; }
+                                else if (formData.value.motif === 'maladie') { indemLabel = "Indemnité de Rupture pour Maladie Prolongée"; indemArticle = "Article 43 de la CCI"; }
+                                
+                                breakdown.value.push({ label: indemLabel, amount: tranche1 + tranche2 + tranche3, description: `Ancienneté continue de ${yearsOfSeniority.toFixed(2)} ans. Exonérée (Art. 117 CGI).`, article: indemArticle, taxable: false, cnps: false });
+                            }
+
+                            if (formData.value.motif === 'licenciement_abusif') {
+                                const diMonths = Math.max(3, Math.min(20, yearsOfSeniority));
+                                breakdown.value.push({ label: "Dommages & Intérêts (Licenciement Abusif)", amount: avgSalary * diMonths, description: `Évaluation légale du préjudice : ${diMonths.toFixed(1)} mois de salaire.`, article: "Article 18.14 du Code du Travail", taxable: false, cnps: false });
+                                summaryMessage.value = `Licenciement abusif : En plus de vos droits légaux, l'Art. 18.14 CT impose des dommages et intérêts (entre 3 et 20 mois de salaire selon l'ancienneté).`;
+                            } else {
+                                if (yearsOfSeniority >= 1) summaryMessage.value = `Ancienneté validée : ${yearsOfSeniority.toFixed(2)} ans. Conformément à l'Art. 117 du CGI, l'indemnité légale de rupture est 100 % exonérée d'impôts et de CNPS.`;
+                                else summaryMessage.value = `Ancienneté estimée : ${(yearsOfSeniority * 12).toFixed(1)} mois. Le minimum légal de 1 an requis n'est pas atteint pour l'indemnité de licenciement.`;
+                            }
+                        }
+                    } 
+                    else if (formData.value.contractType === 'cdd') {
+                        const totalGross = Number(formData.value.totalGrossSalary);
+                        const approxMonthly = (totalGross / Math.max(1, (diffDays / 30.416)));
+
+                        if (daysWorked > 0) breakdown.value.push({ label: "Salaire de présence (Mois de sortie)", amount: (approxMonthly / 30) * daysWorked, description: `Prorata pour ${daysWorked} jour(s).`, article: "Article 31.1 du Code du Travail", taxable: true, cnps: true });
+                        if (remainingLeaves > 0) breakdown.value.push({ label: "Indemnité Compensatrice de Congés Payés (ICCP)", amount: (approxMonthly / 26) * remainingLeaves, description: `Calculée sur solde de ${remainingLeaves} jours.`, article: "Article 25.8 du Code du Travail", taxable: true, cnps: true });
+
+                        if (formData.value.isTrialPeriod) {
+                            summaryMessage.value = "La rupture intervenant en période d'essai, la prime de précarité de 3 % et les dommages-intérêts ne sont pas dus (Art. 14.3 CT).";
+                        } 
+                        else if (formData.value.motif === 'fin_cdd' || formData.value.motif === 'commun_accord_cdd') {
+                            if (formData.value.motif === 'fin_cdd' && formData.value.cddTransformsToCdi) {
+                                summaryMessage.value = "Le passage en CDI ou le refus d'une offre de CDI annule légalement le droit à la prime de précarité de 3 % (Art. 15.8 CT).";
+                            } else {
+                                breakdown.value.push({ label: "Indemnité de Fin de Contrat (Prime 3%)", amount: totalGross * 0.03, description: "3 % de la somme totale des rémunérations brutes perçues.", article: "Article 15.8 du Code du Travail", taxable: true, cnps: true });
+                                summaryMessage.value = "Le contrat ayant pris fin, vous percevez la prime légale de précarité de 3 %.";
+                            }
+                        } else if (formData.value.motif === 'rupture_anticipee_employeur') {
+                            const monthsLeft = Number(formData.value.remainingMonths) || 0;
+                            breakdown.value.push({ label: "Dommages & Intérêts (Rupture Employeur)", amount: approxMonthly * monthsLeft, description: `Rémunérations jusqu'au terme prévu (${monthsLeft} mois restants).`, article: "Article 15.9 du Code du Travail", taxable: false, cnps: false });
+                            summaryMessage.value = "La rupture abusive oblige au versement indemnitaire de la totalité des mois restants.";
+                        } else if (formData.value.motif === 'rupture_anticipee_salarie') {
+                            const dommagesSalarie = Number(formData.value.employerDamages) || 0;
+                            if (dommagesSalarie > 0) breakdown.value.push({ label: "Dommages & Intérêts dus à l'employeur", amount: -dommagesSalarie, description: "Compensation du préjudice subi par l'employeur.", article: "Article 15.9 du Code du Travail", taxable: false, cnps: false });
+                            summaryMessage.value = "La rupture anticipée par l'employé annule le droit à la prime de précarité de 3 %.";
+                        } else {
+                            summaryMessage.value = "En cas de faute lourde ou de force majeure, la prime de précarité de 3 % n'est pas due.";
                         }
                     }
-                } 
-                else if (formData.value.contractType === 'cdd') {
-                    const totalGross = Number(formData.value.totalGrossSalary);
-                    const approxMonthly = (totalGross / Math.max(1, (diffDays / 30.416)));
 
-                    if (daysWorked > 0) breakdown.value.push({ label: "Salaire de présence (Mois de sortie)", amount: (approxMonthly / 30) * daysWorked, description: `Prorata pour ${daysWorked} jour(s).`, article: "Article 31.1 du Code du Travail", taxable: true, cnps: true });
-                    if (remainingLeaves > 0) breakdown.value.push({ label: "Indemnité Compensatrice de Congés Payés (ICCP)", amount: (approxMonthly / 26) * remainingLeaves, description: `Calculée sur solde de ${remainingLeaves} jours.`, article: "Article 25.8 du Code du Travail", taxable: true, cnps: true });
+                    breakdown.value.forEach(item => {
+                        totalGrossAmount.value += item.amount;
+                        if (item.cnps && item.amount > 0) totalTaxableCNPS.value += item.amount;
+                        else if (!item.cnps && item.amount > 0) totalExempt.value += item.amount;
+                    });
 
-                    if (formData.value.motif === 'fin_cdd' || formData.value.motif === 'commun_accord_cdd') {
-                        breakdown.value.push({ label: "Indemnité de Fin de Contrat (Prime 3%)", amount: totalGross * 0.03, description: "3 % de la somme totale des rémunérations brutes perçues.", article: "Article 15.8 du Code du Travail", taxable: true, cnps: true });
-                        summaryMessage.value = "Le contrat ayant pris fin, vous percevez la prime légale de précarité de 3 %.";
-                    } else if (formData.value.motif === 'rupture_anticipee_employeur') {
-                        const monthsLeft = Number(formData.value.remainingMonths) || 0;
-                        breakdown.value.push({ label: "Dommages & Intérêts (Rupture Employeur)", amount: approxMonthly * monthsLeft, description: `Rémunérations jusqu'au terme prévu (${monthsLeft} mois restants).`, article: "Article 15.9 du Code du Travail", taxable: false, cnps: false });
-                        summaryMessage.value = "La rupture abusive oblige au versement indemnitaire de la totalité des mois restants.";
-                    } else if (formData.value.motif === 'rupture_anticipee_salarie') {
-                        const dommagesSalarie = Number(formData.value.employerDamages) || 0;
-                        if (dommagesSalarie > 0) breakdown.value.push({ label: "Dommages & Intérêts dus à l'employeur", amount: -dommagesSalarie, description: "Compensation du préjudice subi par l'employeur.", article: "Article 15.9 du Code du Travail", taxable: false, cnps: false });
-                        summaryMessage.value = "La rupture anticipée par l'employé annule le droit à la prime de précarité de 3 %.";
-                    } else {
-                        summaryMessage.value = "En cas de faute lourde ou de force majeure, la prime de précarité de 3 % n'est pas due.";
-                    }
+                    cnpsEmployeeDeduction.value = formData.value.isDeclaredCNPS ? Math.max(0, Math.min(totalTaxableCNPS.value, 3375000)) * 0.063 : 0;
+                    netAmount.value = totalGrossAmount.value - cnpsEmployeeDeduction.value;
+                    hasCalculated.value = true;
                 }
 
-                breakdown.value.forEach(item => {
-                    totalGrossAmount.value += item.amount;
-                    if (item.cnps && item.amount > 0) totalTaxableCNPS.value += item.amount;
-                    else if (!item.cnps && item.amount > 0) totalExempt.value += item.amount;
-                });
-
-                cnpsEmployeeDeduction.value = formData.value.isDeclaredCNPS ? Math.max(0, Math.min(totalTaxableCNPS.value, 3375000)) * 0.063 : 0;
-                netAmount.value = totalGrossAmount.value - cnpsEmployeeDeduction.value;
-                hasCalculated.value = true;
             } catch (error: any) {
                 errorMessage.value = lawStore.error || "Une erreur technique est survenue.";
             } finally {
@@ -393,7 +450,6 @@ export default defineComponent({
 </script>
 
 <style scoped>
-/* Les styles existants restent inchangés */
 .email-step-container { display: flex; justify-content: center; width: 100%; z-index: 2; margin-top: 2rem; }
 .email-card { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 20px; padding: 3rem; width: 100%; max-width: 500px; text-align: center; box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2); }
 .email-card h2 { font-size: 1.5rem; margin-bottom: 1rem; color: #ffffff; }

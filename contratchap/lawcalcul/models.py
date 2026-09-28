@@ -18,6 +18,10 @@ class SimulationDroits(models.Model):
         RUPTURE_ANTI_EMPLOYE = 'Rupture_Anticipee_Employe', "Rupture anticipée par l'employé"
         RUPTURE_ANTI_EMPLOYEUR = 'Rupture_Anticipee_Employeur', "Rupture anticipée abusive par l'employeur"
         FAUTE_LOURDE_CDD = 'Faute_Lourde_CDD', "Rupture pour faute lourde"
+        LIC_ABUSIF = 'Licenciement_Abusif', 'Licenciement Abusif'
+        COMMUN_ACCORD_CDI = 'Commun_Accord_CDI', "Rupture d'un commun accord (CDI)"
+        MALADIE = 'Maladie_Longue_Duree', 'Maladie longue durée'
+        FORCE_MAJEURE = 'Force_Majeure', 'Force Majeure'
         RETRAITE = 'Retraite', 'Retraite'
         DECES = 'Deces', 'Décès'
 
@@ -48,6 +52,11 @@ class SimulationDroits(models.Model):
 
     preavis_effectue = models.BooleanField(default=False)
     jours_conges_acquis = models.DecimalField(max_digits=5, decimal_places=2, default=0.00)
+    
+    is_trial_period = models.BooleanField(default=False)
+    cdd_transforms_to_cdi = models.BooleanField(default=False)
+    remaining_months = models.DecimalField(max_digits=5, decimal_places=2, default=0.00)
+    employer_damages = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
 
     created_at = models.DateTimeField(auto_now_add=True)
 
