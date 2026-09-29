@@ -427,7 +427,7 @@ export default {
     align-items: center;
     gap: 1rem;
     flex: 1;
-    max-width: 280px; 
+    max-width: fit-content; 
 }
 
 /* ⚡️ STYLE DES BULLES */

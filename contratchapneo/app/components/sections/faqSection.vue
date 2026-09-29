@@ -41,22 +41,36 @@
 </template>
 
 <script lang="ts">
-import { ref } from 'vue';
+import { ref, watch, onMounted } from 'vue';
 
 export default {
   name: 'FaqSupport',
-  setup() {
-    const faqs = ref([
+  props: {
+    faqsData: {
+      type: Array,
+      default: () => null
+    }
+  },
+  setup(props) {
+    const defaultFaqs = [
       { question: "Les modèles de contrats sont-ils conformes au droit OHADA ?", answer: "Absolument. Tous nos contrats sont rédigés et rigoureusement vérifiés par des experts juridiques qualifiés pour garantir leur parfaite conformité avec la législation OHADA en vigueur.", isOpen: false },
       { question: "Comment vais-je recevoir mon contrat après le paiement ?", answer: "Dès la validation de votre paiement, vous pourrez télécharger immédiatement votre contrat depuis la page de confirmation. Un lien de téléchargement vous sera également envoyé par email.", isOpen: false },
       { question: "Sous quel format les contrats sont-ils fournis ?", answer: "Nos modèles sont fournis au format Microsoft Word (.docx). Vous pouvez ainsi les modifier facilement pour les adapter aux spécificités de votre entreprise.", isOpen: false },
       { question: "Proposez-vous des services de rédaction sur-mesure ?", answer: "Oui. Si nos modèles standards ne couvrent pas vos besoins, vous pouvez faire une demande de rédaction sur-mesure ou d'audit contractuel directement depuis notre plateforme.", isOpen: false },
       { question: "Le paiement en ligne est-il totalement sécurisé ?", answer: "Oui, la sécurité est notre priorité. Nous utilisons des passerelles de paiement certifiées (Mobile Money et cartes bancaires) qui cryptent vos données de bout en bout.", isOpen: false },
       { question: "Puis-je obtenir de l'aide pour remplir mon contrat ?", answer: "Bien sûr. Nos modèles incluent des annotations pour vous guider. Si vous avez besoin d'une assistance supplémentaire, vous pouvez réserver une session de conseil avec nos juristes partenaires.", isOpen: false }
-    ]);
+    ];
+
+    const faqs = ref(props.faqsData ? JSON.parse(JSON.stringify(props.faqsData)) : JSON.parse(JSON.stringify(defaultFaqs)));
+
+    watch(() => props.faqsData, (newData) => {
+        if (newData) {
+            faqs.value = JSON.parse(JSON.stringify(newData));
+        }
+    }, { deep: true });
 
     const toggleFaq = (index: number) => {
-      faqs.value.forEach((faq, i) => {
+      faqs.value.forEach((faq: any, i: number) => {
         if (i === index) {
           faq.isOpen = !faq.isOpen;
         } else {

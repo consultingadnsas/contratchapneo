@@ -25,7 +25,7 @@
         </div>
         <select v-model="paymentFilter" class="payment-filter-select">
           <option value="all">Tous les paiements</option>
-          <option value="paid">Payé uniquement</option>
+          <option value="paid">Payé</option>
           <option value="unpaid">Non payé</option>
         </select>
       </div>

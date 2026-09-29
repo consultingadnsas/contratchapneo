@@ -99,7 +99,7 @@
             <div v-for="pack in selectedUser.packs" :key="pack.id" class="pack-item" :class="pack.is_active ? 'border-green-500' : 'border-gray-200'">
               <div class="flex justify-between items-center mb-2">
                 <span class="font-bold text-slate-700">{{ pack.pack_name }}</span>
-                <span class="badge" :class="pack.is_active ? 'badge-green' : 'badge-red'">{{ pack.is_active ? 'Actif' : 'Expiré/Épuisé' }}</span>
+                <span class="badge" :class="pack.is_active ? 'badge-green' : 'badge-red'">{{ pack.is_active ? 'Actif' : 'Expiré' }}</span>
               </div>
               <div class="text-sm text-slate-600 mb-1">
                 <strong>Crédits :</strong> {{ pack.credits_restants }} restants
