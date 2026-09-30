@@ -216,6 +216,7 @@ export default {
 /* --- EN-TÊTE DU FORMULAIRE --- */
 .dossier-header {
   margin-bottom: 0.1rem; /* Réduit */
+  margin-left: 0.7rem;
 }
 
 .dossier-header h2 {

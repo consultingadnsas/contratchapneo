@@ -9,10 +9,6 @@
                     <!-- Left: Content -->
                     <div class="hero-content">                   
                         <h1 class="main-title slide-up-delay">Un doute juridique?<br><span class="hl">Obtenez votre diagnostic.</span></h1>
-                        <p class="hero-description slide-up-delay-2">
-                            En quelques minutes au téléphone, nos juristes analysent votre situation, 
-                            identifient les risques et vous indiquent les bonnes démarches à suivre.
-                        </p>
                         
                         <div class="action-container slide-up-delay-3">
                             <button @click="scrollToContact" class="btn-primary motion-btn">
@@ -30,13 +26,12 @@
                         <!-- Points d'interrogation flottants -->
                         <div class="q-mark q-1">?</div>
                         <div class="q-mark q-2">?</div>
-                        <div class="q-mark q-3">?</div>
                         
                         <div class="thought-bubble tb-1">Dois-je signer ce contrat ?</div>
                         <div class="thought-bubble tb-2">Quels sont mes droits ici ?</div>
                         <div class="thought-bubble tb-3">Comment me protéger ?</div>
                         <div class="thought-bubble tb-4">Que faire face à ce litige ?</div>  
-                        <img src="/Diagnostic.png" alt="Diagnostic Juridique" class="hero-image" />
+                        <img src="/Diagnostic2.png" alt="Diagnostic Juridique" class="hero-image" />
                     </div>
                 </div>
             </section>
@@ -123,19 +118,42 @@
                         <h2>Prêt à éclaircir votre situation ?</h2>
                         <p>Ne restez pas seul face à vos doutes. Nos juristes sont à votre disposition pour établir votre diagnostic.</p>
                         
-                        <div class="cta-actions">
-                            <a href="tel:+2250508884088" class="contact-btn phone-btn">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                  <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 002.25-2.25v-1.372c0-.516-.351-.966-.864-1.051l-3.21-.536a2.25 2.25 0 00-2.15.586l-1.22 1.22a15.042 15.042 0 01-6.918-6.918l1.22-1.22a2.25 2.25 0 00.586-2.15l-.536-3.21C8.088 2.601 7.638 2.25 7.116 2.25H4.5A2.25 2.25 0 002.25 4.5v2.25z" />
-                                </svg>
-                                +225 05 08 88 40 88
-                            </a>
-                            <a href="https://wa.me/2250508884088" target="_blank" class="contact-btn wa-btn">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
-                                  <path d="M13.601 2.326A7.854 7.854 0 0 0 7.994 0C3.627 0 .068 3.558.064 7.926c-.003 1.398.366 2.76 1.062 3.964L0 16l4.204-1.102a7.933 7.933 0 0 0 3.79.965h.004c4.368 0 7.926-3.558 7.93-7.93A7.898 7.898 0 0 0 13.6 2.326zM7.994 14.521a6.573 6.573 0 0 1-3.356-.92l-.24-.144-2.494.654.666-2.433-.156-.251a6.56 6.56 0 0 1-1.007-3.505c0-3.626 2.957-6.584 6.591-6.584a6.56 6.56 0 0 1 4.66 1.931 6.557 6.557 0 0 1 1.928 4.66c-.004 3.639-2.961 6.592-6.592 6.592zm3.615-4.934c-.197-.099-1.17-.578-1.353-.646-.182-.065-.315-.099-.445.099-.133.197-.513.646-.627.775-.114.133-.232.148-.43.05-.197-.1-.836-.308-1.592-.985-.59-.525-.985-1.175-1.103-1.372-.114-.198-.011-.304.088-.403.087-.088.197-.232.296-.346.1-.114.133-.198.198-.33.065-.134.034-.248-.015-.347-.05-.099-.445-1.076-.612-1.47-.16-.389-.323-.335-.445-.34-.114-.007-.247-.007-.38-.007a.729.729 0 0 0-.529.247c-.182.198-.691.677-.691 1.654 0 .977.71 1.916.81 2.049.098.133 1.394 2.132 3.383 2.992.47.205.84.326 1.129.418.475.152.904.129 1.246.08.38-.058 1.171-.48 1.338-.943.164-.464.164-.86.114-.943-.049-.084-.182-.133-.38-.232z"/>
-                                </svg>
-                                Discuter sur WhatsApp
-                            </a>
+                        <div class="cta-locations">
+                            <div class="location-card">
+                                <h3 class="location-title">Côte d'Ivoire</h3>
+                                <div class="cta-actions">
+                                    <a href="tel:+2250508884088" class="contact-btn phone-btn">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                          <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 002.25-2.25v-1.372c0-.516-.351-.966-.864-1.051l-3.21-.536a2.25 2.25 0 00-2.15.586l-1.22 1.22a15.042 15.042 0 01-6.918-6.918l1.22-1.22a2.25 2.25 0 00.586-2.15l-.536-3.21C8.088 2.601 7.638 2.25 7.116 2.25H4.5A2.25 2.25 0 002.25 4.5v2.25z" />
+                                        </svg>
+                                        +225 05 08 88 40 88
+                                    </a>
+                                    <a href="https://wa.me/2250508884088" target="_blank" class="contact-btn wa-btn">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
+                                          <path d="M13.601 2.326A7.854 7.854 0 0 0 7.994 0C3.627 0 .068 3.558.064 7.926c-.003 1.398.366 2.76 1.062 3.964L0 16l4.204-1.102a7.933 7.933 0 0 0 3.79.965h.004c4.368 0 7.926-3.558 7.93-7.93A7.898 7.898 0 0 0 13.6 2.326zM7.994 14.521a6.573 6.573 0 0 1-3.356-.92l-.24-.144-2.494.654.666-2.433-.156-.251a6.56 6.56 0 0 1-1.007-3.505c0-3.626 2.957-6.584 6.591-6.584a6.56 6.56 0 0 1 4.66 1.931 6.557 6.557 0 0 1 1.928 4.66c-.004 3.639-2.961 6.592-6.592 6.592zm3.615-4.934c-.197-.099-1.17-.578-1.353-.646-.182-.065-.315-.099-.445.099-.133.197-.513.646-.627.775-.114.133-.232.148-.43.05-.197-.1-.836-.308-1.592-.985-.59-.525-.985-1.175-1.103-1.372-.114-.198-.011-.304.088-.403.087-.088.197-.232.296-.346.1-.114.133-.198.198-.33.065-.134.034-.248-.015-.347-.05-.099-.445-1.076-.612-1.47-.16-.389-.323-.335-.445-.34-.114-.007-.247-.007-.38-.007a.729.729 0 0 0-.529.247c-.182.198-.691.677-.691 1.654 0 .977.71 1.916.81 2.049.098.133 1.394 2.132 3.383 2.992.47.205.84.326 1.129.418.475.152.904.129 1.246.08.38-.058 1.171-.48 1.338-.943.164-.464.164-.86.114-.943-.049-.084-.182-.133-.38-.232z"/>
+                                        </svg>
+                                        WhatsApp
+                                    </a>
+                                </div>
+                            </div>
+                            
+                            <div class="location-card">
+                                <h3 class="location-title">Bénin</h3>
+                                <div class="cta-actions">
+                                    <a href="tel:+2290157218391" class="contact-btn phone-btn">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                          <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 002.25-2.25v-1.372c0-.516-.351-.966-.864-1.051l-3.21-.536a2.25 2.25 0 00-2.15.586l-1.22 1.22a15.042 15.042 0 01-6.918-6.918l1.22-1.22a2.25 2.25 0 00.586-2.15l-.536-3.21C8.088 2.601 7.638 2.25 7.116 2.25H4.5A2.25 2.25 0 002.25 4.5v2.25z" />
+                                        </svg>
+                                        +229 01 57 21 83 91
+                                    </a>
+                                    <a href="https://wa.me/2290157218391" target="_blank" class="contact-btn wa-btn">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
+                                          <path d="M13.601 2.326A7.854 7.854 0 0 0 7.994 0C3.627 0 .068 3.558.064 7.926c-.003 1.398.366 2.76 1.062 3.964L0 16l4.204-1.102a7.933 7.933 0 0 0 3.79.965h.004c4.368 0 7.926-3.558 7.93-7.93A7.898 7.898 0 0 0 13.6 2.326zM7.994 14.521a6.573 6.573 0 0 1-3.356-.92l-.24-.144-2.494.654.666-2.433-.156-.251a6.56 6.56 0 0 1-1.007-3.505c0-3.626 2.957-6.584 6.591-6.584a6.56 6.56 0 0 1 4.66 1.931 6.557 6.557 0 0 1 1.928 4.66c-.004 3.639-2.961 6.592-6.592 6.592zm3.615-4.934c-.197-.099-1.17-.578-1.353-.646-.182-.065-.315-.099-.445.099-.133.197-.513.646-.627.775-.114.133-.232.148-.43.05-.197-.1-.836-.308-1.592-.985-.59-.525-.985-1.175-1.103-1.372-.114-.198-.011-.304.088-.403.087-.088.197-.232.296-.346.1-.114.133-.198.198-.33.065-.134.034-.248-.015-.347-.05-.099-.445-1.076-.612-1.47-.16-.389-.323-.335-.445-.34-.114-.007-.247-.007-.38-.007a.729.729 0 0 0-.529.247c-.182.198-.691.677-.691 1.654 0 .977.71 1.916.81 2.049.098.133 1.394 2.132 3.383 2.992.47.205.84.326 1.129.418.475.152.904.129 1.246.08.38-.058 1.171-.48 1.338-.943.164-.464.164-.86.114-.943-.049-.084-.182-.133-.38-.232z"/>
+                                        </svg>
+                                        WhatsApp
+                                    </a>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -312,11 +330,6 @@ export default defineComponent({
     border-radius: 50%;
 }
 
-@keyframes floatBubble {
-    0%, 100% { transform: translateY(0) rotate(var(--rot)); }
-    50% { transform: translateY(-8px) rotate(var(--rot)); }
-}
-
 /* --- QUESTION MARKS --- */
 .q-mark {
     position: absolute;
@@ -326,34 +339,19 @@ export default defineComponent({
     user-select: none;
 }
 
-@keyframes floatQM {
-    0%, 100% { transform: translateY(0) scale(1) rotate(var(--rot)); }
-    50% { transform: translateY(-15px) scale(1.05) rotate(calc(var(--rot) + 5deg)); }
-}
-
 .q-1 {
-    top: 15%;
+    top: 5%;
     left: 20%;
     font-size: 5rem;
     opacity: 0.15;
     --rot: -15deg;
-    animation: floatQM 6s ease-in-out infinite;
 }
 .q-2 {
-    top: 10%;
-    right: 25%;
+    top: -5%;
+    right: 30%;
     font-size: 3rem;
     opacity: 0.2;
     --rot: 20deg;
-    animation: floatQM 5s ease-in-out infinite 1s;
-}
-.q-3 {
-    bottom: 30%;
-    right: 15%;
-    font-size: 6rem;
-    opacity: 0.1;
-    --rot: -10deg;
-    animation: floatQM 7s ease-in-out infinite 2s;
 }
 
 /* 1: Top Left (tail points down-right) */
@@ -361,7 +359,6 @@ export default defineComponent({
     top: -5%;
     left: 2%;
     --rot: -4deg;
-    animation: floatBubble 4s ease-in-out infinite;
 }
 .tb-1::before { bottom: -12px; right: 25px; width: 16px; height: 16px; }
 .tb-1::after { bottom: -25px; right: 15px; width: 8px; height: 8px; }
@@ -371,7 +368,6 @@ export default defineComponent({
     top: 5%;
     right: -5%;
     --rot: 5deg;
-    animation: floatBubble 4.5s ease-in-out infinite 1s;
 }
 .tb-2::before { bottom: -12px; left: 25px; width: 16px; height: 16px; }
 .tb-2::after { bottom: -25px; left: 15px; width: 8px; height: 8px; }
@@ -381,7 +377,6 @@ export default defineComponent({
     top: 55%;
     left: -15%;
     --rot: -3deg;
-    animation: floatBubble 5s ease-in-out infinite 0.5s;
 }
 .tb-3::before { top: -12px; right: 25px; width: 16px; height: 16px; }
 .tb-3::after { top: -25px; right: 15px; width: 8px; height: 8px; }
@@ -391,7 +386,6 @@ export default defineComponent({
     top: 65%;
     right: -5%;
     --rot: 4deg;
-    animation: floatBubble 5.5s ease-in-out infinite 1.5s;
 }
 .tb-4::before { top: -12px; left: 25px; width: 16px; height: 16px; }
 .tb-4::after { top: -25px; left: 15px; width: 8px; height: 8px; }
@@ -412,10 +406,11 @@ export default defineComponent({
     position: relative;
     z-index: 1;
     display: flex;
+    padding-bottom: 5rem;
     flex-direction: column;
     align-items: flex-start;
     text-align: left;
-    gap: 1.25rem;
+    gap: 1rem;
 }
 
 .lab {
@@ -431,7 +426,7 @@ export default defineComponent({
 }
 
 .main-title {
-    font-size: clamp(2.5rem, 5vw, 3.8rem);
+    font-size: clamp(2.5rem, 5vw, 3.7rem);
     font-weight: 800;
     line-height: 1.1;
     margin: 0;
@@ -461,12 +456,7 @@ export default defineComponent({
     opacity: 0;
     transform: translateY(30px);
 }
-.slide-up-delay-2 {
-    animation: slideUpFade 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-    animation-delay: 0.4s;
-    opacity: 0;
-    transform: translateY(30px);
-}
+
 .slide-up-delay-3 {
     animation: slideUpFade 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
     animation-delay: 0.6s;
@@ -488,7 +478,7 @@ export default defineComponent({
 
 /* --- BUTTON CTA --- */
 .action-container {
-    margin-top: 1.5rem;
+    margin-top: 1rem;
 }
 
 .btn-primary {
@@ -698,12 +688,42 @@ export default defineComponent({
     margin: 0 0 2.5rem 0;
 }
 
+.cta-locations {
+    display: flex;
+    flex-direction: column;
+    gap: 2.5rem;
+    width: 100%;
+}
+
+@media (min-width: 900px) {
+    .cta-locations {
+        flex-direction: row;
+        justify-content: center;
+        gap: 3.5rem;
+    }
+}
+
+.location-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.location-title {
+    color: #ffffff;
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin: 0 0 1rem 0;
+    opacity: 0.95;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
 .cta-actions {
     display: flex;
     flex-wrap: wrap;
     gap: 1rem;
     justify-content: center;
-    margin-bottom: 2rem;
 }
 
 .contact-btn {
@@ -765,6 +785,16 @@ export default defineComponent({
         text-align: center;
     }
 
+    .action-container {
+        bottom: 1.5rem;
+        padding: 0 1.5rem;
+    }
+
+    .action-container > button {
+        width: 100%;
+        justify-content: center;
+    }
+
     .hero-image {
         max-width: 90%;
     }
@@ -779,6 +809,7 @@ export default defineComponent({
     
     .trust-cta-section { padding: 2rem 1rem 4rem; }
     .trust-cta-card { padding: 3rem 1.5rem; border-radius: 24px; }
+    .cta-locations { gap: 2rem; }
     .cta-actions { flex-direction: column; width: 100%; }
     .contact-btn { justify-content: center; width: 100%; }
 }
