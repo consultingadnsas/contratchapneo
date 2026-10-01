@@ -1,104 +1,80 @@
 <template>
-  <div class="modal-overlay" @click.self="$emit('close')">
-    <div class="modal-content-manage">
-      <div class="modal-header">
-        <div class="modal-header-title-group">
-          <component :is="GlobeAltIcon" class="icon-md text-blue" />
-          <div>
-            <h3 class="modal-title">Gestion des Pays</h3>
-            <p class="modal-subtitle">{{ countries.length }} pays configuré(s)</p>
-          </div>
+  <div class="modal-body-scrollable">
+    <!-- Notification d'erreur ou de succès -->
+    <div v-if="countryError" class="alert-box alert-error">
+      <span>{{ countryError }}</span>
+      <button @click="countryError = null" class="alert-close">✕</button>
+    </div>
+    <div v-if="countrySuccess" class="alert-box alert-success">
+      <span>{{ countrySuccess }}</span>
+      <button @click="countrySuccess = null" class="alert-close">✕</button>
+    </div>
+
+    <!-- Formulaire d'ajout rapide -->
+    <div class="quick-add-panel">
+      <h4 class="panel-subtitle">Ajouter un nouveau pays</h4>
+      <div class="quick-add-grid">
+        <div class="input-wrapper">
+          <label class="input-label">Nom du pays *</label>
+          <input 
+            type="text" 
+            v-model="newCountry.name" 
+            class="form-input" 
+            placeholder="Ex: Sénégal" 
+            @keydown.enter="saveCountry" 
+          />
         </div>
-        <button class="close-btn" @click="$emit('close')">✕</button>
+        <div class="input-wrapper">
+          <label class="input-label">Code ISO *</label>
+          <input 
+            type="text" 
+            v-model="newCountry.code" 
+            class="form-input text-uppercase" 
+            placeholder="Ex: SN" 
+            maxlength="3" 
+            @keydown.enter="saveCountry" 
+          />
+        </div>
       </div>
+      <div class="quick-add-actions">
+        <button class="btn-primary-custom btn-sm" @click="saveCountry" :disabled="isLoading">
+          <component :is="PlusIcon" class="icon-xs" /> Ajouter
+        </button>
+      </div>
+    </div>
 
-      <div class="modal-body-scrollable">
-        <!-- Notification d'erreur ou de succès -->
-        <div v-if="countryError" class="alert-box alert-error">
-          <span>{{ countryError }}</span>
-          <button @click="countryError = null" class="alert-close">✕</button>
-        </div>
-        <div v-if="countrySuccess" class="alert-box alert-success">
-          <span>{{ countrySuccess }}</span>
-          <button @click="countrySuccess = null" class="alert-close">✕</button>
-        </div>
-
-        <!-- Formulaire d'ajout rapide -->
-        <div class="quick-add-panel">
-          <h4 class="panel-subtitle">Ajouter un nouveau pays</h4>
-          <div class="quick-add-grid">
-            <div class="input-wrapper">
-              <label class="input-label">Nom du pays *</label>
-              <input 
-                type="text" 
-                v-model="newCountry.name" 
-                class="form-input" 
-                placeholder="Ex: Sénégal" 
-                @keydown.enter="saveCountry" 
-              />
-            </div>
-            <div class="input-wrapper">
-              <label class="input-label">Code ISO *</label>
-              <input 
-                type="text" 
-                v-model="newCountry.code" 
-                class="form-input text-uppercase" 
-                placeholder="Ex: SN" 
-                maxlength="3" 
-                @keydown.enter="saveCountry" 
-              />
-            </div>
-          </div>
-          <div class="quick-add-actions">
-            <label class="checkbox-label">
-              <input type="checkbox" v-model="newCountry.is_ohada_member" class="form-checkbox">
-              <span class="checkbox-text">Membre de l'espace OHADA</span>
-            </label>
-            <button class="btn-primary-custom btn-sm" @click="saveCountry" :disabled="isLoading">
-              <component :is="PlusIcon" class="icon-xs" /> Ajouter
-            </button>
-          </div>
-        </div>
-
-        <!-- Liste des pays existants -->
-        <div class="items-list-section">
-          <div class="list-header-row">
-            <h4 class="panel-subtitle">Liste des pays</h4>
-            <div class="mini-search-box">
-              <component :is="MagnifyingGlassIcon" class="icon-xs icon-gray" />
-              <input type="text" v-model="countrySearch" placeholder="Rechercher..." class="mini-search-input" />
-            </div>
-          </div>
-
-          <div class="items-list-container">
-            <div v-if="filteredCountries.length === 0" class="empty-list-notice">
-              Aucun pays trouvé
-            </div>
-            <div 
-              v-for="country in filteredCountries" 
-              :key="country.id" 
-              class="item-row"
-            >
-              <div class="item-info">
-                <span class="country-badge">{{ country.code }}</span>
-                <span class="item-name">{{ country.name }}</span>
-                <span v-if="country.is_ohada_member" class="ohada-tag">OHADA</span>
-              </div>
-              <button 
-                class="action-icon-btn delete-btn" 
-                title="Supprimer ce pays" 
-                @click="removeCountry(country)"
-                :disabled="isLoading"
-              >
-                <component :is="TrashIcon" class="icon-sm" />
-              </button>
-            </div>
-          </div>
+    <!-- Liste des pays existants -->
+    <div class="items-list-section">
+      <div class="list-header-row">
+        <h4 class="panel-subtitle">Liste des pays</h4>
+        <div class="mini-search-box">
+          <component :is="MagnifyingGlassIcon" class="icon-xs icon-gray" />
+          <input type="text" v-model="countrySearch" placeholder="Rechercher..." class="mini-search-input" />
         </div>
       </div>
 
-      <div class="modal-footer">
-        <button class="btn-secondary-custom" @click="$emit('close')">Fermer</button>
+      <div class="items-list-container">
+        <div v-if="filteredCountries.length === 0" class="empty-list-notice">
+          Aucun pays trouvé
+        </div>
+        <div 
+          v-for="country in filteredCountries" 
+          :key="country.id" 
+          class="item-row"
+        >
+          <div class="item-info">
+            <span class="country-badge">{{ country.code }}</span>
+            <span class="item-name">{{ country.name }}</span>
+          </div>
+          <button 
+            class="action-icon-btn delete-btn" 
+            title="Supprimer ce pays" 
+            @click="removeCountry(country)"
+            :disabled="isLoading"
+          >
+            <component :is="TrashIcon" class="icon-sm" />
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -108,7 +84,6 @@
 import { ref, computed, markRaw } from 'vue';
 import { useAdminProStore } from '../../stores/adminProStore';
 import { 
-  GlobeAltIcon, 
   PlusIcon, 
   MagnifyingGlassIcon, 
   TrashIcon 
@@ -116,10 +91,9 @@ import {
 
 export default {
   name: 'CountryModal',
-  emits: ['close'],
   setup() {
     const adminProStore = useAdminProStore();
-
+    
     const newCountry = ref({ name: '', code: '', is_ohada_member: true });
     const countrySearch = ref('');
     const countryError = ref<string | null>(null);
@@ -131,7 +105,7 @@ export default {
     const filteredCountries = computed(() => {
       const q = countrySearch.value.trim().toLowerCase();
       if (!q) return countries.value;
-      return countries.value.filter(c => 
+      return countries.value.filter((c: any) => 
         c.name.toLowerCase().includes(q) || c.code.toLowerCase().includes(q)
       );
     });
@@ -173,12 +147,10 @@ export default {
       countrySearch,
       countryError,
       countrySuccess,
-      countries,
-      isLoading,
       filteredCountries,
       saveCountry,
       removeCountry,
-      GlobeAltIcon: markRaw(GlobeAltIcon),
+      isLoading,
       PlusIcon: markRaw(PlusIcon),
       MagnifyingGlassIcon: markRaw(MagnifyingGlassIcon),
       TrashIcon: markRaw(TrashIcon)
@@ -188,72 +160,6 @@ export default {
 </script>
 
 <style scoped>
-.modal-overlay { 
-  position: fixed; 
-  top: 0; 
-  left: 0; 
-  right: 0; 
-  bottom: 0; 
-  background: rgba(15, 23, 42, 0.4); 
-  backdrop-filter: blur(4px); 
-  display: flex; 
-  justify-content: center; 
-  align-items: center; 
-  z-index: 1000; 
-  padding: 1rem; 
-}
-.modal-content-manage { 
-  background: #ffffff; 
-  border-radius: 20px; 
-  width: fit-content; 
-  max-width: 580px; 
-  max-height: 88vh; 
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); 
-  display: flex; 
-  flex-direction: column; 
-  overflow: hidden; 
-}
-.modal-header { 
-  display: flex; 
-  justify-content: space-between; 
-  align-items: center; 
-  padding: 1.5rem; 
-  border-bottom: 1px solid #f1f5f9; 
-}
-.modal-header-title-group { 
-  display: flex; 
-  align-items: center; 
-  gap: 0.8rem; 
-}
-.modal-title { 
-  margin: 0; 
-  font-size: 1.25rem; 
-  font-weight: 700; 
-  color: #0f172a; 
-}
-.modal-subtitle { 
-  margin: 0.15rem 0 0 0; 
-  font-size: 0.8rem; 
-  color: #94a3b8; 
-  font-weight: 500; 
-}
-.close-btn { 
-  background: #f1f5f9; 
-  border: none; 
-  width: 32px; 
-  height: 32px; 
-  border-radius: 50%; 
-  display: flex; 
-  align-items: center; 
-  justify-content: center; 
-  color: #64748b; 
-  cursor: pointer; 
-  transition: 0.2s; 
-}
-.close-btn:hover { 
-  background: #e2e8f0; 
-  color: #0f172a; 
-}
 .modal-body-scrollable { 
   padding: 1.2rem 1.5rem; 
   overflow-y: auto; 
@@ -311,27 +217,12 @@ export default {
 }
 .quick-add-actions { 
   display: flex; 
-  justify-content: center; 
+  justify-content: space-between; 
   align-items: center; 
   gap: 1rem; 
   flex-wrap: wrap; 
 }
-.checkbox-label { 
-  display: flex; 
-  align-items: center; 
-  gap: 0.6rem; 
-  cursor: pointer; 
-}
-.form-checkbox { 
-  width: 1.1rem; 
-  height: 1.1rem; 
-  accent-color: #2563eb; 
-}
-.checkbox-text { 
-  font-size: 0.9rem; 
-  color: #475569; 
-  font-weight: 500; 
-}
+
 .btn-primary-custom { 
   background: var(--primary-color-dark, #0f172a); 
   color: #ffffff; 
@@ -349,24 +240,6 @@ export default {
 }
 .btn-primary-custom:hover { 
   background: #1f2937; 
-}
-.btn-secondary-custom { 
-  background: #f1f5f9; 
-  color: #475569; 
-  border: 1px solid #e2e8f0; 
-  font-weight: 600; 
-  border-radius: 999px; 
-  padding: 10px 20px; 
-  font-size: 0.95rem; 
-  transition: 0.2s ease; 
-  display: flex; 
-  align-items: center; 
-  gap: 0.5rem; 
-  cursor: pointer; 
-}
-.btn-secondary-custom:hover { 
-  background: #e2e8f0; 
-  color: #0f172a; 
 }
 .btn-sm { 
   padding: 8px 18px; 
@@ -450,17 +323,10 @@ export default {
   overflow: hidden; 
   text-overflow: ellipsis; 
 }
-.ohada-tag { 
-  font-size: 0.7rem; 
-  font-weight: 700; 
-  color: #059669; 
-  background: #d1fae5; 
-  padding: 2px 7px; 
-  border-radius: 4px; 
-}
-.action-icon-btn { 
+
+.action-icon-btn {
+  width: fit-content; 
   background: transparent; 
-  margin: -10rem;
   border: none; 
   color: #cbd5e1; 
   cursor: pointer; 
@@ -499,6 +365,7 @@ export default {
   color: #16a34a; 
 }
 .alert-close { 
+  width: fit-content;
   background: transparent; 
   border: none; 
   font-weight: bold; 
@@ -507,19 +374,7 @@ export default {
   padding: 0 4px; 
   font-size: 0.9rem; 
 }
-.modal-footer { 
-  padding: 1.2rem 1.5rem; 
-  border-top: 1px solid #f1f5f9; 
-  background: #fafaf9; 
-  border-bottom-left-radius: 20px; 
-  border-bottom-right-radius: 20px; 
-  display: flex; 
-  justify-content: center; 
-  gap: 1rem; 
-}
 .icon-xs { width: 16px; height: 16px; }
 .icon-sm { width: 20px; height: 20px; }
-.icon-md { width: 24px; height: 24px; }
-.text-blue { color: #3b82f6; }
 .icon-gray { color: #94a3b8; }
 </style>

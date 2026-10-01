@@ -7,12 +7,8 @@
         
         <!-- ⚡️ NOUVEAU : Groupe de boutons -->
         <div class="header-buttons">
-          <button class="btn-secondary-custom" @click="openCountryModal()">
-            <component :is="GlobeAltIcon" class="icon-sm" /> Gérer les pays ({{ countriesList.length }})
-          </button>
-
-          <button class="btn-secondary-custom" @click="openDomainModal()">
-            <component :is="BriefcaseIcon" class="icon-sm" /> Gérer les domaines ({{ domainsList.length }})
+          <button class="btn-secondary-custom" @click="openSettingsModal()">
+            <component :is="Cog6ToothIcon" class="icon-sm" /> Paramètres
           </button>
           
           <button class="btn-primary-custom" @click="openModal()">
@@ -100,16 +96,10 @@
       @save="saveExpert"
     />
 
-    <!-- ⚡️ Modale Gestion des Pays -->
-    <CountryModal 
-      v-if="isCountryModalOpen" 
-      @close="closeCountryModal" 
-    />
-
-    <!-- ⚡️ Modale Gestion des Domaines -->
-    <DomainModal 
-      v-if="isDomainModalOpen" 
-      @close="closeDomainModal" 
+    <!-- ⚡️ Modale Paramètres (Pays & Domaines) -->
+    <ExpertSettingsModal 
+      v-if="isSettingsModalOpen" 
+      @close="closeSettingsModal" 
     />
 
   </div>
@@ -118,22 +108,20 @@
 <script lang="ts">
 import { ref, computed, markRaw, onMounted } from 'vue';
 import ExpertModal from '../../modale/expertModal.vue';
-import CountryModal from '../../modale/countryModal.vue';
-import DomainModal from '../../modale/domainModal.vue';
+import ExpertSettingsModal from '../../modale/expertSettingsModal.vue';
 import { useAdminProStore } from '../../../stores/adminProStore'; 
 import { 
   UserPlusIcon, 
   MagnifyingGlassIcon, 
   CheckBadgeIcon, 
   TrashIcon, 
-  BriefcaseIcon,
   PencilSquareIcon,
-  GlobeAltIcon
+  Cog6ToothIcon
 } from '@heroicons/vue/24/outline';
 
 export default {
   name: 'AdminExperts',
-  components: { ExpertModal, CountryModal, DomainModal },
+  components: { ExpertModal, ExpertSettingsModal },
   setup() {
     const adminProStore = useAdminProStore();
     
@@ -269,14 +257,10 @@ export default {
       }
     };
 
-    // ⚡️ Gestion des modales Pays & Domaines
-    const isCountryModalOpen = ref(false);
-    const openCountryModal = () => { isCountryModalOpen.value = true; };
-    const closeCountryModal = () => { isCountryModalOpen.value = false; };
-
-    const isDomainModalOpen = ref(false);
-    const openDomainModal = () => { isDomainModalOpen.value = true; };
-    const closeDomainModal = () => { isDomainModalOpen.value = false; };
+    // ⚡️ Gestion de la modale Paramètres
+    const isSettingsModalOpen = ref(false);
+    const openSettingsModal = () => { isSettingsModalOpen.value = true; };
+    const closeSettingsModal = () => { isSettingsModalOpen.value = false; };
 
     onMounted(async () => {
       await adminProStore.fetchCountries(); // Charge les pays
@@ -296,12 +280,9 @@ export default {
       closeModal,
       saveExpert,
       deleteExpert,
-      isCountryModalOpen,
-      openCountryModal,
-      closeCountryModal,
-      isDomainModalOpen,
-      openDomainModal,
-      closeDomainModal,
+      isSettingsModalOpen,
+      openSettingsModal,
+      closeSettingsModal,
       countriesList: computed(() => adminProStore.countries),
       domainsList: computed(() => adminProStore.domains),
       isLoading: computed(() => adminProStore.isLoading),
@@ -310,8 +291,7 @@ export default {
       CheckBadgeIcon: markRaw(CheckBadgeIcon),
       TrashIcon: markRaw(TrashIcon),
       PencilSquareIcon: markRaw(PencilSquareIcon),
-      GlobeAltIcon: markRaw(GlobeAltIcon),
-      BriefcaseIcon: markRaw(BriefcaseIcon)
+      Cog6ToothIcon: markRaw(Cog6ToothIcon)
     };
   }
 }
@@ -331,7 +311,7 @@ export default {
 
 /* ⚡️ NOUVEAU : Header Buttons */
 .header-buttons { display: flex; gap: 1rem; }
-.btn-primary-custom { background: var(--primary-color-dark); color: #ffffff; font-weight: 600; border-radius: 999px; padding: 10px 20px; font-size: 0.95rem; border: none; transition: background 0.2s ease; display: flex; align-items: center; gap: 0.5rem; cursor: pointer; }
+.btn-primary-custom { background: var(--primary-color-dark); color: #ffffff; font-weight: 600; border-radius: 999px; padding: 10px 20px; font-size: 0.95rem; border: none; transition: background 0.2s ease; display: flex; align-items: center; gap: 0.5rem; cursor: pointer; min-width: fit-content; }
 .btn-primary-custom:hover { background: #1f2937; }
 .btn-secondary-custom { background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; font-weight: 600; border-radius: 999px; padding: 10px 20px; font-size: 0.95rem; transition: 0.2s ease; display: flex; align-items: center; gap: 0.5rem; cursor: pointer; }
 .btn-secondary-custom:hover { background: #e2e8f0; color: #0f172a; }
