@@ -2,7 +2,7 @@
     <div class="cart-items">
       <div class="items-list">
         <div v-for="item in cartItems" :key="item.id" class="cart-item">
-          <img :src="item.image || placeholder" :alt="item.name" class="item-image">
+          <img v-if="item.image" :src="item.image" :alt="item.name" class="item-image">
           <div class="item-details">
             <h4 class="item-name">{{ item.name }}</h4>
           </div>
@@ -82,7 +82,6 @@
 <script lang="ts">
 import { computed, ref, watch } from 'vue';
 import { useCartStore } from '../../stores/cartStore';
-import placeholder from '@/assets/pictures/ContratChap/pexels-thirdman-5060819.jpg';
 
 export default {
   name: 'Itemslist',
@@ -217,7 +216,6 @@ export default {
       cartItems,
       formattedTotalPrice,
       removeFromCart,
-      placeholder,
       // On retourne les variables du code promo à la vue
       hasPromoCode,
       promoCode,
@@ -248,14 +246,6 @@ export default {
 
 .cart-item:last-child {
   border-bottom: none;
-}
-
-.item-image {
-  width: 60px;
-  height: 60px;
-  object-fit: cover;
-  border-radius: 0.5rem;
-  background: #f8f9fa;
 }
 
 .item-details {
@@ -310,6 +300,11 @@ export default {
   flex-direction: column;
   align-items: flex-end;
   gap: 0.5rem;
+}
+
+.item-image {
+  height: 60px;
+  width: 60px;
 }
 
 .total-price {

@@ -31,18 +31,18 @@ export const useAdminAuthStore = defineStore('adminAuth', () => {
         error.value = null;
 
         try {
-            const response = await $api<any>('/account/login/', { 
+            const response = await $api<any>('/account/login/', {
                 method: 'POST',
-                body: { username: identifier, password: password } 
+                body: { username: identifier, password: password }
             });
 
             if (response && response.user) {
                 // ⚡️ LE BOUCLIER DE SÉCURITÉ EST ICI
                 if (!response.user.is_staff && !response.user.is_superuser) {
-                    
+
                     // 1. L'utilisateur est un client normal. On détruit immédiatement sa session.
                     await $api<any>('/account/logout/', { method: 'POST' });
-                    
+
                     // 2. On affiche un message d'erreur
                     error.value = "Accès refusé : Vous n'avez pas les droits d'administration.";
                     return false; // On bloque la redirection
@@ -51,12 +51,12 @@ export const useAdminAuthStore = defineStore('adminAuth', () => {
                 // Si c'est un vrai admin, on valide la session
                 user.value = response.user;
                 isAuthenticated.value = true;
-                return true; 
+                return true;
             }
-            
+
             return false;
         } catch (err: any) {
-            error.value = err.message || "Identifiants incorrects ou erreur de connexion.";
+            error.value = "L'email ou le mot de passe est incorrect";
             console.error("Erreur de connexion Admin:", err);
             return false;
         } finally {
@@ -67,7 +67,7 @@ export const useAdminAuthStore = defineStore('adminAuth', () => {
     // 2. RÉCUPÉRER LE PROFIL (Vérifier la session au chargement)
     async function fetchProfile() {
         isLoading.value = true;
-        
+
         try {
             // Appel à ton UserProfileView (GET /me/) protégé par IsAuthenticated
             const response = await $api<any>('/account/me/', { // 👈 Ajuste le chemin exact

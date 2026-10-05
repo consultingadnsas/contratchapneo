@@ -36,7 +36,7 @@
           </tr>
         </thead>
         <tbody>
-          <tr v-for="user in filteredUsers" :key="user.id">
+          <tr v-for="user in paginatedUsers" :key="user.id">
             <td>{{ formatDate(user.date_joined) }}</td>
             <td>{{ user.first_name }} {{ user.last_name }}</td>
             <td>{{ user.email }}</td>
@@ -66,6 +66,15 @@
           </tr>
         </tbody>
       </table>
+
+      <!-- Paginator Component -->
+      <Paginator 
+        v-if="filteredUsers.length > 0"
+        :current-page="currentPage" 
+        :total-count="filteredUsers.length" 
+        :page-size="pageSize"
+        @page-change="onPageChange" 
+      />
     </div>
 
     <!-- Graphique -->
@@ -125,16 +134,18 @@
 </template>
 
 <script lang="ts">
-import { ref, onMounted, computed } from 'vue';
+import { ref, onMounted, computed, watch } from 'vue';
 import { useNuxtApp } from '#imports';
 import { EyeIcon } from '@heroicons/vue/24/outline';
 import AdminUsersChart from './AdminUsersChart.vue';
+import Paginator from '../../tools/Paginator.vue';
 
 export default {
   name: 'AdminUsers',
   components: {
     EyeIcon,
-    AdminUsersChart
+    AdminUsersChart,
+    Paginator
   },
   setup() {
     const { $api } = useNuxtApp();
@@ -163,6 +174,22 @@ export default {
       }
       return result;
     });
+
+    const currentPage = ref(1);
+    const pageSize = ref(10);
+
+    watch([searchQuery, packFilter], () => {
+      currentPage.value = 1;
+    });
+
+    const paginatedUsers = computed(() => {
+      const start = (currentPage.value - 1) * pageSize.value;
+      return filteredUsers.value.slice(start, start + pageSize.value);
+    });
+
+    const onPageChange = (page: number) => {
+      currentPage.value = page;
+    };
 
     const fetchUsers = async () => {
       isLoading.value = true;
@@ -200,6 +227,10 @@ export default {
     return {
       users,
       filteredUsers,
+      paginatedUsers,
+      currentPage,
+      pageSize,
+      onPageChange,
       isLoading,
       searchQuery,
       packFilter,
