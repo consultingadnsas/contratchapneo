@@ -137,7 +137,7 @@ const scrollToField = (tagName: string) => {
   if (elements.length === 0) return;
 
   // Scroll vers le premier élément
-  elements[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
+  elements[0]?.scrollIntoView({ behavior: 'smooth', block: 'center' });
 
   // Faire pulser TOUTES les occurrences
   elements.forEach(el => {
@@ -204,6 +204,7 @@ defineExpose({
   flex: 2;
   display: flex;
   justify-content: center;
+  align-items: flex-start;
   overflow-x: auto;
 }
 

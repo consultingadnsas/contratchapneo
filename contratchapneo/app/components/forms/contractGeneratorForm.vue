@@ -9,48 +9,26 @@
         </div>
 
         <div v-else-if="uniqueTags.length > 0" class="contract-prev-form">
-          <!-- 🔹 Affichage séquentiel -->
-          <transition name="fade" mode="out-in">
-            <div v-if="currentTagIndex < uniqueTags.length" :key="currentTag" class="input-group">
+          <!-- 🔹 Affichage de tous les champs -->
+          <div class="input-list">
+            <div v-for="tag in uniqueTags" :key="tag" class="input-group">
               <BaseInputContract
-                v-model="formData[currentTag]"
-                :label="formatLabel(currentTag)"
-                :type="getInputType(currentTag)"
-                :placeholder="'Entrez : ' + formatLabel(currentTag).toLowerCase()"
+                v-model="formData[tag]"
+                :label="formatLabel(tag)"
+                :type="getInputType(tag)"
+                :placeholder="'Entrez : ' + formatLabel(tag).toLowerCase()"
                 :disabled="store.isLoading"
-                @focus="scrollToField(currentTag)"
+                @focus="scrollToField(tag)"
               />
-              <div class="progress-indicator">
-                {{ currentTagIndex + 1 }} / {{ uniqueTags.length }}
-              </div>
             </div>
-          </transition>
+          </div>
 
-          <!-- 🔹 Boutons de navigation -->
+          <!-- 🔹 Boutons de validation -->
           <div class="navigation-buttons">
-            <button
-              type="button"
-              @click="prevTag"
-              :disabled="currentTagIndex === 0"
-              class="nav-btn prev-btn"
-            >
-              Précédent
-            </button>
-            <button
-              v-if="currentTagIndex < uniqueTags.length - 1"
-              type="button"
-              @click="nextTag"
-              class="nav-btn next-btn"
-              :disabled="!isCurrentFieldValid" 
-            >
-              Suivant
-            </button>
-            
             <generatorButton 
-              label="Générer" 
+              label="Prévisualiser le contrat" 
               @click="submitForm" 
-              v-else 
-              :disabled="!isCurrentFieldValid"
+              :disabled="!isFormValid"
             />
           </div>
         </div>
@@ -59,7 +37,7 @@
         <div v-else class="no-tags-state">
           <p class="ready-text">Ce document ne nécessite aucune information supplémentaire. Il est prêt !</p>
           <generatorButton 
-            label="Télécharger le document" 
+            label="Prévisualiser le contrat" 
             @click="submitForm" 
           />
         </div>
@@ -84,8 +62,6 @@ export default {
     const store = usePaiementStore()
     const formData = ref<Record<string, string>>({})
     const route = useRoute()
-    const currentTagIndex = ref(0) 
-
     const uniqueTags = computed(() => {
       if (!store.tags || store.tags.length === 0) return [];
       const allTags = new Set<string>();
@@ -97,12 +73,12 @@ export default {
       return Array.from(allTags);
     });
 
-    const currentTag = computed(() => uniqueTags.value[currentTagIndex.value] || '')
-
-    const isCurrentFieldValid = computed(() => {
-      if (!currentTag.value) return false;
-      const value = formData.value[currentTag.value];
-      return value !== undefined && value !== null && String(value).trim() !== '';
+    const isFormValid = computed(() => {
+      if (uniqueTags.value.length === 0) return true;
+      return uniqueTags.value.every(tag => {
+        const value = formData.value[tag];
+        return value !== undefined && value !== null && String(value).trim() !== '';
+      });
     });
 
     onMounted(async () => {
@@ -112,24 +88,8 @@ export default {
       }
     });
 
-    const nextTag = () => {
-      if (currentTagIndex.value < uniqueTags.value.length - 1) {
-        currentTagIndex.value++
-      }
-    }
-
-    const prevTag = () => {
-      if (currentTagIndex.value > 0) {
-        currentTagIndex.value--
-      }
-    }
-
     const handleFormSubmit = () => {
-      if (uniqueTags.value.length > 0 && !isCurrentFieldValid.value) return; 
-
-      if (currentTagIndex.value < uniqueTags.value.length - 1) {
-        nextTag();
-      } else {
+      if (isFormValid.value) {
         submitForm();
       }
     };
@@ -153,8 +113,7 @@ export default {
     }
 
     const submitForm = () => {
-      // ⚡️ MODIFICATION ICI : On autorise la soumission s'il n'y a pas de balises OU si le champ est valide
-      if (uniqueTags.value.length === 0 || isCurrentFieldValid.value) {
+      if (isFormValid.value) {
         emit('submit-data', formData.value)
       }
     }
@@ -162,12 +121,8 @@ export default {
     return {
       store,
       formData,
-      currentTagIndex,
       uniqueTags,
-      currentTag,
-      isCurrentFieldValid,
-      nextTag,
-      prevTag,
+      isFormValid,
       handleFormSubmit,
       scrollToField,
       formatLabel,

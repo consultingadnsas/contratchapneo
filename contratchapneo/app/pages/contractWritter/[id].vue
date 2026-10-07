@@ -1,31 +1,42 @@
 <template>
-    <div class="main-wrapper flex h-screen w-full overflow-hidden bg-gray-200 relative">
+    <div class="main-wrapper" :class="{ 'step1-view': step === 1, 'step2-view': step === 2 }">
 
-        <!-- ⚡️ MODIFICATION : w-full sur mobile, lg:w-1/3 sur PC -->
-        <aside class="form-section w-full lg:w-1/3 h-full p-6 overflow-y-auto bg-white shadow-2xl z-10 relative">
+        <!-- ÉTAPE 1 : FORMULAIRE -->
+        <div v-show="step === 1" class="form-container">
+            <h1 class="form-title-main">Génération du contrat</h1>
+            <p class="form-subtitle-main">Remplissez les informations ci-dessous pour personnaliser ce contrat via votre pack.</p>
 
-            <div class="mb-6">
-                <h2 class="form-title">Génération sur-mesure</h2>
-                <p class="form-subtitle">Remplissez les informations ci-dessous pour personnaliser ce contrat via votre pack.</p>
-            </div>
-
-            <packContractGeneratorForm 
-                :contractId="contractId"
-                @update-data="syncData"
-                @submit-data="handleModale"
-                @focus-field="handleFocusField" 
-            />
             <button class="back-dashboard-btn" @click="router.push('/profile/Dashboard')">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="back-icon">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18" />
                 </svg>
                 <span>Retour au dashboard</span>
             </button>
-        </aside>
 
-        <!-- ⚡️ MODIFICATION : w-full sur mobile, lg:w-2/3 sur PC -->
-        <div class="preview-section w-full lg:w-2/3 h-full p-8 overflow-y-auto flex justify-center items-start">
-            <packsPagesPreview ref="previewRef" :contractId="contractId" />
+            <div class="form-box">
+                <packContractGeneratorForm 
+                    :contractId="contractId"
+                    @update-data="syncData"
+                    @submit-data="handlePreviewStep"
+                    @focus-field="handleFocusField" 
+                />
+            </div>
+        </div>
+
+        <!-- ÉTAPE 2 : PRÉVISUALISATION -->
+        <div v-show="step === 2" class="preview-container">
+            <div class="preview-header">
+                <button @click="step = 1" class="btn-secondary">
+                    ← Retour au formulaire
+                </button>
+                <button @click="openConfirmModale" class="btn-primary">
+                    Valider et Télécharger
+                </button>
+            </div>
+            
+            <div class="preview-content">
+                <packsPagesPreview ref="previewRef" :contractId="contractId" />
+            </div>
         </div>
 
         <confirmModale 
@@ -64,6 +75,7 @@ const contractId = computed(() => route.params.id as string);
 
 const previewRef = ref<InstanceType<typeof contratPreviewPage> | null>(null);
 
+const step = ref<number>(1);
 const isOpen = ref<boolean>(false);
 const isDownloading = ref<boolean>(false);
 const formDataToSubmit = ref<Record<string, any>>({}); 
@@ -80,10 +92,15 @@ const syncData = (newData: Record<string, any>) => {
     }
 };
 
-// 2. Ouverture de la modale quand le formulaire est soumis
-const handleModale = (data: Record<string, any>) => {
+// 2. Le formulaire a été validé, on passe à l'étape de prévisualisation
+const handlePreviewStep = (data: Record<string, any>) => {
     formDataToSubmit.value = data; 
-    isOpen.value = true;           
+    step.value = 2;           
+};
+
+// Ouverture de la modale de confirmation pour le téléchargement
+const openConfirmModale = () => {
+    isOpen.value = true;
 };
 
 // 3. Soumission au backend et téléchargement direct
@@ -119,74 +136,32 @@ const handleFocusField = (tagName: string) => {
 
 <style scoped>
 /* =========================================
-   MISE EN PAGE GLOBALE (RESPONSIVE)
+   MISE EN PAGE GLOBALE
    ========================================= */
 .main-wrapper {
-    display: flex;
-    /* ⚡️ MODIFICATION : column-reverse place l'aperçu au-dessus du formulaire sur mobile */
-    flex-direction: column-reverse;
-    gap: 2rem;
-    padding: 1rem;
-    max-width: 1400px;
-    margin: 0 auto;
-    background-color: #f4f6f9;
     min-height: 100vh;
-}
-
-@media (min-width: 1028px) {
-    .main-wrapper {
-        /* ⚡️ Sur PC, on remet côte à côte dans le bon ordre */
-        flex-direction: row;
-        align-items: flex-start;
-        padding: 2rem;
-    }
-    .form-section {
-        width: 100%;
-        height: auto;
-    }
-}
-
-/* =========================================
-   FORMULAIRE (Gauche)
-   ========================================= */
-.form-section {
-    width: fit-content;
-    flex: 1;
-    background: #ffffff;
-    padding: 2rem;
-    border-radius: 12px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
-    position: sticky;
-    top: 2rem;
-}
-
-.form-title {
-    font-size: 1.5rem;
-    color: #202b4a;
-    font-weight: bold;
-    margin-bottom: 0.5rem;
-}
-
-.form-subtitle {
-    font-size: 0.9rem;
-    color: #666;
-}
-
-/* =========================================
-   FAUX DOCUMENT A4 (Droite)
-   ========================================= */
-.preview-section {
-    flex: 2;
+    width: 100%;
+    background-color: #f3f4f6; /* bg-gray-100 */
+    position: relative;
     display: flex;
-    justify-content: center;
-    overflow-x: auto;
+    flex-direction: column;
+}
+
+.step1-view {
+    overflow-y: auto;
+    height: auto;
+}
+
+.step2-view {
+    overflow: hidden;
+    height: 100vh;
 }
 /* =========================================
    BOUTON RETOUR DASHBOARD
    ========================================= */
 .back-dashboard-btn {
     display: inline-flex;
-    align-items: center;
+    align-items: flex-start;
     gap: 0.5rem;
     background: none;
     border: none;
@@ -197,6 +172,7 @@ const handleFocusField = (tagName: string) => {
     padding: 0.4rem 0.8rem 0.4rem 0;
     margin-bottom: 1rem;
     transition: color 0.2s ease;
+    width: fit-content;
 }
 
 .back-icon {
@@ -212,5 +188,121 @@ const handleFocusField = (tagName: string) => {
 
 .back-dashboard-btn:hover .back-icon {
     transform: translateX(-4px);
+}
+
+/* =========================================
+   ÉTAPE 1 : FORMULAIRE
+   ========================================= */
+.form-container {
+    width: 100%;
+    max-width: 896px; /* max-w-4xl */
+    margin: 0 auto;
+    padding: 1rem;
+}
+
+@media (min-width: 768px) {
+    .form-container {
+        padding: 2rem;
+    }
+}
+
+.form-title-main {
+    font-size: 1.875rem; /* text-3xl */
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+    text-align: center;
+    color: #202b4a;
+}
+
+.form-subtitle-main {
+    text-align: center;
+    color: #4b5563; /* text-gray-600 */
+    margin-bottom: 2rem;
+}
+
+.form-box {
+    background-color: #ffffff;
+    padding: 1.5rem;
+    border-radius: 0.75rem; /* rounded-xl */
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); /* shadow-lg */
+}
+
+@media (min-width: 768px) {
+    .form-box {
+        padding: 2.5rem;
+    }
+}
+
+/* =========================================
+   ÉTAPE 2 : PRÉVISUALISATION
+   ========================================= */
+.preview-container {
+    width: 100%;
+    max-width: 1152px; /* max-w-6xl */
+    margin: 0 auto;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    padding: 1rem;
+    overflow: hidden;
+}
+
+@media (min-width: 768px) {
+    .preview-container {
+        padding: 2rem;
+    }
+}
+
+.preview-header {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    flex-shrink: 0;
+}
+
+.btn-secondary {
+    padding: 0.625rem 1.25rem;
+    background-color: #d1d5db; /* bg-gray-300 */
+    color: #1f2937; /* text-gray-800 */
+    border-radius: 0.5rem;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    width: fit-content;
+}
+
+.btn-secondary:hover {
+    background-color: #9ca3af; /* hover:bg-gray-400 */
+}
+
+.btn-primary {
+    padding: 0.625rem 1.5rem;
+    background-color: #202b4a;
+    color: #ffffff;
+    border-radius: 0.5rem;
+    font-weight: bold;
+    border: none;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    cursor: pointer;
+    transition: transform 0.2s ease, background-color 0.2s ease;
+    width: fit-content;
+}
+
+.btn-primary:hover {
+    transform: scale(1.05);
+    background-color: #171f36;
+}
+
+.preview-content {
+    width: 100%;
+    height: 100%;
+    overflow-y: auto;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding-bottom: 3rem;
 }
 </style>

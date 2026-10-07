@@ -9,58 +9,36 @@
     </div>
 
     <div v-else-if="uniqueTags.length > 0" class="contract-prev-form">
-      <transition name="fade" mode="out-in">
-        <div v-if="currentTagIndex < uniqueTags.length" :key="currentTag" class="input-group">
-          <!-- ⚡️ AJOUT : @keydown.enter.prevent="handleEnterKey" -->
+      <!-- 🔹 Affichage de tous les champs -->
+      <div class="input-list">
+        <div v-for="tag in uniqueTags" :key="tag" class="input-group">
           <BaseInputContract
-            v-model="formData[currentTag]"
-            :label="formatLabel(currentTag)"
-            :type="getInputType(currentTag)"
-            :placeholder="'Entrez : ' + formatLabel(currentTag).toLowerCase()"
+            v-model="formData[tag]"
+            :label="formatLabel(tag)"
+            :type="getInputType(tag)"
+            :placeholder="'Entrez : ' + formatLabel(tag).toLowerCase()"
             :disabled="store.isLoading"
-            @focus="emit('focus-field', currentTag)"
-            @keydown.enter.prevent="handleEnterKey"
+            @focus="emit('focus-field', tag)"
           />
-          <div class="progress-indicator">
-            {{ currentTagIndex + 1 }} / {{ uniqueTags.length }}
-          </div>
         </div>
-      </transition>
+      </div>
 
+      <!-- 🔹 Boutons de validation -->
       <div class="navigation-buttons">
-        <button
-          type="button"
-          @click="prevTag"
-          :disabled="currentTagIndex === 0"
-          class="nav-btn prev-btn"
-        >
-          Précédent
-        </button>
-
-        <!-- ⚡️ AJOUT : :disabled="isCurrentFieldEmpty" -->
-        <button
-          v-if="currentTagIndex < uniqueTags.length - 1"
-          type="button"
-          @click="nextTag"
-          :disabled="isCurrentFieldEmpty"
-          class="nav-btn next-btn"
-        >
-          Suivant
-        </button>
-
-        <!-- ⚡️ AJOUT : :disabled="isCurrentFieldEmpty" sur le bouton de fin aussi -->
         <generatorButton 
-          v-else 
-          label="Générer mon contrat" 
+          label="Prévisualiser le contrat" 
           @click="submitForm" 
-          :disabled="isCurrentFieldEmpty"
+          :disabled="!isFormValid"
         />
       </div>
     </div>
 
-    <div v-else>
-      <p>Ce contrat standard est prêt. Il ne nécessite aucune information supplémentaire.</p>
-      <generatorButton label="Télécharger le contrat" @click="submitForm" />
+    <div v-else class="no-tags-state">
+      <p class="ready-text">Ce contrat standard est prêt. Il ne nécessite aucune information supplémentaire.</p>
+      <generatorButton 
+        label="Prévisualiser le contrat" 
+        @click="submitForm" 
+      />
     </div>
   </form>
 </template>
@@ -78,8 +56,6 @@ const emit = defineEmits(['update-data', 'submit-data', 'focus-field']);
 const store = useContratStore() 
 const route = useRoute()
 const formData = ref<Record<string, string>>({})
-const currentTagIndex = ref(0) 
-
 const uniqueTags = computed(() => {
   if (!store.tags || store.tags.length === 0) return [];
   const allTags = new Set<string>();
@@ -92,13 +68,12 @@ const uniqueTags = computed(() => {
   return Array.from(allTags);
 });
 
-const currentTag = computed(() => uniqueTags.value[currentTagIndex.value] || '')
-
-// ⚡️ AJOUT : Vérifie de manière réactive si le champ courant est vide
-const isCurrentFieldEmpty = computed(() => {
-  if (!currentTag.value) return true;
-  const val = formData.value[currentTag.value];
-  return !val || val.toString().trim() === '';
+const isFormValid = computed(() => {
+  if (uniqueTags.value.length === 0) return true;
+  return uniqueTags.value.every(tag => {
+    const value = formData.value[tag];
+    return value !== undefined && value !== null && String(value).trim() !== '';
+  });
 });
 
 onMounted(async () => {
@@ -112,34 +87,7 @@ onMounted(async () => {
   }
 });
 
-const nextTag = () => {
-  // ⚡️ SÉCURITÉ : Empêche l'action si le champ est vide
-  if (isCurrentFieldEmpty.value) return;
 
-  if (currentTagIndex.value < uniqueTags.value.length - 1) {
-    currentTagIndex.value++
-  }
-}
-
-const prevTag = () => {
-  if (currentTagIndex.value > 0) {
-    currentTagIndex.value--
-  }
-}
-
-// ⚡️ AJOUT : Gestionnaire pour la touche Entrée
-const handleEnterKey = () => {
-  // 1. Si le champ est vide, on ignore la touche Entrée
-  if (isCurrentFieldEmpty.value) return;
-
-  // 2. Si on n'est pas sur le dernier champ, on passe au suivant comme un clic sur "Suivant"
-  if (currentTagIndex.value < uniqueTags.value.length - 1) {
-    nextTag();
-  } else {
-    // 3. Si on est sur le TOUT DERNIER champ et qu'il est rempli, on soumet
-    submitForm();
-  }
-};
 
 watch(formData, (newValues) => {
   emit('update-data', newValues)
@@ -156,15 +104,9 @@ const getInputType = (tagName: string) => {
 }
 
 const submitForm = () => {
-  // ⚡️ SÉCURITÉ : Si le contrat ne contient aucune balise, on permet la soumission directe
-  if (uniqueTags.value.length === 0) {
+  if (isFormValid.value) {
     emit('submit-data', formData.value)
-    return
   }
-
-  // Sinon, on bloque la soumission si le champ courant est vide
-  if (isCurrentFieldEmpty.value) return;
-  emit('submit-data', formData.value)
 }
 </script>
 
@@ -252,16 +194,21 @@ const submitForm = () => {
   background-color: #1a56db;
 }
 
-/* 🎬 Animation de transition */
-.fade-enter-active, .fade-leave-active {
-  transition: opacity 0.3s ease, transform 0.3s ease;
+.no-tags-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 1.5rem;
+  padding: 2rem;
+  background-color: #f8fafc;
+  border-radius: 12px;
+  border: 1px dashed #cbd5e1;
 }
-.fade-enter-from {
-  opacity: 0;
-  transform: translateX(20px);
-}
-.fade-leave-to {
-  opacity: 0;
-  transform: translateX(-20px);
+
+.ready-text {
+  color: #334155;
+  font-weight: 500;
+  margin: 0;
 }
 </style>

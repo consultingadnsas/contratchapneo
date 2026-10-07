@@ -68,6 +68,14 @@
       @save="handleSaveContract"
     />
 
+    <!-- MODALE DE SUCCES -->
+    <successModal 
+      v-if="showSuccessModal" 
+      title="Succès" 
+      message="Le contrat a été enregistré avec succès." 
+      @close="showSuccessModal = false" 
+    />
+
   </div>
 </template>
 
@@ -76,12 +84,13 @@ import { ref, onMounted, onBeforeUnmount } from 'vue';
 import adminContratsModal from '../../../../components/modale/adminContratModale.vue';
 import adminCategories from '../admincontrat/adminCategory.vue'; 
 import adminSurmesure from '../admincontrat/adminSurmesure.vue';
+import successModal from '../../../../components/modale/successModal.vue';
 import { MagnifyingGlassIcon } from '@heroicons/vue/24/outline'; 
 import { useAdminContratStore } from '../../../../stores/adminContratStore'; 
 
 export default {
   name: 'AdminContracts',
-  components: { adminContratsModal, adminCategories, adminSurmesure },
+  components: { adminContratsModal, adminCategories, adminSurmesure, successModal },
   setup() {
     // ⚡️ Initialisation du store
     const adminStore = useAdminContratStore();
@@ -90,6 +99,7 @@ export default {
     const searchQuery = ref('');
     const surmesureRef = ref<any>(null);
     const isDropdownOpen = ref(false);
+    const showSuccessModal = ref(false);
     
     const toggleDropdown = () => isDropdownOpen.value = !isDropdownOpen.value;
 
@@ -153,6 +163,7 @@ export default {
           await adminStore.addNewContract(formData);
         }
         closeModal();
+        showSuccessModal.value = true;
       } catch (e) {
         console.error("Erreur de sauvegarde:", e);
       }
@@ -163,7 +174,8 @@ export default {
       activeTab, 
       isModalOpen, selectedContract, targetCategory, openModal, closeModal, handleSaveContract,
       searchQuery, MagnifyingGlassIcon, surmesureRef,
-      isDropdownOpen, toggleDropdown, handleCreateStandard, handleCreateCustom
+      isDropdownOpen, toggleDropdown, handleCreateStandard, handleCreateCustom,
+      showSuccessModal
     };
   }
 }

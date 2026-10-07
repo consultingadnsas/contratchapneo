@@ -37,6 +37,7 @@ export interface PaginatedResponse<T> {
 export interface Tags {
     name: string;
     context: string;
+    tags: string[];
 }
 
 export const useContratStore = defineStore('contrat', () => {
@@ -44,8 +45,8 @@ export const useContratStore = defineStore('contrat', () => {
     const { $api } = useNuxtApp();
     const config = useRuntimeConfig();
 
-    const resolveMediaUrl = (path?: string | null) => {
-        if (!path) return path;
+    const resolveMediaUrl = (path?: string | null): string => {
+        if (!path) return '';
         if (path.startsWith('http')) return path;
         const base = config.public.apiBase || 'http://localhost:8000';
         return path.startsWith('/') ? `${base}${path}` : `${base}/${path}`;
@@ -236,7 +237,7 @@ export const useContratStore = defineStore('contrat', () => {
         const cartStore = useCartStore();
 
         try {
-            const response = await $api('/contrat/custom-requests/', {
+            const response = await $api<any>('/contrat/custom-requests/', {
                 method: 'POST',
                 body: payload
             });
@@ -264,7 +265,7 @@ export const useContratStore = defineStore('contrat', () => {
         error.value = "";
 
         try {
-            const response = await $api(`/contrat/tags/${contrat_id}/`, {
+            const response = await $api<any>(`/contrat/tags/${contrat_id}/`, {
                 method: 'GET'
             });
             
@@ -287,7 +288,7 @@ export const useContratStore = defineStore('contrat', () => {
         error.value = "";
 
         try {
-            const response = await $api(`/contrat/tags/${contrat_id}/`, {
+            const response = await $api<any>(`/contrat/tags/${contrat_id}/`, {
                 method: 'POST',
                 body: {}
             });

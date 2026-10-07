@@ -102,6 +102,14 @@
       @close="closeSettingsModal" 
     />
 
+    <!-- MODALE DE SUCCES -->
+    <successModal 
+      v-if="showSuccessModal" 
+      title="Succès" 
+      message="L'expert a été enregistré avec succès." 
+      @close="showSuccessModal = false" 
+    />
+
   </div>
 </template>
 
@@ -109,6 +117,7 @@
 import { ref, computed, markRaw, onMounted } from 'vue';
 import ExpertModal from '../../modale/expertModal.vue';
 import ExpertSettingsModal from '../../modale/expertSettingsModal.vue';
+import successModal from '../../modale/successModal.vue';
 import { useAdminProStore } from '../../../stores/adminProStore'; 
 import { 
   UserPlusIcon, 
@@ -121,12 +130,13 @@ import {
 
 export default {
   name: 'AdminExperts',
-  components: { ExpertModal, ExpertSettingsModal },
+  components: { ExpertModal, ExpertSettingsModal, successModal },
   setup() {
     const adminProStore = useAdminProStore();
     
     const searchQuery = ref('');
     const activeDomainFilter = ref('Tous');
+    const showSuccessModal = ref(false);
 
     const experts = computed(() => {
       return adminProStore.pros.map(pro => ({
@@ -242,6 +252,7 @@ export default {
           await adminProStore.addPro(formData);
         }
         closeModal();
+        showSuccessModal.value = true;
       } catch (e: any) {
         alert(adminProStore.error || "Une erreur est survenue lors de l'enregistrement.");
       }
@@ -283,6 +294,7 @@ export default {
       isSettingsModalOpen,
       openSettingsModal,
       closeSettingsModal,
+      showSuccessModal,
       countriesList: computed(() => adminProStore.countries),
       domainsList: computed(() => adminProStore.domains),
       isLoading: computed(() => adminProStore.isLoading),

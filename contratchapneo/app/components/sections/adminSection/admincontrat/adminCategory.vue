@@ -116,6 +116,14 @@
       </div>
     </transition>
 
+    <!-- MODALE DE SUCCES -->
+    <successModal 
+      v-if="showSuccessModal" 
+      title="Succès" 
+      message="La catégorie a été créée avec succès." 
+      @close="showSuccessModal = false" 
+    />
+
   </div>
 </template>
 
@@ -123,11 +131,12 @@
 import { ref, computed, markRaw, reactive } from 'vue';
 import { PlusIcon, TrashIcon, PencilSquareIcon, DocumentTextIcon, ArrowLeftIcon, MagnifyingGlassIcon } from '@heroicons/vue/24/outline';
 import folderCards from '../../../cards/folderCards.vue'; 
+import successModal from '../../../modale/successModal.vue';
 import { useAdminContratStore } from '../../../../stores/adminContratStore'; 
 
 export default {
   name: 'AdminCategories',
-  components: { folderCards },
+  components: { folderCards, successModal },
   props: {
     categories: { type: Array as () => any[], required: true },
     contracts: { type: Array as () => any[], required: true },
@@ -141,6 +150,7 @@ export default {
 
     const isFolderModalOpen = ref<boolean>(false);
     const newFolderData = reactive({ name: '', description: '' });
+    const showSuccessModal = ref<boolean>(false);
 
     const filteredCategories = computed(() => {
       if (!props.searchQuery) return props.categories;
@@ -172,6 +182,7 @@ export default {
           newFolderData.name = '';
           newFolderData.description = '';
           isFolderModalOpen.value = false;
+          showSuccessModal.value = true;
         } catch (e) {
           alert("Erreur lors de la création");
         }
@@ -202,7 +213,7 @@ export default {
     return {
       adminStore,
       newFolderData, isFolderModalOpen, openedCategory, openCategory, closeCategory, 
-      filteredCategories, filteredContracts,
+      filteredCategories, filteredContracts, showSuccessModal,
       handleAdd, handleDeleteFolder, handleDeleteContract, toggleStatus,
       PlusIcon: markRaw(PlusIcon), TrashIcon: markRaw(TrashIcon), 
       PencilSquareIcon: markRaw(PencilSquareIcon), DocumentTextIcon: markRaw(DocumentTextIcon), 

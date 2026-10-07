@@ -173,6 +173,7 @@ defineExpose({
   flex: 2;
   display: flex;
   justify-content: center;
+  align-items: flex-start;
   overflow-x: auto;
 }
 

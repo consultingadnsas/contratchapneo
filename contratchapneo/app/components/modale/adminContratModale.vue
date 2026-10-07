@@ -63,8 +63,9 @@
                 <component :is="DocumentArrowUpIcon" class="icon-md" />
               </div>
               <div class="upload-text">
-                <span v-if="!localData.file" class="dark-text font-bold">Cliquez pour uploader le fichier</span>
-                <span v-else class="text-green font-bold">{{ localData.file.name || 'Nouveau fichier sélectionné' }}</span>
+                <span v-if="!localData.file" class="dark-text font-bold">Cliquez pour uploader le fichier Word</span>
+                <span v-else-if="typeof localData.file === 'string'" class="text-green font-bold">Fichier actuel conservé</span>
+                <span v-else class="text-green font-bold">{{ localData.file.name }}</span>
                 <span v-if="!localData.file" class="gray-text text-sm">Formats acceptés : DOC, DOCX</span>
               </div>
             </label>
@@ -152,7 +153,7 @@ export default {
       price: '',
       isPromoActive: false, 
       promoPrice: '',
-      file: null as File | null,
+      file: null as File | string | null,
       picture: null as File | string | null, // ⚡️ NOUVEAU : Champ pour l'image
       description: ''
     });
@@ -167,7 +168,7 @@ export default {
         price: contractPrice ? contractPrice.toString() : '',
         promoPrice: contractPromo ? contractPromo.toString() : '',
         isPromoActive: !!contractPromo,
-        file: null, // On ne précharge pas le fichier dans un input file (sécurité navigateur)
+        file: props.contract.fichier_modele || null, // Affiche qu'il y a déjà un fichier
         picture: props.contract.picture || null, // ⚡️ NOUVEAU : On récupère l'URL de l'image si elle existe
         description: props.contract.description || ''
       };
@@ -216,7 +217,7 @@ export default {
           formData.append('category', localData.value.category);
       }
 
-      if (localData.value.file) {
+      if (localData.value.file instanceof File) {
         formData.append('fichier_modele', localData.value.file);
       }
 

@@ -1,18 +1,32 @@
 <template>
-    <div class="main-wrapper flex h-screen w-full overflow-hidden bg-gray-200">
+    <div class="main-wrapper" :class="{ 'step1-view': step === 1, 'step2-view': step === 2 }">
         
-        <!-- ⚡️ MODIFICATION : w-full sur mobile, lg:w-1/3 sur PC -->
-        <aside class="form-section w-full lg:w-1/3 h-full p-6 overflow-y-auto bg-white shadow-2xl z-10 relative">
-            <contract-generator-form 
-                @update-data="syncData"
-                @submit-data="handleModale"
-                @focus-field="handleFocusField"
-            />
-        </aside>
+        <!-- ÉTAPE 1 : FORMULAIRE -->
+        <div v-show="step === 1" class="form-container">
+            <h1 class="form-title-main">Remplissez les informations</h1>
+            <div class="form-box">
+                <contract-generator-form 
+                    @update-data="syncData"
+                    @submit-data="handlePreviewStep"
+                    @focus-field="handleFocusField"
+                />
+            </div>
+        </div>
 
-        <!-- ⚡️ MODIFICATION : w-full sur mobile, lg:w-2/3 sur PC -->
-        <div class="preview-section w-full lg:w-2/3 h-full p-8 overflow-y-auto flex justify-center items-start">
-            <contratPreviewPage ref="previewRef" />
+        <!-- ÉTAPE 2 : PRÉVISUALISATION -->
+        <div v-show="step === 2" class="preview-container">
+            <div class="preview-header">
+                <button @click="step = 1" class="btn-secondary">
+                    ← Retour au formulaire
+                </button>
+                <button @click="openConfirmModale" class="btn-primary">
+                    Valider et Télécharger
+                </button>
+            </div>
+            
+            <div class="preview-content">
+                <contratPreviewPage ref="previewRef" />
+            </div>
         </div>
 
         <confirmModale 
@@ -40,13 +54,19 @@ const paiementStore = usePaiementStore();
 
 const previewRef = ref<InstanceType<typeof contratPreviewPage> | null>(null);
 
+const step = ref<number>(1);
 const isOpen = ref<boolean>(false);
 const formDataToSubmit = ref<Record<string, any>>({}); 
 
-// 2. Le formulaire a émis les données, on les stocke et on ouvre la modale
-const handleModale = (data: Record<string, any>) => {
+// 2. Le formulaire a été validé, on passe à l'étape de prévisualisation
+const handlePreviewStep = (data: Record<string, any>) => {
     formDataToSubmit.value = data; 
-    isOpen.value = true;           
+    step.value = 2;           
+};
+
+// Ouverture de la modale de confirmation pour le téléchargement
+const openConfirmModale = () => {
+    isOpen.value = true;
 };
 
 // Fonction de mise à jour en temps réel sur le document A4
@@ -104,47 +124,133 @@ const handleFocusField = (tagName: string) => {
 
 <style scoped>
 /* =========================================
-   MISE EN PAGE GLOBALE (RESPONSIVE)
+   MISE EN PAGE GLOBALE
    ========================================= */
 .main-wrapper {
-    display: flex;
-    /* ⚡️ LA MAGIE EST ICI : column-reverse place le 2ème élément (aperçu) au-dessus du 1er (formulaire) */
-    flex-direction: column-reverse; 
-    gap: 3rem;
-    padding: 2rem;
-    max-width: 1400px;
-    margin: 0 auto;
-    background-color: #f4f6f9;
     min-height: 100vh;
+    width: 100%;
+    background-color: #f3f4f6; /* bg-gray-100 */
+    position: relative;
+    display: flex;
+    flex-direction: column;
 }
 
-/* Écrans de tablette et PC : on met côte à côte */
-@media (min-width: 1028px) {
-    .main-wrapper {
-        /* ⚡️ Sur PC, on remet côte à côte dans l'ordre normal (Formulaire à gauche, Aperçu à droite) */
-        flex-direction: row;
-        align-items: flex-start;
+.step1-view {
+    overflow-y: auto;
+    height: auto;
+}
+
+.step2-view {
+    overflow: hidden;
+    height: 100vh;
+}
+
+/* =========================================
+   ÉTAPE 1 : FORMULAIRE
+   ========================================= */
+.form-container {
+    width: 100%;
+    max-width: 896px; /* max-w-4xl */
+    margin: 0 auto;
+    padding: 1rem;
+}
+
+@media (min-width: 768px) {
+    .form-container {
         padding: 2rem;
     }
-    .form-section {
-        width: 100%;
-        height: auto;
+}
+
+.form-title-main {
+    font-size: 1.875rem; /* text-3xl */
+    font-weight: bold;
+    margin-bottom: 2rem; /* mb-8 */
+    text-align: center;
+    color: #202b4a;
+}
+
+.form-box {
+    background-color: #ffffff;
+    padding: 1.5rem;
+    border-radius: 0.75rem; /* rounded-xl */
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); /* shadow-lg */
+}
+
+@media (min-width: 768px) {
+    .form-box {
+        padding: 2.5rem;
     }
 }
 
 /* =========================================
-   FORMULAIRE (Gauché/Haut)
+   ÉTAPE 2 : PRÉVISUALISATION
    ========================================= */
-.form-section {
-    width: fit-content;
-    min-height: fit-content;
-    flex: 1;
-    background: #ffffff;
-    padding: 2rem;
-    border-radius: 12px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
-    position: sticky;
-    top: 2rem;
+.preview-container {
+    width: 100%;
+    max-width: 1152px; /* max-w-6xl */
+    margin: 0 auto;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    padding: 1rem;
+    overflow: hidden;
+}
+
+@media (min-width: 768px) {
+    .preview-container {
+        padding: 2rem;
+    }
+}
+
+.preview-header {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    flex-shrink: 0;
+}
+
+.btn-secondary {
+    padding: 0.625rem 1.25rem;
+    background-color: #d1d5db; /* bg-gray-300 */
+    color: #1f2937; /* text-gray-800 */
+    border-radius: 0.5rem;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.btn-secondary:hover {
+    background-color: #9ca3af; /* hover:bg-gray-400 */
+}
+
+.btn-primary {
+    padding: 0.625rem 1.5rem;
+    background-color: #202b4a;
+    color: #ffffff;
+    border-radius: 0.5rem;
+    font-weight: bold;
+    border: none;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    cursor: pointer;
+    transition: transform 0.2s ease, background-color 0.2s ease;
+}
+
+.btn-primary:hover {
+    transform: scale(1.05);
+    background-color: #171f36;
+}
+
+.preview-content {
+    width: 100%;
+    height: 100%;
+    overflow-y: auto;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding-bottom: 3rem;
 }
 
 .form-title {
@@ -207,15 +313,8 @@ const handleFocusField = (tagName: string) => {
 }
 
 /* =========================================
-   FAUX DOCUMENT A4 (Droite/Bas)
+   FAUX DOCUMENT A4
    ========================================= */
-.preview-section {
-    width: 100%;
-    flex: 2;
-    display: flex;
-    justify-content: center;
-    overflow-x: auto;
-}
 
 .a4-document {
     background: #ffffff;
