@@ -10,13 +10,14 @@
         >
           <template v-for="(node, nodeIndex) in block.nodes" :key="'node-' + index + '-' + nodeIndex">
             <span v-if="node.type === 'text'">{{ node.content }}</span>
-            <span
-              v-else
-              class="dynamic-data"
-              :data-tag-anchor="node.tagName"
-            >
-              {{ node.content }}
-            </span>
+            <input
+              v-else-if="node.type === 'tag'"
+              v-model="contractData[node.tagName]"
+              class="dynamic-input"
+              :type="getInputType(node.tagName)"
+              :placeholder="node.tagName.replace(/_/g, ' ')"
+              :style="{ width: Math.max(15, (contractData[node.tagName]?.toString().length || node.tagName.length)) + 'ch' }"
+            />
           </template>
         </p>
       </template>
@@ -36,12 +37,52 @@ import { useContratStore } from '../../stores/contratStore';
 // On utilise le store des contrats, car c'est lui qui stocke les `tags` pour les packs !
 const store = useContratStore();
 
-// Données tapées par l'utilisateur reçues via syncData
+const emit = defineEmits(['validity-change', 'tags-loaded']);
+
+// Données tapées par l'utilisateur reçues via syncData (ou tapées directement)
 const contractData = ref<Record<string, any>>({});
 
-// Fonction appelée par le parent pour mettre à jour les frappes
-const syncData = (newData: Record<string, any>) => {
-  contractData.value = { ...newData };
+// Compute unique tags pour l'initialisation et la validation
+const uniqueTags = computed(() => {
+  if (!store.tags || store.tags.length === 0) return [];
+  const allTags = new Set<string>();
+  store.tags.forEach((block: any) => {
+    if (block.tags && Array.isArray(block.tags)) {
+      block.tags.forEach((tag: string) => allTags.add(tag));
+    }
+  });
+  return Array.from(allTags);
+});
+
+import { watch } from 'vue';
+
+watch(uniqueTags, (tags) => {
+  emit('tags-loaded', tags.length === 0 && store.tags && store.tags.length > 0);
+  
+  tags.forEach(tag => {
+    if (!(tag in contractData.value)) {
+      contractData.value[tag] = '';
+    }
+  });
+}, { immediate: true });
+
+const isFormValid = computed(() => {
+  if (uniqueTags.value.length === 0) return true;
+  return uniqueTags.value.every(tag => {
+    const value = contractData.value[tag];
+    return value !== undefined && value !== null && String(value).trim() !== '';
+  });
+});
+
+watch(isFormValid, (isValid) => {
+  emit('validity-change', isValid);
+}, { immediate: true });
+
+const getInputType = (tagName: string) => {
+  if (tagName.startsWith('date_')) return 'date';
+  if (tagName.startsWith('num_')) return 'number';
+  if (tagName.startsWith('email_')) return 'email';
+  return 'text';
 };
 
 // 🪄 L'ASTUCE CONTRATCHAP : Remplacement dynamique MULTIPLE
@@ -80,11 +121,10 @@ const formattedBlocks = computed(() => {
         });
       }
 
-      // Ajouter le tag (avec sa valeur dynamique)
-      const typedValue = contractData.value[match.tag];
+      // Ajouter le tag
       nodes.push({
         type: 'tag',
-        content: typedValue || `[ ${match.tag.replace(/_/g, ' ')} ]`,
+        content: '',
         tagName: match.tag,
       });
 
@@ -124,9 +164,13 @@ const submitToBackend = (finalData: Record<string, any>) => {
   console.log('🚀 Envoi au backend depuis preview :', finalData);
 };
 
+const getContractData = () => {
+  return contractData.value;
+};
+
 // Très important : Exposer les fonctions pour que le Parent puisse les appeler via sa ref="previewRef"
 defineExpose({
-  syncData,
+  getContractData,
   submitToBackend,
   scrollToField
 });
@@ -200,5 +244,28 @@ defineExpose({
 .doc-paragraph {
   margin-bottom: 1.2rem;
   text-align: justify;
+}
+
+.dynamic-input {
+  color: #1a56db;
+  background-color: transparent;
+  border: none;
+  border-bottom: 2px dashed #1a56db;
+  font-family: inherit;
+  font-size: inherit;
+  padding: 0 4px;
+  text-align: center;
+  transition: all 0.2s;
+  outline: none;
+}
+
+.dynamic-input:focus {
+  background-color: rgba(26, 86, 219, 0.1);
+  border-bottom-style: solid;
+}
+
+.dynamic-input::placeholder {
+  color: #9ca3af;
+  font-style: italic;
 }
 </style>

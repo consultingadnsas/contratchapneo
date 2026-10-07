@@ -1,31 +1,34 @@
 <template>
-    <div class="main-wrapper" :class="{ 'step1-view': step === 1, 'step2-view': step === 2 }">
+    <div class="main-wrapper">
         
-        <!-- ÉTAPE 1 : FORMULAIRE -->
-        <div v-show="step === 1" class="form-container">
-            <h1 class="form-title-main">Remplissez les informations</h1>
-            <div class="form-box">
-                <contract-generator-form 
-                    @update-data="syncData"
-                    @submit-data="handlePreviewStep"
-                    @focus-field="handleFocusField"
-                />
-            </div>
-        </div>
+        <div class="preview-container">
+            <h1 class="form-title-main">Remplissez directement votre contrat</h1>
+            <p class="form-subtitle-main">Cliquez sur les champs en bleu dans le document pour les remplir.</p>
 
-        <!-- ÉTAPE 2 : PRÉVISUALISATION -->
-        <div v-show="step === 2" class="preview-container">
-            <div class="preview-header">
-                <button @click="step = 1" class="btn-secondary">
-                    ← Retour au formulaire
-                </button>
-                <button @click="openConfirmModale" class="btn-primary">
+            <button class="back-dashboard-btn" @click="router.push('/profile/Dashboard')">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="back-icon">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18" />
+                </svg>
+                <span>Retour au dashboard</span>
+            </button>
+
+            <div v-if="hasNoTags" class="no-tags-alert">
+                Ce document ne nécessite aucune information supplémentaire. Il est prêt à être téléchargé !
+            </div>
+
+            <div class="preview-content">
+                <contratPreviewPage ref="previewRef" @validity-change="isFormValid = $event" @tags-loaded="hasNoTags = $event" />
+            </div>
+
+            <div class="download-section">
+                <button 
+                  @click="openConfirmModale" 
+                  class="btn-primary" 
+                  :disabled="!isFormValid"
+                >
                     Valider et Télécharger
                 </button>
-            </div>
-            
-            <div class="preview-content">
-                <contratPreviewPage ref="previewRef" />
+                <p v-if="!isFormValid" class="helper-text text-red">Veuillez remplir tous les champs requis pour pouvoir télécharger.</p>
             </div>
         </div>
 
@@ -40,7 +43,6 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
-import contractGeneratorForm from '../../components/forms/contractGeneratorForm.vue';
 import contratPreviewPage from '../../components/tools/contratPreviewPage.vue';
 import confirmModale from '../../components/modale/confirmModale.vue';
 
@@ -54,39 +56,25 @@ const paiementStore = usePaiementStore();
 
 const previewRef = ref<InstanceType<typeof contratPreviewPage> | null>(null);
 
-const step = ref<number>(1);
 const isOpen = ref<boolean>(false);
-const formDataToSubmit = ref<Record<string, any>>({}); 
-
-// 2. Le formulaire a été validé, on passe à l'étape de prévisualisation
-const handlePreviewStep = (data: Record<string, any>) => {
-    formDataToSubmit.value = data; 
-    step.value = 2;           
-};
+const isFormValid = ref<boolean>(false);
+const hasNoTags = ref<boolean>(false);
 
 // Ouverture de la modale de confirmation pour le téléchargement
 const openConfirmModale = () => {
     isOpen.value = true;
 };
-
-// Fonction de mise à jour en temps réel sur le document A4
-const syncData = (newData: Record<string, any>) => {
-    if (previewRef.value) {
-        previewRef.value.syncData(newData);
-    }
-};
-
-
 // 3. L'utilisateur a cliqué sur "Valider" dans la modale
 const submitToBackend = async () => {
     
-    console.log("Données transmises au Store :", formDataToSubmit.value);
+    const formDataToSubmit = previewRef.value ? previewRef.value.getContractData() : {};
+    console.log("Données transmises au Store :", formDataToSubmit);
 
     // 🔥 LA CORRECTION EST ICI : Injection manuelle de l'email
     if (typeof window !== 'undefined') {
         // 1. On tente d'extraire l'email des données que l'utilisateur vient de saisir
         // (Vérifie le nom exact du champ email de ton form : 'email', 'courriel', etc.)
-        const formEmail = formDataToSubmit.value.email || formDataToSubmit.value.guest_email;
+        const formEmail = formDataToSubmit.email || formDataToSubmit.guest_email;
 
         // 2. S'il y a un email, on le grave dans le localStorage pour le paiementStore
         if (formEmail) {
@@ -97,7 +85,7 @@ const submitToBackend = async () => {
 
     try {
         const result = await paiementStore.generateContract(
-            formDataToSubmit.value,
+            formDataToSubmit,
             contratStore.currentContratId || undefined
         );
 
@@ -115,11 +103,7 @@ const submitToBackend = async () => {
     }
 };
 
-const handleFocusField = (tagName: string) => {
-  if (previewRef.value) {
-    previewRef.value.scrollToField(tagName);
-  }
-};
+
 </script>
 
 <style scoped>
@@ -146,40 +130,50 @@ const handleFocusField = (tagName: string) => {
 }
 
 /* =========================================
-   ÉTAPE 1 : FORMULAIRE
+   BOUTON RETOUR DASHBOARD
    ========================================= */
-.form-container {
-    width: 100%;
-    max-width: 896px; /* max-w-4xl */
-    margin: 0 auto;
-    padding: 1rem;
+.back-dashboard-btn {
+    display: inline-flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+    background: none;
+    border: none;
+    color: #64748b; /* Gris ardoise discret */
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 0.4rem 0.8rem 0.4rem 0;
+    margin-bottom: 1rem;
+    transition: color 0.2s ease;
+    width: fit-content;
 }
 
-@media (min-width: 768px) {
-    .form-container {
-        padding: 2rem;
-    }
+.back-icon {
+    width: 18px;
+    height: 18px;
+    transition: transform 0.2s ease;
+}
+
+.back-dashboard-btn:hover {
+    color: #202b4a; /* Bleu nuit profond du thème */
+}
+
+.back-dashboard-btn:hover .back-icon {
+    transform: translateX(-4px);
 }
 
 .form-title-main {
     font-size: 1.875rem; /* text-3xl */
     font-weight: bold;
-    margin-bottom: 2rem; /* mb-8 */
+    margin-bottom: 0.5rem;
     text-align: center;
     color: #202b4a;
 }
 
-.form-box {
-    background-color: #ffffff;
-    padding: 1.5rem;
-    border-radius: 0.75rem; /* rounded-xl */
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); /* shadow-lg */
-}
-
-@media (min-width: 768px) {
-    .form-box {
-        padding: 2.5rem;
-    }
+.form-subtitle-main {
+    text-align: center;
+    color: #4b5563; /* text-gray-600 */
+    margin-bottom: 2rem;
 }
 
 /* =========================================
@@ -243,14 +237,46 @@ const handleFocusField = (tagName: string) => {
     background-color: #171f36;
 }
 
+.btn-primary:disabled {
+    background-color: #9ca3af;
+    cursor: not-allowed;
+    transform: none;
+}
+
 .preview-content {
     width: 100%;
-    height: 100%;
     overflow-y: auto;
     display: flex;
     justify-content: center;
     align-items: flex-start;
     padding-bottom: 3rem;
+}
+
+.download-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 2rem;
+    padding-bottom: 2rem;
+}
+
+.helper-text {
+    margin-top: 0.5rem;
+    font-size: 0.85rem;
+}
+.text-red {
+    color: #dc2626;
+}
+
+.no-tags-alert {
+    background-color: #dcfce7;
+    color: #166534;
+    padding: 1rem 1.5rem;
+    border-radius: 8px;
+    font-weight: 600;
+    text-align: center;
+    margin-bottom: 1.5rem;
+    border: 1px solid #bbf7d0;
 }
 
 .form-title {

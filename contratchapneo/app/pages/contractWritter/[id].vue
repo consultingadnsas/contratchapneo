@@ -1,10 +1,9 @@
 <template>
-    <div class="main-wrapper" :class="{ 'step1-view': step === 1, 'step2-view': step === 2 }">
+    <div class="main-wrapper">
 
-        <!-- ÉTAPE 1 : FORMULAIRE -->
-        <div v-show="step === 1" class="form-container">
-            <h1 class="form-title-main">Génération du contrat</h1>
-            <p class="form-subtitle-main">Remplissez les informations ci-dessous pour personnaliser ce contrat via votre pack.</p>
+        <div class="preview-container">
+            <h1 class="form-title-main">Remplissez directement votre contrat</h1>
+            <p class="form-subtitle-main">Cliquez sur les champs en bleu dans le document pour les remplir.</p>
 
             <button class="back-dashboard-btn" @click="router.push('/profile/Dashboard')">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="back-icon">
@@ -13,29 +12,28 @@
                 <span>Retour au dashboard</span>
             </button>
 
-            <div class="form-box">
-                <packContractGeneratorForm 
-                    :contractId="contractId"
-                    @update-data="syncData"
-                    @submit-data="handlePreviewStep"
-                    @focus-field="handleFocusField" 
-                />
-            </div>
-        </div>
+            <div v-if="isMounted">
+                <div v-if="hasNoTags" class="no-tags-alert">
+                    Ce document ne nécessite aucune information supplémentaire. Il est prêt à être téléchargé !
+                </div>
 
-        <!-- ÉTAPE 2 : PRÉVISUALISATION -->
-        <div v-show="step === 2" class="preview-container">
-            <div class="preview-header">
-                <button @click="step = 1" class="btn-secondary">
-                    ← Retour au formulaire
-                </button>
-                <button @click="openConfirmModale" class="btn-primary">
-                    Valider et Télécharger
-                </button>
+                <div class="preview-content">
+                    <packsPagesPreview ref="previewRef" :contractId="contractId" @validity-change="isFormValid = $event" @tags-loaded="hasNoTags = $event" />
+                </div>
+
+                <div class="download-section">
+                    <button 
+                      @click="openConfirmModale" 
+                      class="btn-primary" 
+                      :disabled="!isFormValid"
+                    >
+                        Valider et Télécharger
+                    </button>
+                    <p v-if="!isFormValid" class="helper-text text-red">Veuillez remplir tous les champs requis pour pouvoir télécharger.</p>
+                </div>
             </div>
-            
-            <div class="preview-content">
-                <packsPagesPreview ref="previewRef" :contractId="contractId" />
+            <div v-else style="text-align: center; margin-top: 3rem; color: #6c757d;">
+                <p>Chargement du document...</p>
             </div>
         </div>
 
@@ -54,10 +52,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import contractGeneratorForm from '../../components/forms/contractGeneratorForm.vue';
-import contratPreviewPage from '../../components/tools/contratPreviewPage.vue';
 import confirmModale from '../../components/modale/confirmModale.vue';
-import packContractGeneratorForm from '../../components/forms/packContractGeneratorForm.vue'
 import packsPagesPreview from '../../components/tools/packsPagesPreview.vue'
 // Import de ton store
 import { useContratStore } from '../../stores/contratStore'; 
@@ -69,34 +64,26 @@ const router = useRouter();
 const contratStore = useContratStore();
 const profileStore = useProfileStore();
 const isSuccess = ref<boolean>(false);
+const isFormValid = ref<boolean>(false);
+const hasNoTags = ref<boolean>(false);
 
 // 🔥 CORRECTION ICI : On utilise un 'computed' pour être sûr à 100% que l'ID est toujours à jour
 const contractId = computed(() => route.params.id as string);
 
-const previewRef = ref<InstanceType<typeof contratPreviewPage> | null>(null);
+const previewRef = ref<InstanceType<typeof packsPagesPreview> | null>(null);
 
-const step = ref<number>(1);
 const isOpen = ref<boolean>(false);
 const isDownloading = ref<boolean>(false);
-const formDataToSubmit = ref<Record<string, any>>({}); 
+const isMounted = ref<boolean>(false);
 
 // Petit test au chargement pour vérifier que l'ID est bien capturé !
-onMounted(() => {
+onMounted(async () => {
     console.log("🎯 ID du contrat récupéré depuis l'URL :", contractId.value);
-});
-
-// 1. Mise à jour en temps réel sur le document A4
-const syncData = (newData: Record<string, any>) => {
-    if (previewRef.value) {
-        previewRef.value.syncData(newData);
+    if (!contratStore.tags || contratStore.tags.length === 0) {
+        await contratStore.fetchContractTags(contractId.value);
     }
-};
-
-// 2. Le formulaire a été validé, on passe à l'étape de prévisualisation
-const handlePreviewStep = (data: Record<string, any>) => {
-    formDataToSubmit.value = data; 
-    step.value = 2;           
-};
+    isMounted.value = true;
+});
 
 // Ouverture de la modale de confirmation pour le téléchargement
 const openConfirmModale = () => {
@@ -109,8 +96,9 @@ const submitAndDownload = async () => {
     isDownloading.value = true;
     
     try {
+        const formDataToSubmit = previewRef.value ? previewRef.value.getContractData() : {};
         // 🚀 Ici on utilise bien contractId.value pour l'envoyer au backend !
-        await profileStore.downloadContractFromPack(contractId.value, formDataToSubmit.value);
+        await profileStore.downloadContractFromPack(contractId.value, formDataToSubmit);
         console.log("Envoi des données pour le contrat ID :", contractId.value);
         console.log("Votre contrat va être téléchargé...");
 
@@ -127,11 +115,7 @@ const submitAndDownload = async () => {
     }
 };
 
-const handleFocusField = (tagName: string) => {
-  if (previewRef.value) {
-    previewRef.value.scrollToField(tagName);
-  }
-};
+
 </script>
 
 <style scoped>
@@ -296,13 +280,45 @@ const handleFocusField = (tagName: string) => {
     background-color: #171f36;
 }
 
+.btn-primary:disabled {
+    background-color: #9ca3af;
+    cursor: not-allowed;
+    transform: none;
+}
+
 .preview-content {
     width: 100%;
-    height: 100%;
     overflow-y: auto;
     display: flex;
     justify-content: center;
     align-items: flex-start;
     padding-bottom: 3rem;
+}
+
+.download-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 2rem;
+    padding-bottom: 2rem;
+}
+
+.helper-text {
+    margin-top: 0.5rem;
+    font-size: 0.85rem;
+}
+.text-red {
+    color: #dc2626;
+}
+
+.no-tags-alert {
+    background-color: #dcfce7;
+    color: #166534;
+    padding: 1rem 1.5rem;
+    border-radius: 8px;
+    font-weight: 600;
+    text-align: center;
+    margin-bottom: 1.5rem;
+    border: 1px solid #bbf7d0;
 }
 </style>
