@@ -79,9 +79,10 @@ const isMounted = ref<boolean>(false);
 // Petit test au chargement pour vérifier que l'ID est bien capturé !
 onMounted(async () => {
     console.log("🎯 ID du contrat récupéré depuis l'URL :", contractId.value);
-    if (!contratStore.tags || contratStore.tags.length === 0) {
-        await contratStore.fetchContractTags(contractId.value);
-    }
+    
+    // On force toujours la récupération pour éviter d'afficher le cache d'un autre contrat
+    await contratStore.fetchContractTags(contractId.value);
+    
     isMounted.value = true;
 });
 

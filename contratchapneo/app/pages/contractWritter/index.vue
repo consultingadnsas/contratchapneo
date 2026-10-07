@@ -12,23 +12,28 @@
                 <span>Retour au dashboard</span>
             </button>
 
-            <div v-if="hasNoTags" class="no-tags-alert">
-                Ce document ne nécessite aucune information supplémentaire. Il est prêt à être téléchargé !
-            </div>
+            <div v-if="isMounted">
+                <div v-if="hasNoTags" class="no-tags-alert">
+                    Ce document ne nécessite aucune information supplémentaire. Il est prêt à être téléchargé !
+                </div>
 
-            <div class="preview-content">
-                <contratPreviewPage ref="previewRef" @validity-change="isFormValid = $event" @tags-loaded="hasNoTags = $event" />
-            </div>
+                <div class="preview-content">
+                    <contratPreviewPage ref="previewRef" @validity-change="isFormValid = $event" @tags-loaded="hasNoTags = $event" />
+                </div>
 
-            <div class="download-section">
-                <button 
-                  @click="openConfirmModale" 
-                  class="btn-primary" 
-                  :disabled="!isFormValid"
-                >
-                    Valider et Télécharger
-                </button>
-                <p v-if="!isFormValid" class="helper-text text-red">Veuillez remplir tous les champs requis pour pouvoir télécharger.</p>
+                <div class="download-section">
+                    <button 
+                      @click="openConfirmModale" 
+                      class="btn-primary" 
+                      :disabled="!isFormValid"
+                    >
+                        Valider et Télécharger
+                    </button>
+                    <p v-if="!isFormValid" class="helper-text text-red">Veuillez remplir tous les champs requis pour pouvoir télécharger.</p>
+                </div>
+            </div>
+            <div v-else style="text-align: center; margin-top: 3rem; color: #6c757d;">
+                <p>Chargement du document...</p>
             </div>
         </div>
 
@@ -41,7 +46,7 @@
 </template>
  
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import contratPreviewPage from '../../components/tools/contratPreviewPage.vue';
 import confirmModale from '../../components/modale/confirmModale.vue';
@@ -59,6 +64,13 @@ const previewRef = ref<InstanceType<typeof contratPreviewPage> | null>(null);
 const isOpen = ref<boolean>(false);
 const isFormValid = ref<boolean>(false);
 const hasNoTags = ref<boolean>(false);
+const isMounted = ref<boolean>(false);
+
+onMounted(async () => {
+    // On force la récupération des tags du contrat actuel (sans pack)
+    await paiementStore.editContract();
+    isMounted.value = true;
+});
 
 // Ouverture de la modale de confirmation pour le téléchargement
 const openConfirmModale = () => {
