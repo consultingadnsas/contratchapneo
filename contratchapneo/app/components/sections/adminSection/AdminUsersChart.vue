@@ -95,20 +95,23 @@ export default {
   display: flex;
   flex-direction: row;
   flex-wrap: wrap;
-  gap: 2rem;
+  gap: 1.5rem;
   width: 100%;
   justify-content: center;
+  box-sizing: border-box;
 }
 .chart-container {
   background: white;
   padding: 1.5rem;
-  border-radius: 8px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  border: 1px solid #f1f5f9;
   margin-top: 1rem;
   width: 100%;
   max-width: 400px;
   flex: 1;
-  min-width: 300px;
+  min-width: 280px;
+  box-sizing: border-box;
 }
 .evolution-container {
   max-width: 600px;
@@ -123,5 +126,12 @@ export default {
 .chart-wrapper {
   height: 250px;
   position: relative;
+}
+
+@media (max-width: 640px) {
+  .chart-container {
+    min-width: 100%;
+    padding: 1rem;
+  }
 }
 </style>

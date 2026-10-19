@@ -102,7 +102,7 @@
                 :nombreCustomedContract="pack.nombre_customed_contract"
                 :nombreCartesPro="pack.nombre_cartes_pro"
                 :dureeValiditeJours="pack.duree_validite_jours"
-                :planType="pack.prix < 30000 ? 'basique' : (pack.prix < 60000 ? 'business' : 'business-pro')"
+                :planType="getPlanType(pack.prix)"
             />
             </div>
         </div>
@@ -169,8 +169,15 @@ export default {
 
         const sortedPacks = computed(() => {
             // Le spread operator [...] empêche la modification directe du store Pinia
-            return [...packStore.packs].sort((a, b) => a.prix - b.prix);
+            return [...packStore.packs].sort((a, b) => Number(a.prix) - Number(b.prix));
         });
+
+        const getPlanType = (prix: number | string): 'basique' | 'business' | 'business-pro' => {
+            const p = Number(prix);
+            if (p < 30000) return 'basique';
+            if (p < 60000) return 'business';
+            return 'business-pro';
+        };
         
 
         const handlePageChange = (page: number) => {
@@ -221,7 +228,7 @@ export default {
                 
                 // Il n'a pas d'abonnement (ou est déconnecté) -> Modale d'aperçu
                 await contratStore.getSpecificContract(contratId);
-                textToShow.value = contratStore.contrat?.document_preview;
+                textToShow.value = contratStore.contrat?.document_preview ?? null;
                 isViewOpen.value = true; 
                 
             }
@@ -266,7 +273,7 @@ export default {
         return {
             router, activeCategoryId, handlePageChange, searchQuery,
             contratStore, cartStore, profileStore, textToShow, isOpen, openModal,
-            isViewOpen, openViewModal, addTocart, fillContract, sortedPacks, packStore // 👈 Exposer la liste au template
+            isViewOpen, openViewModal, addTocart, fillContract, sortedPacks, packStore, getPlanType // 👈 Exposer la liste au template
         }
     }
 }
@@ -576,7 +583,7 @@ export default {
     }
 
     .action-buttons {
-        gap: 1rem; /* Moins d'espace sur mobile */
+        gap: 7rem; /* Moins d'espace sur mobile */
         margin-top: 1.5rem;
     }
 

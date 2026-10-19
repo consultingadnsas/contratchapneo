@@ -11,69 +11,71 @@
     </div>
 
     <div class="table-container">
-      <table class="admin-table">
-        <thead>
-          <tr>
-            <th>Date & Heure</th>
-            <th>Client (Email)</th>
-            <th>Contenu de la commande</th>
-            <th>Montant</th>
-            <th>Actions</th> <!-- 👈 Nouvelle colonne -->
-          </tr>
-        </thead>
-        <tbody v-if="!isLoading && abandonedOrders.length > 0">
-          <tr v-for="order in abandonedOrders" :key="order.id">
-            
-            <td>
-              <div class="date-cell">
-                <span class="font-bold">{{ formatDate(order.created_at || order.date_transaction) }}</span>
-                <span class="text-xs gray-text">{{ formatTime(order.created_at || order.date_transaction) }}</span>
-              </div>
-            </td>
+      <div class="table-scroll-container">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>Date & Heure</th>
+              <th>Email</th>
+              <th>Contenu de la commande</th>
+              <th>Montant</th>
+              <th>Actions</th> <!-- 👈 Nouvelle colonne -->
+            </tr>
+          </thead>
+          <tbody v-if="!isLoading && abandonedOrders.length > 0">
+            <tr v-for="order in abandonedOrders" :key="order.id">
+              
+              <td>
+                <div class="date-cell">
+                  <span class="font-bold">{{ formatDate(order.created_at || order.date_transaction) }}</span>
+                  <span class="text-xs gray-text">{{ formatTime(order.created_at || order.date_transaction) }}</span>
+                </div>
+              </td>
 
-            <td>
-              <span class="client-email">{{ order.buyer_email || order.client_email || 'Email introuvable' }}</span>
-            </td>
+              <td>
+                <span class="client-email">{{ order.buyer_email || order.client_email || 'Email introuvable' }}</span>
+              </td>
 
-            <td>
-              <ul class="items-list">
-                <li v-for="item in order.order_items" :key="item.id" class="text-sm">
-                  &bull; {{ getItemTitle(item) }}
-                </li>
-              </ul>
-            </td>
+              <td>
+                <ul class="items-list">
+                  <li v-for="item in order.order_items" :key="item.id" class="text-sm">
+                    &bull; {{ getItemTitle(item) }}
+                  </li>
+                </ul>
+              </td>
 
-            <td>
-              <span class="amount-badge font-bold">{{ order.total_amount }} FCFA</span>
-            </td>
+              <td>
+                <span class="amount-badge font-bold">{{ order.total_amount }} FCFA</span>
+              </td>
 
-            <!-- 👈 Bouton Aperçu -->
-            <td>
-              <button type="button" class="btn-icon view" title="Aperçu du panier" @click="openPreviewModal(order)">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="icon-sm">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
-                </svg>
-              </button>
-            </td>
+              <!-- 👈 Bouton Aperçu -->
+              <td>
+                <button type="button" class="btn-icon view" title="Aperçu du panier" @click="openPreviewModal(order)">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="icon-sm">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                  </svg>
+                </button>
+              </td>
 
-          </tr>
-        </tbody>
-        
-        <tbody v-else-if="isLoading">
-          <tr>
-            <td colspan="5" class="text-center py-4">Chargement des données...</td>
-          </tr>
-        </tbody>
-        
-        <tbody v-else>
-          <tr>
-            <td colspan="5" class="text-center py-4 empty-state">
-              Aucun panier abandonné récent. Beau travail !
-            </td>
-          </tr>
-        </tbody>
-      </table>
+            </tr>
+          </tbody>
+          
+          <tbody v-else-if="isLoading">
+            <tr>
+              <td colspan="5" class="text-center py-4">Chargement des données...</td>
+            </tr>
+          </tbody>
+          
+          <tbody v-else>
+            <tr>
+              <td colspan="5" class="text-center py-4 empty-state">
+                Aucun panier abandonné récent. Beau travail !
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
 
     <!-- Modale d'Aperçu -->
@@ -217,27 +219,51 @@ const formatTime = (dateString: string | undefined) => {
 </script>
 
 <style scoped>
-.abandoned-carts-wrapper { display: flex; flex-direction: column; gap: 1.5rem; font-family: 'Inter', sans-serif; position: relative;}
+.abandoned-carts-wrapper { display: flex; flex-direction: column; gap: 1.5rem; font-family: 'Inter', sans-serif; position: relative; width: 100%; box-sizing: border-box; }
 .header-section { display: flex; flex-direction: column; gap: 0.5rem; }
-.title-row { display: flex; align-items: center; gap: 1rem; }
+.title-row { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
 .section-title { font-size: 1.4rem; color: #1e293b; font-weight: 700; margin: 0; }
-.badge { background: #fee2e2; color: #ef4444; padding: 0.3rem 0.8rem; border-radius: 50px; font-size: 0.8rem; font-weight: 600; }
+.badge { background: #fee2e2; color: #ef4444; padding: 0.3rem 0.8rem; border-radius: 50px; font-size: 0.8rem; font-weight: 600; white-space: nowrap; }
 .gray-text { color: #64748b; font-size: 0.95rem; margin: 0; }
 .text-xs { font-size: 0.75rem; }
 .text-sm { font-size: 0.85rem; }
 .font-bold { font-weight: 700; }
 .text-center { text-align: center; }
 .py-4 { padding-top: 2rem; padding-bottom: 2rem; }
-.table-container { background: #ffffff; border-radius: 16px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); overflow: hidden; border: 1px solid #e2e8f0; }
-.admin-table { width: 100%; border-collapse: collapse; text-align: left; }
-.admin-table th { background: #f8fafc; padding: 1rem 1.2rem; font-size: 0.85rem; font-weight: 600; color: #475569; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid #e2e8f0; }
-.admin-table td { padding: 1rem 1.2rem; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
+
+/* Conteneur et tableau scrollable */
+.table-container { background: #ffffff; border-radius: 16px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); overflow: hidden; border: 1px solid #e2e8f0; width: 100%; box-sizing: border-box; }
+.table-scroll-container {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.table-scroll-container::-webkit-scrollbar {
+  height: 6px;
+}
+.table-scroll-container::-webkit-scrollbar-track {
+  background: #f8fafc;
+  border-radius: 10px;
+}
+.table-scroll-container::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 10px;
+}
+.table-scroll-container::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+.admin-table { width: 100%; border-collapse: collapse; text-align: left; min-width: 760px; }
+.admin-table th { background: #f8fafc; padding: 1rem 1.2rem; font-size: 0.85rem; font-weight: 600; color: #475569; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid #e2e8f0; white-space: nowrap; }
+.admin-table td { padding: 1rem 1.2rem; border-bottom: 1px solid #f1f5f9; vertical-align: middle; white-space: nowrap; }
 .admin-table tr:last-child td { border-bottom: none; }
 .admin-table tr:hover { background: #f8fafc; }
 .date-cell { display: flex; flex-direction: column; }
 .client-email { color: #0f172a; font-weight: 500; }
-.items-list { margin: 0; padding: 0; list-style: none; color: #475569; }
-.amount-badge { display: inline-block; background: #f1f5f9; padding: 0.4rem 0.8rem; border-radius: 8px; color: #0f172a; }
+.items-list { margin: 0; padding: 0; list-style: none; color: #475569; max-width: 320px; white-space: normal; display: flex; flex-direction: column; gap: 0.25rem; }
+.amount-badge { display: inline-block; background: #f1f5f9; padding: 0.4rem 0.8rem; border-radius: 8px; color: #0f172a; white-space: nowrap; }
 .empty-state { color: #94a3b8; font-style: italic; }
 
 /* Bouton Icone (Œil) */
@@ -247,29 +273,139 @@ const formatTime = (dateString: string | undefined) => {
 .icon-sm { width: 20px; height: 20px; }
 
 /* Modale Styles */
-.modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); display: flex; justify-content: center; align-items: center; z-index: 1000; }
-.admin-modal-box { background: #ffffff; border-radius: 16px; width: 100%; max-width: 550px; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1); overflow: hidden; animation: adminSlideUp 0.3s ease-out forwards; }
+.modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); display: flex; justify-content: center; align-items: center; z-index: 1000; padding: 1rem; box-sizing: border-box; }
+.admin-modal-box { background: #ffffff; border-radius: 16px; width: 100%; max-width: 550px; max-height: 90vh; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1); overflow: hidden; animation: adminSlideUp 0.3s ease-out forwards; display: flex; flex-direction: column; box-sizing: border-box; }
 @keyframes adminSlideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-.modal-header { display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 1.5rem; border-bottom: 1px solid #e2e8f0; }
+.modal-header { display: flex; justify-content: space-between; align-items: center; padding: 0.75rem 1.5rem; border-bottom: 1px solid #e2e8f0; }
 .modal-header h4 { margin: 0; font-size: 1.1rem; color: #0f172a; font-weight: 700; }
-.close-btn { background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #94a3b8; transition: 0.2s; width: fit-content; }
+.close-btn { background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #94a3b8; transition: 0.2s; width: fit-content; line-height: 1; }
 .close-btn:hover { color: #e61010; }
-.modal-body { padding: 1.5rem; display: flex; flex-direction: column; gap: 1.5rem; }
+.modal-body { padding: 1.5rem; display: flex; flex-direction: column; gap: 1.5rem; overflow-y: auto; -webkit-overflow-scrolling: touch; }
 
 /* Sections internes modale */
 .info-section { display: flex; flex-direction: column; gap: 0.8rem; }
 .section-subtitle { font-size: 0.9rem; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; margin: 0; border-bottom: 2px solid #f1f5f9; padding-bottom: 0.5rem;}
 .info-grid { display: grid; grid-template-columns: 1fr; gap: 0.6rem; }
-.info-item { display: flex; justify-content: space-between; font-size: 0.95rem; }
+.info-item { display: flex; justify-content: space-between; font-size: 0.95rem; gap: 0.5rem; }
 .info-label { color: #475569; }
-.info-value { color: #0f172a; }
+.info-value { color: #0f172a; word-break: break-word; text-align: right; }
 
 .modal-items-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 0.5rem; }
-.modal-item { display: flex; justify-content: space-between; font-size: 0.95rem; color: #334155; padding: 0.4rem 0; border-bottom: 1px dashed #e2e8f0;}
+.modal-item { display: flex; justify-content: space-between; align-items: center; font-size: 0.95rem; color: #334155; padding: 0.4rem 0; border-bottom: 1px dashed #e2e8f0; gap: 0.75rem;}
+.modal-item .item-name { word-break: break-word; }
+.modal-item .item-price { white-space: nowrap; }
 .total-row { display: flex; justify-content: space-between; align-items: center; margin-top: 0.5rem; font-size: 1.1rem; color: #0f172a; }
-.amount-highlight { color: #059669; background: #dcfce7; padding: 0.3rem 0.6rem; border-radius: 6px;}
+.amount-highlight { color: #059669; background: #dcfce7; padding: 0.3rem 0.6rem; border-radius: 6px; white-space: nowrap; }
 
 .modal-footer { display: flex; justify-content: center; padding: 1rem 1.5rem; border-top: 1px solid #e2e8f0; background: #f8fafc; }
 .btn-secondary { background: #ffffff; color: #475569; border: 1px solid #cbd5e1; padding: 0.6rem 1.2rem; border-radius: 8px; font-weight: 600; cursor: pointer; }
 .btn-secondary:hover { background: #f1f5f9; }
+
+/* ========================================================
+   RESPONSIVE : TABLETTE (<= 1024px)
+   ======================================================== */
+@media (max-width: 1024px) {
+  .abandoned-carts-wrapper {
+    gap: 1.25rem;
+  }
+
+  .table-container {
+    border-radius: 14px;
+  }
+}
+
+/* ========================================================
+   RESPONSIVE : TABLETTE PORTRAIT & SMARTPHONES (<= 768px)
+   ======================================================== */
+@media (max-width: 768px) {
+  .abandoned-carts-wrapper {
+    gap: 1rem;
+  }
+
+  .title-row {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .section-title {
+    font-size: 1.2rem;
+  }
+
+  .badge {
+    font-size: 0.75rem;
+    padding: 0.25rem 0.65rem;
+  }
+
+  .gray-text {
+    font-size: 0.85rem;
+  }
+
+  .table-container {
+    border-radius: 12px;
+  }
+
+  .admin-table th,
+  .admin-table td {
+    padding: 0.85rem 0.8rem;
+    font-size: 0.85rem;
+  }
+
+  .amount-badge {
+    padding: 0.3rem 0.6rem;
+    font-size: 0.8rem;
+  }
+
+  .modal-overlay {
+    padding: 0.75rem;
+  }
+
+  .admin-modal-box {
+    max-height: 92vh;
+    border-radius: 14px;
+  }
+
+  .modal-header {
+    padding: 0.75rem 1rem;
+  }
+
+  .modal-header h4 {
+    font-size: 1rem;
+  }
+
+  .modal-body {
+    padding: 1rem;
+    gap: 1.25rem;
+  }
+
+  .modal-footer {
+    padding: 0.75rem 1rem;
+  }
+}
+
+/* ========================================================
+   RESPONSIVE : PETITS SMARTPHONES (<= 480px)
+   ======================================================== */
+@media (max-width: 480px) {
+  .section-title {
+    font-size: 1.1rem;
+  }
+
+  .info-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.2rem;
+  }
+
+  .info-value {
+    text-align: left;
+  }
+
+  .modal-item {
+    font-size: 0.85rem;
+  }
+
+  .total-row {
+    font-size: 1rem;
+  }
+}
 </style>

@@ -377,4 +377,54 @@ export default {
 .icon-xs { width: 16px; height: 16px; }
 .icon-sm { width: 20px; height: 20px; }
 .icon-gray { color: #94a3b8; }
+
+.modal-body-scrollable::-webkit-scrollbar {
+  width: 6px;
+}
+.modal-body-scrollable::-webkit-scrollbar-track {
+  background: transparent;
+}
+.modal-body-scrollable::-webkit-scrollbar-thumb {
+  background-color: #cbd5e1;
+  border-radius: 10px;
+}
+.modal-body-scrollable::-webkit-scrollbar-thumb:hover {
+  background-color: #94a3b8;
+}
+
+@media (max-width: 560px) {
+  .modal-body-scrollable {
+    padding: 1rem;
+    gap: 1rem;
+  }
+
+  .quick-add-panel {
+    padding: 1rem;
+  }
+
+  .quick-add-grid {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+
+  .quick-add-actions {
+    justify-content: stretch;
+  }
+
+  .quick-add-actions .btn-primary-custom {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .list-header-row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.6rem;
+  }
+
+  .mini-search-box {
+    width: 100%;
+    box-sizing: border-box;
+  }
+}
 </style>
