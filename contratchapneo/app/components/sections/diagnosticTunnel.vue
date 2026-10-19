@@ -78,7 +78,7 @@
                                     label="Heure"
                                     :placeholder="dateValid ? 'Choisir une heure' : 'Choisissez d\'abord un jour'"
                                     :disabled="!dateValid"
-                                    hint="Créneaux de 9h à 17h30."
+                                    hint="Créneaux de 9h à 16h30."
                                     required
                                 >
                                     <option v-for="s in slots" :key="s.time" :value="s.time" :disabled="s.disabled">
@@ -186,7 +186,7 @@ const slots = computed(() => {
     const out: { time: string; disabled: boolean }[] = [];
     const isToday = form.date === today.value;
     const nowMinutes = now.value.getHours() * 60 + now.value.getMinutes();
-    for (let h = 9; h < 18; h++) {
+    for (let h = 9; h < 17; h++) {
         for (const m of [0, 30]) {
             out.push({
                 time: `${pad(h)}h${pad(m)}`,

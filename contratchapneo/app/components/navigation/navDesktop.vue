@@ -44,7 +44,7 @@
         <li><NuxtLink to="/lawCalcul">Calcul de droits</NuxtLink></li>
 
         <li class="dropdown-item">
-            <NuxtLink to="/services" class="dropdown-trigger">
+            <NuxtLink to="/diagnostic-juridique" class="dropdown-trigger">
                 Diagnostic juridique
             </NuxtLink>
         </li>
