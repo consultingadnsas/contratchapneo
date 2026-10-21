@@ -43,9 +43,21 @@ class CustomedContractSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomedContract
         fields = [
-            'id', 'subject', 'phone_number', 'email', 'description', 
-            'price', 'is_wrotten', 'user', 'user_pack', 
-            'client_name', 'category','created_at', 'category_name', 'updated_at', 'is_paid'
+            'id', 
+            'subject', 
+            'phone_number', 
+            'email', 
+            'description', 
+            'price', 
+            'is_wrotten', 
+            'user', 
+            'user_pack', 
+            'client_name', 
+            'category',
+            'created_at', 
+            'category_name', 
+            'updated_at', 
+            'is_paid'
         ]
         read_only_fields = ['id', 'is_wrotten', 'user', 'user_pack', 'client_name', 'category_name', 'created_at', 'updated_at', 'is_paid']
 

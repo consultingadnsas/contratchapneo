@@ -72,7 +72,8 @@ INSTALLED_APPS = [
     'payments',
     'pro',
     'lawcalcul',
-    'stats'
+    'stats',
+    'consulting'
 ]
 
 REST_FRAMEWORK = {

@@ -2,7 +2,7 @@
 import { defineNuxtPlugin, useCookie, useRuntimeConfig, useRequestHeaders } from '#app'
 
 export default defineNuxtPlugin(async () => {
-  const config = useRuntimeConfig()
+  const config = useRuntimeConfig();
 
   const api = $fetch.create({
     baseURL: config.public.apiBase || 'http://localhost:8000',
