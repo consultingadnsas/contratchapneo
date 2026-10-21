@@ -1,16 +1,23 @@
 from django.db import models
 import uuid
 
-# Create your models here.
 class Consulting(models.Model):
+    STATUS_CHOICES = [
+        ('PENDING', 'En attente'),
+        ('CONFIRMED', 'Confirmé'),
+        ('COMPLETED', 'Terminé'),
+        ('CANCELLED', 'Annulé'),
+    ]
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
 
-    title = models.CharField(max_length=200)
+    title = models.CharField(max_length=200, default="Diagnostic juridique")
     
     full_name = models.CharField(max_length=200)
 
-    email = models.EmailField(unique=True)
+    phone_number = models.CharField(max_length=50, blank=True, default="")
+
+    email = models.EmailField()
 
     description = models.TextField()
 
@@ -18,8 +25,13 @@ class Consulting(models.Model):
 
     consulting_hour = models.TimeField()
 
-    # Timestamp
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default='PENDING'
+    )
 
+    # Timestamps
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -35,7 +47,4 @@ class Consulting(models.Model):
         ]
 
     def __str__(self):
-        return f"rendez-vous pris par {self.full_name} pour le {self.meet_day}"
-
-
-    
+        return f"Rendez-vous pris par {self.full_name} pour le {self.meet_day} à {self.consulting_hour}"

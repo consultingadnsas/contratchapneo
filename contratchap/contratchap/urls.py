@@ -31,7 +31,7 @@ urlpatterns = [
     path('pro/', include('pro.urls')),
     path('lawcalcul/', include('lawcalcul.urls')),
     path('stats/', include('stats.urls')),
-    path('consulting', include('consulting.urls')),
+    path('consulting/', include('consulting.urls')),
     # L'interface Swagger interactive :
     path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
     path('api/docs/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),

@@ -33,12 +33,29 @@
                 {{ message.subject }}
               </p>
             </div> 
+
+            <div style="margin-top: 1.5rem;" v-else-if="message.type === 'consulting'">
+              <p class="label-text">Type d'intervention</p>
+              <p class="dark-text font-bold break-word" style="font-size: 1.05rem; margin: 0 0 0.5rem 0;">
+                Diagnostic Juridique
+              </p>
+              <p class="label-text">Créneau du rendez-vous</p>
+              <p class="dark-text font-bold break-word" style="font-size: 1.05rem; color: #059669; margin: 0;">
+                {{ message.meet_day_formatted }} à {{ message.consulting_hour_formatted }}
+              </p>
+            </div>
           </div>
           
           <div class="info-block">
             <p class="label-text">Email de contact</p>
             <p class="client-email break-word">{{ message.email }}</p>
-            <span v-if="message.phone_number" class="client-phone break-word">{{ message.phone_number }}</span>
+
+            <div v-if="message.phone_number" style="margin-top: 1.5rem;">
+              <p class="label-text">Numéro de téléphone</p>
+              <a :href="'tel:' + message.phone_number" class="client-phone break-word font-bold" style="color: #0f172a; text-decoration: none; font-size: 1.05rem; display: block;">
+                📞 {{ message.phone_number }}
+              </a>
+            </div>
           </div>
           
         </div>
@@ -46,7 +63,9 @@
         <!-- Zone du message -->
         <div class="message-box">
           <p class="label-text mb-2">
-            {{ message.type === 'review' ? 'Instructions du client' : 'Description du contrat sur mesure' }}
+            <template v-if="message.type === 'review'">Instructions du client</template>
+            <template v-else-if="message.type === 'custom'">Description du contrat sur mesure</template>
+            <template v-else-if="message.type === 'consulting'">Situation exposée / Problème juridique</template>
           </p>
           <div class="message-content">
             <p class="dark-text">
@@ -89,10 +108,10 @@
         <button 
           class="btn-primary" 
           @click="$emit('mark-processed', message)"
-          :disabled="adminStore.isLoading"
+          :disabled="adminStore.isLoading || message.status === 'COMPLETED'"
         >
           <component :is="CheckCircleIcon" class="icon-sm" /> 
-          Marquer comme traité
+          {{ message.status === 'COMPLETED' ? 'Déjà traité' : 'Marquer comme traité' }}
         </button>
       </div>
 

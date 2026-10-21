@@ -23,6 +23,9 @@
           <button class="tab-btn" :class="{ active: activeTab === 'custom' }" @click="activeTab = 'custom'">
             Sur-Mesure
           </button>
+          <button class="tab-btn" :class="{ active: activeTab === 'consulting' }" @click="activeTab = 'consulting'">
+            Rendez-vous
+          </button>
         </div>
 
         <!-- 📱 MENU DÉROULANT DES DEMANDES : Mobile et Tablette (<= 1024px) -->
@@ -33,6 +36,7 @@
               <option value="all">Toutes</option>
               <option value="review">Révisions</option>
               <option value="custom">Sur-Mesure</option>
+              <option value="consulting">Rendez-vous</option>
             </select>
             <svg class="select-arrow" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
@@ -100,20 +104,36 @@
             <!-- Type (Badges Pastel) & Sujet -->
             <td>
                 <div>
-                  <span class="pastel-badge" :class="msg.type === 'review' ? 'badge-blue' : 'badge-purple'">
-                    {{ msg.type === 'review' ? 'Révision' : 'Sur-Mesure' }}
+                  <span 
+                    class="pastel-badge" 
+                    :class="{
+                      'badge-blue': msg.type === 'review',
+                      'badge-purple': msg.type === 'custom',
+                      'badge-emerald': msg.type === 'consulting'
+                    }"
+                  >
+                    {{ msg.type === 'review' ? 'Révision' : msg.type === 'custom' ? 'Sur-Mesure' : 'Rendez-vous' }}
                   </span>
                 </div>
 
                <span v-if="msg.type === 'custom'" class="dark-text text-sm font-bold" style="margin-top: 0.4rem;">
                   {{ msg.categoryName }}
                 </span>
+               <span v-else-if="msg.type === 'consulting'" class="text-sm font-bold text-emerald" style="margin-top: 0.4rem;">
+                 {{ msg.meet_day_formatted }} à {{ msg.consulting_hour_formatted }}
+                </span>
             </td>
             
             <!-- Paiement -->
             <td>
-              <span class="status-dot" :class="msg.is_paid ? 'dot-green' : 'dot-red'"></span>
-              <span class="dark-text font-bold">{{ msg.is_paid ? 'Payé' : 'Non payé' }}</span>
+              <template v-if="msg.type === 'consulting'">
+                <span class="status-dot dot-green"></span>
+                <span class="dark-text font-bold">Sans frais</span>
+              </template>
+              <template v-else>
+                <span class="status-dot" :class="msg.is_paid ? 'dot-green' : 'dot-red'"></span>
+                <span class="dark-text font-bold">{{ msg.is_paid ? 'Payé' : 'Non payé' }}</span>
+              </template>
             </td>
 
             <!-- Statut -->
@@ -191,8 +211,11 @@ export default {
 
     // Déclenchement de la requête API au chargement
     onMounted(async () => {
-      await adminStore.fetchRevisions();
-      await adminStore.fetchCustomRequests();
+      await Promise.allSettled([
+        adminStore.fetchRevisions(),
+        adminStore.fetchCustomRequests(),
+        adminStore.fetchConsultings()
+      ]);
     });
 
     const formatDate = (dateString: string) => {
@@ -208,18 +231,20 @@ export default {
     const allMessages = computed(() => {
       const revisions = adminStore.revisions.map(rev => ({
         ...rev,
-        type: 'review',
+        type: 'review' as const,
         // ⚡️ CORRECTION : On utilise d'abord le vrai nom, sinon on coupe l'email (pour les visiteurs non connectés)
         clientName: rev.client_name || rev.email.split('@')[0], 
         formattedDate: formatDate(rev.created_at),
         formattedTime: formatTime(rev.created_at),
         isRead: rev.status !== 'PENDING',
-        categoryName: undefined
+        categoryName: undefined,
+        meet_day_formatted: undefined,
+        consulting_hour_formatted: undefined
       }));
 
       const customRequests = adminStore.customRequests.map(req => ({
         ...req,
-        type: 'custom',
+        type: 'custom' as const,
         // ⚡️ CORRECTION : Même logique ici
         clientName: req.client_name || req.email.split('@')[0], 
         categoryName: req.category_name,
@@ -227,10 +252,29 @@ export default {
         status_display: req.is_wrotten ? 'Terminé' : 'En attente',
         formattedDate: formatDate(req.created_at),
         formattedTime: formatTime(req.created_at),
-        isRead: req.is_wrotten 
+        isRead: req.is_wrotten,
+        meet_day_formatted: undefined,
+        consulting_hour_formatted: undefined
       }));
 
-      return [...revisions, ...customRequests].sort((a, b) => 
+      const consultings = adminStore.consultings.map(c => {
+        const timeFormatted = c.consulting_hour ? c.consulting_hour.slice(0, 5).replace(':', 'h') : '';
+        return {
+          ...c,
+          type: 'consulting' as const,
+          clientName: c.full_name || c.email.split('@')[0],
+          formattedDate: formatDate(c.created_at),
+          formattedTime: formatTime(c.created_at),
+          meet_day_formatted: formatDate(c.meet_day),
+          consulting_hour_formatted: timeFormatted,
+          isRead: c.status !== 'PENDING',
+          is_paid: true,
+          status_display: c.status_display || (c.status === 'COMPLETED' ? 'Terminé' : c.status === 'CONFIRMED' ? 'Confirmé' : c.status === 'CANCELLED' ? 'Annulé' : 'En attente'),
+          categoryName: undefined
+        };
+      });
+
+      return [...revisions, ...customRequests, ...consultings].sort((a, b) => 
         new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
       );
     });
@@ -252,7 +296,8 @@ export default {
         const query = searchQuery.value.toLowerCase();
         list = list.filter(msg => 
           (msg.clientName && msg.clientName.toLowerCase().includes(query)) ||
-          (msg.email && msg.email.toLowerCase().includes(query))
+          (msg.email && msg.email.toLowerCase().includes(query)) ||
+          (msg.phone_number && msg.phone_number.toLowerCase().includes(query))
         );
       }
       return list;
@@ -312,6 +357,9 @@ export default {
         const formData = new FormData();
         formData.append('is_wrotten', 'true');
         await adminStore.completeCustomRequest(msg.id, formData);
+      }
+      else if (msg.type === 'consulting') {
+        await adminStore.updateConsultingStatus(msg.id, 'COMPLETED');
       }
       
       closeMessage();
@@ -646,6 +694,15 @@ export default {
 .badge-purple {
   background: #faf5ff;
   color: #a855f7;
+}
+
+.badge-emerald {
+  background: #ecfdf5;
+  color: #059669;
+}
+
+.text-emerald {
+  color: #059669;
 }
 
 .status-dot {

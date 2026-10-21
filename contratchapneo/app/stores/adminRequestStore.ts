@@ -46,6 +46,21 @@ export interface CustomContractRequest {
     updated_at: string;
 }
 
+export interface ConsultingRequest {
+    id: string;
+    title: string;
+    full_name: string;
+    phone_number: string;
+    email: string;
+    description: string;
+    meet_day: string;
+    consulting_hour: string;
+    status: 'PENDING' | 'CONFIRMED' | 'COMPLETED' | 'CANCELLED';
+    status_display?: string;
+    created_at: string;
+    updated_at: string;
+}
+
 // ==========================================
 // 2. LE STORE
 // ==========================================
@@ -60,6 +75,7 @@ export const useAdminRequestsStore = defineStore('adminRequestsStore', () => {
 
     const revisions = ref<ContractRevision[]>([]);
     const customRequests = ref<CustomContractRequest[]>([]);
+    const consultings = ref<ConsultingRequest[]>([]);
 
     // ==========================================
     // ACTIONS : RÉVISIONS DE CONTRATS
@@ -189,15 +205,62 @@ export const useAdminRequestsStore = defineStore('adminRequestsStore', () => {
         }
     };
 
+    // ==========================================
+    // ACTIONS : RENDEZ-VOUS / CONSULTANCE
+    // ==========================================
+
+    // -- Lister les rendez-vous de consultation --
+    const fetchConsultings = async () => {
+        isLoading.value = true;
+        error.value = null;
+        try {
+            const response = await $api<any>('/consulting/admin/consultings/', { method: 'GET' });
+            if (response && response.data) {
+                consultings.value = response.data;
+            }
+        } catch (err: any) {
+            error.value = err.message || "Erreur lors de la récupération des rendez-vous";
+            console.error(err);
+        } finally {
+            isLoading.value = false;
+        }
+    };
+
+    // -- Mettre à jour le statut d'un rendez-vous --
+    const updateConsultingStatus = async (consultingId: string, newStatus: string) => {
+        isLoading.value = true;
+        error.value = null;
+        try {
+            const response = await $api<any>(`/consulting/admin/consultings/${consultingId}/`, {
+                method: 'PATCH',
+                body: { status: newStatus }
+            });
+            if (response && response.data) {
+                const index = consultings.value.findIndex(c => c.id === consultingId);
+                if (index !== -1) {
+                    consultings.value[index] = { ...consultings.value[index], ...response.data };
+                }
+            }
+        } catch (err: any) {
+            error.value = err.message || "Erreur lors de la mise à jour du rendez-vous";
+            throw err;
+        } finally {
+            isLoading.value = false;
+        }
+    };
+
     return {
         isLoading,
         error,
         revisions,
         customRequests,
+        consultings,
         fetchRevisions,
         downloadRevisionFile,
         updateRevision,
         fetchCustomRequests,
-        completeCustomRequest
+        completeCustomRequest,
+        fetchConsultings,
+        updateConsultingStatus
     };
 });

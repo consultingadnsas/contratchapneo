@@ -82,7 +82,7 @@
                                     required
                                 >
                                     <option v-for="s in slots" :key="s.time" :value="s.time" :disabled="s.disabled">
-                                        {{ s.time }}{{ s.disabled ? ' (indisponible)' : '' }}
+                                        {{ s.time }}{{ s.isBooked ? ' (déjà réservé)' : s.disabled ? ' (indisponible)' : '' }}
                                     </option>
                                 </BaseSelect>
                             </div>
@@ -92,10 +92,16 @@
                                 <span>J'accepte que mes informations soient utilisées pour traiter ma demande. Mes échanges restent strictement confidentiels.</span>
                             </label>
 
+                            <div v-if="submitError" class="error-banner">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                                <span>{{ submitError }}</span>
+                            </div>
+
                             <div class="tunnel-actions">
-                                <button type="submit" class="btn-primary" :disabled="!canSubmit">
-                                    Confirmer mon rendez-vous
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+                                <button type="submit" class="btn-primary" :disabled="!canSubmit || isSubmitting">
+                                    <span v-if="isSubmitting" class="spinner-btn"></span>
+                                    {{ isSubmitting ? 'Enregistrement en cours...' : 'Confirmer mon rendez-vous' }}
+                                    <svg v-if="!isSubmitting" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
                                 </button>
                             </div>
                         </form>
@@ -145,10 +151,14 @@ import { computed, onMounted, reactive, ref, watch } from 'vue';
 import BaseInput from '../input/BaseInput.vue';
 import BaseArea from '../input/BaseArea.vue';
 import BaseSelect from '../input/BaseSelect.vue';
+import { useConsultingStore } from '../../stores/consultingStore';
 
 defineEmits<{ (e: 'back'): void }>();
 
+const consultingStore = useConsultingStore();
 const submitted = ref(false);
+const submitError = ref<string | null>(null);
+const isSubmitting = computed(() => consultingStore.isLoading);
 
 const form = reactive({
     fullname: '',
@@ -181,24 +191,38 @@ const dateError = computed(() => {
 });
 const dateValid = computed(() => !!form.date && !dateError.value);
 
-/* ---------- Créneaux : 9h → 17h30 (les heures déjà passées sont désactivées aujourd'hui) ---------- */
+/* ---------- Créneaux : 9h → 17h30 (heures passées désactivées + créneaux réservés) ---------- */
 const slots = computed(() => {
-    const out: { time: string; disabled: boolean }[] = [];
+    const out: { time: string; disabled: boolean; isBooked: boolean }[] = [];
     const isToday = form.date === today.value;
     const nowMinutes = now.value.getHours() * 60 + now.value.getMinutes();
+    const booked = consultingStore.bookedSlots || [];
+
     for (let h = 9; h < 17; h++) {
         for (const m of [0, 30]) {
+            const timeStr = `${pad(h)}h${pad(m)}`;
+            const timeColon = `${pad(h)}:${pad(m)}`;
+            const isPast = isToday && h * 60 + m <= nowMinutes;
+            const isBooked = booked.includes(timeStr) || booked.includes(timeColon);
+
             out.push({
-                time: `${pad(h)}h${pad(m)}`,
-                disabled: isToday && h * 60 + m <= nowMinutes
+                time: timeStr,
+                disabled: isPast || isBooked,
+                isBooked
             });
         }
     }
     return out;
 });
 
-/* Changer de jour réinitialise l'heure choisie */
-watch(() => form.date, () => { form.time = ''; });
+/* Changer de jour réinitialise l'heure choisie et récupère les créneaux déjà réservés */
+watch(() => form.date, async (newDate) => {
+    form.time = '';
+    submitError.value = null;
+    if (newDate && dateValid.value) {
+        await consultingStore.fetchBookedSlots(newDate);
+    }
+});
 
 const emailOk = computed(() => /^\S+@\S+\.\S+$/.test(form.email));
 
@@ -212,11 +236,26 @@ const canSubmit = computed(() =>
     form.consent
 );
 
-/* Statique : aucune requête envoyée, on affiche simplement la confirmation */
-const submit = () => {
-    if (!canSubmit.value) return;
-    submitted.value = true;
-    if (typeof window !== 'undefined') window.scrollTo({ top: 0, behavior: 'smooth' });
+/* Envoi de la demande de rendez-vous vers le backend */
+const submit = async () => {
+    if (!canSubmit.value || isSubmitting.value) return;
+    submitError.value = null;
+
+    try {
+        await consultingStore.bookConsulting({
+            full_name: form.fullname.trim(),
+            phone_number: form.phone.trim(),
+            email: form.email.trim(),
+            description: form.description.trim(),
+            meet_day: form.date,
+            consulting_hour: form.time
+        });
+
+        submitted.value = true;
+        if (typeof window !== 'undefined') window.scrollTo({ top: 0, behavior: 'smooth' });
+    } catch (err: any) {
+        submitError.value = consultingStore.error || "Une erreur est survenue lors de la prise de rendez-vous.";
+    }
 };
 
 /* ---------- Récap ---------- */
@@ -390,5 +429,35 @@ const dateLabel = computed(() => {
     .two-cols { grid-template-columns: 1fr; gap: 0; }
     .step-body { min-height: 0; }
     .tunnel-actions .btn-primary { width: 100%; justify-content: center; }
+}
+
+.error-banner {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    color: #b91c1c;
+    padding: 0.85rem 1.15rem;
+    border-radius: 14px;
+    font-size: 0.88rem;
+    font-weight: 500;
+    margin-top: 1rem;
+    margin-bottom: 0.5rem;
+}
+
+.spinner-btn {
+    width: 16px;
+    height: 16px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-top-color: #ffffff;
+    border-radius: 50%;
+    animation: spinBtn 0.7s linear infinite;
+    display: inline-block;
+    margin-right: 0.5rem;
+}
+
+@keyframes spinBtn {
+    to { transform: rotate(360deg); }
 }
 </style>
