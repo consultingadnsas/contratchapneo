@@ -34,27 +34,147 @@ export default defineComponent({
 
 <style scoped>
 .modal-overlay {
-  position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-  background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px);
-  display: flex; justify-content: center; align-items: center; z-index: 1000;
+  position: fixed; 
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(15, 23, 42, 0.6); 
+  backdrop-filter: blur(4px);
+  display: flex; 
+  justify-content: center; 
+  align-items: center; 
+  z-index: 1000;
+  padding: 1rem;
+  box-sizing: border-box;
 }
+
 .admin-modal-box {
-  background: #ffffff; border-radius: 16px; width: 100%; max-width: 500px;
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1); overflow: hidden;
+  background: #ffffff; 
+  border-radius: 16px; 
+  width: 100%; 
+  max-width: 500px;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.15); 
+  overflow: hidden;
   animation: adminSlideUp 0.3s ease-out forwards;
+  box-sizing: border-box;
 }
-.modal-sm { max-width: 400px; }
-@keyframes adminSlideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-.modal-body { padding: 1.5rem; display: flex; flex-direction: column; gap: 1rem; }
+
+.modal-sm { 
+  max-width: 400px; 
+}
+
+@keyframes adminSlideUp { 
+  from { opacity: 0; transform: translateY(20px); } 
+  to { opacity: 1; transform: translateY(0); } 
+}
+
+.modal-body { 
+  padding: 1.5rem; 
+  display: flex; 
+  flex-direction: column; 
+  gap: 1rem; 
+}
+
 .text-center { text-align: center; }
-.warning-icon { color: #ef4444; display: flex; justify-content: center; }
-.warning-icon svg { width: 48px; height: 48px; }
-.mt-2 { margin-top: 0.5rem; margin-bottom: 0; color: #0f172a; font-weight: 700; font-size: 1.2rem; }
-.gray-text { color: #64748b; font-size: 0.95rem; margin: 0; }
-.modal-footer { display: flex; gap: 0.8rem; padding: 1rem 1.5rem; border-top: 1px solid #e2e8f0; background: #f8fafc; }
+
+.warning-icon { 
+  color: #ef4444; 
+  display: flex; 
+  justify-content: center; 
+}
+
+.warning-icon svg { 
+  width: 48px; 
+  height: 48px; 
+}
+
+.mt-2 { 
+  margin-top: 0.5rem; 
+  margin-bottom: 0; 
+  color: #0f172a; 
+  font-weight: 700; 
+  font-size: 1.2rem; 
+}
+
+.gray-text { 
+  color: #64748b; 
+  font-size: 0.95rem; 
+  margin: 0; 
+}
+
+.modal-footer { 
+  display: flex; 
+  gap: 0.8rem; 
+  padding: 1rem 1.5rem; 
+  border-top: 1px solid #e2e8f0; 
+  background: #f8fafc; 
+}
+
 .justify-center { justify-content: center; }
-.btn-secondary { background: #ffffff; color: #475569; border: 1px solid #cbd5e1; padding: 0.6rem 1.2rem; border-radius: 8px; font-weight: 600; cursor: pointer; }
-.btn-secondary:hover:not(:disabled) { background: #f1f5f9; }
-.btn-danger { background: #ef4444; color: white; border: none; padding: 0.6rem 1.2rem; border-radius: 8px; font-weight: 600; cursor: pointer; }
-.btn-danger:hover:not(:disabled) { background: #dc2626; }
+
+.btn-secondary { 
+  background: #ffffff; 
+  color: #475569; 
+  border: 1px solid #cbd5e1; 
+  padding: 0.65rem 1.25rem; 
+  border-radius: 8px; 
+  font-weight: 600; 
+  font-size: 0.9rem;
+  cursor: pointer; 
+  transition: 0.2s;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-secondary:hover:not(:disabled) { 
+  background: #f1f5f9; 
+}
+
+.btn-danger { 
+  background: #ef4444; 
+  color: white; 
+  border: none; 
+  padding: 0.65rem 1.25rem; 
+  border-radius: 8px; 
+  font-weight: 600; 
+  font-size: 0.9rem;
+  cursor: pointer; 
+  transition: 0.2s;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-danger:hover:not(:disabled) { 
+  background: #dc2626; 
+}
+
+.btn-danger:disabled,
+.btn-secondary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+@media (max-width: 480px) {
+  .modal-overlay {
+    padding: 0.75rem;
+    align-items: flex-end;
+  }
+
+  .admin-modal-box {
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+  }
+
+  .modal-footer {
+    flex-direction: column-reverse;
+    gap: 0.6rem;
+    padding: 1rem 1.25rem;
+  }
+
+  .btn-danger,
+  .btn-secondary {
+    width: 100%;
+    min-height: 44px;
+  }
+}
 </style>

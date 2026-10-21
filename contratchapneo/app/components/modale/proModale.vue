@@ -205,7 +205,7 @@ export default {
 /* ── Bouton fermer ── */
 .close-btn {
     position: absolute; top: 1.5rem; right: 1.5rem;
-    background: rgba(15, 23, 42, 0.05); border: none; color: #0f172a;
+    background: rgba(15, 23, 42, 0.05); border: none; color: red;
     width: 36px; height: 36px; border-radius: 50%;
     display: flex; align-items: center; justify-content: center;
     cursor: pointer; z-index: 10; transition: background 0.2s;

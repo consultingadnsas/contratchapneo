@@ -70,5 +70,20 @@ export default defineComponent({
   max-width: 1200px;
   margin: 0 auto;
   width: 100%;
+  box-sizing: border-box;
+}
+
+@media (max-width: 1024px) {
+  .admin-content {
+    padding: 1.5rem 1rem;
+    padding-bottom: calc(85px + env(safe-area-inset-bottom));
+  }
+}
+
+@media (max-width: 640px) {
+  .admin-content {
+    padding: 1rem 0.75rem;
+    padding-bottom: calc(85px + env(safe-area-inset-bottom));
+  }
 }
 </style>
