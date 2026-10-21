@@ -2,9 +2,6 @@
     <div class="admin-panel-wrapper">
         <div class="panel-header">
             <h2>Historique des Simulations de Droits</h2>
-            <button class="btn-refresh" @click="loadData" :disabled="adminStore.isLoading">
-                {{ adminStore.isLoading ? 'Chargement...' : 'Actualiser' }}
-            </button>
         </div>
 
         <p v-if="adminStore.error" class="error-msg">{{ adminStore.error }}</p>
@@ -174,18 +171,6 @@ export default defineComponent({
     color: #1f2937;
     margin: 0;
 }
-
-.btn-refresh {
-    background: #0f172a;
-    color: #ffffff;
-    border: none;
-    padding: 0.5rem 1rem;
-    border-radius: 6px;
-    cursor: pointer;
-    font-weight: 600;
-}
-
-.btn-refresh:disabled { opacity: 0.7; cursor: not-allowed; }
 
 .table-container {
     overflow-x: auto;

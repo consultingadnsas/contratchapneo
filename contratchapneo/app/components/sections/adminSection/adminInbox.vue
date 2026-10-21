@@ -12,7 +12,8 @@
         </div>
       </div>
       <div class="filter_group">
-        <div class="tabs-group">
+        <!-- 🖥️ ONGLETS BOUTONS : Desktop uniquement (> 1024px) -->
+        <div class="tabs-group desktop-only">
           <button class="tab-btn" :class="{ active: activeTab === 'all' }" @click="activeTab = 'all'">
             Toutes
           </button>
@@ -23,11 +24,36 @@
             Sur-Mesure
           </button>
         </div>
-        <select v-model="paymentFilter" class="payment-filter-select">
-          <option value="all">Tous les paiements</option>
-          <option value="paid">Payé</option>
-          <option value="unpaid">Non payé</option>
-        </select>
+
+        <!-- 📱 MENU DÉROULANT DES DEMANDES : Mobile et Tablette (<= 1024px) -->
+        <div class="tabs-dropdown-wrapper mobile-tablet-only">
+          <label for="request-type-select" class="dropdown-label">Type de demandes :</label>
+          <div class="select-box">
+            <select id="request-type-select" v-model="activeTab" class="custom-select" aria-label="Type de demandes">
+              <option value="all">Toutes</option>
+              <option value="review">Révisions</option>
+              <option value="custom">Sur-Mesure</option>
+            </select>
+            <svg class="select-arrow" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+            </svg>
+          </div>
+        </div>
+
+        <!-- 💳 STATUT DU PAIEMENT : Placé à droite sur desktop, et en dessous sur mobile/tablette -->
+        <div class="payment-filter-wrapper">
+          <label for="payment-status-select" class="dropdown-label mobile-tablet-only">Statut du paiement :</label>
+          <div class="select-box">
+            <select id="payment-status-select" v-model="paymentFilter" class="custom-select payment-filter-select" aria-label="Statut du paiement">
+              <option value="all">Tous les paiements</option>
+              <option value="paid">Payé</option>
+              <option value="unpaid">Non payé</option>
+            </select>
+            <svg class="select-arrow" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+            </svg>
+          </div>
+        </div>
       </div>
       
     </div>
@@ -39,11 +65,12 @@
 
     <!-- TABLEAU DES MESSAGES -->
     <div v-else class="panel clean-list-container">
-      <table class="minimal-table">
+      <div class="table-scroll-container">
+        <table class="minimal-table">
         <thead>
           <tr>
             <th>Date & Heure</th>
-            <th>Client (Contact)</th>
+            <th>Client</th>
             <th>Type de demande</th>
             <th>Paiement</th>
             <th>Statut</th>
@@ -106,6 +133,7 @@
           </tr>
         </tbody>
       </table>
+      </div>
 
       <!-- ÉTAT VIDE -->
       <div v-if="filteredMessages.length === 0" class="empty-state">
@@ -312,43 +340,454 @@ export default {
 </script>
 
 <style scoped>
-/* Conserve exactement ton CSS précédent ici */
-.inbox-wrapper { --bg-main: #f8fafc; --bg-panel: #ffffff; --bg-panel-light: #f1f5f9; --text-dark: #1e293b; --text-gray: #94a3b8; --accent-blue: #2563eb; display: flex; flex-direction: column; gap: 2rem; font-family: 'Inter', sans-serif; }
-.header-section { display: flex; flex-direction: column; gap: 1.5rem; }
-.title-and-search { display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 1rem; }
-.section-title { font-size: 1.2rem; color: var(--text-dark); font-weight: 700; margin: 0; }
-.search-box { display: flex; align-items: center; gap: 0.8rem; background: var(--bg-panel); border: 1px solid #e2e8f0; border-radius: 50px; padding: 0.6rem 1.2rem; flex: 1; max-width: 400px; box-shadow: 0 4px 10px rgba(0,0,0,0.02); }
-.search-box input { background: transparent; border: none; color: var(--text-dark); font-size: 0.9rem; outline: none; width: 100%; font-weight: 500; }
-.search-box input::placeholder { color: #cbd5e1; font-weight: 400; }
-.icon-gray { width: 18px; height: 18px; color: var(--text-gray); }
-.filter_group{display: flex; align-items: normal; justify-content: space-between; }
-.tabs-group { display: flex; background: var(--primary-color); border-radius: 50px; padding: 0.3rem; width: fit-content; }
-.tab-btn { background: transparent; border: none; color: #ffffff; font-size: 0.85rem; font-weight: 600; padding: 0.6rem 1.2rem; border-radius: 50px; cursor: pointer; transition: all 0.2s ease; }
-.tab-btn.active { background: var(--secondary-light-color); color: #ffffff; box-shadow: 0px 2px 10px rgba(0,0,0,0.05); }
-.clean-list-container { background: var(--bg-panel); border-radius: 24px; padding: 1.5rem; box-shadow: 0 10px 40px rgba(0,0,0,0.03); border: 1px solid #f1f5f9; overflow-x: auto; }
-.minimal-table { width: 100%; border-collapse: collapse; text-align: left; min-width: 800px; }
-.minimal-table th { color: #cbd5e1; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; padding-bottom: 1.5rem; }
-.minimal-table td { padding: 1.2rem 0; border-bottom: 1px solid #f8fafc; vertical-align: middle; transition: 0.2s; }
-.minimal-table tr:last-child td { border-bottom: none; }
-.unread-row td { background-color: #f8fafc; }
-.dark-text { color: var(--text-dark); }
-.gray-text { color: var(--text-gray); font-size: 0.9rem; }
-.font-bold { font-weight: 600; }
-.text-right { text-align: right; }
-.text-sm { font-size: 0.75rem; display: block; margin-top: 0.2rem; }
-.mr-1 { margin-right: 0.2rem; }
-.info-stack { display: flex; flex-direction: column; }
-.pastel-badge { padding: 0.4rem 1rem; border-radius: 50px; font-size: 0.75rem; font-weight: 700; display: inline-block; }
-.badge-blue { background: #eff6ff; color: #3b82f6; }
-.badge-purple { background: #faf5ff; color: #a855f7; }
-.status-dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; margin-right: 0.5rem; vertical-align: middle; }
-.dot-green { background-color: #10b981; box-shadow: 0 0 8px rgba(16, 185, 129, 0.4); }
-.dot-yellow { background-color: #f59e0b; }
-.dot-gray { background-color: #cbd5e1; }
-.dot-red { background-color: #ef4444; }
-.payment-filter-select {width:fit-content; height: fit-content; background: var(--bg-panel); border: 1px solid #e2e8f0; border-radius: 50px; padding: 1rem 1.2rem; color: var(--text-dark); font-size: 0.9rem; font-weight: 500; cursor: pointer; outline: none; box-shadow: 0 4px 10px rgba(0,0,0,0.02); }
-.pill-btn { display: inline-flex; align-items: center; justify-content: center; background: white; border: 1px solid #e2e8f0; color: var(--text-dark); padding: 0.5rem 1.2rem; border-radius: 50px; font-size: 0.8rem; font-weight: 600; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.02); transition: 0.2s; }
-.pill-btn:hover { background: #f8fafc; border-color: #cbd5e1; }
-.icon-sm { width: 16px; height: 16px; }
-.empty-state { text-align: center; padding: 3rem 0; }
+.inbox-wrapper {
+  --bg-main: #f8fafc;
+  --bg-panel: #ffffff;
+  --bg-panel-light: #f1f5f9;
+  --text-dark: #1e293b;
+  --text-gray: #94a3b8;
+  --accent-blue: #2563eb;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  font-family: 'Inter', sans-serif;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.header-section {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  width: 100%;
+}
+
+.title-and-search {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+  width: 100%;
+}
+
+.section-title {
+  font-size: 1.35rem;
+  color: var(--text-dark);
+  font-weight: 700;
+  margin: 0;
+  letter-spacing: -0.3px;
+}
+
+/* BARRE DE RECHERCHE */
+.search-box {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  background: var(--bg-panel);
+  border: 1px solid #e2e8f0;
+  border-radius: 50px;
+  padding: 0.65rem 1.25rem;
+  flex: 1;
+  max-width: 400px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.02);
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+}
+
+.search-box:focus-within {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+}
+
+.search-box input {
+  background: transparent;
+  border: none;
+  color: var(--text-dark);
+  font-size: 0.95rem;
+  outline: none;
+  width: 100%;
+  font-weight: 500;
+}
+
+.search-box input::placeholder {
+  color: #cbd5e1;
+  font-weight: 400;
+}
+
+.icon-gray {
+  width: 18px;
+  height: 18px;
+  color: var(--text-gray);
+  flex-shrink: 0;
+}
+
+/* GROUPE DE FILTRES */
+.filter_group {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  width: 100%;
+}
+
+/* 🖥️ ONGLETS BOUTONS (DESKTOP) */
+.tabs-group {
+  display: flex;
+  background: var(--primary-color, #2563eb);
+  border-radius: 50px;
+  padding: 0.3rem;
+  width: fit-content;
+  gap: 0.2rem;
+}
+
+.tab-btn {
+  background: transparent;
+  border: none;
+  color: #ffffff;
+  font-size: 0.85rem;
+  font-weight: 600;
+  padding: 0.6rem 1.2rem;
+  border-radius: 50px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.tab-btn.active {
+  background: var(--secondary-light-color, #1d4ed8);
+  color: #ffffff;
+  box-shadow: 0px 2px 10px rgba(0,0,0,0.1);
+}
+
+/* 📱 MENUS DÉROULANTS (SÉLECTEURS) */
+.tabs-dropdown-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  width: 100%;
+}
+
+.payment-filter-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  width: auto;
+  min-width: 200px;
+}
+
+.dropdown-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-gray);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.select-box {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.custom-select {
+  width: 100%;
+  padding: 0.75rem 2.5rem 0.75rem 1.25rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 50px;
+  background-color: var(--bg-panel);
+  color: var(--text-dark);
+  font-size: 0.95rem;
+  font-weight: 500;
+  outline: none;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.02);
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+}
+
+.custom-select:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+}
+
+.select-arrow {
+  position: absolute;
+  right: 1.1rem;
+  width: 18px;
+  height: 18px;
+  color: var(--text-gray);
+  pointer-events: none;
+  transition: transform 0.2s ease;
+}
+
+.select-box:focus-within .select-arrow {
+  color: #3b82f6;
+  transform: rotate(180deg);
+}
+
+/* TABLEAU ET CONTENEUR RESPONSIVE */
+.clean-list-container {
+  background: var(--bg-panel);
+  border-radius: 24px;
+  padding: 1.5rem;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.03);
+  border: 1px solid #f1f5f9;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.table-scroll-container {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.table-scroll-container::-webkit-scrollbar {
+  height: 6px;
+}
+.table-scroll-container::-webkit-scrollbar-track {
+  background: #f8fafc;
+  border-radius: 10px;
+}
+.table-scroll-container::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 10px;
+}
+.table-scroll-container::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+.minimal-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  min-width: 860px;
+}
+
+.minimal-table th {
+  color: #94a3b8;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 1rem 0.85rem;
+  border-bottom: 1px solid #f1f5f9;
+  background: #f8fafc;
+  white-space: nowrap;
+}
+
+.minimal-table td {
+  padding: 1.1rem 0.85rem;
+  border-bottom: 1px solid #f8fafc;
+  vertical-align: middle;
+  transition: 0.2s;
+  white-space: nowrap;
+}
+
+.minimal-table tr:last-child td {
+  border-bottom: none;
+}
+
+.unread-row td {
+  background-color: #f8fafc;
+}
+
+.dark-text {
+  color: var(--text-dark);
+}
+
+.gray-text {
+  color: var(--text-gray);
+  font-size: 0.9rem;
+}
+
+.font-bold {
+  font-weight: 600;
+}
+
+.text-right {
+  text-align: right;
+}
+
+.text-sm {
+  font-size: 0.75rem;
+  display: block;
+  margin-top: 0.2rem;
+}
+
+.mr-1 {
+  margin-right: 0.2rem;
+}
+
+.info-stack {
+  display: flex;
+  flex-direction: column;
+}
+
+.pastel-badge {
+  padding: 0.4rem 1rem;
+  border-radius: 50px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  display: inline-block;
+}
+
+.badge-blue {
+  background: #eff6ff;
+  color: #3b82f6;
+}
+
+.badge-purple {
+  background: #faf5ff;
+  color: #a855f7;
+}
+
+.status-dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  margin-right: 0.5rem;
+  vertical-align: middle;
+}
+
+.dot-green {
+  background-color: #10b981;
+  box-shadow: 0 0 8px rgba(16, 185, 129, 0.4);
+}
+
+.dot-yellow {
+  background-color: #f59e0b;
+}
+
+.dot-gray {
+  background-color: #cbd5e1;
+}
+
+.dot-red {
+  background-color: #ef4444;
+}
+
+.pill-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: white;
+  border: 1px solid #e2e8f0;
+  color: var(--text-dark);
+  padding: 0.5rem 1.2rem;
+  border-radius: 50px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+  transition: 0.2s;
+}
+
+.pill-btn:hover {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+}
+
+.icon-sm {
+  width: 16px;
+  height: 16px;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 3rem 0;
+}
+
+/* ========================================================
+   VISIBILITÉ PAR DÉFAUT (DESKTOP > 1024px)
+   ======================================================== */
+.desktop-only {
+  display: flex !important;
+}
+
+.mobile-tablet-only {
+  display: none !important;
+}
+
+/* ========================================================
+   RESPONSIVE : TÉLÉPHONES & TABLETTES (<= 1024px)
+   ======================================================== */
+@media (max-width: 1024px) {
+  .header-section {
+    gap: 1rem;
+  }
+
+  /* La barre de recherche se place sous le titre, tout en haut des contrôles */
+  .title-and-search {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+  }
+
+  .section-title {
+    font-size: 1.25rem;
+  }
+
+  /* Barre de recherche pleine largeur */
+  .search-box {
+    max-width: 100%;
+    width: 100%;
+  }
+
+  /* Masquer les boutons onglets desktop */
+  .desktop-only {
+    display: none !important;
+  }
+
+  /* Afficher les menus déroulants mobile/tablette empilés :
+     1. Type de demandes tout en haut
+     2. Statut du paiement en dessous */
+  .mobile-tablet-only {
+    display: flex !important;
+  }
+
+  .filter_group {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.85rem;
+    width: 100%;
+  }
+
+  .payment-filter-wrapper {
+    max-width: 100%;
+    width: 100%;
+  }
+
+  .clean-list-container {
+    padding: 1.2rem;
+    border-radius: 18px;
+  }
+}
+
+/* ========================================================
+   RESPONSIVE : SMARTPHONES (< 640px)
+   ======================================================== */
+@media (max-width: 640px) {
+  .clean-list-container {
+    padding: 0.85rem;
+    border-radius: 14px;
+  }
+
+  .minimal-table th,
+  .minimal-table td {
+    padding: 0.85rem 0.6rem;
+    font-size: 0.85rem;
+  }
+
+  .section-title {
+    font-size: 1.15rem;
+  }
+}
 </style>

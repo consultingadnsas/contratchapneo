@@ -7,12 +7,12 @@
         
         <!-- ⚡️ NOUVEAU : Groupe de boutons -->
         <div class="header-buttons">
-          <button class="btn-secondary-custom" @click="openSettingsModal()">
-            <component :is="Cog6ToothIcon" class="icon-sm" /> Paramètres
-          </button>
-          
           <button class="btn-primary-custom" @click="openModal()">
             <component :is="UserPlusIcon" class="icon-sm" /> Ajouter un expert
+          </button>
+
+          <button class="btn-secondary-custom" @click="openSettingsModal()">
+            <component :is="Cog6ToothIcon" class="icon-sm" /> Paramètres
           </button>
         </div>
       </div>
@@ -23,7 +23,6 @@
           <input type="text" v-model="searchQuery" placeholder="Rechercher par nom, spécialité..." />
         </div>
         
-        <div class="filters-row">      
         <div class="domain-filter-box">
           <select v-model="activeDomainFilter" class="custom-filter-select">
             <option value="Tous">Tous les domaines</option>
@@ -32,7 +31,6 @@
             </option>
           </select>
         </div>
-      </div>
       </div>
     </div>
 
@@ -384,6 +382,8 @@ export default {
   .title-row { flex-direction: column; align-items: flex-start; gap: 1rem; }
   .header-buttons { width: 100%; flex-direction: column; gap: 0.8rem; }
   .btn-primary-custom, .btn-secondary-custom { width: 100%; justify-content: center; }
-  .search-box { max-width: 100%; }
+  .filters-row { flex-direction: column; align-items: stretch; gap: 0.8rem; }
+  .search-box { max-width: 100%; width: 100%; }
+  .domain-filter-box { width: 100%; min-width: 100%; }
 }
 </style>
