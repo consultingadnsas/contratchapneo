@@ -150,7 +150,11 @@ export default {
                     },
                 }
 
-                const order = await orderStore.checkout(payload)
+                let order = orderStore.currentOrder;
+                const hasCartItems = (cartStore.cart?.items?.length ?? 0) > 0;
+                if (hasCartItems || !order?.id || order.status !== 'pending') {
+                    order = await orderStore.checkout(payload);
+                }
                 
                 if (!order?.id) {
                     showNotification('error', 'Erreur système', "Impossible de générer l'identifiant de la commande.");
@@ -179,7 +183,7 @@ export default {
                     cartStore.cart.items = [];
                     cartStore.cart.discount = 0;
                     cartStore.cart.coupon_code = null;
-                }-
+                }
 
                 // Envoi de l'événement de succès
                 emit('success', {

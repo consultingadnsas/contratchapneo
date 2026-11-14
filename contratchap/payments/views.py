@@ -140,7 +140,7 @@ class PaymentInitiateView(APIView):
             xpaye_resp = requests.post(
                 settings.XPAYE_API_URL,
                 json    = xpaye_payload,
-                timeout = 15,
+                timeout = 30,
             )
             # 💡 ASTUCE DEBUG : Affiche la réponse brute de la sandbox dans ton terminal Django
             print(f"--- STATUS XPAYE : {xpaye_resp.status_code} ---")
@@ -257,10 +257,7 @@ def payment_webhook_view(request):
     Met à jour la transaction, la commande, et envoie l'email.
     On répond TOUJOURS 200 pour éviter les réessais intempestifs de xpaye.
     """
-    try:
-        data = request.data if request.data else json.loads(request.body)
-    except json.JSONDecodeError:
-        return Response({'message': 'Payload JSON invalide.'}, status=status.HTTP_200_OK)
+    data = request.data or {}
 
     #print("Webhook reçu :", data)
 

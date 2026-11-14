@@ -8,6 +8,9 @@ export default defineNuxtConfig({
   css: ['~/assets/css/main.css'],
   
   vite: {
+    server: {
+      allowedHosts: ['.trycloudflare.com', 'localhost', '127.0.0.1'],
+    },
     optimizeDeps: {
       include: [
         '@vue/devtools-core',
