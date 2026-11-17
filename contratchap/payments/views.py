@@ -15,6 +15,7 @@ from django.db.models.functions import TruncMonth
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.decorators import (api_view, authentication_classes, permission_classes)
+from django.utils.dateparse import parse_date
 
 from rest_framework.views       import APIView
 from rest_framework.response    import Response
@@ -558,68 +559,101 @@ class AdminTransaction(ListAPIView):
 
 class AdminAccountingSummaryView(APIView):
     """
-    GET /payment/admin/accounting/
-    Retourne les statistiques financières de l'application.
-    Accessible uniquement aux administrateurs.
+    GET /payment/admin/accounting/?start_date=2026-01-01&end_date=2026-11-17
+    Retourne les statistiques financières de l'application, filtrables par période.
     """
     permission_classes = [IsAdminUser]
 
     def get(self, request):
-        # ⚡️ LA SOLUTION EST ICI : L'import doit être la toute première ligne de la fonction
         from ecommerce.models import OrderItem
 
-        total_revenue = Transaction.objects.filter(
-            status=Transaction.TransactionStatus.SUCCESSFUL
-        ).aggregate(total=Sum('amount'))['total'] or 0
+        # 1. Récupération et validation des paramètres de période
+        start_date_str = request.query_params.get('start_date')
+        end_date_str = request.query_params.get('end_date')
 
-        # Maintenant, Python sait ce qu'est OrderItem quand il arrive ici !
-        total_models_sold = OrderItem.objects.filter(
-            order__status='paid', 
+        tx_date_filters = {}
+        item_date_filters = {}
+
+        if start_date_str:
+            start_date = parse_date(start_date_str)
+            if not start_date:
+                return Response(
+                    {'error': 'Format de start_date invalide. Utilisez YYYY-MM-DD.'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            tx_date_filters['created_at__date__gte'] = start_date
+            item_date_filters['order__created_at__date__gte'] = start_date
+
+        if end_date_str:
+            end_date = parse_date(end_date_str)
+            if not end_date:
+                return Response(
+                    {'error': 'Format de end_date invalide. Utilisez YYYY-MM-DD.'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            tx_date_filters['created_at__date__lte'] = end_date
+            item_date_filters['order__created_at__date__lte'] = end_date
+
+        # 2. Querysets de base filtrés sur la période
+        base_transactions = Transaction.objects.filter(**tx_date_filters)
+        successful_transactions = base_transactions.filter(
+            status=Transaction.TransactionStatus.SUCCESSFUL
+        )
+        paid_items = OrderItem.objects.filter(
+            order__status='paid',
+            **item_date_filters
+        )
+
+        # 3. Indicateurs globaux
+        total_revenue = successful_transactions.aggregate(
+            total=Sum('amount')
+        )['total'] or 0
+
+        total_models_sold = paid_items.filter(
             contrat__isnull=False,
-            pack__isnull=True 
+            pack__isnull=True
         ).aggregate(total=Sum('quantity'))['total'] or 0
 
-        status_counts = Transaction.objects.aggregate(
+        # 4. Compteur par statut
+        status_counts = base_transactions.aggregate(
             successful=Count('id', filter=Q(status=Transaction.TransactionStatus.SUCCESSFUL)),
             pending=Count('id', filter=Q(status=Transaction.TransactionStatus.PENDING)),
             failed=Count('id', filter=Q(status=Transaction.TransactionStatus.FAILED)),
             canceled=Count('id', filter=Q(status=Transaction.TransactionStatus.CANCELED))
         )
 
-        revenue_by_method = Transaction.objects.filter(
-            status=Transaction.TransactionStatus.SUCCESSFUL
-        ).values('payment_method').annotate(
+        # 5. Revenus par méthode de paiement
+        revenue_by_method = successful_transactions.values('payment_method').annotate(
             total_revenue=Sum('amount'),
             transaction_count=Count('id')
         ).order_by('-total_revenue')
 
-        monthly_revenue = Transaction.objects.filter(
-            status=Transaction.TransactionStatus.SUCCESSFUL
-        ).annotate(
+        # 6. Évolution mensuelle des revenus
+        monthly_qs = successful_transactions.annotate(
             month=TruncMonth('created_at')
         ).values('month').annotate(
             monthly_total=Sum('amount'),
             count=Count('id')
-        ).order_by('-month')[:12]
+        ).order_by('-month')
 
-        top_contracts = OrderItem.objects.filter(
-            order__status='paid',
+        # Si aucune période n'est imposée, on limite aux 12 derniers mois
+        if not start_date_str and not end_date_str:
+            monthly_qs = monthly_qs[:12]
+
+        # 7. Palmarès (Top 5 sur la période)
+        top_contracts = paid_items.filter(
             contrat__isnull=False
         ).values('contrat__title').annotate(
             total_sold=Sum('quantity')
         ).order_by('-total_sold')[:5]
 
-        # Top Packs
-        top_packs = OrderItem.objects.filter(
-            order__status='paid',
+        top_packs = paid_items.filter(
             pack__isnull=False
         ).values('pack__title').annotate(
             total_sold=Sum('quantity')
         ).order_by('-total_sold')[:5]
 
-        # Top Pros
-        top_pros = OrderItem.objects.filter(
-            order__status='paid',
+        top_pros = paid_items.filter(
             pro__isnull=False
         ).values('pro__first_name', 'pro__last_name').annotate(
             total_sold=Sum('quantity')
@@ -630,30 +664,24 @@ class AdminAccountingSummaryView(APIView):
             for p in top_pros
         ]
 
-        # Custom Contracts Monthly
-        custom_contracts_monthly = OrderItem.objects.filter(
-            order__status='paid',
+        # 8. Évolutions mensuelles par catégorie
+        custom_contracts_monthly = paid_items.filter(
             contrat_customed__isnull=False
         ).annotate(
-            # 🌟 UTILISATION DE order__created_at pour la date
             month=TruncMonth('order__created_at')
         ).values('month').annotate(
             count=Sum('quantity')
         ).order_by('month')
 
-        # Contract Revisions Monthly 
-        revisions_monthly = OrderItem.objects.filter(
-            order__status='paid',
-            contract_revision__isnull=False 
+        revisions_monthly = paid_items.filter(
+            contract_revision__isnull=False
         ).annotate(
             month=TruncMonth('order__created_at')
         ).values('month').annotate(
             count=Sum('quantity')
         ).order_by('month')
 
-        # ⚡️ NOUVEAU : Packs Monthly (Évolution des packs vendus par mois)
-        packs_monthly = OrderItem.objects.filter(
-            order__status='paid',
+        packs_monthly = paid_items.filter(
             pack__isnull=False
         ).annotate(
             month=TruncMonth('order__created_at')
@@ -661,9 +689,7 @@ class AdminAccountingSummaryView(APIView):
             count=Sum('quantity')
         ).order_by('month')
 
-        # ⚡️ NOUVEAU : Pros Monthly (Évolution des sollicitations pro par mois)
-        pros_monthly = OrderItem.objects.filter(
-            order__status='paid',
+        pros_monthly = paid_items.filter(
             pro__isnull=False
         ).annotate(
             month=TruncMonth('order__created_at')
@@ -671,22 +697,23 @@ class AdminAccountingSummaryView(APIView):
             count=Sum('quantity')
         ).order_by('month')
 
-        # ⚡️ Mise à jour du dictionnaire de réponse
         return Response({
+            'period': {
+                'start_date': start_date_str,
+                'end_date': end_date_str,
+            },
             'global': {
                 'total_revenue': total_revenue,
                 'total_models_sold': total_models_sold
             },
             'transactions_status': status_counts,
             'revenue_by_method': list(revenue_by_method),
-            'monthly_evolution': list(monthly_revenue),
+            'monthly_evolution': list(monthly_qs),
             'top_contracts': list(top_contracts),
             'top_packs': list(top_packs),
             'top_pros': top_pros_formatted,
             'custom_contracts_monthly': list(custom_contracts_monthly),
             'revisions_monthly': list(revisions_monthly),
-            
-            # ⚡️ AJOUT DES DEUX NOUVELLES VARIABLES ICI
             'packs_monthly': list(packs_monthly),
             'pros_monthly': list(pros_monthly)
         }, status=status.HTTP_200_OK)
