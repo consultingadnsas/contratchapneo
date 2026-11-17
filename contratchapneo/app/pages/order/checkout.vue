@@ -54,7 +54,7 @@ export default {
                     await cartStore.removeCoupon();
                 }
                 
-                await cartStore.clearCart();
+                await cartStore.clearCart(true);
                 console.log('🗑️ Panier vidé avec succès avant retour à l\'accueil.');
             } catch (err) {
                 // ⚡️ NOUVEAU : En cas d'erreur, on écrase TOUT localement (y compris le coupon)

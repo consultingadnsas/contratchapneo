@@ -4,6 +4,7 @@ from rest_framework import status
 from rest_framework.permissions import IsAdminUser
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.generics import ListAPIView
+from django.db.models import Q
 from django.utils import timezone
 from datetime import timedelta
 
@@ -36,8 +37,10 @@ class AdminOrderView(ListAPIView):
     pagination_class = AdminPagination
 
     def get_queryset(self):
-        # 1. On récupère toutes les commandes, triées par date (de la plus récente à la plus ancienne)
-        queryset = Order.objects.all().order_by('-created_at')
+        # 1. On récupère toutes les commandes avec leurs relations préchargées (évite les requêtes N+1)
+        queryset = Order.objects.select_related(
+            'user', 'guest', 'coupon'
+        ).prefetch_related('order_items').order_by('-created_at')
         
         # 2. On vérifie si l'URL contient le paramètre ?abandoned=true
         is_abandoned = self.request.query_params.get('abandoned')
@@ -46,11 +49,10 @@ class AdminOrderView(ListAPIView):
             # On calcule l'heure exacte qu'il était il y a 1 heure
             time_threshold = timezone.now() - timedelta(hours=1)
             
-            # 3. On filtre : Uniquement les commandes en attente ("pending") 
-            #    ET créées avant la limite d'une heure (lte = less than or equal)
+            # 3. Commandes en attente depuis plus d'1 heure OU paniers vidés par le bouton retour
             queryset = queryset.filter(
-                status='pending',
-                created_at__lte=time_threshold
+                Q(status=Order.Status.PENDING, created_at__lte=time_threshold)
+                | Q(status=Order.Status.CANCELLED)
             )
             
         return queryset

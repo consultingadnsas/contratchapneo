@@ -384,11 +384,14 @@ export const useCartStore = defineStore('cart', () => {
     }
   };
 
-  const clearCart = async () => {
+  const clearCart = async (saveAbandoned: boolean = false) => {
     isLoading.value = true;
     error.value = null;
     try {
-      await $api('/ecommerce/cart/clear/', { method: 'DELETE' });
+      await $api('/ecommerce/cart/clear/', {
+        method: 'DELETE',
+        params: saveAbandoned ? { save_abandoned: 'true' } : undefined,
+      });
       cart.value = { items: [] };
     } catch (err: any) {
       error.value = err.message;

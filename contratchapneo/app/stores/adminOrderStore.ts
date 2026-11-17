@@ -1,4 +1,5 @@
 import { defineStore } from 'pinia';
+import type { Order } from './orderStore';
 
 export const useAdminOrderStore = defineStore('adminOrder', {
   state: () => ({
@@ -17,18 +18,18 @@ export const useAdminOrderStore = defineStore('adminOrder', {
       const { $api } = useNuxtApp();
 
       try {
-        // 👈 Nouveau : Ajout de &page= au lien
-        const response: any = await $api(`/ecommerce/admin/order/?abandoned=true&page=${page}`, {
-          method: 'GET'
+        const response: any = await $api('/ecommerce/admin/order/', {
+          method: 'GET',
+          params: { abandoned: 'true', page, t: Date.now() },
         });
         
         // Django renvoie { count: X, next: '...', previous: '...', results: [...] }
         if (response && Array.isArray(response.results)) {
             this.abandonedOrders = response.results;
-            this.totalAbandonedCount = response.count || response.results.length;
+            this.totalAbandonedCount = response.count ?? response.results.length;
         } else if (response && Array.isArray(response.data)) {
             this.abandonedOrders = response.data;
-            this.totalAbandonedCount = response.count || response.data.length;
+            this.totalAbandonedCount = response.count ?? response.data.length;
         } else if (Array.isArray(response)) {
             this.abandonedOrders = response;
             this.totalAbandonedCount = response.length;

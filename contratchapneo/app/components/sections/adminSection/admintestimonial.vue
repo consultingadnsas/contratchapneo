@@ -6,7 +6,7 @@
         <span class="badge">{{ totalCount }} abandons récents</span>
       </div>
       <p class="gray-text">
-        Commandes validées mais non payées depuis plus de 1 heures.
+        Commandes validées mais non payées depuis plus de 1 heure.
       </p>
     </div>
 
@@ -45,7 +45,7 @@
               </td>
 
               <td>
-                <span class="amount-badge font-bold">{{ order.total_amount }} FCFA</span>
+                <span class="amount-badge font-bold">{{ formatAmount(order.total_amount) }} FCFA</span>
               </td>
 
               <!-- 👈 Bouton Aperçu -->
@@ -64,6 +64,14 @@
           <tbody v-else-if="isLoading">
             <tr>
               <td colspan="5" class="text-center py-4">Chargement des données...</td>
+            </tr>
+          </tbody>
+
+          <tbody v-else-if="error">
+            <tr>
+              <td colspan="5" class="text-center py-4 text-red-600">
+                {{ error }}
+              </td>
             </tr>
           </tbody>
           
@@ -116,12 +124,12 @@
                 <div class="item-name">
                   {{ item.quantity }}x {{ getModalItemTitle(item) }}
                 </div>
-                <div class="item-price font-bold">{{ item.unit_price || 0 }} FCFA</div>
+                <div class="item-price font-bold">{{ formatAmount(item.unit_price || 0) }} FCFA</div>
               </li>
             </ul>
             <div class="total-row">
               <span>Total :</span>
-              <span class="font-bold amount-highlight">{{ selectedOrder.total_amount }} FCFA</span>
+              <span class="font-bold amount-highlight">{{ formatAmount(selectedOrder.total_amount) }} FCFA</span>
             </div>
           </div>
         </div>
@@ -155,6 +163,7 @@ const pageSize = ref(10);
 const abandonedOrders = computed(() => adminOrderStore.abandonedOrders);
 const totalCount = computed(() => adminOrderStore.totalAbandonedCount);
 const isLoading = computed(() => adminOrderStore.isLoading);
+const error = computed(() => adminOrderStore.error);
 
 // --- État de la modale ---
 const showPreviewModal = ref(false);
@@ -195,11 +204,16 @@ const getClientPhone = (order: any) => {
 };
 
 const getItemTitle = (item: any) => {
-  return item.contrat_title || item.pack_title || item.pro_name || item.designation || 'Service Juridique';
+  return item.contrat_title || item.pack_title || item.pro_name || item.customised_contract || item.designation || (item.contract_revision ? 'Révision de contrat' : 'Service Juridique');
 };
 
 const getModalItemTitle = (item: any) => {
-  return item.contrat_title || item.pack_title || item.pro_name || item.designation || 'Article';
+  return item.contrat_title || item.pack_title || item.pro_name || item.customised_contract || item.designation || (item.contract_revision ? 'Révision de contrat' : 'Article');
+};
+
+const formatAmount = (amount: number | string | undefined) => {
+  const num = Number(amount) || 0;
+  return num.toLocaleString('fr-FR');
 };
 
 // --- Formatage ---

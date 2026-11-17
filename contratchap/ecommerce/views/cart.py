@@ -17,7 +17,7 @@ from ..serializers import (
     AddToCartSerializer,
     CheckoutSerializer,
 )
-from ..helpers import (get_or_create_cart, set_cart_cookie_if_needed)
+from ..helpers import (get_or_create_cart, set_cart_cookie_if_needed, create_order_from_cart)
 from contrat.models import Contrat, CustomedContract, Pack, ContractRevision
 from pro.models import LegalProfessional
 
@@ -366,7 +366,17 @@ class CartClearView(APIView):
 
     def delete(self, request):
         cart = get_or_create_cart(request)
-        cart.clear()
+        save_abandoned = request.query_params.get('save_abandoned') == 'true'
+
+        if save_abandoned and cart.items.exists():
+            create_order_from_cart(
+                request,
+                cart,
+                order_status=Order.Status.CANCELLED,
+                increment_coupon=False,
+            )
+        else:
+            cart.clear()
 
         response = Response(
             {'message': 'Panier vidé.'},

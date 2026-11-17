@@ -17,7 +17,14 @@ export interface Transaction {
 }
 
 export interface AccountingSummary {
-    global: { total_revenue: number; total_models_sold: number; };
+    period?: { start_date: string | null; end_date: string | null };
+    global: {
+        total_revenue: number;
+        total_models_sold: number;
+        total_global_sales?: number;
+        active_users_count?: number;
+        abandoned_potential_revenue?: number;
+    };
     transactions_status: { successful: number; pending: number; failed: number; canceled: number; };
     revenue_by_method: Array<{ payment_method: string; total_revenue: number; transaction_count: number; }>;
     monthly_evolution: Array<{ month: string; monthly_total: number; count: number; }>;
@@ -74,13 +81,17 @@ export const useAdminTransactStore = defineStore('adminTransac', () => {
         }
     }
 
-    async function fetchAccountancy() {
+    async function fetchAccountancy(startDate?: string, endDate?: string) {
         isLoading.value = true;
         error.value = null;
         try {
+            const params: Record<string, any> = { t: Date.now() }; // ⚡️ ANTI-CACHE ICI AUSSI
+            if (startDate) params.start_date = startDate;
+            if (endDate) params.end_date = endDate;
+
             const response = await $api<AccountingSummary>('/payments/admin/accounting/', { 
                 method: 'GET',
-                params: { t: Date.now() } // ⚡️ ANTI-CACHE ICI AUSSI
+                params
             });
             accountancy.value = response;
         } catch (err: any) {
@@ -98,7 +109,8 @@ export const useAdminTransactStore = defineStore('adminTransac', () => {
         dataArray.forEach(item => {
             const date = new Date(item.month);
             if (!isNaN(date.getTime())) {
-                months[date.getMonth()] += Number(item[valueKey] || 0);
+                const m = date.getMonth();
+                months[m] = (months[m] ?? 0) + Number(item[valueKey] || 0);
             }
         });
         return months;

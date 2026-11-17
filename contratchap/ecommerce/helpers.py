@@ -1,4 +1,7 @@
-from .models import Cart, CartItem
+from django.db import transaction
+from django.db.models import F
+
+from .models import Cart, CartItem, Order, OrderItem, Coupon
 
 def get_or_create_cart(request):
     # ─── Utilisateur authentifié ───
@@ -84,3 +87,73 @@ def set_cart_cookie_if_needed(request, response):
             samesite='Lax'
         )
     return response
+
+
+def create_order_from_cart(
+    request,
+    cart,
+    guest=None,
+    order_status=Order.Status.PENDING,
+    increment_coupon=True,
+):
+    """Snapshot a non-empty cart into an Order + OrderItems and clear the cart."""
+    with transaction.atomic():
+        subtotal = cart.get_total()
+        final_total = cart.get_total_with_discount()
+        discount = subtotal - final_total
+
+        order = Order.objects.create(
+            user=request.user if request.user.is_authenticated else None,
+            guest=guest,
+            status=order_status,
+            total_amount=final_total,
+            coupon=cart.coupon,
+            discount_amount=discount,
+        )
+
+        if increment_coupon and order.coupon:
+            Coupon.objects.filter(id=order.coupon.id).update(used_count=F('used_count') + 1)
+
+        order_items = []
+        for item in cart.items.select_related('contrat', 'pro', 'customed_contract', 'packs', 'contract_revision'):
+            c_title = None
+            p_name = None
+            customized_name = None
+            pack_title = None
+            contract_revision = None
+            revision_subject = None
+
+            if item.contrat:
+                c_title = item.contrat.title
+            elif item.pro:
+                pro_title = item.pro.get_title_display() if hasattr(item.pro, 'get_title_display') else getattr(item.pro, 'title', '')
+                p_name = f"{item.pro.first_name} {item.pro.last_name} - {pro_title}"
+            elif item.customed_contract:
+                customized_name = item.customed_contract.subject or f"Contrat sur mesure #{item.customed_contract.id}"
+            elif item.packs:
+                pack_title = item.packs.title
+            elif item.contract_revision:
+                contract_revision = item.contract_revision
+                revision_subject = item.contract_revision.subject or f"Révision #{item.contract_revision.id}"
+
+            order_items.append(
+                OrderItem(
+                    order=order,
+                    contrat=item.contrat,
+                    pro=item.pro,
+                    contrat_customed=item.customed_contract,
+                    pack=item.packs,
+                    contrat_title=c_title,
+                    customised_contract=customized_name,
+                    contract_revision=contract_revision,
+                    pro_name=p_name,
+                    pack_title=pack_title,
+                    revision_subject=revision_subject,
+                    unit_price=item.unit_price,
+                    quantity=item.quantity,
+                )
+            )
+
+        OrderItem.objects.bulk_create(order_items)
+        cart.clear()
+        return order

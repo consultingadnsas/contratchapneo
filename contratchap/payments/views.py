@@ -7,11 +7,14 @@ import tempfile
 import os
 import mimetypes
 
+from datetime import timedelta
 from django.http    import FileResponse
 from django.conf    import settings
+from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404
 from django.db.models import Sum, Count, Q
 from django.db.models.functions import TruncMonth
+from django.utils import timezone
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.decorators import (api_view, authentication_classes, permission_classes)
@@ -565,7 +568,7 @@ class AdminAccountingSummaryView(APIView):
     permission_classes = [IsAdminUser]
 
     def get(self, request):
-        from ecommerce.models import OrderItem
+        from ecommerce.models import Order, OrderItem
 
         # 1. Récupération et validation des paramètres de période
         start_date_str = request.query_params.get('start_date')
@@ -613,6 +616,21 @@ class AdminAccountingSummaryView(APIView):
             contrat__isnull=False,
             pack__isnull=True
         ).aggregate(total=Sum('quantity'))['total'] or 0
+
+        total_global_sales = paid_items.filter(
+            Q(contrat__isnull=False)
+            | Q(pack__isnull=False)
+            | Q(pro__isnull=False)
+            | Q(contrat_customed__isnull=False)
+            | Q(contract_revision__isnull=False)
+        ).aggregate(total=Sum('quantity'))['total'] or 0
+        active_users_count = get_user_model().objects.filter(is_active=True).count()
+
+        time_threshold = timezone.now() - timedelta(hours=1)
+        abandoned_potential_revenue = Order.objects.filter(**tx_date_filters).filter(
+            Q(status=Order.Status.PENDING, created_at__lte=time_threshold)
+            | Q(status=Order.Status.CANCELLED)
+        ).aggregate(total=Sum('total_amount'))['total'] or 0
 
         # 4. Compteur par statut
         status_counts = base_transactions.aggregate(
@@ -704,7 +722,10 @@ class AdminAccountingSummaryView(APIView):
             },
             'global': {
                 'total_revenue': total_revenue,
-                'total_models_sold': total_models_sold
+                'total_models_sold': total_models_sold,
+                'total_global_sales': total_global_sales,
+                'active_users_count': active_users_count,
+                'abandoned_potential_revenue': abandoned_potential_revenue,
             },
             'transactions_status': status_counts,
             'revenue_by_method': list(revenue_by_method),

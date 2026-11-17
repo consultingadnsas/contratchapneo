@@ -47,6 +47,27 @@
             </div>
           </div>
 
+          <!-- ⚡️ CARTE 3 : UTILISATEURS ACTIFS -->
+          <div class="white-card">
+            <div class="card-header">
+              <div class="icon-purple">
+                <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                </svg>
+              </div>
+            </div>
+            <div class="card-body">
+              <h2 class="dark-text">Utilisateurs Actifs</h2>
+              <p class="gray-text">Comptes actifs sur la plateforme</p>
+            </div>
+            <div class="card-footer">
+              <div class="stat-block-dark">
+                <span>Total Actifs</span>
+                <strong>{{ activeUsersCount }}</strong>
+              </div>
+            </div>
+          </div>
+
         </div>
       </div>
     </div>
@@ -141,11 +162,17 @@ export default {
       return { color: 'dot-gray', text: status || 'Inconnu' };
     };
 
-    // 5. CALCUL DYNAMIQUE : Toutes les ventes réussies de la plateforme
+    // 5. CALCUL DYNAMIQUE : Toutes les ventes validées et confirmées de la plateforme
     const totalContractsSold = computed(() => {
-      // Au lieu de compter les éléments de la page 1, 
-      // on utilise la statistique globale renvoyée par le backend (AccountingSummary)
-      return transactStore.accountancy?.transactions_status?.successful || 0;
+      return (
+        transactStore.accountancy?.global?.total_global_sales ??
+        transactStore.accountancy?.transactions_status?.successful ??
+        0
+      );
+    });
+
+    const activeUsersCount = computed(() => {
+      return transactStore.accountancy?.global?.active_users_count ?? 0;
     });
 
     // 6. Tableau des dernières activités
@@ -199,6 +226,7 @@ export default {
       transactStore,         // Exporté pour accéder aux données dans le template
       formatCurrency,        // Exporté pour formater le prix
       totalContractsSold,    // Exporté pour le compteur
+      activeUsersCount,
       recentActivities,
       isLoading: computed(() => transactStore.isLoading)
     };
@@ -221,7 +249,6 @@ export default {
 .section-title { font-size: 1.1rem; color: var(--text-dark); font-weight: 700; margin: 0 0 1rem 0; }
 .section-header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 1rem; }
 .top-section { display: grid; grid-template-columns: 1fr; gap: 2rem; }
-@media (min-width: 1024px) { .top-section { grid-template-columns: 1.5fr 1fr; } }
 .overview-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.5rem; }
 .gradient-card {
   background: var(--primary-color);

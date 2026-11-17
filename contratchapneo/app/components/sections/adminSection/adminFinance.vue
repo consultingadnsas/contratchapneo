@@ -5,6 +5,13 @@
       <div class="title-and-tabs">
         <h3 class="section-title">Analyses Financières</h3>
       </div>
+      <div class="year-filter">
+        <BaseSelect
+          v-model="selectedYear"
+          placeholder=""
+          :options="yearOptions"
+        />
+      </div>
     </div>
 
     <!-- 1. KPI GRID -->
@@ -40,17 +47,19 @@
         <p class="kpi-footer">Modèles classiques uniquement</p>
       </div>
 
-      <!-- KPI 3 : En Attente -->
+      <!-- KPI 3 : Pertes Potentielles (Paniers Abandonnés) -->
       <div class="kpi-card">
         <div class="kpi-header">
           <div class="kpi-title">
             <div class="icon-box-light bg-orange-light"><component :is="ShoppingCartIcon" class="icon-sm" /></div>
-            <span class="dark-text font-bold">En Attente</span>
+            <span class="dark-text font-bold">Pertes Potentielles</span>
           </div>
           <div class="mini-bars"><div class="bar bar-high"></div><div class="bar bar-mid"></div><div class="bar bar-low bg-orange"></div></div>
         </div>
-        <div class="kpi-body"><h2 class="amount">{{ financeStore.accountancy?.transactions_status?.pending || 0 }}</h2></div>
-        <p class="kpi-footer">Paiements non finalisés</p>
+        <div class="kpi-body">
+          <h2 class="amount">{{ formatCurrency(financeStore.accountancy?.global?.abandoned_potential_revenue) }} <span class="currency">FCFA</span></h2>
+        </div>
+        <p class="kpi-footer">Montant des paniers abandonnés</p>
       </div>
     </div>
 
@@ -166,12 +175,13 @@
 </template>
 
 <script lang="ts">
-import { computed, markRaw, onMounted } from 'vue';
+import { computed, markRaw, onMounted, ref, watch } from 'vue';
 import { 
   BanknotesIcon, ChartPieIcon, ShoppingCartIcon, DocumentChartBarIcon, CalculatorIcon, ChevronRightIcon
 } from '@heroicons/vue/24/outline';
 
 import { useAdminTransactStore } from '../../../stores/adminTransactStore'; 
+import BaseSelect from '../../input/BaseSelect.vue';
 import RevenueChart from '../../charts/revenuCharts.vue'; 
 import StatusDonutChart from '../../charts/statutCharts.vue';
 import DemandBarChart from '../../charts/demandChart.vue';
@@ -184,14 +194,38 @@ import TopProChart from '../../charts/topProChart.vue'
 export default {
   name: 'AdminFinance',
   components: {
-    RevenueChart, StatusDonutChart, DemandBarChart, PackChart, ProChart, ContratChart, TopPacksChart, TopProChart,
+    BaseSelect, RevenueChart, StatusDonutChart, DemandBarChart, PackChart, ProChart, ContratChart, TopPacksChart, TopProChart,
   },
   setup() {
     const financeStore = useAdminTransactStore();
 
+    const currentYear = new Date().getFullYear();
+    const startYear = 2025;
+    const selectedYear = ref<string>(String(currentYear));
+
+    const yearOptions = computed(() => {
+      const options: Array<{ name: string; value: string }> = [];
+      for (let y = currentYear; y >= startYear; y--) {
+        options.push({ name: `Année ${y}`, value: String(y) });
+      }
+      options.push({ name: 'Toutes les années', value: 'all' });
+      return options;
+    });
+
+    const loadAccountancy = async (year: string) => {
+      if (year === 'all') {
+        await financeStore.fetchAccountancy();
+      } else {
+        await financeStore.fetchAccountancy(`${year}-01-01`, `${year}-12-31`);
+      }
+    };
+
     onMounted(async () => {
-      // Optionnel : tu peux ne fetcher que fetchAccountancy si tu n'as pas besoin de la liste complète ici
-      await financeStore.fetchAccountancy();
+      await loadAccountancy(selectedYear.value);
+    });
+
+    watch(selectedYear, async (newYear) => {
+      await loadAccountancy(newYear);
     });
 
     const formatCurrency = (amount: number | string | undefined) => {
@@ -285,6 +319,8 @@ export default {
 
     return {
       financeStore,
+      selectedYear,
+      yearOptions,
       formatCurrency,
       
       // Données traduites exposées au template
@@ -332,7 +368,20 @@ export default {
 .flex-col-center { display: flex; flex-direction: column; height: 100%; }
 
 /* HEADER */
-.header-section { margin-bottom: 0.5rem; }
+.header-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 0.5rem;
+}
+.year-filter {
+  width: 210px;
+}
+.year-filter :deep(.input-group) {
+  margin-bottom: 0;
+}
 .section-title { font-size: 1.4rem; color: var(--text-dark); font-weight: 700; margin: 0; }
 
 /* PANNEAUX ET CARTES */
